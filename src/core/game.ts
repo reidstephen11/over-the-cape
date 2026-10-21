@@ -1,0 +1,1105 @@
+import * as THREE from 'three';
+import { maps } from '../data/maps';
+import { environmentAt, environmentFor, type Conditions } from '../data/environment';
+import { clockTime, episodeOrder, episodes, type EpisodeDef, type EpisodeId } from '../data/episodes';
+import { usePalette } from '../render/colors';
+import { qualityPresets } from '../data/quality';
+import type { DamageMode } from '../data/damage';
+import type { VehicleId } from '../data/vehicle';
+import { vehicles } from '../data/vehicles';
+import { cameraTuning } from '../data/camera';
+import { buildWorldSteps, type World } from '../sim/world/world';
+import { addPuddles } from '../sim/world/puddles';
+import { loadRapier } from '../sim/physics';
+import { Simulation } from '../sim/sim';
+import type { Vehicle } from '../sim/vehicle/vehicle';
+import { InputManager } from '../sim/input/inputManager';
+import type { Autopilot } from '../sim/input/autopilot';
+import type { VehicleInput } from '../sim/input/vehicleInput';
+import type { PoiDef } from '../sim/world/mapTypes';
+import { poiApproach } from '../sim/world/poiApproach';
+import { headingOf } from '../sim/vehicle/math';
+import { Exploration } from '../sim/exploration';
+import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
+import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
+import { CrawlRuns, type CrawlBests, type CrawlRunEvent } from '../sim/crawlRuns';
+import { GateCount, footprintSize, type GateEvent } from '../sim/gateCount';
+import { clock, gateLapDetail } from '../ui/hud';
+import type { ToolEvent } from '../sim/tools/tools';
+import { GameRenderer } from '../render/renderer';
+import { VehicleModel } from '../render/vehicleModel';
+import { ChaseCamera } from '../render/chaseCamera';
+import { CameraDrag } from '../render/cameraDrag';
+import { ToolsView } from '../render/tools';
+import { Hud } from '../ui/hud';
+import { ToolMenu, type ToolOption } from '../ui/toolMenu';
+import { TouchControls, isTouchDevice } from '../ui/touchControls';
+import { touchTuning } from '../data/touch';
+import { PaperMap } from '../ui/paperMap';
+import { Fade, PauseMenu } from '../ui/menus';
+import { HistoryCard, ResultCard, type ResultButton } from '../ui/episodeCards';
+import { FreeCamera } from '../debug/freeCamera';
+import { DebugOverlay } from '../debug/overlay';
+import { DebugTools } from '../debug/debugTools';
+import { AudioSystem } from '../audio/audioSystem';
+import { buildAudioFrame } from '../audio/frame';
+import { GameLoop } from './loop';
+import { ToolController } from './toolController';
+import { buildHudState } from './hudState';
+import { damageMessage } from './damageMessages';
+import { installHook } from './testHook';
+
+const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+export const LOCAL_VEHICLE = 'player-1';
+
+/** What the welcome screen chose: which episode, in what, and how to start it. */
+export interface LaunchChoice {
+  episode: EpisodeId;
+  vehicle: VehicleId;
+  /** Carry on from the last camp reached (else start the episode afresh). */
+  resume: boolean;
+  /** Replay a finished episode in chosen conditions (null: the story's own). */
+  replay: Conditions | null;
+  /** The damage setting picked on the welcome screen (else the saved one). */
+  damage?: DamageMode;
+}
+
+/** The episode being played: its story, where this run starts, and progress on them all. */
+interface EpisodeSetup {
+  def: EpisodeDef;
+  checkpoint: Checkpoint;
+  replay: Conditions | null;
+  progress: Partial<Record<EpisodeId, EpisodeProgress>>;
+}
+
+/**
+ * Orchestrates the simulation, rendering, UI and input for the local player.
+ */
+export class Game {
+  readonly debug: boolean;
+  readonly loop: GameLoop;
+  readonly input: InputManager;
+  readonly freeCam: FreeCamera;
+  readonly chase: ChaseCamera;
+  private readonly cameraDrag: CameraDrag;
+  readonly overlay: DebugOverlay | null;
+  private readonly debugTools: DebugTools | null;
+  model: VehicleModel;
+  /** Which vehicle the player drives (saved). */
+  vehicleId: VehicleId;
+  /** The episode being played, and this run of it: clock, mission and how it ends. */
+  readonly episode: EpisodeDef;
+  readonly run: EpisodeRun;
+  /** Replaying in chosen conditions: the clock stands still and there's no deadline. */
+  readonly replay: Conditions | null;
+  /** Where this run restarts from: the last camp reached. */
+  checkpoint: Checkpoint;
+  /** Progress on every episode, kept in the save. */
+  private readonly progress: Partial<Record<EpisodeId, EpisodeProgress>>;
+  readonly history: HistoryCard;
+  readonly result: ResultCard;
+  /** The clock time the light was last set for, and whether it was dark enough for the lamps. */
+  private envHour: number;
+  private lampBeams: boolean;
+  readonly toolsView: ToolsView;
+  readonly tool: ToolController;
+  readonly exploration: Exploration;
+  /** Optional scored runs on the crawl trails. */
+  readonly crawlRuns: CrawlRuns;
+  /** Gates driven on a gate trail (Crawler Creek). */
+  readonly gateCount: GateCount;
+  readonly hud: Hud;
+  readonly toolMenu: ToolMenu;
+  readonly touch: TouchControls;
+  readonly map: PaperMap;
+  readonly pause: PauseMenu;
+  private readonly fade: Fade;
+  readonly audio: AudioSystem;
+  settings: Settings;
+  freeCamOn = false;
+  scriptedInput: Partial<VehicleInput> | null = null;
+  /** Drives the car along a path (scripted test drives). */
+  autopilot: Autopilot | null = null;
+  /** Main-thread time spent in three.js rendering per frame (ms, smoothed). */
+  sceneMs = 0;
+  /** Called when settings change (audio hooks in here). */
+  onSettings: ((s: Settings) => void) | null = null;
+  private readonly inputs = new Map<string, VehicleInput>();
+  private frameCount = 0;
+  private clock = 0;
+  private anchorCheck = 0;
+  private anchorInReach = false;
+  private storageOk = true;
+  private readonly tmpPos = new THREE.Vector3();
+  private readonly tmpFwd = new THREE.Vector3();
+  private readonly camDir = new THREE.Vector3();
+
+  private constructor(
+    readonly world: World,
+    readonly sim: Simulation,
+    readonly view: GameRenderer,
+    uiRoot: HTMLElement,
+    settings: Settings,
+    exploration: Exploration,
+    crawlBests: CrawlBests,
+    vehicleId: VehicleId,
+    setup: EpisodeSetup,
+    audioContext?: AudioContext,
+  ) {
+    this.debug = new URLSearchParams(location.search).has('debug');
+    this.settings = settings;
+    this.exploration = exploration;
+    this.vehicleId = vehicleId;
+    this.episode = setup.def;
+    this.replay = setup.replay;
+    this.checkpoint = setup.checkpoint;
+    this.progress = { ...setup.progress };
+    this.run = new EpisodeRun(setup.def, setup.checkpoint, !setup.replay);
+    this.envHour = this.run.hour;
+    this.lampBeams = sim.env.lampBeams;
+    const tuning = vehicles[vehicleId].tuning;
+    this.crawlRuns = new CrawlRuns(world.map.crawlTrails ?? [], world.features.tracks, crawlBests);
+    this.gateCount = new GateCount(world.features.gates);
+    this.input = new InputManager(window);
+    this.input.setSteering(tuning.steering);
+    this.audio = new AudioSystem(settings, window, audioContext);
+    this.audio.setVehicle(vehicleId);
+    // The run starts at its checkpoint's camp, with what was on board there.
+    const camp = exploration.lastCampsite || world.map.spawnCampsite;
+    sim.addVehicle(LOCAL_VEHICLE, sim.campsitePose(camp, tuning.wheelRadius), tuning);
+    sim.setDamage(settings.damage);
+    sim.fuelScale = setup.def.fuelScale;
+    applyCheckpoint(this.vehicle, this.checkpoint);
+
+    // Arriving at dusk or night, the headlights are already on.
+    if (sim.env.lampBeams) this.vehicle.lights = 'low';
+    this.model = new VehicleModel(tuning, sim.env.lampBeams);
+    view.scene.add(this.model.root);
+    this.toolsView = new ToolsView();
+    view.scene.add(this.toolsView.group);
+    this.tool = new ToolController(sim, this.input, LOCAL_VEHICLE);
+    view.camera.fov = cameraTuning.fov;
+    view.camera.near = cameraTuning.near;
+    view.camera.updateProjectionMatrix();
+    this.chase = new ChaseCamera(
+      view.camera,
+      (from, dir, max) => sim.castStatic(from.x, from.y, from.z, dir.x, dir.y, dir.z, max),
+      (x, z) => world.terrain.heightAt(x, z),
+    );
+    this.chase.seat = vehicles[vehicleId].cabin;
+    this.freeCam = new FreeCamera(view.camera, view.renderer.domElement);
+
+    this.hud = new Hud(uiRoot, (action) => this.input.requestDriveAction(action));
+    this.hud.units = settings.units;
+    this.hud.onCameraReset = () => this.chase.recenter();
+    this.hud.onCameraPreset = () => this.chase.cyclePreset();
+    this.toolMenu = new ToolMenu(uiRoot);
+    this.toolMenu.onPick = (id) => this.pickTool(id);
+    this.touch = new TouchControls(uiRoot, this.input);
+    if (isTouchDevice()) this.input.usePointer('touch');
+    this.map = new PaperMap(uiRoot, world);
+    this.map.onClose = () => this.closeMap();
+    this.pause = new PauseMenu(
+      uiRoot,
+      {
+        resume: () => this.closePause(),
+        openMap: () => {
+          this.closePause();
+          this.openMap();
+        },
+        returnToCampsite: () => {
+          this.closePause();
+          void this.restartFromCamp();
+        },
+        changeSettings: (s) => this.changeSettings(s),
+        changeVehicle: (id) => {
+          this.closePause();
+          void this.changeVehicle(id);
+        },
+        mainMenu: () => {
+          this.closePause();
+          void this.toMainMenu();
+        },
+      },
+      settings,
+    );
+    this.pause.setVehicle(vehicleId);
+    this.pause.setEpisode(setup.def);
+    this.history = new HistoryCard(uiRoot);
+    this.result = new ResultCard(uiRoot);
+    this.fade = new Fade(uiRoot);
+
+    this.overlay = this.debug ? new DebugOverlay(uiRoot) : null;
+    this.debugTools = this.debug
+      ? new DebugTools(uiRoot, view.scene, sim, tuning, () => this.vehicle, world.pois, {
+          teleport: (p) => this.teleportToPoi(p),
+          toggleFreeCam: () => this.toggleFreeCam(),
+          bird: (kind) => this.audio.bird(kind),
+        })
+      : null;
+    window.addEventListener('keydown', (e) => {
+      if (this.debug && e.code === 'Backquote' && !e.repeat) this.toggleFreeCam();
+    });
+
+    sim.events.on('tool', ({ event }) => this.onToolEvent(event));
+    sim.events.on('rangeChanged', ({ range }) => {
+      this.hud.toast(range === 'low' ? 'Low range' : 'High range', 1400);
+      this.audio.drivetrainClunk('range');
+    });
+    sim.events.on('engine', ({ id, event }) => {
+      if (id !== LOCAL_VEHICLE) return;
+      if (event === 'outOfFuel') {
+        this.hud.toast(
+          this.vehicle.condition.jerryCans > 0
+            ? 'Out of fuel — pour in a jerry can from the tool menu'
+            : 'Out of fuel',
+          3600,
+        );
+        this.audio.engineEvent('stalled');
+        return;
+      }
+      if (event !== 'starting')
+        this.hud.toast(event === 'stalled' ? 'Engine stalled — flooded' : 'Engine restarted');
+      this.audio.engineEvent(event);
+    });
+    sim.events.on('diffChanged', ({ axle, locked }) => {
+      this.hud.toast(
+        `${axle === 'front' ? 'Front' : 'Rear'} differential ${locked ? 'locked' : 'open'}`,
+        1600,
+      );
+      this.audio.drivetrainClunk(locked ? 'lockOn' : 'lockOff');
+    });
+    sim.events.on('parkBrakeChanged', ({ id, on }) => {
+      if (id !== LOCAL_VEHICLE) return;
+      this.hud.toast(on ? 'Handbrake on' : 'Handbrake off', 1200);
+      this.audio.parkBrake(on);
+    });
+    sim.events.on('lightsChanged', ({ id, mode }) => {
+      if (id !== LOCAL_VEHICLE) return;
+      this.hud.toast(
+        { off: 'Headlights off', low: 'Headlights: low beam', high: 'Headlights: high beam' }[mode],
+        1200,
+      );
+      this.audio.lightSwitch(mode === 'high');
+    });
+    sim.events.on('damage', (e) => {
+      if (e.id !== LOCAL_VEHICLE) return;
+      this.hud.toast(damageMessage(e, this.vehicle.tuning, this.sim.damage), 3200);
+      this.audio.damage(e.part, e.part === 'engine' && e.health <= 0);
+    });
+    sim.events.on('repaired', ({ id, kind }) => {
+      if (id !== LOCAL_VEHICLE) return;
+      const c = this.vehicle.condition;
+      this.hud.toast(
+        {
+          field: 'Field repair done',
+          spare: `Spare fitted (${c.spares} left)`,
+          plug: `Tyre plugged (${c.plugs} plug${c.plugs === 1 ? '' : 's'} left)`,
+          refuel: `20 L in the tank (${c.jerryCans} can${c.jerryCans === 1 ? '' : 's'} left)`,
+          camp: 'Repaired at camp',
+        }[kind],
+        2000,
+      );
+      this.audio.drivetrainClunk('range');
+    });
+    sim.events.on('diffBlocked', () => this.hud.toast('Slow below 5 km/h to engage diff locks'));
+    sim.events.on('precisionChanged', ({ enabled }) =>
+      this.hud.toast(enabled ? 'Precision crawl — hold throttle for walking pace' : 'Precision crawl off'),
+    );
+    sim.events.on('wheelImpact', ({ id, speed }) => id === LOCAL_VEHICLE && this.audio.wheelImpact(speed));
+    sim.events.on('dent', ({ id, impact }) => id === LOCAL_VEHICLE && this.audio.dent(impact));
+    sim.events.on('bodyKnock', ({ id, impulse }) => id === LOCAL_VEHICLE && this.audio.bodyKnock(impulse));
+
+    this.loop = new GameLoop({
+      step: (dt) => this.step(dt),
+      render: (alpha, frameDt) => this.renderFrame(alpha, frameDt),
+    });
+    this.cameraDrag = new CameraDrag(
+      view.renderer.domElement,
+      () => !this.freeCamOn && !this.loop.paused && !this.toolMenu.isOpen,
+      (yaw, pitch, pointerType) => {
+        this.input.usePointer(pointerType);
+        this.chase.orbit(yaw, pitch);
+      },
+      (steps) => {
+        this.input.usePointer('touch');
+        this.chase.zoom(steps);
+      },
+    );
+    // Touching the view brings the touch controls back after a key or gamepad hid them.
+    view.renderer.domElement.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') this.input.usePointer('touch');
+    });
+    installHook(this);
+    // Draw the paper map in the background so the first open is instant.
+    setTimeout(() => void this.map.prepare(), 2500);
+  }
+
+  /**
+   * Load the chosen world and start. `audioContext` is created by the click that chose
+   * it, so sound can start with the engine (browsers only allow that from a gesture).
+   */
+  static async create(
+    appEl: HTMLElement,
+    uiEl: HTMLElement,
+    choice: LaunchChoice,
+    progress: (p: number, label: string) => void,
+    audioContext?: AudioContext,
+  ): Promise<Game> {
+    const save = loadSave();
+    // Phones and tablets start on the lightest graphics preset.
+    const settings = {
+      ...(save?.settings ?? {
+        ...defaultSettings,
+        quality: isTouchDevice() ? touchTuning.defaultQuality : defaultSettings.quality,
+      }),
+      ...(choice.damage ? { damage: choice.damage } : {}),
+    };
+    const def = episodes[choice.episode];
+    const mapDef = maps[def.mapId].def;
+    const episodeProgress = save?.episodes ?? {};
+    const saved = episodeProgress[def.id]?.checkpoint;
+    const checkpoint =
+      choice.resume && saved && mapDef.pois.some((p) => p.id === saved.camp && p.kind === 'campsite')
+        ? saved
+        : startCheckpoint(def, mapDef.spawnCampsite);
+    const env = choice.replay ? environmentFor(choice.replay) : environmentAt(checkpoint.hour, def.weather);
+    // The map's own colours (red clay, greener grass) before any mesh is built.
+    usePalette(mapDef.palette);
+    const rapier = loadRapier();
+    const gen = buildWorldSteps(mapDef);
+    let r = gen.next();
+    while (!r.done) {
+      progress(r.value.progress, r.value.label);
+      await nextFrame();
+      r = gen.next();
+    }
+    const world = r.value;
+    // Wet weather leaves puddles on the tracks (before physics and meshes read the ground).
+    addPuddles(world, env);
+    const exploration = new Exploration(world.pois, {
+      discovered: checkpoint.discovered,
+      lastCampsite: checkpoint.camp,
+    });
+    progress(0.86, 'Starting physics');
+    await nextFrame();
+    const sim = new Simulation(await rapier, world, env);
+    progress(0.92, 'Building meshes');
+    await nextFrame();
+    // Sign lettering uses the web font; wait for it (but never block on a slow network).
+    await Promise.race([document.fonts?.ready, new Promise((res) => setTimeout(res, 1500))]);
+    const view = new GameRenderer(appEl, world, env, qualityPresets[settings.quality], sim.dynamics.values());
+    return new Game(
+      world,
+      sim,
+      view,
+      uiEl,
+      settings,
+      exploration,
+      save?.crawlBests ?? {},
+      choice.vehicle,
+      { def, checkpoint, replay: choice.replay, progress: episodeProgress },
+      audioContext,
+    );
+  }
+
+  get vehicle(): Vehicle {
+    return this.sim.vehicles.get(LOCAL_VEHICLE) as Vehicle;
+  }
+
+  start(): void {
+    this.loop.start();
+    // The engine starts as you arrive; the car drives once it has caught.
+    this.sim.startEngine(LOCAL_VEHICLE);
+    // A run under way can be continued from the main menu, even before the first camp.
+    this.keepCheckpoint();
+  }
+
+  // --- Saving ---------------------------------------------------------------
+
+  /** This episode's progress as saved. */
+  private get episodeProgress(): EpisodeProgress {
+    return this.progress[this.episode.id] ?? { completed: false };
+  }
+
+  /** Remember where this run restarts from (and save). */
+  private keepCheckpoint(): void {
+    this.progress[this.episode.id] = { ...this.episodeProgress, checkpoint: this.checkpoint };
+    this.save();
+  }
+
+  save(): boolean {
+    const ok = writeSave({
+      version: 1,
+      settings: this.settings,
+      vehicle: this.vehicleId,
+      episode: this.episode.id,
+      episodes: this.progress,
+      replay: this.replay,
+      crawlBests: this.crawlRuns.bests,
+    });
+    if (!ok && this.storageOk) {
+      this.storageOk = false;
+      console.warn('Over the Cape: browser storage is unavailable, progress will not be saved.');
+    }
+    return ok;
+  }
+
+  changeSettings(s: Partial<Settings>): void {
+    const prevQuality = this.settings.quality;
+    this.settings = { ...this.settings, ...s };
+    if (this.settings.quality !== prevQuality) this.view.setQuality(qualityPresets[this.settings.quality]);
+    if (this.settings.damage !== this.sim.damage) this.sim.setDamage(this.settings.damage);
+    this.pause.setSettings(this.settings);
+    this.hud.units = this.settings.units;
+    this.audio.setSettings(this.settings);
+    this.onSettings?.(this.settings);
+    this.save();
+  }
+
+  // --- Modes ----------------------------------------------------------------
+
+  toggleFreeCam(): boolean {
+    this.freeCamOn = !this.freeCamOn;
+    this.freeCam.enabled = this.freeCamOn;
+    if (this.freeCamOn) this.freeCam.syncFromCamera();
+    else this.chase.reset();
+    return this.freeCamOn;
+  }
+
+  openMap(): void {
+    if (this.map.isOpen) return;
+    const p = this.vehicle.body.translation();
+    this.map.open(
+      this.exploration.discovered,
+      { x: p.x, z: p.z, heading: this.cameraHeading() },
+      this.input.activeDevice,
+    );
+    this.loop.paused = true;
+    this.audio.mapOpened();
+  }
+
+  closeMap(): void {
+    this.map.close();
+    this.audio.mapClosed();
+    this.loop.paused = this.pause.isOpen;
+  }
+
+  openPause(): void {
+    const camp = this.world.pois.find((p) => p.id === this.exploration.lastCampsite);
+    this.pause.open(camp?.name ?? '', this.input.activeDevice === 'touch');
+    this.loop.paused = true;
+  }
+
+  closePause(): void {
+    this.pause.close();
+    this.loop.paused = this.map.isOpen;
+  }
+
+  /**
+   * Back to the last camp reached, as things were when you got there: the clock, the fuel,
+   * the spares and plugs, and the tyres (pause menu, or after the episode ends early).
+   */
+  async restartFromCamp(): Promise<void> {
+    await this.fade.run(() => {
+      this.tool.cancel();
+      this.result.close();
+      this.history.clear();
+      this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
+      applyCheckpoint(this.vehicle, this.checkpoint);
+      this.exploration.lastCampsite = this.checkpoint.camp;
+      this.run.restart(this.checkpoint);
+      this.updateEnvironment(true);
+      this.crawlRuns.cancel();
+      this.chase.reset();
+      this.view.snap();
+      this.loop.paused = this.pause.isOpen || this.map.isOpen;
+    });
+    this.sim.startEngine(LOCAL_VEHICLE);
+  }
+
+  /** Back to the welcome screen (pause menu): save and reload without starting. */
+  async toMainMenu(): Promise<void> {
+    this.save();
+    await this.fade.run(() => {
+      this.loop.paused = true;
+      location.reload();
+    });
+  }
+
+  /** Change vehicle (pause menu): the run goes back to the last camp in the new one. */
+  async changeVehicle(id: VehicleId): Promise<void> {
+    if (id === this.vehicleId) return;
+    await this.fade.run(() => this.swapVehicle(id));
+    await this.restartFromCamp();
+    this.hud.toast(vehicles[id].tuning.name, 1800);
+  }
+
+  /** Rebuild the simulated vehicle, its model, steering, seat and engine sound. */
+  swapVehicle(id: VehicleId): void {
+    const def = vehicles[id];
+    this.tool.cancel();
+    this.crawlRuns.cancel();
+    this.sim.replaceVehicle(LOCAL_VEHICLE, def.tuning);
+    this.sim.startEngine(LOCAL_VEHICLE);
+    this.view.scene.remove(this.model.root);
+    this.model.dispose();
+    this.model = new VehicleModel(def.tuning, this.sim.env.lampBeams);
+    this.view.scene.add(this.model.root);
+    this.vehicleId = id;
+    this.input.setSteering(def.tuning.steering);
+    this.chase.seat = def.cabin;
+    this.chase.reset();
+    this.pause.setVehicle(id);
+    this.audio.setVehicle(id);
+    this.view.snap();
+    this.save();
+  }
+
+  teleportToPoi(p: PoiDef): void {
+    this.crawlRuns.cancel();
+    const r = p.reset ?? { x: p.x, z: p.z + 12, headingDeg: 0 };
+    this.vehicle.teleport(this.sim.poseAt(r.x, r.z, r.headingDeg, this.vehicle.tuning.wheelRadius));
+    this.chase.reset();
+    this.view.snap();
+  }
+
+  /** Park on a POI's approach and frame it with the free camera (screenshots). */
+  showPoi(id: string): void {
+    const poi = this.world.pois.find((p) => p.id === id);
+    if (!poi) return;
+    const path = poiApproach(poi, this.world.features.tracks, 45);
+    const t = this.world.terrain;
+    const park = path[Math.max(0, path.length - 14)];
+    const next = path[Math.max(0, Math.min(path.length - 1, path.length - 10))];
+    this.vehicle.teleport(
+      this.sim.poseAt(
+        park[0],
+        park[1],
+        headingOf(next[0] - park[0], next[1] - park[1]),
+        this.vehicle.tuning.wheelRadius,
+      ),
+    );
+    const from = path[0];
+    const dx = from[0] - poi.x;
+    const dz = from[1] - poi.z;
+    const d = Math.hypot(dx, dz) || 1;
+    const cx = poi.x + (dx / d) * 34;
+    const cz = poi.z + (dz / d) * 34;
+    const cy = Math.max(t.heightAt(cx, cz), t.heightAt(poi.x, poi.z)) + 13;
+    if (!this.freeCamOn) this.toggleFreeCam();
+    this.freeCam.set(
+      new THREE.Vector3(cx, cy, cz),
+      new THREE.Vector3(poi.x, t.heightAt(poi.x, poi.z) + 1.5, poi.z),
+    );
+    this.view.snap();
+  }
+
+  private toolOptions(): ToolOption[] {
+    const t = this.sim.toolsOf(LOCAL_VEHICLE);
+    const v = this.vehicle;
+    const fix = this.sim.repairOption(LOCAL_VEHICLE);
+    const refuel = this.sim.refuelOption(LOCAL_VEHICLE);
+    const planks: ToolOption =
+      t.planks.carried > 0
+        ? { id: 'planks', label: 'Place planks', icon: 'planks', enabled: true }
+        : t.planks.canRecall(v)
+          ? { id: 'recall', label: 'Recall planks', icon: 'planks', enabled: true }
+          : { id: 'planks', label: 'Planks are out', icon: 'planks', enabled: false };
+    return [
+      t.winch.attached
+        ? { id: 'detach', label: 'Detach winch', icon: 'detach', enabled: true }
+        : { id: 'winch', label: 'Winch', icon: 'winch', enabled: this.anchorInReach },
+      {
+        id: 'frontDiff',
+        label: v.differentials.front ? 'Unlock front diff' : 'Lock front diff',
+        icon: 'feature',
+        enabled: v.differentials.front || Math.abs(v.speed) <= v.tuning.crawling.diffLockMaxKmh / 3.6,
+      },
+      {
+        id: 'refuel',
+        label: refuel ? `Pour in a jerry can (${v.condition.jerryCans})` : 'No jerry cans',
+        icon: 'fuel',
+        enabled: refuel !== null,
+      },
+      {
+        id: 'rearDiff',
+        label: v.differentials.rear ? 'Unlock rear diff' : 'Lock rear diff',
+        icon: 'feature',
+        enabled: v.differentials.rear || Math.abs(v.speed) <= v.tuning.crawling.diffLockMaxKmh / 3.6,
+      },
+      planks,
+      {
+        id: 'precision',
+        label: v.precisionCrawl ? 'Disable precision crawl' : 'Enable precision crawl',
+        icon: 'feature',
+        enabled: true,
+      },
+      {
+        id: 'lights',
+        label: { off: 'Headlights on', low: 'High beam', high: 'Headlights off' }[v.lights],
+        icon: 'headlight',
+        enabled: true,
+      },
+      {
+        id: 'repair',
+        label: fix
+          ? { field: 'Field repair', spare: 'Fit a spare', plug: 'Plug the tyre', refuel: '' }[fix.kind]
+          : 'Nothing to repair',
+        icon: 'wrench',
+        // Needed but not possible here: picking it says why (stop first, spare used...).
+        enabled: fix !== null,
+      },
+    ];
+  }
+
+  private pickTool(id: string): void {
+    if (id === 'winch' && !this.tool.startWinchTarget()) this.hud.toast('No anchor in reach');
+    else if (id === 'planks') this.tool.startPlanks();
+    else if (id === 'recall') this.sim.recallPlanks(LOCAL_VEHICLE);
+    else if (id === 'detach') this.sim.detachWinch(LOCAL_VEHICLE);
+    else if (id === 'repair' && !this.sim.startRepair(LOCAL_VEHICLE))
+      this.hud.toast(this.sim.repairOption(LOCAL_VEHICLE)?.reason ?? 'Nothing to repair');
+    else if (id === 'refuel' && !this.sim.startRepair(LOCAL_VEHICLE, true))
+      this.hud.toast(this.sim.refuelOption(LOCAL_VEHICLE)?.reason ?? 'No jerry cans left');
+    else if (id === 'frontDiff' || id === 'rearDiff' || id === 'precision' || id === 'lights')
+      this.input.requestDriveAction(id);
+  }
+
+  private onToolEvent(e: ToolEvent): void {
+    switch (e.type) {
+      case 'winchAttached':
+        this.hud.toast(`Winch attached to ${e.anchor.label.toLowerCase()}`);
+        break;
+      case 'winchDetached':
+        this.hud.toast('Winch detached');
+        break;
+      case 'noAnchor':
+        this.hud.toast('No anchor in reach');
+        break;
+      case 'planksPlaced':
+        this.hud.toast('Planks down');
+        break;
+      case 'planksPickedUp':
+        this.hud.toast(`Planks back on the rack (${this.sim.toolsOf(LOCAL_VEHICLE).planks.carried}/2)`);
+        break;
+      case 'planksRecalled':
+        this.hud.toast('Planks recalled');
+        break;
+      case 'righted':
+        this.hud.toast('Back on its wheels');
+        break;
+    }
+  }
+
+  // --- The episode ------------------------------------------------------------
+
+  /** Set the light for the clock (every few game minutes, or now). Dusk turns the lamps on. */
+  private updateEnvironment(force = false): void {
+    if (this.replay || (!force && Math.abs(this.run.hour - this.envHour) < 0.05)) return;
+    this.envHour = this.run.hour;
+    const env = environmentAt(this.run.hour, this.episode.weather);
+    this.view.setEnvironment(env);
+    if (env.lampBeams === this.lampBeams) return;
+    this.lampBeams = env.lampBeams;
+    this.view.scene.remove(this.model.root);
+    this.model.dispose();
+    this.model = new VehicleModel(this.vehicle.tuning, env.lampBeams);
+    this.view.scene.add(this.model.root);
+    if (env.lampBeams && this.vehicle.lights === 'off') {
+      this.vehicle.lights = 'low';
+      this.hud.toast('Dusk — headlights on', 2200);
+    }
+  }
+
+  /** How the run went, for the result card. */
+  private runStats(): string[] {
+    const c = this.vehicle.condition;
+    const minutes = Math.round(this.run.elapsed / 60);
+    return [
+      `${minutes} minute${minutes === 1 ? '' : 's'} of driving`,
+      ...(this.run.timed ? [`Arrived ${clockTime(this.run.hour)}`] : []),
+      `${Math.round(c.fuel)} L in the tank, ${c.jerryCans} jerry can${c.jerryCans === 1 ? '' : 's'}`,
+      `${c.spares} spare${c.spares === 1 ? '' : 's'} and ${c.plugs} plug${c.plugs === 1 ? '' : 's'} left`,
+    ];
+  }
+
+  private onComplete(): void {
+    const minutes = this.run.elapsed / 60;
+    const was = this.episodeProgress;
+    this.progress[this.episode.id] = {
+      completed: true,
+      bestMinutes: Math.min(was.bestMinutes ?? Infinity, Math.round(minutes * 10) / 10),
+      checkpoint: null,
+    };
+    this.save();
+    this.audio.discovery();
+    this.loop.paused = true;
+    const next = episodeOrder[episodeOrder.indexOf(this.episode.id) + 1];
+    const buttons: ResultButton[] = [
+      {
+        id: 'menu',
+        label: next ? 'Next episode' : 'Main menu',
+        note: next ? episodes[next].title : 'Episodes',
+      },
+      { id: 'drive', label: 'Keep driving', note: 'Look around the map' },
+    ];
+    this.result.open(
+      'complete',
+      `Episode ${this.episode.number} · Mission complete`,
+      this.episode.title,
+      this.episode.wrapUp,
+      this.runStats(),
+      buttons,
+      (id) => {
+        if (id === 'menu') void this.toMainMenu();
+        else this.loop.paused = this.pause.isOpen || this.map.isOpen;
+      },
+    );
+  }
+
+  private onFailed(): void {
+    const reason = this.run.reason ?? 'time';
+    this.loop.paused = true;
+    this.audio.engineEvent('stalled');
+    const camp = this.world.pois.find((q) => q.id === this.checkpoint.camp);
+    this.result.open(
+      'failed',
+      `Episode ${this.episode.number} · ${this.episode.title}`,
+      'Episode over',
+      [this.episode.failures[reason]],
+      [`Last camp: ${camp?.name ?? 'the start'}, at ${clockTime(this.checkpoint.hour)}`],
+      [
+        { id: 'restart', label: 'Restart from camp', note: camp?.name },
+        { id: 'menu', label: 'Main menu', note: 'Episodes' },
+      ],
+      (id) => {
+        if (id === 'restart') void this.restartFromCamp();
+        else void this.toMainMenu();
+      },
+    );
+  }
+
+  cameraHeading(): number {
+    this.view.camera.getWorldDirection(this.camDir);
+    return headingOf(this.camDir.x, this.camDir.z);
+  }
+
+  // --- Loop -----------------------------------------------------------------
+
+  private step(dt: number): void {
+    const inp = this.input.vehicleInput(dt);
+    if (this.scriptedInput) Object.assign(inp, this.scriptedInput);
+    if (this.autopilot) Object.assign(inp, this.autopilot.input(this.vehicle, dt));
+    // Park on the handbrake while placing planks, choosing an anchor or in the tool menu.
+    if (this.tool.mode !== 'drive' || this.toolMenu.isOpen) {
+      inp.throttle = 0;
+      inp.brake = 0;
+      inp.steer = 0;
+      inp.handbrake = this.tool.mode !== 'drive';
+      inp.winchAttach = false;
+      inp.interact = false;
+      inp.toggleFrontDiff = false;
+      inp.toggleRearDiff = false;
+      inp.togglePrecision = false;
+    }
+    this.inputs.set(LOCAL_VEHICLE, inp);
+    this.sim.step(this.inputs, dt);
+    this.run.tick(dt);
+    const p = this.vehicle.body.translation();
+    // A campsite puts the engine and suspension right and patches punctures.
+    if (
+      this.sim.damage !== 'off' &&
+      this.world.pois.some((q) => q.kind === 'campsite' && Math.hypot(q.x - p.x, q.z - p.z) < q.radius)
+    )
+      this.sim.repairAtCamp(LOCAL_VEHICLE);
+    const found = this.exploration.check(p.x, p.z);
+    for (const poi of found.discovered) {
+      this.hud.discovered(poi.name, poi.kind);
+      const note = this.episode.notes[poi.id];
+      if (note) this.history.show(note.title, note.text);
+    }
+    if (found.discovered.length > 0) this.audio.discovery();
+    if (found.campsite && found.campsite !== this.episode.goal && this.run.status === 'driving') {
+      const camp = this.world.pois.find((q) => q.id === found.campsite);
+      this.checkpoint = checkpointAt(found.campsite, this.run, this.vehicle, this.exploration.discovered);
+      this.keepCheckpoint();
+      if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
+    } else if (found.discovered.length > 0) this.save();
+    const goal = this.world.pois.find((q) => q.id === this.episode.goal);
+    const status = goal ? this.run.check(this.vehicle, this.sim.damage, goal) : null;
+    if (status === 'complete') this.onComplete();
+    else if (status === 'failed') this.onFailed();
+    const v = this.vehicle;
+    const run = this.crawlRuns.update({
+      x: p.x,
+      z: p.z,
+      tiltDeg: v.tiltDeg(),
+      knock: v.bodyContact.knock > 0,
+      winchAttached: this.sim.toolsOf(LOCAL_VEHICLE).winch.attached,
+      dt,
+    });
+    if (run) this.onCrawlRun(run);
+    if (this.gateCount.total) {
+      const f = v.forward();
+      const flat = Math.hypot(f.x, f.z) || 1;
+      const car = { fx: f.x / flat, fz: f.z / flat, ...footprintSize(v.tuning) };
+      for (const e of this.gateCount.update(p.x, p.z, car)) this.onGate(e);
+    }
+  }
+
+  private onGate(e: GateEvent): void {
+    if (e.type === 'passed') this.audio.gate();
+    else if (e.type === 'flag') {
+      this.audio.flag();
+      this.hud.toast(`Touched gate ${e.n}'s ${e.side === 'left' ? 'red' : 'blue'} flag`, 1800);
+    } else if (e.type === 'missed')
+      this.hud.toast(
+        e.gates.length === 1 ? `Missed gate ${e.gates[0]}` : `Missed gates ${e.gates[0]}–${e.gates.at(-1)}`,
+        2400,
+      );
+    else {
+      this.hud.runResult(
+        'Gates',
+        `${e.passed} of ${this.gateCount.total} gates`,
+        gateLapDetail(e.missed, e.flags),
+      );
+      this.audio.discovery();
+    }
+  }
+
+  private onCrawlRun(e: CrawlRunEvent): void {
+    if (e.type === 'started') {
+      this.hud.toast(`${e.run.trail.name}: scored run started`, 1600);
+      return;
+    }
+    const r = e.result;
+    const parts = [
+      r.reverses ? `${r.reverses} back-up${r.reverses === 1 ? '' : 's'}` : '',
+      r.knocks ? `${r.knocks} knock${r.knocks === 1 ? '' : 's'}` : '',
+      r.winches ? `winch ×${r.winches}` : '',
+    ].filter(Boolean);
+    if (e.type === 'failed') {
+      this.hud.toast(`${r.name}: run over — ${r.dnf === 'rolled' ? 'rolled' : 'left the line'}`, 2600);
+      return;
+    }
+    const best = this.crawlRuns.bests[r.trailId];
+    const points = r.points === 0 ? 'clean run' : `${r.points} penalty point${r.points === 1 ? '' : 's'}`;
+    this.hud.runResult(
+      e.best ? 'New best' : 'Run complete',
+      `${r.name} · ${clock(r.seconds)}`,
+      `${points}${parts.length ? ` (${parts.join(', ')})` : ''}${e.best ? '' : ` · best ${clock(best.seconds)}, ${best.points} pts`}`,
+    );
+    this.audio.discovery();
+    this.save();
+  }
+
+  /** Menus, map and tool menu input; runs every frame. */
+  private handleUi(): void {
+    const inp = this.input;
+    if (this.result.isOpen) {
+      if (inp.pressCount('menuLeft') + inp.pressCount('menuUp') > 0) this.result.navigate('prev');
+      if (inp.pressCount('menuRight') + inp.pressCount('menuDown') > 0) this.result.navigate('next');
+      if (inp.pressed('confirm')) this.result.navigate('confirm');
+      return;
+    }
+    if (this.map.isOpen) {
+      if (inp.pressed('map') || inp.pressed('back') || inp.pressed('pause')) this.closeMap();
+      return;
+    }
+    if (this.pause.isOpen) {
+      const backs = inp.pressCount('back');
+      if (inp.pressed('pause') && backs === 0) this.closePause();
+      else if (backs > 0) {
+        for (let k = 0; k < backs; k++)
+          if (this.pause.navigate('back')) {
+            this.closePause();
+            break;
+          }
+      } else {
+        for (let k = inp.pressCount('menuUp'); k > 0; k--) this.pause.navigate('up');
+        for (let k = inp.pressCount('menuDown'); k > 0; k--) this.pause.navigate('down');
+        for (let k = inp.pressCount('menuLeft'); k > 0; k--) this.pause.navigate('left');
+        for (let k = inp.pressCount('menuRight'); k > 0; k--) this.pause.navigate('right');
+        if (inp.pressed('confirm')) this.pause.navigate('confirm');
+      }
+      return;
+    }
+    if (this.toolMenu.isOpen) {
+      if (!inp.held('toolMenu') && !this.toolMenu.sticky) this.toolMenu.close(true);
+      else {
+        const s = inp.stick();
+        const kx = (inp.held('menuRight') ? 1 : 0) - (inp.held('menuLeft') ? 1 : 0);
+        const ky = (inp.held('menuDown') ? 1 : 0) - (inp.held('menuUp') ? 1 : 0);
+        this.toolMenu.pointAt(s.x + kx, s.y + ky, 0.4);
+      }
+      return;
+    }
+    if (this.tool.mode !== 'drive') return;
+    if (inp.pressed('pause')) this.openPause();
+    else if (inp.pressed('map')) this.openMap();
+    else if (inp.pressed('toolMenu')) this.toolMenu.open(this.toolOptions(), inp.activeDevice === 'touch');
+  }
+
+  private renderFrame(alpha: number, frameDt: number): void {
+    this.input.poll();
+    this.clock += frameDt;
+    this.updateEnvironment();
+    const cameraWasEnabled = !this.freeCamOn && !this.loop.paused && !this.toolMenu.isOpen;
+    const usedByTool = this.tool.update(frameDt);
+    const cameraChord =
+      this.input.pressed('cameraReset') &&
+      this.input.held('toolMenu') &&
+      !this.loop.paused &&
+      !this.freeCamOn &&
+      this.tool.mode === 'drive';
+    if (cameraChord) {
+      this.toolMenu.close(false);
+      this.chase.cyclePreset();
+    } else if (!usedByTool) this.handleUi();
+    this.input.vehicleEnabled =
+      !this.freeCamOn && !this.toolMenu.isOpen && !this.loop.paused && this.tool.mode === 'drive';
+    const cameraEnabled = !this.freeCamOn && !this.loop.paused && !this.toolMenu.isOpen;
+    this.cameraDrag.update();
+    // Always drain the wheel, including while menus or the debug camera use it.
+    const zoom = this.input.takeZoom(frameDt, this.tool.mode === 'drive');
+    if (cameraEnabled && cameraWasEnabled) {
+      const orbit = this.input.cameraOrbit(frameDt);
+      this.chase.orbit(orbit.yaw, orbit.pitch);
+      this.chase.zoom(zoom);
+      if (this.input.pressed('cameraReset') && !cameraChord) this.chase.recenter();
+      // Counted, not just seen: several quick presses in one slow frame each take a step.
+      if (this.tool.mode === 'drive')
+        for (let k = this.input.pressCount('cameraPreset'); k > 0; k--) this.chase.cyclePreset();
+      const gaugePresses = this.input.pressCount('gauges');
+      if (gaugePresses > 0) {
+        const modes = ['auto', 'on', 'off'] as const;
+        this.hud.gaugeMode = modes[(modes.indexOf(this.hud.gaugeMode) + gaugePresses) % modes.length];
+        this.hud.toast(
+          { auto: 'Crawl gauges: in low range', on: 'Crawl gauges: always', off: 'Crawl gauges: off' }[
+            this.hud.gaugeMode
+          ],
+          1400,
+        );
+      }
+    }
+    this.hud.cockpitView = this.chase.preset === 'cockpit' && !this.freeCamOn;
+    this.model.setCockpitView(this.hud.cockpitView);
+    this.hud.cameraHelp(
+      this.input.activeDevice,
+      cameraEnabled,
+      this.tool.mode === 'drive',
+      this.chase.preset,
+    );
+    const v = this.vehicle;
+    const tools = this.sim.toolsOf(LOCAL_VEHICLE);
+    this.anchorCheck -= frameDt;
+    if (this.anchorCheck <= 0) {
+      this.anchorCheck = 0.4;
+      this.anchorInReach = this.sim.findAnchors(LOCAL_VEHICLE).length > 0;
+    }
+    this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
+    this.model.applyCondition(v.condition);
+    this.model.setPlanksOnRack(tools.planks.carried);
+    this.toolsView.update(v, tools, this.sim.probeGround, this.clock);
+    this.view.particles.update(v, this.loop.paused ? 0 : frameDt);
+    if (this.freeCamOn) this.freeCam.update(frameDt);
+    else if (!this.loop.paused) {
+      this.chase.toolView = this.tool.mode !== 'drive';
+      const p = this.model.root.position;
+      this.tmpPos.copy(p);
+      const f = v.forward();
+      this.tmpFwd.set(f.x, f.y, f.z);
+      this.chase.update(frameDt, {
+        position: this.tmpPos,
+        forward: this.tmpFwd,
+        speed: v.speed,
+        slopeDeg: this.world.terrain.slopeDegAt(p.x, p.z),
+        rotation: this.model.root.quaternion,
+      });
+    }
+    this.view.focus.copy(this.model.root.position);
+    this.view.shelter.copy(this.model.root.matrixWorld);
+    const t0 = performance.now();
+    this.view.render();
+    this.sceneMs += (performance.now() - t0 - this.sceneMs) * 0.1;
+    this.audio.update(
+      buildAudioFrame(
+        v,
+        tools.winch,
+        this.world,
+        this.loop.paused,
+        frameDt,
+        this.hud.cockpitView,
+        this.sim.env.rain,
+        this.replay ? this.replay.time === 'night' : this.run.hour >= 19 || this.run.hour < 6,
+      ),
+    );
+    this.touch.update({
+      covered: this.map.isOpen || this.pause.isOpen || this.toolMenu.isOpen || this.freeCamOn,
+      mode: this.tool.mode,
+      lowRange: v.drivetrain.range === 'low',
+      parkBrake: v.parkBrake,
+      frontLocked: v.differentials.front,
+      rearLocked: v.differentials.rear,
+      precision: v.precisionCrawl,
+      lightsOn: v.lights !== 'off',
+      winchAttached: tools.winch.attached,
+      jackAvailable: tools.jack.state === 'available',
+    });
+    this.hud.el.classList.toggle('tool-menu-open', this.toolMenu.isOpen);
+    this.hud.update(
+      buildHudState({
+        vehicle: v,
+        tools,
+        device: this.input.activeDevice,
+        mode: this.tool.mode,
+        cameraHeading: this.cameraHeading(),
+        discovered: this.exploration.discovered,
+        pois: this.world.pois,
+        crawlCourses: this.world.map.crawlCourses,
+        crawlTrails: this.world.map.crawlTrails,
+        tracks: this.world.features.tracks,
+        anchorInReach: this.anchorInReach,
+        run: this.crawlRuns.run,
+        gates: this.gateCount.total ? this.gateCount : null,
+        repair: this.sim.repairOption(LOCAL_VEHICLE),
+        refuel: this.sim.refuelOption(LOCAL_VEHICLE),
+        episode: {
+          title: `Episode ${this.episode.number} · ${this.episode.title}`,
+          mission: this.episode.mission,
+          clock: this.run.timed ? clockTime(this.run.hour) : '',
+          deadline: this.run.timed ? (this.episode.deadline?.label ?? '') : '',
+          urgent: this.run.hoursLeft() < 0.5,
+        },
+        supplies: true,
+      }),
+    );
+    if (this.overlay) {
+      const w = tools.winch;
+      const fl = v.condition.flood;
+      this.overlay.setLines([
+        ...(this.debugTools?.update(v) ?? []),
+        `winch ${w.anchor ? `${w.anchor.label} ${w.length.toFixed(1)} m ${(w.tension / 1000).toFixed(1)} kN` : 'off'}  planks ${tools.planks.carried}/2  jack ${tools.jack.state}`,
+        `flood ${fl.timer.toFixed(1)} s${fl.stalled ? ' STALLED' : ''}  dirt ${v.condition.dirt.sides.toFixed(2)}  dents ${v.condition.dents.length}  mode ${this.tool.mode}`,
+        `cpu ${(this.loop.timings.sim + this.loop.timings.render).toFixed(1)} ms: sim ${this.loop.timings.sim.toFixed(1)} ms (${this.loop.timings.steps.toFixed(1)} steps)  frame ${this.loop.timings.render.toFixed(1)} ms (three.js ${this.sceneMs.toFixed(1)} ms)`,
+        audioLine(this.audio),
+        `particles: ${this.view.particles.counts()}`,
+      ]);
+      this.overlay.frame(frameDt, this.view.renderer);
+    }
+    this.input.consumeUi();
+    this.frameCount++;
+    if (this.frameCount === 3 && window.__game) window.__game.ready = true;
+  }
+}
+
+function audioLine(audio: AudioSystem): string {
+  const a = audio.info();
+  if (a.state !== 'running') return `audio ${a.state}${a.state === 'off' ? ' (click or press a key)' : ''}`;
+  const tyres = Object.entries(a.tyres)
+    .map(([k, w]) => `${k} ${w.toFixed(2)}`)
+    .join(' ');
+  return `audio ${(20 * Math.log10(a.level + 1e-6)).toFixed(0)} dB  engine ${a.engineHz.toFixed(0)} Hz (${a.engineVoice})  scrape ${a.scrape.toFixed(2)}  wind ${a.wind.toFixed(2)}  water ${a.water.toFixed(2)}  ${tyres}${a.winchHz ? `  winch ${a.winchHz.toFixed(0)} Hz` : ''}`;
+}
