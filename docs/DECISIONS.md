@@ -414,7 +414,14 @@ Their reasoning is in 4WD Simulator's DECISIONS.md under v0.19. The test was mov
 - The night test ends with a night replay, rather than restarting and setting the clock past the deadline (which ended the episode again).
 - The storage test waits for the game to move on, rather than for 3 s of real time.
 
-## v0.03: cuttings laid back
+## v0.03: the backdrop hills on a bigger map
+
+- **What the owner saw.** A few hundred metres up the road from Daintree Village, a flat dark green wall filled the sky facing east, and a huge dark green slope hung over the track facing west. The ground there is flat river valley for 700 m, so it wasn't a hill.
+- **Why.** The backdrop is three rings of low hills drawn outside the map so the horizon is never empty (`createBackdrop` in `render/sky.ts`). It came from 4WD Simulator, whose maps are 1536 m across or smaller, and its nearest ring starts 1500 m from the middle of the map, outside those maps' corners (1086 m away). The CREB map is 3072 m across, so its corners are 2172 m out and the nearest ring, 300 m high on average, ran through all four corners of the map. Daintree Village and the Lions Den both sit on it.
+- **Fix.** The rings grow with the map: on a map bigger than 1536 m the whole backdrop is scaled by the map's size over 1536, so on the CREB the nearest ring starts at 3000 m, outside the corners, and looks the same size from inside the map as it does in 4WD Simulator. Maps up to 1536 m keep it as it was. A unit test checks that every map's corners are at least 300 m inside the nearest ring.
+- **Draw distance.** At 3 km the rings are beyond the camera's reach on Low (1.8 km) and Medium (2.8 km) from the middle of the map, so there the map's own border hills close the horizon; near the map's edges the rings show on every preset.
+
+## v0.04: cuttings laid back
 
 **What was reported.** The owner sent a screenshot of the Land Rover reversing up the concrete descent: the rear of the car was buried in a clay bank, and it drove through it as if it were flat. On a map screenshot they marked where it happened: the bend about 40 m down from the lookout. A browser replay of reversing up the track from below reproduced it: the Land Rover stuck on the wall of the cutting at (15, −496), tilted 40°, with the bank showing through the body.
 

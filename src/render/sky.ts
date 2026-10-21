@@ -112,11 +112,15 @@ export class Sky {
   }
 }
 
+/** The map size the backdrop's rings were laid out for (4WD Simulator's 1.5 km maps). */
+const BACKDROP_MAP_SIZE = 1536;
+
 /**
  * Distant ridge silhouettes outside the map so the horizon is never empty.
- * Three rings of low-poly hills that the haze turns blue.
+ * Three rings of low-poly hills that the haze turns blue. The rings are laid out for a
+ * 1536 m map and grow with a bigger one, so they stay outside its corners.
  */
-export function createBackdrop(seed: number): THREE.Mesh {
+export function createBackdrop(seed: number, mapSize: number): THREE.Mesh {
   const noise = new Noise2D(seed + 77);
   const positions: number[] = [];
   const colors: number[] = [];
@@ -160,6 +164,7 @@ export function createBackdrop(seed: number): THREE.Mesh {
     new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide }),
   );
   const mesh = new THREE.Mesh(geo, mat);
+  mesh.scale.setScalar(Math.max(1, mapSize / BACKDROP_MAP_SIZE));
   mesh.frustumCulled = false;
   return mesh;
 }
