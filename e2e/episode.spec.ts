@@ -23,7 +23,7 @@ test('camps save the run; the clock, an empty tank and a flat with no spare end 
   await waitReady(page);
   expect(await episode(page)).toMatchObject({ status: 'driving', camp: 'daintree-village' });
   // The first history note shows at the start.
-  await expect.poll(() => page.evaluate(() => window.__game!.history())).toBe('Daintree Village');
+  await expect.poll(() => page.evaluate(() => window.__game!.historyShown())).toContain('Daintree Village');
 
   // Reaching Roaring Meg camp saves the run there.
   await page.evaluate(() => window.__game!.teleportPoi('roaring-meg-camp'));

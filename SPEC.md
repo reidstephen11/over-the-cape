@@ -62,7 +62,7 @@ Being swept away (Episode 4 onwards) will apply on Mild and Realistic.
 
 - Welcome screen: episode list (later episodes listed as coming), Continue / Start again, vehicle, difficulty, and for finished episodes the conditions.
 - Loading screen: the briefing, then Drive.
-- HUD: mission panel top left (episode, mission, clock and deadline); fuel gauge and supplies above the status strip; history notes top right; result card centred.
+- HUD: mission panel top left (episode, mission, clock and deadline); fuel gauge and supplies above the status strip; history notes top right; result card centred. On a touch screen the fuel and the mission sit under the status strip (sideways, the clock only), and a history note stops the game and shows centred until tapped.
 - Pause menu: Resume, Map, Restart from last camp, Vehicle (restarts from the camp), Settings, Controls, Main menu.
 - Tool menu: Winch / Detach winch, the diff locks, planks, precision crawl, headlights, the repair needed, Pour in a jerry can.
 
@@ -70,4 +70,4 @@ Being swept away (Episode 4 onwards) will apply on Mild and Realistic.
 
 - Unit tests (Vitest): the episode rules, fuel burn, tyre faults, saves, the moving sun, and the CREB map (connected legs at matching heights, creeks below their banks, camps level) with autopilot drives of its hard sections in the wet in both the short-wheelbase 4WD and the Land Rover. 4WD Simulator's maps are kept as test worlds for its physics tests.
 - `scripts/creb-drive.ts` drives the whole route and reports fuel used and arrival time, for tuning the load and the clock.
-- Browser tests (Playwright): the welcome and briefing flow, camps and restarts, each way of ending, finishing and replaying, plus driving, tools, interface, audio, night, vehicles, camera, damage and touch.
+- Browser tests (Playwright): the welcome and briefing flow, camps and restarts, each way of ending, finishing and replaying, plus driving, tools, interface, audio, night, vehicles, camera, damage, touch and the phone layout. They run on a software renderer that takes seconds per frame, so they run a fixed 24 physics steps per frame.

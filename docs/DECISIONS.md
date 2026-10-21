@@ -383,3 +383,33 @@ The requirements came from a question-and-answer session with the owner; SPEC.md
 **Vegetation.** Rainforest is drawn with three new species in the same style as the eucalypts: canopy trees on buttress roots with broad-leaf cards, fan palms (round pleated leaves on stalks) and tree ferns (arching fronds). The leaf texture became four quarters. Rainforest is about 1.25 times as dense as the eucalypt forest; on Medium the start view draws about 750 000 triangles.
 
 **Welcome screen.** Episodes 2–7 are listed by name and route as coming later, as a compact list, so Drive stays near the top of the screen. The difficulty is chosen there too, because it decides how an episode can end.
+
+## v0.02: the phone layout from 4WD Simulator v0.19, history notes on phones, and test fixes
+
+**From 4WD Simulator v0.19.** The owner asked for 4WD Simulator's latest phone fixes ([v0.19](https://github.com/reidstephen11/4wd-simulator/pull/23)). They came across as they were:
+
+- The 4WD button that tucks LOW, CRAWL and the diff locks away.
+- The driver's-seat panels keeping their touch places.
+- Prompts above the right-hand buttons when the phone is upright.
+- The wider view on narrow screens.
+- The compass kept clear of the full-screen button.
+- The phone layout test.
+
+Their reasoning is in 4WD Simulator's DECISIONS.md under v0.19. The test was moved from Crawler Creek to the CREB.
+
+**Fitting Over the Cape's panels.** v0.01 placed the fuel and the mission panel under the status strip, and v0.19's layout put the crawl gauges in the same rows on the right. Upright, the gauges (shown in low range and in the driver's seat) covered both panels. Now:
+
+- **Upright:** the gauges sit top right under the fuel. While they show, the mission panel narrows beside them, as v0.19 narrows Crawler Creek's course hint.
+- **Sideways:** the joystick sits close below the left-hand panels and the prompts beside them, so the mission panel shows only the clock and deadline (the mission is in the briefing). On a 740×360 screen the full panel reached the joystick.
+- **Both ways:** the episode's name moved off the panel; the pause menu shows it.
+- The fuel panel moved 4 px down so it no longer touches the status strip.
+
+**History notes on phones.** The owner chose to stop the game while a note is read. There is no room for a note beside the buttons: upright it covered HAND, TOOLS and the prompts, and sideways the pedals. On a touch screen the note now shows in the middle of a dimmed screen, with the buttons hidden and the game paused, until it's tapped. It doesn't hide itself after a while, as it does with a keyboard or a pad. With those, the note still shows top right while you drive. The first note shows as the episode starts.
+
+**Changing vehicle.** In v0.01, changing vehicle from the pause menu away from camp left the new vehicle frozen at the camp: the engine revved and the wheels spun, but it never moved. The swap and the return to camp both happen while the game is paused, before a physics step. Rapier 0.21 freezes a new body if the old one is removed before a step has run, or if either is moved before one has. The swap now steps the world once itself, removes the old body, and then anything may move the new one. A unit test drives off after a swap away from camp and a return there.
+
+**Browser tests on the software renderer.** The v0.01 browser tests mostly failed on time. On the 3 km map the software renderer (SwiftShader) takes about 2 s per frame, so the game ran at about a twentieth of real time. Rendering the scene measured 25 ms on the main thread, and halving the triangles only made it 1.8 times faster; the time goes into the software GPU. The game loop now has a test-only `fixedSteps` setting: the tests run 24 physics steps (0.4 s) every frame, whatever the frame took. The game itself still keeps to the clock. Other test fixes:
+
+- History notes are checked from the list of those shown, because a note can hide itself before a slow test looks.
+- The night test ends with a night replay, rather than restarting and setting the clock past the deadline (which ended the episode again).
+- The storage test waits for the game to move on, rather than for 3 s of real time.

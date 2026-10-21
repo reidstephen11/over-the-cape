@@ -117,8 +117,6 @@ export class Simulation {
   readonly ground: GroundQuery;
   readonly dynamics = new Map<string, DynamicObject>();
   readonly tools = new Map<string, VehicleTools>();
-  /** Bodies of swapped-out vehicles, disabled until the next step removes them. */
-  private readonly retired: RAPIER.RigidBody[] = [];
   time = 0;
   /** How harsh mechanical damage is (the settings choice; off unless the game sets it). */
   damage: DamageMode = 'off';
@@ -307,10 +305,13 @@ export class Simulation {
       headingDeg: headingOf(f.x, f.z),
     };
     old.retire();
-    this.retired.push(old.body);
     this.vehicles.delete(id);
     this.tools.delete(id);
     const v = this.addVehicle(id, pose, tuning);
+    // Rapier 0.21 leaves the new vehicle frozen in place if the old body is removed before
+    // a step has run, or if either is moved (to a camp, say) before one has. Step once now.
+    this.physics.step();
+    this.physics.world.removeRigidBody(old.body);
     // The driver keeps the lights as they had them.
     v.lights = old.lights;
     return v;
@@ -381,7 +382,6 @@ export class Simulation {
       tools.jack.step(v, input.jack, dt, this.R, (x, z) => this.world.terrain.heightAt(x, z));
     }
     this.physics.step();
-    for (const body of this.retired.splice(0)) this.physics.world.removeRigidBody(body);
     for (const [id, v] of this.vehicles) {
       v.postStep(dt);
       for (let i = 0; i < v.wheelImpacts.length; i++)

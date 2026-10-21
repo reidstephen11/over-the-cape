@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitEngine, waitReady, waitSim } from './helpers';
+import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
 test('night: dusk turns the headlights on, N cycles them, and they light the ground ahead', async ({
   page,
@@ -14,12 +14,23 @@ test('night: dusk turns the headlights on, N cycles them, and they light the gro
   await page.evaluate(() => window.__game!.setHour(17.7));
   await expect.poll(async () => (await page.evaluate(() => window.__game!.vehicle())).lights).toBe('low');
   await expect(page.locator('.status-lights')).toHaveClass(/shown/);
-  // Past the deadline the episode ends; carry on driving in the dark from the result card.
+  // Past the deadline the episode ends.
   await page.evaluate(() => window.__game!.setHour(19.6));
   await expect.poll(() => page.evaluate(() => window.__game!.result().open)).toBe(true);
-  await page.evaluate(() => window.__game!.pickResult('restart'));
-  await waitEngine(page);
-  await page.evaluate(() => window.__game!.setHour(19.6));
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => window.__game!.pickResult('menu'))]);
+
+  // Driving at night is a replay of a finished episode: the clock stands at night.
+  await page.evaluate(() => {
+    const key = 'overthecape.save.v1';
+    const save = JSON.parse(localStorage.getItem(key)!);
+    save.episodes = { creb: { completed: true } };
+    save.replay = { time: 'night', weather: 'clear' };
+    localStorage.setItem(key, JSON.stringify(save));
+  });
+  await page.reload();
+  await waitReady(page);
+  expect(await page.evaluate(() => window.__game!.episode())).toMatchObject({ replay: { time: 'night' } });
+  expect((await page.evaluate(() => window.__game!.vehicle())).lights).toBe('low');
   await waitSim(page, 0.5);
 
   // The ground in front of the car, above it on the screen in the chase view.

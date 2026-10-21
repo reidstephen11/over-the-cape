@@ -226,7 +226,9 @@ export class Game {
     );
     this.pause.setVehicle(vehicleId);
     this.pause.setEpisode(setup.def);
-    this.history = new HistoryCard(uiRoot);
+    this.history = new HistoryCard(uiRoot, () => {
+      this.loop.paused = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
+    });
     this.result = new ResultCard(uiRoot);
     this.fade = new Fade(uiRoot);
 
@@ -545,7 +547,7 @@ export class Game {
     this.sim.startEngine(LOCAL_VEHICLE);
     this.view.scene.remove(this.model.root);
     this.model.dispose();
-    this.model = new VehicleModel(def.tuning, this.sim.env.lampBeams);
+    this.model = new VehicleModel(def.tuning, this.lampBeams);
     this.view.scene.add(this.model.root);
     this.vehicleId = id;
     this.input.setSteering(def.tuning.steering);
@@ -695,6 +697,16 @@ export class Game {
 
   // --- The episode ------------------------------------------------------------
 
+  /**
+   * A place's history note. On a touch screen there is no room for it beside the buttons,
+   * so the game stops while it's read; tapping it carries on.
+   */
+  showHistory(note: { title: string; text: string }): void {
+    const reading = this.input.activeDevice === 'touch';
+    this.history.show(note.title, note.text, reading);
+    if (reading) this.loop.paused = true;
+  }
+
   /** Set the light for the clock (every few game minutes, or now). Dusk turns the lamps on. */
   private updateEnvironment(force = false): void {
     if (this.replay || (!force && Math.abs(this.run.hour - this.envHour) < 0.05)) return;
@@ -818,7 +830,7 @@ export class Game {
     for (const poi of found.discovered) {
       this.hud.discovered(poi.name, poi.kind);
       const note = this.episode.notes[poi.id];
-      if (note) this.history.show(note.title, note.text);
+      if (note) this.showHistory(note);
     }
     if (found.discovered.length > 0) this.audio.discovery();
     if (found.campsite && found.campsite !== this.episode.goal && this.run.status === 'driving') {
@@ -902,6 +914,10 @@ export class Game {
       if (inp.pressCount('menuLeft') + inp.pressCount('menuUp') > 0) this.result.navigate('prev');
       if (inp.pressCount('menuRight') + inp.pressCount('menuDown') > 0) this.result.navigate('next');
       if (inp.pressed('confirm')) this.result.navigate('confirm');
+      return;
+    }
+    if (this.history.reading) {
+      if (inp.pressed('confirm') || inp.pressed('back') || inp.pressed('pause')) this.history.next();
       return;
     }
     if (this.map.isOpen) {
@@ -1037,7 +1053,12 @@ export class Game {
       ),
     );
     this.touch.update({
-      covered: this.map.isOpen || this.pause.isOpen || this.toolMenu.isOpen || this.freeCamOn,
+      covered:
+        this.map.isOpen ||
+        this.pause.isOpen ||
+        this.toolMenu.isOpen ||
+        this.history.reading ||
+        this.freeCamOn,
       mode: this.tool.mode,
       lowRange: v.drivetrain.range === 'low',
       parkBrake: v.parkBrake,

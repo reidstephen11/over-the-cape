@@ -71,6 +71,8 @@ export interface GameHook {
   ui(): { map: boolean; pause: boolean; toolMenu: boolean; paused: boolean; mode: string };
   /** Seconds of simulated time so far. */
   simTime(): number;
+  /** Run this many physics steps every frame, however long frames take (0 = real time). */
+  setStepsPerFrame(steps: number): void;
   /**
    * Start the autopilot on the track leading to a POI, `back` metres out (teleports
    * there first). Pass null to stop it.
@@ -112,6 +114,12 @@ export interface GameHook {
   pickResult(id: string): void;
   /** The history card's title, if one is showing. */
   history(): string | null;
+  /** Is a history note up with the game stopped to read it (touch screens)? */
+  historyReading(): boolean;
+  /** Titles of the history cards shown so far, oldest first. */
+  historyShown(): string[];
+  /** Show the history note for a place as if just reached (closing any card that is up). */
+  showNote(poi: string): void;
   /** Set the park brake directly (the key toggles it). */
   setParkBrake(on: boolean): void;
   /** Set the headlights directly (the key cycles them). */
@@ -286,6 +294,9 @@ export function installHook(game: Game): void {
       mode: g.tool.mode,
     }),
     simTime: () => g.sim.time,
+    setStepsPerFrame: (steps) => {
+      g.loop.fixedSteps = steps;
+    },
     audio: () => g.audio.info(),
     bird: (kind) => g.audio.bird(kind),
     setVehicle: (id) => g.swapVehicle(id),
@@ -320,6 +331,13 @@ export function installHook(game: Game): void {
     }),
     pickResult: (id) => g.result.el.querySelector<HTMLButtonElement>(`button[data-result="${id}"]`)?.click(),
     history: () => (g.history.isShown ? (g.history.el.querySelector('strong')?.textContent ?? '') : null),
+    historyShown: () => [...g.history.shown],
+    historyReading: () => g.history.reading,
+    showNote: (poi) => {
+      const note = g.episode.notes[poi];
+      g.history.clear();
+      if (note) g.showHistory(note);
+    },
     setParkBrake: (on) => {
       g.vehicle.parkBrake = on;
     },
