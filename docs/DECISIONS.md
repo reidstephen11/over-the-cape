@@ -413,3 +413,21 @@ Their reasoning is in 4WD Simulator's DECISIONS.md under v0.19. The test was mov
 - History notes are checked from the list of those shown, because a note can hide itself before a slow test looks.
 - The night test ends with a night replay, rather than restarting and setting the clock past the deadline (which ended the episode again).
 - The storage test waits for the game to move on, rather than for 3 s of real time.
+
+## v0.03: cuttings laid back
+
+**What was reported.** The owner sent a screenshot of the Land Rover reversing up the concrete descent: the rear of the car was buried in a clay bank, and it drove through it as if it were flat. On a map screenshot they marked where it happened: the bend about 40 m down from the lookout. A browser replay of reversing up the track from below reproduced it: the Land Rover stuck on the wall of the cutting at (15, −496), tilted 40°, with the bank showing through the body.
+
+**Why.** Where a track runs below the natural ground, its banks blended back to the hillside over the track's `shoulder`, 3–4 m on every CREB track. Several tracks run 3–8 m below the ground: the concrete descent (up to 5.6 m at the bend, 8.6 m further down), the Big Red bypass, Bob's Hill and the range top. That made near-vertical walls 40–70° steep either side of a narrow floor. A vehicle that strayed off the line, as one reversing round a bend does, climbed the wall and hung up on it. The Land Rover's body boxes are narrower than its drawn body (the rear tub box is 1.2 m wide against a body of about 1.7 m), so the bank also showed through its sides. The boxes were left as they are: with gentle banks there is nothing for the body to sink into.
+
+**Batters.** A track can now have a `batter`: the steepest average slope of its banks. Wherever the track runs deeper below (or higher above) the natural ground than its shoulder allows at that slope, the bank widens. The width is found at each point along the track, held over the next 6 m either way and eased along the track, so the deepest cut gets its full width and the banks don't jag. It stops at 14 m, so a cut across a hillside steeper than the batter doesn't reshape the whole slope. The CREB's tracks use 1 in 2 (27° on average, about 37° at the steepest part of the bank). At the bend the bank on the uphill side now rises at up to 31° from a wide floor, where before it was 50°. The maps 4WD Simulator's physics tests use have no batter and are unchanged.
+
+**Checked.**
+
+- No point along any CREB track has ground 1.5 m above it 3 m out from both edges. There were 132 such points before, on Big Red, the bypass, Bob's Hill, the range top and the concrete. This is now a unit test.
+- A unit test reverses the Land Rover up the bend from below. On the v0.02 map it reached 40° of tilt within 6 s; now it stays under 30° and gets past the spot. (Reversing in a straight line, it still meets the bank about 10 m further up where the track turns, as it would on a real road.)
+- All three vehicles still drive the whole route in the wet, in the same time and on the same fuel as before (18.1 minutes, 33 L petrol, 24 L diesel). The other CREB tests (legs joining at the same height, level camps, creeks below their banks, the autopilot drives) all pass.
+
+**Camera.** While looking for the cause, the follow camera was checked at 2,054 places along every track, facing both ways. The ground between it and the car never hid the wheels, so it was left alone.
+
+**Browser test.** The winch audio test placed the car on Big Red and waited 3 s of real time before winching. With 24 physics steps per frame (v0.02) the car rolled back down the hill in that time, out of the winch's reach; it now holds the car on the park brake.
