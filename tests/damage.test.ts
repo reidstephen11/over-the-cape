@@ -12,6 +12,7 @@ import { Simulation } from '../src/sim/sim';
 import { enginePowerMultiplier, tyreGripMultiplier } from '../src/sim/vehicle/condition';
 import { updateDamage, type DamageEvent } from '../src/sim/vehicle/damage';
 import { headingOf } from '../src/sim/vehicle/math';
+import { damageMessage } from '../src/core/damageMessages';
 import { makeScene, type Scene } from './helpers/scenes';
 import { testWorld } from './world';
 
@@ -68,6 +69,30 @@ describe('mechanical damage', () => {
     s.run(4, { throttle: 0.4 });
     expect(events).toEqual([]);
     s.physics.world.free();
+  });
+
+  it('pinches a tyre hitting a pothole at speed, not at a sensible pace', async () => {
+    // A 30 cm washout across the road 40 m ahead (the ground itself is flat).
+    const road = {
+      surfaceAt: () => SurfaceId.Dirt,
+      waterSurfaceAt: () => null,
+      holeAt: (_x: number, z: number) => (z < -40 && z > -41.5 ? 0.3 : 0),
+    };
+    const through = async (speed: number) => {
+      const { s, events } = await damageScene('realistic', { ground: road, speed });
+      // Hold the speed.
+      s.run(60 / speed, () => ({ throttle: s.vehicle.speed < speed ? 0.6 : 0 }));
+      expect(s.vehicle.position.z).toBeLessThan(-42);
+      s.physics.world.free();
+      return events;
+    };
+    // About 30 km/h: nothing. About 65 km/h: punctures, and the message says why.
+    expect(await through(8.5)).toEqual([]);
+    const fast = await through(18);
+    const tyres = fast.filter((e) => e.part === 'tyre');
+    expect(tyres.length).toBeGreaterThan(0);
+    expect(tyres.every((e) => e.cause === 'hole' && e.fault === 'puncture')).toBe(true);
+    expect(damageMessage(tyres[0], vehicleTuning, 'realistic')).toContain('pinched in a hole');
   });
 
   it('lets a realistic tyre go flat: that corner sits lower and drags the car towards it', async () => {

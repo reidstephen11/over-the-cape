@@ -47,7 +47,7 @@ They run south to north and unlock in order: finish one to open the next. A fini
 
 The map is 3 km square with about 5 km of track. The real trip is over 100 km, so the distances are shortened; the obstacles are full size.
 
-1. **Daintree Village** (camp) to the **Daintree River crossing**: wide and over a metre deep in the middle. A gravel bar curves downstream and keeps it about half that, so take the curve, not the straight line. Crocodile country: you never leave the car.
+1. **Daintree Village** (camp) to the **Daintree River crossing**: wide and over a metre deep in the middle. A gravel bar curves downstream and keeps it about half that, so take the curve, not the straight line. The river is running fast after the rain: the current pushes the car downstream, and in the deep water it can carry it away. Crocodile country: you never leave the car.
 2. Through the **Upper Daintree paddocks** on a gravel road to the foot of the range.
 3. **Big Red**: about 130 m of red clay at around 20°, slippery after the rain. Low range and both lockers get up it. The **Big Red bypass** leaves the paddock road just before, and winds up the west side at no more than about 15°.
 4. Along the range through the rainforest to **Roaring Meg camp**, then **Roaring Meg Creek**, with a short track to **Roaring Meg Falls**.
@@ -55,6 +55,8 @@ The map is 3 km square with about 5 km of track. The real trip is over 100 km, s
 6. The **range lookout**, then **the concrete**: a long switchback descent with concreted pinches at about 20°.
 7. **Donovan's Creek**, the **Bloomfield River** bridge at Wujal Wujal (camp), and a track west to **Wujal Wujal Falls**.
 8. North on the gravel **Bloomfield Track** through **Rossville**, across the **Little Annan River**, to the **Lions Den Hotel**.
+
+After the wet the gravel roads are bumpy and potholed and the range tracks are washed out, with channels cut across them. Drive them fast and the car bounces off the swells, and a pothole or washout hit at speed can pinch a tyre.
 
 The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns) except for open eucalypt woodland round the village, the paddocks and the drier hills by the Lions Den. A fallen tree lies across the track on the range: winch it aside or squeeze past.
 
@@ -66,6 +68,7 @@ The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns)
 - **The episode ends early** when, with the difficulty that allows it:
   - the tank is empty, you have no jerry cans left and the car has rolled to a stop (any difficulty);
   - the deadline passes (any difficulty);
+  - the current lifts the car and carries it downstream (Mild and Realistic);
   - a tyre is flat and there's nothing left to fix it: no spare, and no plug that fits (Realistic);
   - the engine is wrecked (Realistic).
 
@@ -75,20 +78,20 @@ The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns)
 
 ## Fuel, spares and plugs
 
-- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 33 L of petrol in the short-wheelbase 4WDs and 24 L of diesel in the Land Rover. The gauge is above the status strip, in litres.
+- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 46 L of petrol in the short-wheelbase 4WDs and 31 L of diesel in the Land Rover. The rough roads cost fuel: every bump takes work. The gauge is above the status strip, in litres.
 - **Jerry cans** hold 20 L. Tool menu → **Pour in a jerry can**, stopped, about 12 s. If the engine ran dry it restarts on the starter afterwards.
-- **Tyres** can be hurt two ways with Realistic damage: a **puncture** leaks down over about 40 s and takes a **plug** from the kit (tool menu → Plug the tyre, about 10 s); a **torn sidewall** goes flat in a few seconds and needs a **spare** (tool menu → Fit a spare, about 8 s). A landing of about a metre onto rock punctures a tyre; about one and a half metres tears the sidewall. Spinning a wheel hard on rock for several seconds wears through the tread. Crawling in low range barely spins.
+- **Tyres** can be hurt two ways with Realistic damage: a **puncture** leaks down over about 40 s and takes a **plug** from the kit (tool menu → Plug the tyre, about 10 s); a **torn sidewall** goes flat in a few seconds and needs a **spare** (tool menu → Fit a spare, about 8 s). A landing of about a metre onto rock punctures a tyre; about one and a half metres tears the sidewall. Spinning a wheel hard on rock for several seconds wears through the tread. Crawling in low range barely spins. Dropping into a pothole or washout at speed pinches the tyre (a puncture): a deep one from about 40 km/h, and the faster the likelier; from about 55 km/h it can bend that corner's suspension too.
 - The status strip's counts show jerry cans, spares and plugs left.
 
 ## Difficulty
 
 The welcome screen's **Difficulty** is the damage setting (also in pause menu → Settings → Damage). It decides what can hurt the car, and so which ways an episode can end.
 
-| Setting   | Damage                                                                                     | Ends the episode                                           |
-| --------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| Off       | None (the body still dents and gets dirty)                                                 | Empty tank, deadline                                       |
-| Mild      | Tyres go soft, corners bend, the engine loses power; tool menu → Field repair fixes it all | Empty tank, deadline                                       |
-| Realistic | Punctures and torn sidewalls, bent corners, the engine can be wrecked                      | Empty tank, deadline, a flat with no fix, a wrecked engine |
+| Setting   | Damage                                                                                     | Ends the episode                                                       |
+| --------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Off       | None (the body still dents and gets dirty)                                                 | Empty tank, deadline                                                   |
+| Mild      | Tyres go soft, corners bend, the engine loses power; tool menu → Field repair fixes it all | Empty tank, deadline, swept away                                       |
+| Realistic | Punctures and torn sidewalls, bent corners, the engine can be wrecked                      | Empty tank, deadline, swept away, a flat with no fix, a wrecked engine |
 
 ## Vehicles
 
@@ -100,7 +103,7 @@ Pick one on the welcome screen. Pause menu → Vehicle changes it mid-episode, b
 | Camel Trophy 4WD        | The short-wheelbase 4WD in Camel Trophy dress, with a snorkel | Same                                                              | 70 L |
 | Land Rover 110 Perentie | The Australian Army's Land Rover 110                          | 3.9 L Isuzu four-cylinder diesel, LT95A four-speed with low range | 79 L |
 
-The 1986 Camel Trophy started at Cooktown, and Army Perenties served across the north. The Camel Trophy 4WD drives like the short-wheelbase 4WD but breathes through its snorkel, so it wades much deeper water before it floods. A modern 4WD is planned for a later update.
+The 1986 Camel Trophy started at Cooktown, and Army Perenties served across the north. The Camel Trophy 4WD drives like the short-wheelbase 4WD but breathes through its snorkel, so it wades much deeper water before it floods; the current can still take it. The heavier Land Rover holds its ground in a current a little longer. A modern 4WD is planned for a later update.
 
 ## Controls
 
@@ -156,7 +159,8 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - **Low range (L)** and **precision crawl (P)** for the climbs and descents: hold W for a steady walking pace, let go and it brakes to a stop. On Big Red and Bob's Hill lock both diffs (**Z**, **X**) below 5 km/h.
 - On wet clay keep a steady throttle; spinning the wheels digs you in, and on rock it can cut a tyre.
 - **C** cycles the views; the front views look across the tyres to place a wheel, the driver's seat has working dials. **I** shows the crawl gauges (pitch, roll and the load on each tyre).
-- In deep water watch the air intake: water at the intake stalls the engine (with Realistic damage it can wreck it). Cross the Daintree on the gravel bar.
+- In deep water watch the air intake: water at the intake stalls the engine (with Realistic damage it can wreck it). Cross the Daintree on the gravel bar and keep moving, steering upstream against the current. Stopped in deep running water, the car is lifted and carried off: "Deep, fast water" warns you, "The current is taking the car" means get to shallow water now.
+- On the rough roads about 30–40 km/h is a fair pace. Faster, the swells bounce the car and the potholes and washouts pinch tyres.
 - The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range.
 
 ## Debug mode
@@ -174,8 +178,11 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **Realistic damage:** drop off a ledge onto rock; check whether you get a puncture (plug it) or a torn sidewall (fit the spare); use up the spare and check a second torn sidewall ends the episode. Spin the wheels on Bob's Hill's rock for a while and check it can cut a tyre.
 - [ ] **Dusk:** keep driving into the evening (or dawdle): the light should fade, the headlights come on at dusk, and the episode end at 6:15 pm if you haven't arrived.
 - [ ] **Finish and replay:** on reaching the Lions Den the closing card shows; Keep driving lets you look around. Back at the welcome screen Episode 1 shows "finished", and Conditions lets you replay it at another time and in other weather, with no time limit.
-- [ ] **Vehicles:** the Land Rover uses less fuel and still climbs Big Red and Bob's Hill; the Camel Trophy 4WD's snorkel lets it wade the deep part of the Daintree.
+- [ ] **Vehicles:** the Land Rover uses less fuel and still climbs Big Red and Bob's Hill; the Camel Trophy 4WD's engine keeps running in the deep part of the Daintree (but the current can still take it).
 - [ ] **Looks:** the rainforest (canopy trees, fan palms, tree ferns), red clay tracks and cuttings, the two waterfalls, the Bloomfield bridge. Frame rate on Medium in `?debug` while driving through the rainforest.
+- [ ] **v0.04 running water:** at the Daintree the ripples and pale streaks on the water run downstream. Cross on the gravel bar: the current pushes the back of the car downstream and you steer into it. Try the straight line through the deep middle: the car swings round and is shoved downstream. Drive out into the deep river: "The current is taking the car" shows and, on Mild or Realistic, the episode ends ("The current took the vehicle"). With damage Off you drift instead. The creek crossings on the range push a little.
+- [ ] **v0.04 rough roads:** the paddock road and the Bloomfield Track are bumpy and potholed (dark patches), the range tracks washed out (dark bands across them). At 30 km/h it's a rough ride; at 50 km/h and more the car bounces, and on Realistic a pothole or washout can puncture a tyre ("pinched in a hole at speed"). Does it feel harder but fair, and did the fuel last?
+- [ ] **v0.04 out of fuel:** run the tank dry on mud or gravel and hold the accelerator: the wheels stay still (in v0.03 they spun in place).
 - [ ] **Skyline (v0.03):** a few hundred metres up the road from Daintree Village, look east and west: grey sky and distant blue-green hills above the trees, with no dark green wall filling the sky. Near the start the south and west map edges rise as grassy hills, which is expected.
 - [ ] **v0.02 phone layout:** on a phone held upright, the fuel, then the mission panel sit under the status strip, and nothing covers anything else. Press 4WD: LOW, CRAWL, F LOCK and R LOCK open in a row above it; press LOW and the crawl gauges appear top right under the fuel, with the mission panel narrowed beside them. Tap 4WD again to close the row and check its letters show what's on. Stopped with the handbrake on, press GAS: "HAND Release the handbrake" shows just above the buttons on the right. View → Driver: the status strip stays a small box and View / ⟲ stay top right. Held sideways the mission panel shows just the clock, clear of the joystick.
 - [ ] **v0.02 history notes on a phone:** at the start, and on reaching each place (Daintree River crossing, Big Red...), the game stops and the note shows in the middle of the screen with the buttons hidden. Tap it and the game carries on. With a keyboard the notes still show top right while you drive.

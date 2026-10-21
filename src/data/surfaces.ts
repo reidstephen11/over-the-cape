@@ -136,6 +136,37 @@ export const waterDrag = {
   linear: 900,
   /** Depth (m) at which drag stops increasing (body fully in water). */
   maxDepth: 1.0,
+  /** Water moving across the vehicle meets its whole side: this many times the drag head-on. */
+  side: 2.2,
+};
+
+/**
+ * Deep water lifts the body off its tyres, so running water can push it sideways and
+ * at last carry it off.
+ */
+export const waterLift = {
+  /** Share of the water the body's parts displace that lifts them (the rest leaks in). */
+  share: 0.3,
+  /** Weight of water (N per m³). */
+  weight: 9810,
+  /**
+   * Tyres in running water over their hubs creep sideways, keeping only 1 − this of
+   * their side grip against a steady push, once the water runs at `creepFlow` (m/s).
+   */
+  creep: 0.85,
+  creepFlow: 1.5,
+  /** Share of that creep while standing still (it rises to all of it by 1.5 m/s). */
+  standingCreep: 0.4,
+};
+
+/** When the current has taken the vehicle (an episode ends on Mild and Realistic damage). */
+export const sweptTuning = {
+  /** Lifted by at least this share of its weight... */
+  lift: 0.45,
+  /** ...and moving downstream faster than this (m/s)... */
+  speed: 0.5,
+  /** ...for this long (s). It counts back down twice as fast once it isn't. */
+  seconds: 4,
 };
 
 /** Grip multiplier for a surface given wetness (0..1). */

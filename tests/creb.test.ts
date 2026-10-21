@@ -93,6 +93,42 @@ describe('Episode 1: the CREB Track', () => {
     expect(t.water[bar] - t.heights[bar]).toBeLessThan(0.65);
   });
 
+  it('roughs up its roads and tracks after the wet, but not the concrete or the river crossing', () => {
+    const t = world.terrain;
+    const survey = (id: string) => {
+      const track = trackOf(id);
+      // Along the left wheel line: how sharply the ground bends (bumps), and the holes crossed.
+      let bend = 0;
+      let n = 0;
+      let holes = 0;
+      let inHole = false;
+      for (let s = 15; s < track.poly.length - 15; s += 1) {
+        const [a, b, c] = [s - 1, s, s + 1].map((k) => {
+          const p = trailPoint(track, k, 0.75);
+          return t.heightAt(p.x, p.z);
+        });
+        bend += Math.abs(a - 2 * b + c);
+        n++;
+        for (const lateral of [-0.75, 0.75]) {
+          const p = trailPoint(track, s, lateral);
+          const hole = t.holeAt(p.x, p.z) > 0;
+          if (hole && !inHole) holes++;
+          inHole = hole;
+        }
+      }
+      return { bumps: bend / n, holes, length: track.poly.length };
+    };
+    const concrete = survey('concrete-descent');
+    expect(concrete.holes).toBe(0);
+    expect(survey('daintree-crossing').holes).toBe(0);
+    for (const id of ['paddock-road', 'creb-ridge', 'bloomfield-track']) {
+      const r = survey(id);
+      expect(r.bumps, id).toBeGreaterThan(concrete.bumps * 2);
+      // A pothole or washout in a wheel line every 50 m or so at least.
+      expect(r.holes, id).toBeGreaterThan(r.length / 50);
+    }
+  });
+
   const legs: [string, 'both' | 'high', number][] = [
     ['daintree-crossing', 'both', 150],
     ['big-red', 'both', 200],

@@ -8,6 +8,7 @@ import { Lighting } from './lighting';
 import { Sky, createBackdrop } from './sky';
 import { TerrainMesh } from './terrainMesh';
 import { WaterMesh } from './water';
+import { WaterCurrent } from '../sim/world/current';
 import { Vegetation } from './vegetation';
 import { WorldProps } from './worldProps';
 import { TrackRuts } from './tracks';
@@ -79,6 +80,7 @@ export class GameRenderer {
       world.map.seed,
       env.waterLevelOffset,
       world.features.creekDistance,
+      new WaterCurrent(world.features.creeks),
     );
     this.scene.add(this.water.group);
     this.vegetation = new Vegetation(world, quality);

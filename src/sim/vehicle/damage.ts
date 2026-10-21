@@ -12,10 +12,10 @@ export interface DamageEvent {
   wheel: number;
   health: number;
   /**
-   * What did it: a rock cut, wheelspin wearing through on rock, a hard landing, a chassis
-   * knock, a crash, upside down, water.
+   * What did it: a rock cut, wheelspin wearing through on rock, a pothole or washout hit at
+   * speed, a hard landing, a chassis knock, a crash, upside down, water.
    */
-  cause: 'rock' | 'spin' | 'landing' | 'knock' | 'crash' | 'inverted' | 'water';
+  cause: 'rock' | 'spin' | 'hole' | 'landing' | 'knock' | 'crash' | 'inverted' | 'water';
   /** Tyres: a slow puncture or a torn sidewall. */
   fault?: TyreFault;
 }
@@ -42,6 +42,8 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     // A tyre landing hard on rock is cut and starts going down; harder still tears the sidewall.
     if (hit > D.tyre.punctureSpeed && w.surface === SurfaceId.Rock && intact)
       cut(i, hit > D.tyre.sidewallSpeed ? 'sidewall' : 'puncture', 'rock');
+    // A pothole or washout hit at speed pinches the tyre.
+    else if (intact && v.wheelStrikes[i] > D.tyre.strike) cut(i, 'puncture', 'hole');
     // Spinning hard on rock wears through the tread.
     else if (intact && w.contact && w.surface === SurfaceId.Rock && w.spin > D.tyre.abrasionSpin) {
       c.abrasion[i] += w.spin * dt;
@@ -53,16 +55,16 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
         ? D.tyre.deflateSeconds.mild
         : D.tyre.deflateSeconds[fault === 'sidewall' ? 'sidewall' : 'puncture'];
     if (c.tyres[i] > c.tyreTarget[i]) c.tyres[i] = Math.max(c.tyreTarget[i], c.tyres[i] - dt / seconds);
-    // A heavy landing bends that corner.
-    if (hit > D.suspension.bendSpeed) {
+    // A heavy landing bends that corner, and so does a hole hit hard enough.
+    const bend = (loss: number, cause: DamageEvent['cause']) => {
       const before = c.suspension[i];
-      c.suspension[i] = Math.max(
-        D.suspension.floor[mode],
-        before - 0.12 - (hit - D.suspension.bendSpeed) * D.suspension.perSpeed,
-      );
+      c.suspension[i] = Math.max(D.suspension.floor[mode], before - loss);
       if (c.suspension[i] < before)
-        events.push({ part: 'suspension', wheel: i, health: c.suspension[i], cause: 'landing' });
-    }
+        events.push({ part: 'suspension', wheel: i, health: c.suspension[i], cause });
+    };
+    if (hit > D.suspension.bendSpeed)
+      bend(0.12 + (hit - D.suspension.bendSpeed) * D.suspension.perSpeed, 'landing');
+    else if (v.wheelStrikes[i] > D.suspension.strike) bend(D.suspension.strikeLoss, 'hole');
   }
 
   const E = D.engine;

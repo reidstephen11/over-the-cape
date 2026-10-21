@@ -1,5 +1,13 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
-import { SurfaceId, surfaceGrip, surfaces, tyreLock, waterDrag } from '../../data/surfaces';
+import {
+  SurfaceId,
+  surfaceGrip,
+  surfaces,
+  sweptTuning,
+  tyreLock,
+  waterDrag,
+  waterLift,
+} from '../../data/surfaces';
 import { crashTuning, type VehicleTuning } from '../../data/vehicle';
 import { nextHeadlightMode, type HeadlightMode } from '../../data/headlights';
 import { damageTuning } from '../../data/damage';
@@ -102,6 +110,12 @@ export class Vehicle {
   freeRoll = false;
   /** External pull this step (winch), for audio/UI. */
   externalLoad = 0;
+  /** Water lifting the body this step, as a share of the vehicle's weight. */
+  afloat = 0;
+  /** The water's velocity at the vehicle this step (m/s, horizontal). */
+  readonly current = { x: 0, z: 0 };
+  /** Seconds the current has been carrying the vehicle off (see sweptTuning). */
+  swept = 0;
   /** Set when flooding stalls or restarts the engine this step. */
   floodEvent: FloodEvent = null;
   /**
@@ -125,6 +139,13 @@ export class Vehicle {
    * rising under a slowly rolling wheel: only a corner that was falling counts.
    */
   readonly wheelLandings = [0, 0, 0, 0];
+  /**
+   * How hard each wheel dropped into a pothole or washout this step: the vehicle's speed
+   * (m/s) times the hole's depth (m), give or take a quarter for how squarely it hit, once
+   * per hole; 0 otherwise.
+   */
+  readonly wheelStrikes = [0, 0, 0, 0];
+  private readonly inHole = [false, false, false, false];
   /** Each corner's downward speed after the last step. */
   private readonly cornerFall = [0, 0, 0, 0];
   private readonly impactCooldown = [0.5, 0.5, 0.5, 0.5];
@@ -142,9 +163,12 @@ export class Vehicle {
   private readonly tmpFwd = v3();
   private readonly tmpUp = v3();
   private readonly tmpRight = v3();
+  private readonly liftPoint = v3();
   private caps = [0, 0, 0, 0];
   private requests = [0, 0, 0, 0];
   private preload = [0, 0, 0, 0];
+  /** Sideways grip kept by each tyre in running water (1 = all of it). */
+  private readonly sideCreep = [1, 1, 1, 1];
   private readonly wheelContacts: WheelContacts;
   private readonly rawWheelRotation = [0, 0, 0, 0];
   private readonly wheelRotationDelta = [0, 0, 0, 0];
@@ -313,6 +337,7 @@ export class Vehicle {
     this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
     this.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
     for (const w of this.wheels) w.sink = 0;
+    this.swept = 0;
     this.cornerFall.fill(0);
     // Settling onto the ground after a teleport isn't a hit.
     this.impactCooldown.fill(0.5);
@@ -432,17 +457,29 @@ export class Vehicle {
     if (this.freeRoll && throttle === 0) drive = 0;
     if (cranking) this.drivetrain.rpm = t.engine.crankRpm;
 
-    // Grip available at each wheel.
+    // Grip available at each wheel. In running water the tyres creep sideways on the
+    // washed bed, so the current pushes the vehicle downstream before it breaks loose;
+    // rolling tyres creep more than standing ones.
+    const running =
+      Math.min(1, Math.hypot(this.current.x, this.current.z) / waterLift.creepFlow) *
+      (waterLift.standingCreep + (1 - waterLift.standingCreep) * Math.min(1, Math.abs(this.speed) / 1.5));
     for (let i = 0; i < 4; i++) {
       const w = this.wheels[i];
       const grip = surfaceGrip(w.surface, this.env.wetness) * tyreGripMultiplier(this.condition, i);
       this.caps[i] = w.contact ? t.longitudinalGrip * grip * w.load : 0;
       c.setWheelFrictionSlip(i, t.lateralGrip * grip);
-      c.setWheelSideFrictionStiffness(i, handbrake && !t.wheels[i].front ? t.handbrakeSideGrip : 1);
+      const deep = Math.min(1, Math.max(0, (w.water - 0.15) / (t.wheelRadius + 0.05)));
+      this.sideCreep[i] = 1 - waterLift.creep * running * deep * deep * (3 - 2 * deep);
+      c.setWheelSideFrictionStiffness(
+        i,
+        (handbrake && !t.wheels[i].front ? t.handbrakeSideGrip : 1) * this.sideCreep[i],
+      );
     }
 
     // Open axles are limited by the weak tyre; locked axles can use both tyres' grip.
     const perAxle = drive / 2;
+    // With the engine stopped (empty tank, cranking, flooded) the pedal turns nothing.
+    const driving = this.drivetrain.engineRunning ? throttle : 0;
     for (const [i, j] of [
       [0, 1],
       [2, 3],
@@ -458,12 +495,12 @@ export class Vehicle {
       const want = Math.abs(perAxle) / 2;
       for (const k of [i, j]) {
         const got = Math.abs(this.requests[k]);
-        let spin = want > 1 && throttle > 0.05 ? Math.max(0, 1 - got / want) : 0;
+        let spin = want > 1 && driving > 0.05 ? Math.max(0, 1 - got / want) : 0;
         // Bogged down on loose ground with the throttle in: the wheels dig and spin.
         const w = this.wheels[k];
-        if (w.contact && throttle > 0.3 && Math.abs(this.speed) < 1.2) {
+        if (w.contact && driving > 0.3 && Math.abs(this.speed) < 1.2) {
           const loose = LOOSENESS[w.surface] ?? 0;
-          spin = Math.max(spin, loose * throttle * (1 - Math.abs(this.speed) / 1.2));
+          spin = Math.max(spin, loose * driving * (1 - Math.abs(this.speed) / 1.2));
         }
         w.spin += (spin - w.spin) * Math.min(1, dt * 8);
       }
@@ -509,7 +546,7 @@ export class Vehicle {
       const lockedUp = grounded && moving && bf > cap;
       if (grounded) bf = Math.min(bf, lockedUp ? cap * tyreLock.slideGrip : cap);
       w.skid = lockedUp ? Math.abs(this.speed) : 0;
-      if (lockedUp) c.setWheelSideFrictionStiffness(i, tyreLock.sideGrip);
+      if (lockedUp) c.setWheelSideFrictionStiffness(i, tyreLock.sideGrip * this.sideCreep[i]);
       if (bf > 0 && (holding || !(throttle > 0 && !handbrake))) {
         c.setWheelEngineForce(i, 0);
         c.setWheelBrake(i, bf * dt);
@@ -629,15 +666,72 @@ export class Vehicle {
     fy -= aero * vel.y;
     fz -= aero * vel.z;
     const depth = this.bodyWaterDepth();
+    const flow = this.current;
+    flow.x = flow.z = 0;
     if (depth > 0) {
+      // Drag against the water, which may be running: then the current pushes the car.
+      const at = this.body.translation();
+      this.physics.ground.waterFlowAt?.(at.x, at.z, flow);
+      const rx = vel.x - flow.x;
+      const rz = vel.z - flow.z;
       const d = Math.min(depth, waterDrag.maxDepth);
-      const k = d * (waterDrag.quadratic * vmag + waterDrag.linear);
-      fx -= k * vel.x;
-      fy -= k * vel.y;
-      fz -= k * vel.z;
+      const k = d * (waterDrag.quadratic * Math.hypot(rx, vel.y, rz) + waterDrag.linear);
+      // Across the vehicle the water meets its whole side.
+      const across = (waterDrag.side - 1) * (rx * right.x + vel.y * right.y + rz * right.z);
+      fx -= k * (rx + across * right.x);
+      fy -= k * (vel.y + across * right.y);
+      fz -= k * (rz + across * right.z);
     }
     this.body.applyImpulse({ x: fx * dt, y: fy * dt, z: fz * dt }, true);
-    void right;
+    this.afloat = depth > 0 ? this.applyLift(q, fwd, right, dt) / (t.mass * 9.81) : 0;
+    // Lifted off its tyres and drifting downstream: the current has the vehicle.
+    const flowSpeed = Math.hypot(flow.x, flow.z);
+    const downstream = flowSpeed > 0.1 ? (vel.x * flow.x + vel.z * flow.z) / flowSpeed : 0;
+    if (this.afloat >= sweptTuning.lift && downstream > sweptTuning.speed) this.swept += dt;
+    else this.swept = Math.max(0, this.swept - 2 * dt);
+  }
+
+  /**
+   * Deep water lifts each part of the body by a share of the water it displaces, pushing
+   * up at the middle of the part under water, and the tyres by all of theirs. Returns the
+   * total lift (N).
+   */
+  private applyLift(q: Quat, fwd: Vec3, right: Vec3, dt: number): number {
+    const ground = this.physics.ground;
+    const p = this.liftPoint;
+    const upY = rotate(q, 0, 1, 0, this.tmpUp).y;
+    let lift = 0;
+    for (const b of this.tuning.bodyBoxes) {
+      this.localToWorld(b.cx, b.cy, b.cz, p);
+      const ws = ground.waterSurfaceAt(p.x, p.z);
+      if (ws === null) continue;
+      // Half the box's height as it lies now.
+      const e = Math.abs(right.y) * b.hx + Math.abs(upY) * b.hy + Math.abs(fwd.y) * b.hz;
+      const under = Math.min(1, (ws + this.env.waterLevelOffset - (p.y - e)) / (2 * e));
+      if (under <= 0) continue;
+      const force = 8 * b.hx * b.hy * b.hz * under * waterLift.weight * waterLift.share;
+      p.y += e * (under - 1);
+      this.body.applyImpulseAtPoint({ x: 0, y: force * dt, z: 0 }, p, true);
+      lift += force;
+    }
+    // The tyres are sealed: all the water they displace lifts the wheel off the bed.
+    const r = this.tuning.wheelRadius;
+    for (let i = 0; i < 4; i++) {
+      const hp = this.tuning.wheels[i];
+      this.localToWorld(hp.x, hp.y - this.wheels[i].suspension, hp.z, p);
+      const ws = ground.waterSurfaceAt(p.x, p.z);
+      if (ws === null) continue;
+      const h = Math.min(2 * r, ws + this.env.waterLevelOffset - (p.y - r));
+      if (h <= 0) continue;
+      // Area of the circle's slice under the water, over the whole circle.
+      const a = r - h;
+      const under =
+        (r * r * Math.acos(a / r) - a * Math.sqrt(Math.max(0, 2 * r * h - h * h))) / (Math.PI * r * r);
+      const force = Math.PI * r * r * this.tuning.wheelWidth * under * waterLift.weight;
+      this.body.applyImpulseAtPoint({ x: 0, y: force * dt, z: 0 }, p, true);
+      lift += force;
+    }
+    return lift;
   }
 
   /**
@@ -834,6 +928,11 @@ export class Vehicle {
       } else w.slide = 0;
       const ws = this.physics.ground.waterSurfaceAt(w.contactPoint.x, w.contactPoint.z);
       w.water = ws === null ? 0 : Math.max(0, ws + this.env.waterLevelOffset - w.contactPoint.y);
+      const hole = w.contact ? (this.physics.ground.holeAt?.(w.contactPoint.x, w.contactPoint.z) ?? 0) : 0;
+      // How squarely the tyre meets the hole's far edge varies.
+      this.wheelStrikes[i] =
+        hole > 0 && !this.inHole[i] ? Math.abs(this.speed) * hole * (0.75 + 0.5 * this.rand()) : 0;
+      this.inHole[i] = hole > 0;
     }
     // Locked wheels share angular travel, including a tyre hanging in the air.
     for (const [i, j] of [

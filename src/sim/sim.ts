@@ -13,6 +13,7 @@ import { placedPropShapes } from './world/props';
 import { deckAt } from './world/bridges';
 import { StaticMeshBatcher } from './world/staticMesh';
 import type { FallenTreeDef } from './world/mapTypes';
+import { WaterCurrent } from './world/current';
 import { scatterTuning } from '../data/vegetation';
 import { winchTuning } from '../data/tools';
 import { VehicleTools, type RepairKind, type ToolEvent } from './tools/tools';
@@ -132,10 +133,13 @@ export class Simulation {
     readonly env: EnvironmentConfig,
   ) {
     const terrain = world.terrain;
+    const current = new WaterCurrent(world.features.creeks);
     this.ground = {
       surfaceAt: (x, z) => terrain.surfaceAt(x, z),
       waterSurfaceAt: (x, z) => terrain.waterSurfaceAt(x, z),
       heightAt: (x, z) => terrain.heightAt(x, z),
+      waterFlowAt: (x, z, out) => current.at(x, z, out),
+      holeAt: (x, z) => terrain.holeAt(x, z),
     };
     this.physics = new Physics(R, this.ground);
     this.physics.addTerrain(terrain);

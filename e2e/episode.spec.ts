@@ -11,7 +11,7 @@ import {
 
 const episode = (page: Page) => page.evaluate(() => window.__game!.episode());
 
-test('camps save the run; the clock, an empty tank and a flat with no spare end it; restart from camp', async ({
+test('camps save the run; the clock, an empty tank, a flat with no spare and the current end it; restart from camp', async ({
   page,
 }) => {
   test.setTimeout(1_200_000);
@@ -82,6 +82,16 @@ test('camps save the run; the clock, an empty tank and a flat with no spare end 
   await page.evaluate(() => window.__game!.setSupplies({ spares: 0 }));
   await page.evaluate(() => window.__game!.setHealth({ tyres: [1, 0, 1, 1] }));
   await expect.poll(async () => (await episode(page)).reason, { timeout: 60_000 }).toBe('tyre');
+  await page.evaluate(() => window.__game!.pickResult('restart'));
+  await expect.poll(async () => (await episode(page)).status, { timeout: 60_000 }).toBe('driving');
+  await waitEngine(page);
+
+  // Out in the deep, running Daintree the current lifts the car and carries it off.
+  await page.evaluate(() => window.__game!.teleport(-1250, 1048, 90));
+  await expect(page.locator('.prompts')).toContainText('The current is taking the car', { timeout: 120_000 });
+  await expect.poll(async () => (await episode(page)).reason, { timeout: 120_000 }).toBe('swept');
+  await expect(page.locator('.result-card')).toContainText('The current took the vehicle');
+  await shot(page, 'episode', 'swept-away');
   await page.evaluate(() => window.__game!.pickResult('restart'));
   await expect.poll(async () => (await episode(page)).status, { timeout: 60_000 }).toBe('driving');
   expect(errors).toEqual([]);

@@ -12,9 +12,13 @@ export function cornerName(t: VehicleTuning, wheel: number): string {
 export function damageMessage(e: DamageEvent, t: VehicleTuning, mode: DamageMode): string {
   if (e.part === 'tyre') {
     const tyre = `${cornerName(t, e.wheel)} tyre`;
-    if (mode !== 'realistic') return `${tyre} cut on a rock — it’s going soft`;
+    if (mode !== 'realistic')
+      return e.cause === 'hole'
+        ? `${tyre} pinched in a hole — it’s going soft`
+        : `${tyre} cut on a rock — it’s going soft`;
     if (e.fault === 'sidewall') return `${tyre}: sidewall torn on a rock — it needs a spare`;
     if (e.cause === 'spin') return `${tyre} worn through spinning on rock — a slow puncture`;
+    if (e.cause === 'hole') return `${tyre} pinched in a hole at speed — plug it before it’s flat`;
     return `${tyre} punctured on a rock — plug it before it’s flat`;
   }
   if (e.part === 'suspension') return `${cornerName(t, e.wheel)} suspension bent`;
@@ -26,6 +30,7 @@ export function damageMessage(e: DamageEvent, t: VehicleTuning, mode: DamageMode
     water: 'Water in the engine — it’s damaged',
     rock: 'The engine is damaged',
     spin: 'The engine is damaged',
+    hole: 'The engine is damaged',
     landing: 'The engine is damaged',
   }[e.cause];
   return `${what} (${Math.round(e.health * 100)}%)`;

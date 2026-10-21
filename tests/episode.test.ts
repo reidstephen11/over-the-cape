@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { damageTuning } from '../src/data/damage';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { clockTime, episodeOrder, episodes } from '../src/data/episodes';
-import { SurfaceId } from '../src/data/surfaces';
+import { SurfaceId, sweptTuning } from '../src/data/surfaces';
 import { perentieTuning } from '../src/data/perentie';
 import { vehicleTuning } from '../src/data/vehicle';
 import { applyCheckpoint, checkpointAt, EpisodeRun, failure, startCheckpoint } from '../src/sim/episode';
@@ -65,7 +65,7 @@ describe('episodes', () => {
     s.physics.world.free();
   });
 
-  it('ends when the tank is dry with no cans left, a tyre can’t be fixed or the engine is wrecked', async () => {
+  it('ends when the tank is dry with no cans left, the current takes the car, a tyre can’t be fixed or the engine is wrecked', async () => {
     const s = await makeScene({});
     const v = s.vehicle;
     const c = v.condition;
@@ -95,6 +95,14 @@ describe('episodes', () => {
     c.engine = 0;
     expect(failure(v, 'realistic', 1)).toBe('engine');
     expect(failure(v, 'mild', 0)).toBe('time');
+    // Carried off by the current: with mild or realistic damage, not with damage off.
+    c.engine = 1;
+    v.swept = sweptTuning.seconds - 0.1;
+    expect(failure(v, 'mild', 1)).toBeNull();
+    v.swept = sweptTuning.seconds;
+    expect(failure(v, 'off', 1)).toBeNull();
+    expect(failure(v, 'mild', 1)).toBe('swept');
+    expect(failure(v, 'realistic', 1)).toBe('swept');
     s.physics.world.free();
   });
 
@@ -146,6 +154,26 @@ describe('fuel', () => {
     expect(idle).toBeLessThan(3);
     expect(flatOut).toBeGreaterThan(idle * 8);
     expect(await litresPerHour(perentieTuning, 1)).toBeLessThan(flatOut);
+  });
+
+  it('with the tank empty the accelerator turns nothing: no wheelspin or tyre wear', async () => {
+    for (const surface of [SurfaceId.Mud, SurfaceId.Gravel, SurfaceId.Rock]) {
+      const s = await makeScene({ ground: { surfaceAt: () => surface, waterSurfaceAt: () => null } });
+      const v = s.vehicle;
+      s.afterStep = (dt) => void updateDamage(v, 'realistic', dt);
+      v.condition.fuel = 0;
+      s.run(0.5, {});
+      expect(v.drivetrain.engineRunning).toBe(false);
+      let spin = 0;
+      s.run(4, () => {
+        spin = Math.max(spin, ...v.wheels.map((w) => w.spin));
+        return { throttle: 1 };
+      });
+      expect(spin, `surface ${surface}`).toBe(0);
+      expect(Math.abs(v.speed)).toBeLessThan(0.05);
+      expect(v.condition.abrasion.every((a) => a === 0)).toBe(true);
+      s.physics.world.free();
+    }
   });
 
   it('runs the engine dry, and a jerry can pours in 20 L and restarts it', async () => {
