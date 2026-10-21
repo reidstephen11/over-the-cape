@@ -1,4 +1,4 @@
-import type { CreekDef, GullyDef, TrackDef } from './mapTypes';
+import type { BogDef, CreekDef, GullyDef, TrackDef } from './mapTypes';
 import type { DensePolyline } from './polyline';
 
 /** A track after generation: dense centreline and its final height profile. */
@@ -96,4 +96,6 @@ export interface TerrainFeatures {
   trackDistance: Uint8Array;
   /** Distance (m, clamped to 255) from each sample to the nearest creek's water edge (0 = in water). */
   creekDistance: Uint8Array;
+  /** Mud holes in rough tracks (they hold water after rain). */
+  mudHoles: BogDef[];
 }

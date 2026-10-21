@@ -29,6 +29,7 @@ import { axleDriveCapacity } from './differential';
 /** How readily each surface lets a stuck wheel spin (visual, dirt and sound only). */
 const LOOSENESS: Partial<Record<SurfaceId, number>> = {
   [SurfaceId.Mud]: 1,
+  [SurfaceId.Clay]: 0.8,
   [SurfaceId.Gravel]: 0.6,
   [SurfaceId.Water]: 0.4,
   [SurfaceId.Grass]: 0.35,

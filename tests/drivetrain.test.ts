@@ -64,5 +64,9 @@ describe('input and surfaces', () => {
   it('wetness lowers grip', () => {
     expect(surfaceGrip(SurfaceId.Dirt, 1)).toBeLessThan(surfaceGrip(SurfaceId.Dirt, 0));
     expect(surfaceGrip(SurfaceId.Mud, 0)).toBeLessThan(surfaceGrip(SurfaceId.Gravel, 0));
+    // Red clay grips like dirt when dry and goes greasy after rain.
+    expect(surfaceGrip(SurfaceId.Clay, 0)).toBeGreaterThan(0.9);
+    expect(surfaceGrip(SurfaceId.Clay, 0.7)).toBeLessThan(surfaceGrip(SurfaceId.Dirt, 0.7) * 0.8);
+    expect(surfaceGrip(SurfaceId.Clay, 1)).toBeLessThan(surfaceGrip(SurfaceId.Gravel, 1) * 0.7);
   });
 });

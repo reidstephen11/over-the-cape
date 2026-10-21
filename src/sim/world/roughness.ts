@@ -1,4 +1,5 @@
-import type { TrackDef } from './mapTypes';
+import type { TrackInfo } from './features';
+import type { BogDef, TrackDef } from './mapTypes';
 import type { Noise2D } from './noise';
 import { mulberry32 } from './rng';
 
@@ -118,6 +119,49 @@ export function roughHole(
     if (washoutDistance(w, s, l) < w.half * INNER && w.depth > (hole?.depth ?? 0))
       hole = { depth: w.depth, kind: 'washout' };
   return hole;
+}
+
+/** Mud holes lie only where the track climbs less than this (rise per metre)... */
+const BOG_MAX_GRADE = 0.06;
+/** ...and stretch this far along it (m). */
+const BOG_LENGTH = [7, 12] as const;
+
+/**
+ * Mud holes on a rough track's flatter stretches: dips the width of the track, deepest in
+ * the middle, laid along it. `skip` rules out a point (by a creek, on a bridge).
+ */
+export function trackMudHoles(
+  track: TrackInfo,
+  seed: number,
+  skip: (x: number, z: number, s: number) => boolean,
+): BogDef[] {
+  const r = track.def.rough;
+  if (!r?.bogs) return [];
+  const rand = mulberry32(seed);
+  const { poly, profile } = track;
+  const out: BogDef[] = [];
+  const gap = 100 / r.bogs;
+  for (let s = CLEAR_ENDS + 5 + rand() * gap; s < poly.length - CLEAR_ENDS - 5; s += gap * (0.5 + rand())) {
+    const k = Math.round(s);
+    const a = Math.max(0, k - 5);
+    const b = Math.min(poly.count - 1, k + 5);
+    if (Math.abs(profile[b] - profile[a]) / Math.max(1, b - a) > BOG_MAX_GRADE) continue;
+    const x = poly.xs[k];
+    const z = poly.zs[k];
+    if (skip(x, z, s)) continue;
+    const heading = Math.atan2(poly.xs[b] - poly.xs[a], -(poly.zs[b] - poly.zs[a]));
+    out.push({
+      id: `${track.def.id}-mud-${out.length}`,
+      x,
+      z,
+      // Across the track (the bog's x) and along it (its z), turned to the track's heading.
+      radiusX: track.def.width / 2 + 0.8,
+      radiusZ: (BOG_LENGTH[0] + rand() * (BOG_LENGTH[1] - BOG_LENGTH[0])) / 2,
+      rotationDeg: (heading * 180) / Math.PI,
+      depth: (r.bogDepth ?? 0.25) * (0.7 + 0.3 * rand()),
+    });
+  }
+  return out;
 }
 
 /** Distance across a washout's channel, which runs over the track at its angle. */

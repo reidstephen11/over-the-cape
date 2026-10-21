@@ -10,7 +10,9 @@ import { loadRapier } from '../src/sim/physics';
 import { Simulation } from '../src/sim/sim';
 import { NO_WATER } from '../src/sim/world/terrain';
 import { buildWorld } from '../src/sim/world/world';
-import { driveLeg, driver } from './helpers/drive';
+import { SurfaceId } from '../src/data/surfaces';
+import { addPuddles } from '../src/sim/world/puddles';
+import { driveLeg, driver, runLeg } from './helpers/drive';
 
 const world = buildWorld(crebMap);
 const wet = environmentAt(crebEpisode.startHour, crebEpisode.weather);
@@ -177,11 +179,40 @@ describe('Episode 1: the CREB Track', () => {
     }
   });
 
+  it('has mud holes in its roads and range tracks, full of water after rain', () => {
+    const holes = world.features.mudHoles;
+    const on = new Set(holes.map((b) => b.id.replace(/-mud-\d+$/, '')));
+    for (const id of ['upper-daintree-road', 'paddock-road', 'creb-ridge', 'bloomfield-track'])
+      expect(on.has(id), id).toBe(true);
+    expect(holes.length).toBeGreaterThan(15);
+    for (const b of holes) expect(world.terrain.surfaceAt(b.x, b.z), b.id).toBe(SurfaceId.Mud);
+    // The rain fills them to the brim, so you can't see how deep they are.
+    const after = buildWorld(crebMap);
+    addPuddles(after, wet);
+    const full = after.features.mudHoles.filter((b) => after.terrain.waterDepthAt(b.x, b.z) > 0.15);
+    expect(full.length).toBeGreaterThan(holes.length * 0.8);
+  });
+
+  it('stops high range and open diffs on its wet clay climbs', async () => {
+    for (const id of ['big-red', 'bobs-hill'])
+      for (const tuning of [vehicleTuning, perentieTuning])
+        for (const lockers of ['high', 'open'] as const) {
+          const s = await scene(id, false, lockers, tuning);
+          try {
+            const r = await runLeg(s, s.track, false, 150);
+            expect(r.done, `${id}, ${tuning.name}, ${lockers}`).toBe(false);
+          } finally {
+            s.sim.physics.free();
+          }
+        }
+  }, 900_000);
+
   const legs: [string, 'both' | 'high', number][] = [
     ['daintree-crossing', 'both', 150],
     ['big-red', 'both', 200],
     ['big-red-bypass', 'both', 400],
-    ['roaring-meg-climb', 'both', 200],
+    ['creb-ridge', 'both', 400],
+    ['roaring-meg-climb', 'both', 300],
     ['bobs-hill', 'both', 200],
     ['concrete-descent', 'both', 300],
     ['donovans-creek', 'both', 200],

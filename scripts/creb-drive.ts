@@ -28,8 +28,10 @@ const legs: [string, Mode][] = [
   ['daintree-crossing', 'crawl'],
   ['paddock-road', 'road'],
   [bypass ? 'big-red-bypass' : 'big-red', 'crawl'],
-  ['creb-ridge', 'bush'],
-  ['roaring-meg-climb', 'bush'],
+  // On wet clay its steep pitch past the ridge needs low range and the lockers.
+  ['creb-ridge', 'crawl'],
+  // Through Roaring Meg's fast ford and up its slippery far bank.
+  ['roaring-meg-climb', 'crawl'],
   ['bobs-hill', 'crawl'],
   ['range-top', 'bush'],
   ['concrete-descent', 'crawl'],
