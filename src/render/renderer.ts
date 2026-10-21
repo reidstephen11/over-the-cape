@@ -70,7 +70,7 @@ export class GameRenderer {
     this.sky = new Sky(env);
     this.scene.add(this.sky.mesh);
     this.updateReflections(env);
-    this.scene.add(createBackdrop(world.map.seed));
+    this.scene.add(createBackdrop(world.map.seed, world.map.size));
 
     this.terrainMesh = new TerrainMesh(world.terrain, world.map.seed);
     this.scene.add(this.terrainMesh.group);
