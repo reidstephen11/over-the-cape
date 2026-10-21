@@ -367,7 +367,8 @@ export class Particles {
       }
       if (!w.contact) continue;
 
-      if (w.surface === SurfaceId.Mud) {
+      // Wet clay is thrown up in clods like mud.
+      if (w.surface === SurfaceId.Mud || (w.surface === SurfaceId.Clay && this.wetness > 0.3)) {
         const m = P.mud;
         const rate = m.spinRate * w.spin + m.speedRate * Math.min(1, speed / 6);
         const n = this.count(i, 1, rate * S * dt);
@@ -393,7 +394,7 @@ export class Particles {
 
       const d = P.dust;
       const scale =
-        w.surface === SurfaceId.Dirt
+        w.surface === SurfaceId.Dirt || w.surface === SurfaceId.Clay
           ? d.surfaceScale.dirt
           : w.surface === SurfaceId.Gravel
             ? d.surfaceScale.gravel

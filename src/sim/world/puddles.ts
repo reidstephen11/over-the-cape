@@ -15,8 +15,8 @@ export interface Puddle {
 }
 
 /**
- * After rain and in rain, press shallow dips into the flat stretches of the dirt and
- * gravel tracks and fill them with water: they are drawn, splashed through and heard
+ * After rain and in rain, fill the rough tracks' mud holes, and press shallow dips into
+ * the flat stretches of the dirt and gravel tracks and fill them with water: they are drawn, splashed through and heard
  * like the creek, and the muddy bottom is as slippery as a creek bed. Call before the
  * physics and the renderer are built (it changes the ground they read). Obstacle lines
  * (and where tracks meet them) and tracks with fine ground detail are left alone. Returns the puddles made.
@@ -31,6 +31,31 @@ export function addPuddles(world: World, env: EnvironmentConfig): Puddle[] {
   const obstacleLines = f.tracks.filter((track) => lineIds.has(track.def.id));
   const puddles: Puddle[] = [];
   const index = (ix: number, iz: number) => iz * t.res + ix;
+  // The rough tracks' mud holes fill to their lowest rim, hiding how deep they are.
+  for (const b of f.mudHoles) {
+    const a = (b.rotationDeg * Math.PI) / 180;
+    const [ca, sa] = [Math.cos(a), Math.sin(a)];
+    const R = Math.ceil(Math.max(b.radiusX, b.radiusZ) * 1.3);
+    const cells: Array<{ i: number; r: number }> = [];
+    for (let iz = Math.round(b.z + t.half) - R; iz <= Math.round(b.z + t.half) + R; iz++)
+      for (let ix = Math.round(b.x + t.half) - R; ix <= Math.round(b.x + t.half) + R; ix++) {
+        if (ix < 1 || iz < 1 || ix >= t.res - 1 || iz >= t.res - 1) continue;
+        const x = ix - t.half - b.x,
+          z = iz - t.half - b.z;
+        const r = Math.hypot((x * ca + z * sa) / b.radiusX, (-x * sa + z * ca) / b.radiusZ);
+        if (r < 1.3) cells.push({ i: index(ix, iz), r });
+      }
+    let rim = Infinity;
+    let bottom = Infinity;
+    for (const { i, r } of cells)
+      if (r >= 1.05) rim = Math.min(rim, t.heights[i]);
+      else bottom = Math.min(bottom, t.heights[i]);
+    const level = rim - 0.03;
+    if (!Number.isFinite(rim) || !(level > bottom + 0.05)) continue;
+    for (const { i, r } of cells)
+      if (r < 1.15 && t.heights[i] < level + 0.1) t.water[i] = level - env.waterLevelOffset;
+    puddles.push({ x: b.x, z: b.z, level, depth: level - bottom });
+  }
   for (const track of f.tracks) {
     const d = track.def;
     if (d.faint || d.surface === 'rock' || d.surface === 'concrete' || lineIds.has(d.id)) continue;

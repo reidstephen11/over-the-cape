@@ -462,3 +462,44 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 - **Speed.** On the paddock road the short-wheelbase 4WD took about 5 hard suspension hits smooth; rough, 75 at 24 km/h, 290 at 44 km/h and 330 with a little air at 53 km/h, and at 65 km/h it rolled over (it didn't on the smooth road).
 - **Strikes.** Suspension compression speed was too noisy to judge a hit by (it spikes past 7 m/s on a smooth road when a wheel touches down), so the generator records each hole's depth on its 1 m samples, and a wheel dropping in makes a strike: the vehicle's speed × the depth, give or take a quarter for how squarely it hits. Over 3.6 the tyre is pinched (a puncture); over 4.8 that corner's suspension also bends by 15%. On a range track the short-wheelbase 4WD took no damage at 37 km/h and two punctures in 460 m at 45; on the roads none at 45 km/h and about one at 52.
 - **Fuel.** Every bump takes work, which the dampers turn into heat. The autopilot's clean run of the CREB now uses 46 L of petrol in the short-wheelbase 4WD (35 L on the same route graded smooth; 33 L before this update) and 31 L of diesel in the Land Rover (24 L before). The load stays 50 L and a 20 L can: a careful run still arrives with fuel in hand, with less to spare.
+
+## v0.06: a harder CREB
+
+**What the owner said.** v0.05 "doesn't actually make it any harder". Asked what still felt too easy, the owner picked the roads, the river crossings and the climbs (not the time or the fuel). The numbers agreed: the autopilot's run of the whole route was only 4% slower than before v0.05, and both climbs went up in low range with the diffs open; the Land Rover went up them in high range.
+
+**The test of "harder".** Each climb and crossing was driven by the autopilot in three ways: high range, low range with the diffs open, and low range at a crawl with both diffs locked. The aim was for the hard places to stop the first two and let the third through, in both the short-wheelbase 4WD and the Land Rover.
+
+| Place                       | Before (high / open / locked)                              | Now (high / open / locked)                                                           |
+| --------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Big Red                     | short-wheelbase: stuck / up / up; Land Rover: up / up / up | stuck / stuck / up in both                                                           |
+| Bob's Hill                  | the same                                                   | stuck / stuck / up in both                                                           |
+| The ridge to Roaring Meg    | through in high range                                      | stuck / stuck / through in both                                                      |
+| Roaring Meg's ford and bank | through                                                    | short-wheelbase: stuck / through / through; Land Rover through                       |
+| The Daintree on the bar     | through in every way                                       | through, except the short-wheelbase 4WD crawling with open diffs, pushed off the bar |
+| The Daintree's deep middle  | swung round and pushed onto the bar                        | lifted past half its weight and stranded                                             |
+
+**Wet red clay.** The CREB's tracks were plain dirt, whose grip drops only 35% when wet, so the "slippery red clay" of the story wasn't. A new clay surface grips 0.95 dry and loses 55% of that when wet: 0.58 in the CREB's wet afternoon, 0.43 in rain, against 0.76 and 0.65 for dirt. It spins up easily, sinks a little and throws clods when wet. Every CREB dirt track is clay now. On its own it stopped high range on both climbs for both vehicles.
+
+**Cross-ruts on the climbs.** Big Red and Bob's Hill have 9 washouts per 100 m, up to 42 cm deep, at 15–50° across the track. Each one unloads a wheel on each axle in turn: with open diffs the drive goes to the light wheel and the car stalls on the clay; locked, it climbs. A rainforest pinch on the ridge to Roaring Meg camp (about 18°, 20 m) became the same kind of obstacle on clay, and is kept as one.
+
+**Rougher roads and tracks.** The gravel roads: bumps 14 cm, swells 30 cm, 7 potholes per 100 m up to 30 cm, 2 washouts per 100 m up to 30 cm. The range tracks: bumps 14 cm, swells 18 cm, 3 potholes up to 28 cm, 6 washouts per 100 m up to 38 cm.
+
+**Mud holes.** A rough track's `bogs` places mud holes on its flatter stretches (under 6% over 10 m, clear of creeks and bridges), each settled into the lowest spot of the graded ground within 6 m: hollows the width of the track, 7–12 m long and up to 30 cm deep, with a mud floor (grip 0.45, heavy rolling drag). After rain they fill to their lowest rim, hiding their depth. On a slope the water runs out at the low end, so only about two thirds hold water, up to 42 cm deep; insisting on a full hole left only 12 holes and none on the range. About half the candidate spots on the CREB are too steep, so the rates are set at 1.2 and 1.6 per 100 m, giving about 30 holes.
+
+**Faster, deeper crossings.**
+
+- The Daintree runs at 2.6 m/s (was 2) and its bar is 60 cm under (was 55).
+- Donovan's Creek: 2.6 m/s, and its ford is 50 cm deep (was 32 cm) on a water-worn bed rather than gravel.
+- The Little Annan: 2.4 m/s, and its ford is 55 cm deep (was 45 cm) on a water-worn bed.
+- Standing tyres in running water now keep only 36% of their side stiffness against the current (was 66%), so a car stopped on the Daintree's bar drifts 2–4 m downstream in 20 s.
+- **Roaring Meg was tried harder and eased back.** At 55 cm and 2.8 m/s, a stall on the slippery bank out of the ford let the current wash the short-wheelbase 4WD 50 m downstream to the lip of the falls, where it rolled, and it rolled at the exit even with both lockers. The ford is back to 45 cm over gravel with the water at 1.8 m/s where it widens (2.4 m/s elsewhere). Its slippery clay bank keeps it hard: high range doesn't get the short-wheelbase 4WD out.
+
+**Fuel kept where it was.** The harder ground took the autopilot's clean run to 59 L of petrol, against 46 L in v0.05. The owner didn't ask for the fuel to be tighter, so the burn rate (`fuelScale`) came down from 18 to 14, which puts the clean run back at about 46 L of petrol and 35 L of diesel. The route takes the autopilot 24 minutes (18.8 in v0.05), arriving about 2:42 pm, well inside the 6:15 pm deadline.
+
+**Tests.**
+
+- New: the climbs stop high range and open diffs in both vehicles.
+- New: the ridge leg is driven with both lockers.
+- New: the mud holes exist and fill with water after rain.
+- Changed: the deep-line test now expects the car to be lifted and stranded rather than pushed onto the bar.
+- Changed: the trench test steps over a washout under its measuring point, since a 42 cm washout under a point on Big Red made the road look that much lower.

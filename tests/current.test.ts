@@ -120,20 +120,25 @@ describe('running water on the CREB', () => {
     expect(current.at(-1010, 1075)).toEqual({ x: 0, z: 0 });
   });
 
-  it('pushes the short-wheelbase 4WD downstream on the deep line, and it gets across on the bar', async () => {
+  it('stops the short-wheelbase 4WD on the deep line, lifted and pushed downstream, and it gets across on the bar', async () => {
     const s = await scene('daintree-crossing', false, 'high', vehicleTuning);
     try {
-      // Straight across the deep middle: the current swings it round and shoves it downstream.
+      // Straight across the deep middle: the current lifts it, swings it round and shoves it
+      // downstream, and it never reaches the far bank.
       const path = pathFor(s.track).filter(([, z]) => z >= 1068);
       for (let z = 1067.5; z >= 985; z -= 0.5) path.push([-1010, z]);
       const pilot = new Autopilot(path, 3);
       let downstream = 0;
+      let lifted = 0;
       for (let t = 0; t < 40 && !pilot.done; t += DT) {
         s.inputs.set('p', pilot.input(s.v, DT));
         s.sim.step(s.inputs, DT);
         if (s.v.position.z < 1068) downstream = Math.max(downstream, s.v.position.x + 1010);
+        lifted = Math.max(lifted, s.v.afloat);
       }
-      expect(downstream).toBeGreaterThan(6);
+      expect(pilot.done).toBe(false);
+      expect(downstream).toBeGreaterThan(3);
+      expect(lifted).toBeGreaterThan(sweptTuning.lift);
     } finally {
       s.sim.physics.free();
     }

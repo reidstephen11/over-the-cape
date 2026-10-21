@@ -19,8 +19,8 @@ export const crebEpisode: EpisodeDef = {
   // Game seconds per real second: the afternoon (5¾ hours) passes in about an hour of driving.
   clockRate: 5.5,
   // The map is about 5 km of the real trip's 100-odd km; fuel burns to match the real distance
-  // (the autopilot uses about 33 L of petrol or 24 L of diesel on a clean run).
-  fuelScale: 18,
+  // (the autopilot uses about 46 L of petrol or 35 L of diesel on a clean run of the wet clay).
+  fuelScale: 14,
   loadout: { fuel: 50, jerryCans: 1, spares: 1, plugs: 3 },
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',

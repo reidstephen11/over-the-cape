@@ -13,6 +13,7 @@ const SURFACE_COLORS: Record<number, number> = {
   [SurfaceId.Mud]: 0x6b4a33,
   [SurfaceId.Water]: 0x4e7c86,
   [SurfaceId.Wood]: 0xc58b5c,
+  [SurfaceId.Clay]: 0xa4452a,
 };
 
 interface SliderDef {

@@ -7,6 +7,7 @@ export const SurfaceId = {
   Mud: 4,
   Water: 5,
   Wood: 6,
+  Clay: 7,
 } as const;
 export type SurfaceId = (typeof SurfaceId)[keyof typeof SurfaceId];
 
@@ -94,6 +95,18 @@ export const surfaces: Record<SurfaceId, SurfaceDef> = {
     wetGripLoss: 0,
     dirtRate: -0.05,
   },
+  // Red clay grips like dirt when dry; after rain it greases over and grips little better than mud.
+  [SurfaceId.Clay]: {
+    id: SurfaceId.Clay,
+    name: 'Red clay',
+    grip: 0.95,
+    rollingResistance: 0.03,
+    sink: 0.04,
+    dust: true,
+    spray: true,
+    wetGripLoss: 0.55,
+    dirtRate: 0.03,
+  },
   [SurfaceId.Wood]: {
     id: SurfaceId.Wood,
     name: 'Timber plank',
@@ -156,7 +169,7 @@ export const waterLift = {
   creep: 0.85,
   creepFlow: 1.5,
   /** Share of that creep while standing still (it rises to all of it by 1.5 m/s). */
-  standingCreep: 0.4,
+  standingCreep: 0.75,
 };
 
 /** When the current has taken the vehicle (an episode ends on Mild and Realistic damage). */

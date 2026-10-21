@@ -6,7 +6,7 @@ import { GroundTint, NO_WATER, Terrain } from './terrain';
 import type { CreekInfo, GullyInfo, StaticBox, TerrainFeatures, TrackInfo } from './features';
 import { buildDetailPatch, type DetailPatch } from './detail';
 import { onBridge } from './bridges';
-import { roughHole, roughOffset, trackRoughness, type TrackRoughness } from './roughness';
+import { roughHole, roughOffset, trackMudHoles, trackRoughness, type TrackRoughness } from './roughness';
 
 /** Macro relief is evaluated on a coarser grid and upsampled. */
 const MACRO_STEP = 2;
@@ -622,9 +622,17 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 
   yield { progress: 0.58, label: 'Washouts and bogs' };
 
-  // --- Bogs ---
+  // --- Bogs, and the mud holes in rough tracks ---
+  const mudHoles = tracks.flatMap((t, id) =>
+    trackMudHoles(t, map.seed * 53 + id, sampleH, (x, z, s) => {
+      const i = Math.round(z + half) * res + Math.round(x + half);
+      return (
+        creekDist[i] - creekHalfAt[i] < 15 || [s - 7, s, s + 7].some((q) => onBridge(t.def, q) !== undefined)
+      );
+    }),
+  );
   const bogMask = new Uint8Array(n);
-  for (const b of map.bogs) {
+  for (const b of [...map.bogs, ...mudHoles]) {
     const a = (b.rotationDeg * Math.PI) / 180;
     const c = Math.cos(a);
     const s = Math.sin(a);
@@ -813,7 +821,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         ? SurfaceId.Gravel
         : def.surface === 'rock' || def.surface === 'concrete'
           ? SurfaceId.Rock
-          : SurfaceId.Dirt;
+          : def.surface === 'clay'
+            ? SurfaceId.Clay
+            : SurfaceId.Dirt;
     surface[i] = sid;
     if (def.surface === 'concrete') tint[i] = d > hw - 0.3 ? GroundTint.DirtEdge : GroundTint.Concrete;
     else if (def.surface === 'rock') {
@@ -897,6 +907,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       gullies,
       trackDistance,
       creekDistance,
+      mudHoles,
     },
   };
 }

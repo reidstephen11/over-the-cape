@@ -133,8 +133,8 @@ export interface TrackDef {
   batter?: number;
   /** Smoothing radius (m) for the height profile. */
   smooth: number;
-  /** Concrete: strips laid on the steepest pinches, gripping like rock. */
-  surface: 'dirt' | 'gravel' | 'rock' | 'concrete';
+  /** Concrete: strips laid on the steepest pinches, gripping like rock. Clay: red clay, slippery when wet. */
+  surface: 'dirt' | 'clay' | 'gravel' | 'rock' | 'concrete';
   /** Depth of the worn wheel ruts. */
   ruts: number;
   /** Fraction of the natural cross-slope kept (0 = level, 1 = untouched). */
@@ -177,6 +177,9 @@ export interface TrackRoughDef {
   /** Washouts per 100 m, and how deep the deepest are (m, default 0.25). */
   washouts?: number;
   washoutDepth?: number;
+  /** Mud holes per 100 m on the flatter stretches, and how deep the deepest are (m, default 0.25). */
+  bogs?: number;
+  bogDepth?: number;
 }
 
 /**
