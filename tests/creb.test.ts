@@ -5,6 +5,9 @@ import { crebMap } from '../src/data/episodes/crebMap';
 import { perentieTuning } from '../src/data/perentie';
 import { vehicleTuning } from '../src/data/vehicle';
 import { trailPoint } from '../src/sim/world/crawlTrail';
+import { emptyInput } from '../src/sim/input/vehicleInput';
+import { loadRapier } from '../src/sim/physics';
+import { Simulation } from '../src/sim/sim';
 import { NO_WATER } from '../src/sim/world/terrain';
 import { buildWorld } from '../src/sim/world/world';
 import { driveLeg, driver } from './helpers/drive';
@@ -91,6 +94,51 @@ describe('Episode 1: the CREB Track', () => {
     const bar = Math.round(1036 + t.half) * t.res + Math.round(-994 + t.half);
     expect(t.water[bar]).toBeGreaterThan(NO_WATER);
     expect(t.water[bar] - t.heights[bar]).toBeLessThan(0.65);
+  });
+
+  it('lays its cuttings back, so no track runs in a trench', () => {
+    // Without batters, Big Red, the bypass, Bob's Hill, the range top and the concrete ran
+    // between clay walls a car could climb and stick on (v0.02).
+    const t = world.terrain;
+    const trenches: string[] = [];
+    for (const track of world.features.tracks) {
+      const out = track.def.width / 2 + 3;
+      for (let s = 0; s <= track.poly.length; s += 2) {
+        const p = trailPoint(track, s);
+        const h = (p.headingDeg * Math.PI) / 180;
+        const [nx, nz] = [Math.cos(h), Math.sin(h)];
+        const road = t.heightAt(p.x, p.z);
+        const banks = [-1, 1].map((side) => t.heightAt(p.x + nx * side * out, p.z + nz * side * out) - road);
+        if (Math.min(...banks) > 1.5) trenches.push(`${track.def.id}@${s}`);
+      }
+    }
+    expect(trenches).toEqual([]);
+  });
+
+  it("lets the Land Rover reverse up the concrete's bend without climbing the bank", async () => {
+    // Where a player reversing up the descent stuck on the cutting's wall, tilted 40° (v0.02).
+    const sim = new Simulation(await loadRapier(), world, wet);
+    try {
+      const v = sim.addVehicle(
+        'p',
+        sim.poseAt(10.2, -505.4, 332, perentieTuning.wheelRadius),
+        perentieTuning,
+      );
+      const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
+      for (let i = 0; i < 90; i++) sim.step(inputs, 1 / 60);
+      v.toggleRange();
+      // Held brake from a stop is reverse.
+      inputs.set('p', { ...emptyInput(), brake: 1 });
+      let tilt = 0;
+      for (let i = 0; i < 7 * 60; i++) {
+        sim.step(inputs, 1 / 60);
+        tilt = Math.max(tilt, v.tiltDeg());
+      }
+      expect(tilt).toBeLessThan(30);
+      expect(v.position.z).toBeGreaterThan(-494);
+    } finally {
+      sim.physics.free();
+    }
   });
 
   const legs: [string, 'both' | 'high', number][] = [
