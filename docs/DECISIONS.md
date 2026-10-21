@@ -494,7 +494,7 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 - Standing tyres in running water now keep only 36% of their side stiffness against the current (was 66%), so a car stopped on the Daintree's bar drifts 2–4 m downstream in 20 s.
 - **Roaring Meg was tried harder and eased back.** At 55 cm and 2.8 m/s, a stall on the slippery bank out of the ford let the current wash the short-wheelbase 4WD 50 m downstream to the lip of the falls, where it rolled, and it rolled at the exit even with both lockers. The ford is back to 45 cm over gravel with the water at 1.8 m/s where it widens (2.4 m/s elsewhere). Its slippery clay bank keeps it hard: high range doesn't get the short-wheelbase 4WD out.
 
-**Fuel kept where it was.** The harder ground took the autopilot's clean run to 56 L of petrol, against 46 L in v0.05. The owner didn't ask for the fuel to be tighter, so the burn rate (`fuelScale`) came down from 18 to 15, which puts the clean run back at about 47 L of petrol and 36 L of diesel. The route takes the autopilot 24 minutes (18.8 in v0.05), arriving about 2:40 pm, well inside the 6:15 pm deadline.
+**Fuel kept where it was.** The harder ground took the autopilot's clean run to 59 L of petrol, against 46 L in v0.05. The owner didn't ask for the fuel to be tighter, so the burn rate (`fuelScale`) came down from 18 to 14, which puts the clean run back at about 46 L of petrol and 35 L of diesel. The route takes the autopilot 24 minutes (18.8 in v0.05), arriving about 2:42 pm, well inside the 6:15 pm deadline.
 
 **Tests.**
 
