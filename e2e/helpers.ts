@@ -53,12 +53,19 @@ export async function lowGraphics(page: Page): Promise<void> {
   });
 }
 
-/** Wait until the engine has caught after starting (on arrival or after a vehicle swap). */
+/**
+ * Wait until the engine has caught after starting (on arrival or after a vehicle swap). On a
+ * touch screen a history note stops the game until it's tapped, so tap any that shows.
+ */
 export async function waitEngine(page: Page): Promise<void> {
-  await page.waitForFunction(() => window.__game!.vehicle().engineRunning, null, {
-    timeout: 300_000,
-    polling: 100,
-  });
+  await page.waitForFunction(
+    () => {
+      document.querySelector<HTMLElement>('.history-card.reading')?.click();
+      return window.__game!.vehicle().engineRunning;
+    },
+    null,
+    { timeout: 300_000, polling: 100 },
+  );
 }
 
 /**

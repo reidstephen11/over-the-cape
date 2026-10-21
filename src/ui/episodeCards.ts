@@ -1,19 +1,29 @@
 /**
- * Episode cards: the history note shown on reaching a place (top right, while you keep
- * driving), and the result card when the mission is done or the episode ends early
- * (centred, with buttons, the game paused behind it).
+ * Episode cards: the history note shown on reaching a place, and the result card when the
+ * mission is done or the episode ends early (centred, with buttons, the game paused behind
+ * it). With a mouse or a pad the note sits top right while you keep driving; on a touch
+ * screen, where there is no room beside the buttons, it is read with the game stopped.
  */
 export class HistoryCard {
   readonly el: HTMLElement;
   /** Titles shown so far, oldest first. */
   readonly shown: string[] = [];
-  private readonly queue: { title: string; text: string }[] = [];
+  private readonly backdrop: HTMLElement;
+  private readonly queue: { title: string; text: string; reading: boolean }[] = [];
   private timer = 0;
 
-  constructor(root: HTMLElement) {
+  /** `onRead` runs when the last note read with the game stopped is closed. */
+  constructor(
+    root: HTMLElement,
+    private readonly onRead: () => void,
+  ) {
+    this.backdrop = document.createElement('div');
+    this.backdrop.className = 'history-backdrop hidden';
+    this.backdrop.addEventListener('click', () => this.next());
+    root.appendChild(this.backdrop);
     this.el = document.createElement('div');
     this.el.className = 'history-card paper hidden';
-    this.el.innerHTML = `<small>History</small><strong></strong><p></p><span class="history-close" aria-hidden="true">×</span>`;
+    this.el.innerHTML = `<small>History</small><strong></strong><p></p><span class="history-close" aria-hidden="true">×</span><span class="history-hint">Tap to carry on</span>`;
     this.el.addEventListener('click', () => this.next());
     root.appendChild(this.el);
   }
@@ -22,20 +32,33 @@ export class HistoryCard {
     return !this.el.classList.contains('hidden');
   }
 
-  show(title: string, text: string): void {
-    this.queue.push({ title, text });
+  /** Is a note up that stops the game until it's closed? */
+  get reading(): boolean {
+    return this.isShown && this.el.classList.contains('reading');
+  }
+
+  /** Show a note (after any already waiting). `reading`: stop and read it, tap to close. */
+  show(title: string, text: string, reading = false): void {
+    this.queue.push({ title, text, reading });
     if (!this.isShown) this.next();
   }
 
   /** Close the card, showing the next one waiting. */
   next(): void {
     clearTimeout(this.timer);
+    const wasReading = this.reading;
     const n = this.queue.shift();
     this.el.classList.toggle('hidden', !n);
-    if (!n) return;
+    this.el.classList.toggle('reading', !!n?.reading);
+    this.backdrop.classList.toggle('hidden', !n?.reading);
+    if (!n) {
+      if (wasReading) this.onRead();
+      return;
+    }
     this.el.querySelector('strong')!.textContent = n.title;
     this.shown.push(n.title);
     this.el.querySelector('p')!.textContent = n.text;
+    if (n.reading) return;
     // About 200 words a minute, and at least 12 s.
     const words = n.text.split(/\s+/).length;
     this.timer = window.setTimeout(() => this.next(), Math.max(12_000, (words / 200) * 60_000 + 4_000));

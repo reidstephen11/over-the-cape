@@ -200,20 +200,7 @@ test.describe('phone on the CREB', () => {
     await expect(page.locator('.mission')).toBeVisible();
     await expect(page.locator('.supplies')).toBeVisible();
     const panels =
-      '.touch-btn, .hud button, .compass, .status, .camera-help, .prompt, .crawl-gauges, .mission, .supplies';
-    // A history note (the longest) covers no button and stays on the screen.
-    const buttons = '.touch-btn, .hud button, .prompt';
-    const note = async (where: string) => {
-      await page.evaluate(() => window.__game!.showNote('creb-lookout'));
-      const card = page.locator('.history-card');
-      await expect(card).toBeVisible();
-      expect(await overlapping(page, `${buttons}, .history-card`), `${where} note`).toEqual([]);
-      const box = (await card.boundingBox())!;
-      const view = page.viewportSize()!;
-      expect(box.y + box.height, `${where} note bottom`).toBeLessThanOrEqual(view.height);
-      expect(box.x + box.width, `${where} note right`).toBeLessThanOrEqual(view.width);
-      await page.evaluate(() => window.__game!.showNote('none'));
-    };
+      '.touch-btn, .touch-stick-base, .hud button, .compass, .status, .camera-help, .prompt, .crawl-gauges, .mission, .supplies';
     // With 4WD's pile open, then closed.
     for (const open of [true, false]) {
       if (!open) await f.tap('.touch-pile-toggle');
@@ -233,7 +220,6 @@ test.describe('phone on the CREB', () => {
           // The status strip and camera buttons stay one row high (they once stretched down the screen).
           for (const panel of ['.status', '.camera-help'])
             expect((await page.locator(panel).boundingBox())!.height, `${where} ${panel}`).toBeLessThan(60);
-          await note(where);
         }
       }
       await page.evaluate(() => window.__game!.cameraPreset('follow'));
@@ -241,8 +227,40 @@ test.describe('phone on the CREB', () => {
       await waitSim(page, 0.3);
       await shot(page, 'touch', open ? 'portrait-4wd-open' : 'portrait-creb');
     }
-    await page.evaluate(() => window.__game!.showNote('creb-lookout'));
-    await shot(page, 'touch', 'portrait-history');
+    // A history note stops the game and is read in the middle of the screen, the buttons
+    // hidden; tapping it carries on.
+    for (const size of [
+      { width: 390, height: 844 },
+      { width: 740, height: 360 },
+    ]) {
+      await page.setViewportSize(size);
+      await page.evaluate(() => window.__game!.showNote('creb-lookout'));
+      await expect(page.locator('.history-card')).toBeVisible();
+      await expect(page.locator('.history-backdrop')).toBeVisible();
+      await expect(page.locator('.touch-controls')).toBeHidden();
+      expect(await page.evaluate(() => window.__game!.ui().paused)).toBe(true);
+      // The whole note fits (its layout box: it unfolds as it opens).
+      const box = await page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>('.history-card')!;
+        return {
+          top: el.offsetTop,
+          bottom: el.offsetTop + el.offsetHeight,
+          hidden: el.scrollHeight - el.clientHeight,
+        };
+      });
+      expect(box.top, `${size.width}×${size.height}`).toBeGreaterThanOrEqual(0);
+      expect(box.bottom, `${size.width}×${size.height}`).toBeLessThanOrEqual(size.height);
+      expect(box.hidden, `${size.width}×${size.height}`).toBeLessThanOrEqual(0);
+      await shot(page, 'touch', `history-${size.width}`);
+      const t0 = await page.evaluate(() => window.__game!.simTime());
+      await page.waitForTimeout(1000);
+      expect(await page.evaluate(() => window.__game!.simTime())).toBe(t0);
+      await f.tap('.history-card');
+      await expect.poll(() => page.evaluate(() => window.__game!.historyReading())).toBe(false);
+      await expect(page.locator('.touch-controls')).toBeVisible();
+      await expect.poll(() => page.evaluate(() => window.__game!.simTime())).toBeGreaterThan(t0);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(() => window.__game!.cameraPreset('cockpit'));
     await waitSim(page, 0.3);
     await shot(page, 'touch', 'portrait-driver');

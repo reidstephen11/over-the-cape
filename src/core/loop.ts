@@ -55,11 +55,12 @@ export class GameLoop {
     const t0 = performance.now();
     let steps = 0;
     if (!this.paused && this.fixedSteps > 0) {
-      for (; steps < this.fixedSteps; steps++) this.cb.step(PHYSICS_DT);
+      for (; steps < this.fixedSteps && !this.paused; steps++) this.cb.step(PHYSICS_DT);
       this.acc = 0;
     } else if (!this.paused) {
       this.acc += frameDt * this.timeScale;
-      while (this.acc >= PHYSICS_DT && steps < MAX_STEPS_PER_FRAME) {
+      // A step can pause the game (a note to read, the episode ending): stop there.
+      while (this.acc >= PHYSICS_DT && steps < MAX_STEPS_PER_FRAME && !this.paused) {
         this.cb.step(PHYSICS_DT);
         this.acc -= PHYSICS_DT;
         steps++;

@@ -114,9 +114,11 @@ export interface GameHook {
   pickResult(id: string): void;
   /** The history card's title, if one is showing. */
   history(): string | null;
+  /** Is a history note up with the game stopped to read it (touch screens)? */
+  historyReading(): boolean;
   /** Titles of the history cards shown so far, oldest first. */
   historyShown(): string[];
-  /** Show the history note for a place now (closing any card that is up). */
+  /** Show the history note for a place as if just reached (closing any card that is up). */
   showNote(poi: string): void;
   /** Set the park brake directly (the key toggles it). */
   setParkBrake(on: boolean): void;
@@ -330,10 +332,11 @@ export function installHook(game: Game): void {
     pickResult: (id) => g.result.el.querySelector<HTMLButtonElement>(`button[data-result="${id}"]`)?.click(),
     history: () => (g.history.isShown ? (g.history.el.querySelector('strong')?.textContent ?? '') : null),
     historyShown: () => [...g.history.shown],
+    historyReading: () => g.history.reading,
     showNote: (poi) => {
       const note = g.episode.notes[poi];
       g.history.clear();
-      if (note) g.history.show(note.title, note.text);
+      if (note) g.showHistory(note);
     },
     setParkBrake: (on) => {
       g.vehicle.parkBrake = on;

@@ -134,15 +134,15 @@ Placing planks: choose **Place planks** in the tool menu, move them with W/S, tu
 
 ### Phones and tablets
 
-On a touch screen the game shows on-screen controls, held sideways or upright. The mission panel and the fuel and supplies sit under the status strip at the top left.
+On a touch screen the game shows on-screen controls, held sideways or upright. The fuel and supplies and the mission panel sit under the status strip at the top left; held sideways the mission panel shows only the clock and deadline. On reaching a place, its history note stops the game and shows in the middle of the screen; tap it to carry on. LOW, CRAWL and the diff locks sit behind the 4WD button, which opens them in a row above it; while it's closed, its letters L, C, F and R light up for each one that's on. Held upright, the view widens so the car and the windscreen don't fill the screen, prompts such as "USE Attach winch" sit just above the buttons on the right, and the crawl gauges sit top right under the fuel.
 
 | Action                                | Touch                                                          |
 | ------------------------------------- | -------------------------------------------------------------- |
 | Steer                                 | Joystick, bottom left (push part way for part lock)            |
 | Accelerate / brake and reverse        | GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse) |
 | Handbrake on / off                    | HAND                                                           |
-| High / low range                      | LOW                                                            |
-| Precision crawl, diff locks           | CRAWL, F LOCK, R LOCK                                          |
+| High / low range                      | 4WD, then LOW                                                  |
+| Precision crawl, diff locks           | 4WD, then CRAWL, F LOCK, R LOCK (tap 4WD again to tuck away)   |
 | Winch attach / detach, pick up planks | USE                                                            |
 | Winch in / out                        | Hold IN / OUT (shown while the winch is attached)              |
 | Right vehicle                         | Hold UPRIGHT (shown when needed)                               |
@@ -176,7 +176,9 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **Finish and replay:** on reaching the Lions Den the closing card shows; Keep driving lets you look around. Back at the welcome screen Episode 1 shows "finished", and Conditions lets you replay it at another time and in other weather, with no time limit.
 - [ ] **Vehicles:** the Land Rover uses less fuel and still climbs Big Red and Bob's Hill; the Camel Trophy 4WD's snorkel lets it wade the deep part of the Daintree.
 - [ ] **Looks:** the rainforest (canopy trees, fan palms, tree ferns), red clay tracks and cuttings, the two waterfalls, the Bloomfield bridge. Frame rate on Medium in `?debug` while driving through the rainforest.
-- [ ] **Phone:** the mission panel and fuel sit under the status strip, clear of the touch controls, held sideways and upright.
+- [ ] **v0.02 phone layout:** on a phone held upright, the fuel, then the mission panel sit under the status strip, and nothing covers anything else. Press 4WD: LOW, CRAWL, F LOCK and R LOCK open in a row above it; press LOW and the crawl gauges appear top right under the fuel, with the mission panel narrowed beside them. Tap 4WD again to close the row and check its letters show what's on. Stopped with the handbrake on, press GAS: "HAND Release the handbrake" shows just above the buttons on the right. View → Driver: the status strip stays a small box and View / ⟲ stay top right. Held sideways the mission panel shows just the clock, clear of the joystick.
+- [ ] **v0.02 history notes on a phone:** at the start, and on reaching each place (Daintree River crossing, Big Red...), the game stops and the note shows in the middle of the screen with the buttons hidden. Tap it and the game carries on. With a keyboard the notes still show top right while you drive.
+- [ ] **v0.02 changing vehicle:** drive away from Daintree Village, then Pause → Vehicle → Land Rover 110 Perentie. It restarts at the camp and drives off (in v0.01 it stayed stuck with the engine revving).
 
 ## Project layout
 

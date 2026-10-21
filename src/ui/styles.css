@@ -1890,33 +1890,96 @@ table.controls td {
   color: var(--ink-soft);
 }
 
-/* On a phone or tablet the mission and supplies sit under the status strip, clear of the thumbs. */
+/*
+ * On a phone or tablet the fuel and the mission sit under the status strip, clear of the
+ * thumbs. The episode's name is in the pause menu.
+ */
 .touch-mode .supplies {
-  top: 100px;
+  top: 106px;
   bottom: auto;
   left: max(12px, env(safe-area-inset-left));
   font-size: 12px;
 }
 
 .touch-mode .mission {
-  top: 138px;
+  top: 144px;
   left: max(12px, env(safe-area-inset-left));
   max-width: 230px;
   padding: 4px 9px;
+}
+
+.touch-mode .mission small {
+  display: none;
 }
 
 .touch-mode .mission strong {
   font-size: 16px;
 }
 
+.touch-mode .mission-clock {
+  font-size: 13px;
+}
+
+/* Held sideways the joystick is close below and the prompts beside: the clock only. */
+@media (orientation: landscape) {
+  .touch-mode .mission strong,
+  .touch-mode .mission:has(.mission-clock:empty) {
+    display: none;
+  }
+}
+
 @media (orientation: portrait) {
   .touch-mode .supplies {
-    top: 146px;
+    top: 150px;
   }
 
   .touch-mode .mission {
-    top: 184px;
+    top: 188px;
   }
+
+  /* The crawl gauges go top right under the fuel, and the mission narrows beside them. */
+  .touch-mode .crawl-gauges,
+  .touch-mode .hud.cockpit .crawl-gauges {
+    top: 188px;
+  }
+
+  .touch-mode .hud.with-gauges .mission {
+    max-width: calc(100vw - 216px);
+  }
+}
+
+/* On a touch screen a history note is read with the game stopped, over a dimmed view. */
+.history-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(30, 22, 14, 0.45);
+}
+
+.history-backdrop.hidden,
+.history-hint {
+  display: none;
+}
+
+.history-card.reading {
+  position: fixed;
+  z-index: 31;
+  inset: 0;
+  margin: auto;
+  width: min(460px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  transform: none;
+}
+
+.history-card.reading .history-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--ink-soft);
 }
 
 @media (max-width: 720px) {
