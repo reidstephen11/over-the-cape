@@ -22,6 +22,11 @@ export class GameLoop {
   paused = false;
   /** Scales simulated time (1 = real time). */
   timeScale = 1;
+  /**
+   * Browser tests on a software renderer, where a frame can take seconds: run this many
+   * steps every frame, whatever the frame took (0 = keep to the clock).
+   */
+  fixedSteps = 0;
   readonly timings: LoopTimings = { sim: 0, render: 0, steps: 0 };
   private acc = 0;
   private last = 0;
@@ -49,7 +54,10 @@ export class GameLoop {
     this.last = now;
     const t0 = performance.now();
     let steps = 0;
-    if (!this.paused) {
+    if (!this.paused && this.fixedSteps > 0) {
+      for (; steps < this.fixedSteps; steps++) this.cb.step(PHYSICS_DT);
+      this.acc = 0;
+    } else if (!this.paused) {
       this.acc += frameDt * this.timeScale;
       while (this.acc >= PHYSICS_DT && steps < MAX_STEPS_PER_FRAME) {
         this.cb.step(PHYSICS_DT);

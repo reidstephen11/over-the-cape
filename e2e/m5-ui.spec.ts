@@ -54,7 +54,9 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
     .toContain('daintree-crossing');
   await page.evaluate(() => window.__game!.setInput({ brake: 1 }));
   expect(await discoveryCards(page)).toContain('Daintree River crossing');
-  await expect.poll(() => page.evaluate(() => window.__game!.history())).toBe('Daintree River crossing');
+  await expect
+    .poll(() => page.evaluate(() => window.__game!.historyShown()))
+    .toContain('Daintree River crossing');
   await shot(page, 'M5', 'discovery-toast');
   await page.evaluate(() => window.__game!.setInput(null));
 
@@ -125,8 +127,7 @@ test('M5: with storage blocked the game still runs', async ({ page }) => {
   await expect.poll(() => discoveryCards(page), { timeout: 30_000 }).toContain('Daintree Village');
   const t0 = await page.evaluate(() => window.__game!.simTime());
   await page.evaluate(() => window.__game!.setInput({ throttle: 1 }));
-  await page.waitForTimeout(3000);
-  expect(await page.evaluate(() => window.__game!.simTime())).toBeGreaterThan(t0);
+  await expect.poll(() => page.evaluate(() => window.__game!.simTime())).toBeGreaterThan(t0 + 1);
   await shot(page, 'M5', 'storage-blocked-still-running');
   expect(errors).toEqual([]);
 });

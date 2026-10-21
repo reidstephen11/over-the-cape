@@ -545,7 +545,7 @@ export class Game {
     this.sim.startEngine(LOCAL_VEHICLE);
     this.view.scene.remove(this.model.root);
     this.model.dispose();
-    this.model = new VehicleModel(def.tuning, this.sim.env.lampBeams);
+    this.model = new VehicleModel(def.tuning, this.lampBeams);
     this.view.scene.add(this.model.root);
     this.vehicleId = id;
     this.input.setSteering(def.tuning.steering);

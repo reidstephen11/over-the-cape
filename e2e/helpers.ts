@@ -25,10 +25,17 @@ export async function waitReady(page: Page): Promise<void> {
   await driveFromBriefing(page);
 }
 
+/**
+ * Physics steps run per frame in the browser tests. The software renderer takes seconds
+ * to draw a frame of the 3 km map, so at real time the game would crawl.
+ */
+export const TEST_STEPS_PER_FRAME = 24;
+
 /** Wait for the briefing's Drive button (the map has built), press it and wait for the engine. */
 export async function driveFromBriefing(page: Page): Promise<void> {
   await page.locator('[data-briefing-drive]:not(.hidden)').click({ timeout: 300_000 });
   await page.waitForFunction(() => window.__game?.ready === true, null, { timeout: 300_000 });
+  await page.evaluate((n) => window.__game!.setStepsPerFrame(n), TEST_STEPS_PER_FRAME);
   await waitEngine(page);
 }
 

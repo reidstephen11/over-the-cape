@@ -5,6 +5,8 @@
  */
 export class HistoryCard {
   readonly el: HTMLElement;
+  /** Titles shown so far, oldest first. */
+  readonly shown: string[] = [];
   private readonly queue: { title: string; text: string }[] = [];
   private timer = 0;
 
@@ -32,6 +34,7 @@ export class HistoryCard {
     this.el.classList.toggle('hidden', !n);
     if (!n) return;
     this.el.querySelector('strong')!.textContent = n.title;
+    this.shown.push(n.title);
     this.el.querySelector('p')!.textContent = n.text;
     // About 200 words a minute, and at least 12 s.
     const words = n.text.split(/\s+/).length;
