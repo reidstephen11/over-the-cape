@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady } from './helpers';
+import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
 const audio = (page: Page) => page.evaluate(() => window.__game!.audio());
 
@@ -71,9 +71,11 @@ test('M6: audio starts with the Drive button, follows the car, and the volume se
   expect(peak).toBeGreaterThan(0.01);
   expect(peak).toBeLessThan(1);
 
-  // Winch whine while reeling in, hooked to a tree on Big Red.
+  // Winch whine while reeling in, hooked to a tree on Big Red (held on the park brake, or it
+  // rolls back down the hill out of the winch's reach).
   await page.evaluate(() => window.__game!.teleport(-354, 700, 350));
-  await page.waitForTimeout(3000);
+  await page.evaluate(() => window.__game!.setParkBrake(true));
+  await waitSim(page, 1);
   await page.keyboard.press('KeyE');
   await page.keyboard.down('KeyR');
   await expect.poll(async () => (await audio(page)).winchHz, { timeout: 30_000 }).toBeGreaterThan(200);
