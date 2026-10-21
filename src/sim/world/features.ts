@@ -7,6 +7,8 @@ export interface TrackInfo {
   poly: DensePolyline;
   /** Ground height along the centreline, one value per dense point. */
   profile: Float32Array;
+  /** Bank width (m) per dense point, for a track with a `batter` (else `def.shoulder`). */
+  shoulders?: Float32Array;
 }
 
 export interface CreekInfo {

@@ -30,9 +30,13 @@ import {
  *   north-east – the concrete descent, Donovan's Creek, the Bloomfield River and its falls,
  *                Rossville and the Lions Den beside the Little Annan River
  */
+// Cuttings and fill are laid back to an average 1 in 2, so a deep cut is a wide clay bank
+// rather than a narrow trench that traps a vehicle.
+const BATTER = 0.5;
 // After the wet the roads are corrugated and potholed and the range tracks washed out.
 const road = {
   shoulder: 4,
+  batter: BATTER,
   smooth: 12,
   ruts: 0.05,
   camber: 0.2,
@@ -40,6 +44,7 @@ const road = {
 } as const;
 const bush = {
   shoulder: 3,
+  batter: BATTER,
   smooth: 8,
   ruts: 0.08,
   camber: 0.3,
@@ -65,6 +70,7 @@ const tracks: TrackDef[] = [
     points: daintreeCrossing,
     width: 4.2,
     shoulder: 3,
+    batter: BATTER,
     smooth: 12,
     surface: 'gravel',
     ruts: 0,
@@ -86,6 +92,7 @@ const tracks: TrackDef[] = [
     points: bigRed,
     width: 3.8,
     shoulder: 4,
+    batter: BATTER,
     smooth: 6,
     surface: 'dirt',
     ruts: 0.12,
@@ -116,6 +123,7 @@ const tracks: TrackDef[] = [
     points: bobsHill,
     width: 3.6,
     shoulder: 3,
+    batter: BATTER,
     smooth: 6,
     surface: 'dirt',
     ruts: 0.1,
@@ -130,6 +138,7 @@ const tracks: TrackDef[] = [
     points: concreteDescent,
     width: 3.6,
     shoulder: 4,
+    batter: BATTER,
     smooth: 6,
     surface: 'concrete',
     ruts: 0,
@@ -143,6 +152,7 @@ const tracks: TrackDef[] = [
     points: bloomfieldBridge,
     width: 5,
     shoulder: 3,
+    batter: BATTER,
     smooth: 6,
     surface: 'gravel',
     ruts: 0,

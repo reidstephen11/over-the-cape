@@ -182,6 +182,53 @@ function bilinear(src: Float32Array, res: number, fx: number, fz: number): numbe
   return a + (b - a) * tz;
 }
 
+/** A track's bank width (m) at a dense-point parameter. */
+function shoulderAt(t: TrackInfo, p: number): number {
+  return t.shoulders ? atParam(t.shoulders, p) : t.def.shoulder;
+}
+
+/** Widest bank (m) a batter may make: on a hillside steeper than the batter it stops here. */
+const MAX_BATTER_SHOULDER = 14;
+
+/**
+ * Bank widths along a track with a `batter`: at each point wide enough that the bank from
+ * the track's edge to the natural ground on either side is no steeper than the batter on
+ * average (up to a limit, so a cut into a steep hillside doesn't reshape the whole slope),
+ * and never narrower than its shoulder. Each width is held over the next few metres either
+ * way and then eased along the track, so the deepest cut keeps its full width and the banks
+ * don't jag.
+ */
+function batterShoulders(
+  def: TrackDef,
+  poly: DensePolyline,
+  profile: Float32Array,
+  groundAt: (x: number, z: number) => number,
+): Float32Array {
+  const hw = def.width / 2;
+  const batter = def.batter!;
+  const need = new Float32Array(poly.count);
+  for (let k = 0; k < poly.count; k++) {
+    const a = Math.max(0, k - 1);
+    const b = Math.min(poly.count - 1, k + 1);
+    const dx = poly.xs[b] - poly.xs[a];
+    const dz = poly.zs[b] - poly.zs[a];
+    const len = Math.hypot(dx, dz) || 1;
+    const [nx, nz] = [-dz / len, dx / len];
+    let s = def.shoulder;
+    const steep = (side: number) =>
+      Math.abs(groundAt(poly.xs[k] + nx * side * (hw + s), poly.zs[k] + nz * side * (hw + s)) - profile[k]) >
+      batter * s;
+    while (s < MAX_BATTER_SHOULDER && (steep(-1) || steep(1))) s += 1;
+    need[k] = s;
+  }
+  const held = new Float32Array(poly.count);
+  const r = 6;
+  for (let k = 0; k < poly.count; k++)
+    for (let j = Math.max(0, k - r); j <= Math.min(poly.count - 1, k + r); j++)
+      held[k] = Math.max(held[k], need[j]);
+  return boxBlur(held, r);
+}
+
 function boxBlur(src: Float32Array, radius: number): Float32Array {
   const n = src.length;
   const out = new Float32Array(n);
@@ -475,10 +522,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
             st.rise * (smoothstep(st.at - 0.6, st.at + 0.6, s) - smoothstep(st.at + 0.6, st.at + 14, s));
       }
     }
-    tracks.push({ def, poly, profile });
+    const shoulders = def.batter ? batterShoulders(def, poly, profile, sampleH) : undefined;
+    tracks.push({ def, poly, profile, shoulders });
     rawProfiles.push(raw);
     roughs.push(trackRoughness(def, poly.length, map.seed * 31 + id));
-    stampPolyline(poly, def.width / 2 + def.shoulder, grid, trackDist, trackParam, trackSide, trackOwner, id);
+    const reach = def.width / 2 + (shoulders ? Math.max(...shoulders) : def.shoulder);
+    stampPolyline(poly, reach, grid, trackDist, trackParam, trackSide, trackOwner, id);
   });
 
   // Potholes and washouts in the graded tracks: sample index → depth (m), and which are potholes.
@@ -518,7 +567,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         if (hole.kind === 'pothole') potholes.add(i);
       }
     }
-    const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + def.shoulder, d);
+    const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + shoulderAt(t, p), d);
     heights[i] = h + (target - h) * w;
   }
 
@@ -693,7 +742,8 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       const bank =
         map.clayBanks &&
         trackOwner[i] >= 0 &&
-        trackDist[i] < tracks[trackOwner[i]].def.width / 2 + tracks[trackOwner[i]].def.shoulder + 3;
+        trackDist[i] <
+          tracks[trackOwner[i]].def.width / 2 + shoulderAt(tracks[trackOwner[i]], trackParam[i]) + 3;
       if (bank && slope > 22 + nz * 4) {
         surface[i] = SurfaceId.Dirt;
         tint[i] = GroundTint.DirtEdge;

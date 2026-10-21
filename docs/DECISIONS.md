@@ -421,7 +421,25 @@ Their reasoning is in 4WD Simulator's DECISIONS.md under v0.19. The test was mov
 - **Fix.** The rings grow with the map: on a map bigger than 1536 m the whole backdrop is scaled by the map's size over 1536, so on the CREB the nearest ring starts at 3000 m, outside the corners, and looks the same size from inside the map as it does in 4WD Simulator. Maps up to 1536 m keep it as it was. A unit test checks that every map's corners are at least 300 m inside the nearest ring.
 - **Draw distance.** At 3 km the rings are beyond the camera's reach on Low (1.8 km) and Medium (2.8 km) from the middle of the map, so there the map's own border hills close the horizon; near the map's edges the rings show on every preset.
 
-## v0.04: running water, rough tracks, and no wheelspin without the engine
+## v0.04: cuttings laid back
+
+**What was reported.** The owner sent a screenshot of the Land Rover reversing up the concrete descent: the rear of the car was buried in a clay bank, and it drove through it as if it were flat. On a map screenshot they marked where it happened: the bend about 40 m down from the lookout. A browser replay of reversing up the track from below reproduced it: the Land Rover stuck on the wall of the cutting at (15, −496), tilted 40°, with the bank showing through the body.
+
+**Why.** Where a track runs below the natural ground, its banks blended back to the hillside over the track's `shoulder`, 3–4 m on every CREB track. Several tracks run 3–8 m below the ground: the concrete descent (up to 5.6 m at the bend, 8.6 m further down), the Big Red bypass, Bob's Hill and the range top. That made near-vertical walls 40–70° steep either side of a narrow floor. A vehicle that strayed off the line, as one reversing round a bend does, climbed the wall and hung up on it. The Land Rover's body boxes are narrower than its drawn body (the rear tub box is 1.2 m wide against a body of about 1.7 m), so the bank also showed through its sides. The boxes were left as they are: with gentle banks there is nothing for the body to sink into.
+
+**Batters.** A track can now have a `batter`: the steepest average slope of its banks. Wherever the track runs deeper below (or higher above) the natural ground than its shoulder allows at that slope, the bank widens. The width is found at each point along the track, held over the next 6 m either way and eased along the track, so the deepest cut gets its full width and the banks don't jag. It stops at 14 m, so a cut across a hillside steeper than the batter doesn't reshape the whole slope. The CREB's tracks use 1 in 2 (27° on average, about 37° at the steepest part of the bank). At the bend the bank on the uphill side now rises at up to 31° from a wide floor, where before it was 50°. The maps 4WD Simulator's physics tests use have no batter and are unchanged.
+
+**Checked.**
+
+- No point along any CREB track has ground 1.5 m above it 3 m out from both edges. There were 132 such points before, on Big Red, the bypass, Bob's Hill, the range top and the concrete. This is now a unit test.
+- A unit test reverses the Land Rover up the bend from below. On the v0.02 map it reached 40° of tilt within 6 s; now it stays under 30° and gets past the spot. (Reversing in a straight line, it still meets the bank about 10 m further up where the track turns, as it would on a real road.)
+- All three vehicles still drive the whole route in the wet, in the same time and on the same fuel as before (18.1 minutes, 33 L petrol, 24 L diesel). The other CREB tests (legs joining at the same height, level camps, creeks below their banks, the autopilot drives) all pass.
+
+**Camera.** While looking for the cause, the follow camera was checked at 2,054 places along every track, facing both ways. The ground between it and the car never hid the wheels, so it was left alone.
+
+**Browser test.** The winch audio test placed the car on Big Red and waited 3 s of real time before winching. With 24 physics steps per frame (v0.02) the car rolled back down the hill in that time, out of the winch's reach; it now holds the car on the park brake.
+
+## v0.05: running water, rough tracks, and no wheelspin without the engine
 
 The owner said the game wasn't hard enough: the roads should be rougher and harder to drive quickly, the water should flow and push the vehicle, and the wheels kept spinning when the tank was empty and the accelerator was pressed.
 
@@ -443,4 +461,4 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 - **On the CREB.** The roads (Upper Daintree Road, the paddock road, the Bloomfield Track): bumps 10 cm, swells 20 cm, 5 potholes per 100 m up to 25 cm deep, a washout per 100 m. The range tracks: bumps 12 cm, swells 15 cm, 3 potholes and 4 washouts per 100 m, washouts up to 30 cm. Big Red and Bob's Hill: bumps 8 cm and 4 washouts per 100 m. The concrete and the river crossing stay smooth. Potholes are tinted dark mud and washouts bare earth so they can be seen coming.
 - **Speed.** On the paddock road the short-wheelbase 4WD took about 5 hard suspension hits smooth; rough, 75 at 24 km/h, 290 at 44 km/h and 330 with a little air at 53 km/h, and at 65 km/h it rolled over (it didn't on the smooth road).
 - **Strikes.** Suspension compression speed was too noisy to judge a hit by (it spikes past 7 m/s on a smooth road when a wheel touches down), so the generator records each hole's depth on its 1 m samples, and a wheel dropping in makes a strike: the vehicle's speed × the depth, give or take a quarter for how squarely it hits. Over 3.6 the tyre is pinched (a puncture); over 4.8 that corner's suspension also bends by 15%. On a range track the short-wheelbase 4WD took no damage at 37 km/h and two punctures in 460 m at 45; on the roads none at 45 km/h and about one at 52.
-- **Fuel.** Every bump takes work, which the dampers turn into heat. The autopilot's clean run of the CREB now uses 46 L of petrol in the short-wheelbase 4WD (35 L on the same route graded smooth; v0.03 used 33 L) and 31 L of diesel in the Land Rover (24 L before). The load stays 50 L and a 20 L can: a careful run still arrives with fuel in hand, with less to spare.
+- **Fuel.** Every bump takes work, which the dampers turn into heat. The autopilot's clean run of the CREB now uses 46 L of petrol in the short-wheelbase 4WD (35 L on the same route graded smooth; 33 L before this update) and 31 L of diesel in the Land Rover (24 L before). The load stays 50 L and a 20 L can: a careful run still arrives with fuel in hand, with less to spare.

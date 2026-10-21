@@ -125,6 +125,12 @@ export interface TrackDef {
   pinSmooth?: number;
   width: number;
   shoulder: number;
+  /**
+   * Steepest average slope (rise per metre) of the banks either side, cut or fill. Where the
+   * track runs deeper below (or higher above) the natural ground than `shoulder` allows at
+   * that slope, its banks widen, as a road's cuttings are laid back.
+   */
+  batter?: number;
   /** Smoothing radius (m) for the height profile. */
   smooth: number;
   /** Concrete: strips laid on the steepest pinches, gripping like rock. */
