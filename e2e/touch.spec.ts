@@ -195,7 +195,7 @@ test.describe('phone on the CREB', () => {
     await f.tap('[data-tap="range"]');
     await f.tap('[data-tap="handbrake"]');
     await page.evaluate(() => window.__game!.setInput({ throttle: 1 }));
-    await expect(page.locator('.prompt')).toContainText('Release the handbrake');
+    await expect(page.locator('.prompt', { hasText: 'Release the handbrake' })).toBeVisible();
     await expect(page.locator('.crawl-gauges')).toBeVisible();
     await expect(page.locator('.mission')).toBeVisible();
     await expect(page.locator('.supplies')).toBeVisible();
