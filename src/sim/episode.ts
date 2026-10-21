@@ -1,4 +1,5 @@
 import type { DamageMode } from '../data/damage';
+import { sweptTuning } from '../data/surfaces';
 import type { EpisodeDef, FailReason } from '../data/episodes';
 import type { TyreFault } from './vehicle/condition';
 import type { Vehicle } from './vehicle/vehicle';
@@ -27,8 +28,9 @@ export type EpisodeStatus = 'driving' | 'complete' | 'failed';
 
 /**
  * One run of an episode: the clock, the mission and the ways it can end (SPEC §3). The
- * damage setting decides which apply: running dry and the clock always; a flat tyre
- * with nothing left to fix it and a wrecked engine with realistic damage only.
+ * damage setting decides which apply: running dry and the clock always; being swept
+ * away with mild or realistic damage; a flat tyre with nothing left to fix it and a
+ * wrecked engine with realistic damage only.
  */
 export class EpisodeRun {
   status: EpisodeStatus = 'driving';
@@ -89,6 +91,9 @@ export function failure(v: Vehicle, mode: DamageMode, hoursLeft: number): FailRe
   if (hoursLeft <= 0) return 'time';
   // Rolled to a stop with an empty tank and no cans to pour in.
   if (c.fuel <= 0 && c.jerryCans === 0 && Math.abs(v.speed) < 0.5) return 'fuel';
+  if (mode === 'off') return null;
+  // Lifted off its tyres and carried downstream for a few seconds.
+  if (v.swept >= sweptTuning.seconds) return 'swept';
   if (mode !== 'realistic') return null;
   if (c.engine <= 0) return 'engine';
   for (let i = 0; i < 4; i++) {

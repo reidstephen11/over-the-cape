@@ -80,7 +80,8 @@ test('M4: winch, planks, jack, flooding, dirt and dents', async ({ page }) => {
   await shot(page, 'M4', 'righted-by-jack');
 
   // --- Engine flooding in the deep water of the Daintree River ---
-  await page.evaluate(() => window.__game!.teleport(-1250, 1048, 90));
+  // On the deep line at the crossing, nose into the current so it isn't carried off.
+  await page.evaluate(() => window.__game!.teleport(-1020, 1036, 270));
   await page.waitForFunction(
     () =>
       (window.__game!.state() as { vehicles: { flood: { stalled: boolean } }[] }).vehicles[0].flood.stalled,

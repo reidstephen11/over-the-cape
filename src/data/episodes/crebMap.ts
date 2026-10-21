@@ -33,8 +33,26 @@ import {
 // Cuttings and fill are laid back to an average 1 in 2, so a deep cut is a wide clay bank
 // rather than a narrow trench that traps a vehicle.
 const BATTER = 0.5;
-const road = { shoulder: 4, batter: BATTER, smooth: 12, ruts: 0.05, camber: 0.2 } as const;
-const bush = { shoulder: 3, batter: BATTER, smooth: 8, ruts: 0.08, camber: 0.3, pinMode: 'follow' } as const;
+// After the wet the roads are corrugated and potholed and the range tracks washed out.
+const road = {
+  shoulder: 4,
+  batter: BATTER,
+  smooth: 12,
+  ruts: 0.05,
+  camber: 0.2,
+  rough: { bumps: 0.1, swells: 0.2, potholes: 5, potholeDepth: 0.25, washouts: 1, washoutDepth: 0.2 },
+} as const;
+const bush = {
+  shoulder: 3,
+  batter: BATTER,
+  smooth: 8,
+  ruts: 0.08,
+  camber: 0.3,
+  pinMode: 'follow',
+  rough: { bumps: 0.12, swells: 0.15, potholes: 3, potholeDepth: 0.25, washouts: 4, washoutDepth: 0.3 },
+} as const;
+/** The steep pinches: scoured by water running down them. */
+const pinch = { bumps: 0.08, washouts: 4, washoutDepth: 0.25 } as const;
 
 const tracks: TrackDef[] = [
   {
@@ -80,6 +98,7 @@ const tracks: TrackDef[] = [
     ruts: 0.12,
     camber: 0.25,
     pinSmooth: 14,
+    rough: pinch,
   },
   {
     id: 'big-red-bypass',
@@ -110,6 +129,7 @@ const tracks: TrackDef[] = [
     ruts: 0.1,
     camber: 0.3,
     pinSmooth: 12,
+    rough: pinch,
   },
   { id: 'range-top', name: 'CREB Track', points: rangeTop, width: 3.6, surface: 'dirt', ...bush },
   {
@@ -230,6 +250,8 @@ export const crebMap: MapDef = {
       id: 'daintree',
       name: 'Daintree River',
       valley: 70,
+      // Running high after the overnight rain: enough to carry a vehicle off the deep line.
+      flow: 2,
       points: [
         { x: -1600, z: 1060, water: 5.4, halfWidth: 20, depth: 1.6, bankSlope: 0.3 },
         { x: -1300, z: 1050, water: 5.2, halfWidth: 21, depth: 1.5, bankSlope: 0.3 },
@@ -247,6 +269,7 @@ export const crebMap: MapDef = {
       id: 'roaring-meg',
       name: 'Roaring Meg Creek',
       valley: 34,
+      flow: 2,
       points: [
         { x: -205, z: 230, water: 127, halfWidth: 2, depth: 0.4 },
         { x: -178, z: 250, water: 124, halfWidth: 2.8, depth: 0.4 },
@@ -269,6 +292,7 @@ export const crebMap: MapDef = {
       id: 'donovans',
       name: 'Donovan’s Creek',
       valley: 40,
+      flow: 1.8,
       points: [
         { x: -60, z: -580, water: 24, halfWidth: 2.4, depth: 0.45 },
         { x: 40, z: -598, water: 22.5, halfWidth: 2.8, depth: 0.45 },
@@ -283,6 +307,7 @@ export const crebMap: MapDef = {
       id: 'bloomfield',
       name: 'Bloomfield River',
       valley: 60,
+      flow: 1.5,
       points: [
         { x: -230, z: -840, water: 74, halfWidth: 6, depth: 0.8 },
         { x: -100, z: -800, water: 69, halfWidth: 7, depth: 0.9 },
@@ -304,6 +329,7 @@ export const crebMap: MapDef = {
       id: 'little-annan',
       name: 'Little Annan River',
       valley: 50,
+      flow: 1.6,
       points: [
         { x: 500, z: -1360, water: 29, halfWidth: 4, depth: 0.6 },
         { x: 820, z: -1300, water: 25, halfWidth: 5, depth: 0.6 },

@@ -39,6 +39,13 @@ export const damageTuning = {
     abrasionSeconds: 6,
     /** Spin (0..1) below this on rock does no harm. */
     abrasionSpin: 0.45,
+    /**
+     * A wheel dropping into a pothole or washout pinches the tyre (a puncture) when the
+     * strike (the vehicle's speed in m/s times the hole's depth in m, give or take a
+     * quarter) is over this. Hit squarely, a 25 cm pothole pinches from 42 km/h and a 30 cm
+     * washout from 35; glancing, from 70 and 58.
+     */
+    strike: 3.6,
     /** How far down a cut tyre goes. */
     floor: { mild: 0.5, realistic: 0 },
     /** A flat tyre (health 0): its rolling radius drops this much (m). */
@@ -52,6 +59,10 @@ export const damageTuning = {
     /** Health lost per m/s above it. */
     perSpeed: 0.22,
     floor: { mild: 0.6, realistic: 0.15 },
+    /** Hitting a hole harder still (a strike, as for tyres: 25 cm squarely at 55 km/h) bends that corner... */
+    strike: 4.8,
+    /** ...losing this much health. */
+    strikeLoss: 0.15,
     /** A bent front corner pulls the steering towards its side (degrees at health 0). */
     toeDeg: 4,
   },

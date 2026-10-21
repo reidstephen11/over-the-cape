@@ -92,6 +92,10 @@ export function buildHudState(i: HudInputs): HudState {
       prompts.push({ keys: g.toolMenu ?? 'Q', text: jobText[i.repair.kind][1] });
     else if (cond.fuel <= 0 && i.refuel?.possible)
       prompts.push({ keys: g.toolMenu ?? 'Q', text: `Out of fuel — ${jobText.refuel[1].toLowerCase()}` });
+    if (v.swept > 0)
+      prompts.push({ keys: '!', text: 'The current is taking the car — get to shallow water' });
+    else if (v.afloat > 0.25 && Math.hypot(v.current.x, v.current.z) > 0.3)
+      prompts.push({ keys: '!', text: 'Deep, fast water — the current is lifting the car' });
     if (wrecked) prompts.push({ keys: '!', text: 'Engine wrecked' });
     else if (cond.fuel <= 0 && !t.repair) prompts.push({ keys: '!', text: 'Out of fuel' });
     else if (flood.stalled) {

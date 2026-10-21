@@ -69,6 +69,8 @@ export interface CreekPoint {
   bankSlope?: number;
   /** Bed surface: water (default) or gravel for fords. */
   bed?: 'water' | 'gravel';
+  /** Speed of the current mid-channel (m/s); the creek's `flow` where not given. */
+  flow?: number;
 }
 
 /**
@@ -91,6 +93,11 @@ export interface CreekDef {
   bars?: readonly CreekBarDef[];
   /** How far out (m) the banks are carved at `bankSlope`; a wide valley rather than a gorge (default 34). */
   valley?: number;
+  /**
+   * Speed of the current mid-channel (m/s) wherever a point doesn't set its own. The water
+   * runs from the first point to the last. Default 0: still water.
+   */
+  flow?: number;
 }
 
 export interface TrackStepsDef {
@@ -149,8 +156,27 @@ export interface TrackDef {
   even?: ReadonlyArray<readonly [number, number]>;
   /** Timber bridges carrying the track over a creek, ditch or mud hole. */
   bridges?: readonly TrackBridgeDef[];
+  /** Bumps, potholes and washouts along the graded track (smooth when absent). */
+  rough?: TrackRoughDef;
   markerColor?: 'green' | 'amber' | 'red';
   routeHint?: string;
+}
+
+/**
+ * How rough a track is: bumps and dips all along it, potholes in the wheel lines and
+ * washouts (channels the rain has cut over it at an angle). Built into the 1 m ground.
+ */
+export interface TrackRoughDef {
+  /** Height of the bumps and dips, either way (m); they come every three metres or so. */
+  bumps: number;
+  /** Height of longer swells, either way (m), about ten metres apart: they pitch a fast vehicle. */
+  swells?: number;
+  /** Potholes per 100 m, and how deep the deepest are (m, default 0.2). */
+  potholes?: number;
+  potholeDepth?: number;
+  /** Washouts per 100 m, and how deep the deepest are (m, default 0.25). */
+  washouts?: number;
+  washoutDepth?: number;
 }
 
 /**

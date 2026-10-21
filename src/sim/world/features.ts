@@ -17,6 +17,8 @@ export interface CreekInfo {
   /** Water surface height per dense point. */
   water: Float32Array;
   halfWidth: Float32Array;
+  /** Speed of the current mid-channel per dense point (m/s), running towards the last point. */
+  flow: Float32Array;
 }
 
 /** An oriented static box (granite ledge, gully lip). Yaw in radians about +y. */

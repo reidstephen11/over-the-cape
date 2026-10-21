@@ -34,6 +34,10 @@ export interface GroundQuery {
   surfaceAt(x: number, z: number): SurfaceId;
   waterSurfaceAt(x: number, z: number): number | null;
   heightAt?(x: number, z: number): number;
+  /** Velocity of running water at a point (m/s, horizontal); still water when absent. */
+  waterFlowAt?(x: number, z: number, out: { x: number; z: number }): { x: number; z: number };
+  /** Depth (m) of a pothole or washout at a point, 0 where there is none. */
+  holeAt?(x: number, z: number): number;
 }
 
 export const flatDirt: GroundQuery = {

@@ -33,6 +33,8 @@ export class Terrain {
   detail: readonly DetailPatch[] = [];
   /** How far each 1 m sample hidden under fine detail is pushed down (sample index → m). */
   undercut = new Map<number, number>();
+  /** Depth of the pothole or washout at each 1 m sample well inside one (sample index → m). */
+  holes = new Map<number, number>();
   private readonly detailCells = new Map<number, DetailPatch>();
 
   constructor(
@@ -154,6 +156,11 @@ export class Terrain {
 
   surfaceAt(x: number, z: number): SurfaceId {
     return this.surface[this.nearestIndex(x, z)] as SurfaceId;
+  }
+
+  /** Depth (m) of the pothole or washout a point is in, 0 where there is none. */
+  holeAt(x: number, z: number): number {
+    return this.holes.size > 0 ? (this.holes.get(this.nearestIndex(x, z)) ?? 0) : 0;
   }
 
   tintAt(x: number, z: number): GroundTint {

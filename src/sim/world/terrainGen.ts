@@ -6,6 +6,7 @@ import { GroundTint, NO_WATER, Terrain } from './terrain';
 import type { CreekInfo, GullyInfo, StaticBox, TerrainFeatures, TrackInfo } from './features';
 import { buildDetailPatch, type DetailPatch } from './detail';
 import { onBridge } from './bridges';
+import { roughHole, roughOffset, trackRoughness, type TrackRoughness } from './roughness';
 
 /** Macro relief is evaluated on a coarser grid and upsampled. */
 const MACRO_STEP = 2;
@@ -258,6 +259,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   const noise = new Noise2D(map.seed);
   const noise2 = new Noise2D(map.seed + 101);
   const noise3 = new Noise2D(map.seed + 202);
+  const roughNoise = new Noise2D(map.seed + 303);
 
   // --- Creek centrelines (needed early to calm the noise near water) ---
   // Every creek and river is carved the same way; where two meet, each sample belongs to
@@ -273,6 +275,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       depth: def.points.map((p) => p.depth),
       bankSlope: def.points.map((p) => p.bankSlope ?? 0.55),
       gravel: def.points.map((p) => (p.bed === 'gravel' ? 1 : 0)),
+      flow: def.points.map((p) => p.flow ?? def.flow ?? 0),
       reach: def.valley ?? CREEK_BANK_REACH,
     };
   });
@@ -479,11 +482,13 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   const creeks: CreekInfo[] = creekLines.map((c) => {
     const water = new Float32Array(c.poly.count);
     const halfWidth = new Float32Array(c.poly.count);
+    const flow = new Float32Array(c.poly.count);
     for (let k = 0; k < c.poly.count; k++) {
       water[k] = attrAt(c.water, c.poly.u[k]);
       halfWidth[k] = attrAt(c.halfWidth, c.poly.u[k]);
+      flow[k] = attrAt(c.flow, c.poly.u[k]);
     }
-    return { def: c.def, poly: c.poly, water, halfWidth };
+    return { def: c.def, poly: c.poly, water, halfWidth, flow };
   });
 
   yield { progress: 0.45, label: 'Grading tracks' };
@@ -495,6 +500,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   const trackSide = new Float32Array(n);
   const trackOwner = new Int16Array(n).fill(-1);
   const rawProfiles: Float32Array[] = [];
+  const roughs: (TrackRoughness | null)[] = [];
   map.tracks.forEach((def, id) => {
     const pts2 = def.points.map((p) => [p[0], p[1]] as const);
     const poly = densify(pts2, 1);
@@ -519,10 +525,14 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const shoulders = def.batter ? batterShoulders(def, poly, profile, sampleH) : undefined;
     tracks.push({ def, poly, profile, shoulders });
     rawProfiles.push(raw);
+    roughs.push(trackRoughness(def, poly.length, map.seed * 31 + id));
     const reach = def.width / 2 + (shoulders ? Math.max(...shoulders) : def.shoulder);
     stampPolyline(poly, reach, grid, trackDist, trackParam, trackSide, trackOwner, id);
   });
 
+  // Potholes and washouts in the graded tracks: sample index → depth (m), and which are potholes.
+  const holes = new Map<number, number>();
+  const potholes = new Set<number>();
   for (let i = 0; i < n; i++) {
     const id = trackOwner[i];
     if (id < 0) continue;
@@ -547,6 +557,16 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     // Slight crown between the wheel lines reads as worn ruts.
     const lat = Math.abs(trackSide[i]);
     if (def.ruts > 0 && lat < hw) target += def.ruts * (1 - Math.min(1, Math.abs(lat - 0.75) / 0.75));
+    const rough = roughs[id];
+    if (rough) {
+      const s = atParam(t.poly.s, p);
+      target += roughOffset(rough, roughNoise, (i % res) - half, Math.floor(i / res) - half, s, trackSide[i]);
+      const hole = d <= hw ? roughHole(rough, s, trackSide[i]) : null;
+      if (hole) {
+        holes.set(i, hole.depth);
+        if (hole.kind === 'pothole') potholes.add(i);
+      }
+    }
     const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + shoulderAt(t, p), d);
     heights[i] = h + (target - h) * w;
   }
@@ -819,6 +839,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     }
   }
 
+  // Potholes hold dark mud; washouts show the earth they cut into.
+  for (const i of holes.keys()) {
+    if (trackOwner[i] < 0 || tracks[trackOwner[i]].def.surface === 'concrete') continue;
+    tint[i] = potholes.has(i) ? GroundTint.Mud : GroundTint.DirtEdge;
+  }
+
   for (let i = 0; i < n; i++) {
     if (bogMask[i]) {
       surface[i] = SurfaceId.Mud;
@@ -850,6 +876,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   yield { progress: 0.8, label: 'Terrain ready' };
 
   const terrain = new Terrain(size, heights, surface, tint, water);
+  terrain.holes = holes;
   // Fine ruts and drainage humps over the finished 1 m ground.
   const patches: DetailPatch[] = [];
   for (const t of tracks) {
