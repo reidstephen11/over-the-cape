@@ -48,10 +48,16 @@ export const damageTuning = {
     strike: 3.6,
     /** How far down a cut tyre goes. */
     floor: { mild: 0.5, realistic: 0 },
-    /** A flat tyre (health 0): its rolling radius drops this much (m). */
-    flatDrop: 0.075,
-    /** ...and it drags: rolling resistance per newton of load. */
-    flatDrag: 0.15,
+    /** A flat tyre (health 0): its rolling radius drops this much (m), leaving the rim a few centimetres off the ground. */
+    flatDrop: 0.12,
+    /** ...rising and falling this much (m) once a turn as the folded tyre flaps round, which shakes the car at speed... */
+    flatThump: 0.02,
+    /** ...it drags: rolling resistance per newton of load... */
+    flatDrag: 0.3,
+    /** ...its sidewall folds under a sideways load, keeping only 1 − this of its cornering grip... */
+    flatSideLoss: 0.6,
+    /** ...and a flat front tyre drags the steering towards its side (degrees). */
+    flatToeDeg: 1.5,
   },
   suspension: {
     /** Landing with a corner falling faster than this (m/s), about a 1.6 m drop, bends it. */

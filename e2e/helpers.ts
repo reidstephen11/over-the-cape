@@ -27,7 +27,7 @@ export async function waitReady(page: Page): Promise<void> {
 
 /**
  * Physics steps run per frame in the browser tests. The software renderer takes seconds
- * to draw a frame of the 3 km map, so at real time the game would crawl.
+ * to draw a frame of the 6 km map, so at real time the game would crawl.
  */
 export const TEST_STEPS_PER_FRAME = 24;
 
@@ -40,7 +40,7 @@ export async function driveFromBriefing(page: Page): Promise<void> {
 }
 
 /**
- * Start without a save on the low graphics preset (the 3 km map is slow on the software
+ * Start without a save on the low graphics preset (the 6 km map is slow on the software
  * renderer). Leaves any save a test wrote itself alone.
  */
 export async function lowGraphics(page: Page): Promise<void> {

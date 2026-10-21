@@ -27,8 +27,9 @@ export const highCountryMap: MapDef = {
   id: 'high-country',
   name: 'High Country',
   seed: 1977,
-  size: 1536,
-  wallHalfExtent: 716,
+  width: 1536,
+  length: 1536,
+  wall: [716, 716],
   floor: [
     [-800, 15.5],
     [-560, 19],

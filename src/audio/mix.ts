@@ -33,6 +33,7 @@ export function surfaceLayer(surface: SurfaceId): TyreLayer {
     case SurfaceId.Rock:
       return 'rock';
     case SurfaceId.Mud:
+    case SurfaceId.BlackSoil:
       return 'mud';
     case SurfaceId.Water:
       return 'water';

@@ -5,7 +5,7 @@ import type { World } from '../sim/world/world';
 import { applyFogEnvironment } from './fog';
 import { groundUniforms } from './groundMaterial';
 import { Lighting } from './lighting';
-import { Sky, createBackdrop } from './sky';
+import { Sky, backdropSize, createBackdrop } from './sky';
 import { TerrainMesh } from './terrainMesh';
 import { WaterMesh } from './water';
 import { WaterCurrent } from '../sim/world/current';
@@ -71,7 +71,7 @@ export class GameRenderer {
     this.sky = new Sky(env);
     this.scene.add(this.sky.mesh);
     this.updateReflections(env);
-    this.scene.add(createBackdrop(world.map.seed, world.map.size));
+    this.scene.add(createBackdrop(world.map.seed, backdropSize(world.map)));
 
     this.terrainMesh = new TerrainMesh(world.terrain, world.map.seed);
     this.scene.add(this.terrainMesh.group);

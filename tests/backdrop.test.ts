@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Vector3 } from 'three';
-import { createBackdrop } from '../src/render/sky';
+import { backdropSize, createBackdrop } from '../src/render/sky';
 import { maps } from '../src/data/maps';
 import { highCountryMap } from './fixtures/maps/map';
 import { ironbarkParkMap } from './fixtures/maps/park';
@@ -22,8 +22,8 @@ function innerRadius(seed: number, size: number): number {
 describe('backdrop hills', () => {
   it("stay outside every map's corners", () => {
     for (const def of [...Object.values(maps).map((m) => m.def), highCountryMap, ironbarkParkMap]) {
-      const corner = (def.size / 2) * Math.SQRT2;
-      expect(innerRadius(def.seed, def.size), def.name).toBeGreaterThan(corner + 300);
+      const corner = Math.hypot(def.width, def.length) / 2;
+      expect(innerRadius(def.seed, backdropSize(def)), def.name).toBeGreaterThan(corner + 300);
     }
   });
 

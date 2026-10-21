@@ -33,8 +33,7 @@ export class WaterMesh {
     this.material = this.createMaterial(true);
     this.puddleMaterial = this.createMaterial(false);
     this.group.name = 'water';
-    const res = terrain.res;
-    const half = terrain.half;
+    const { resX: res, halfX, halfZ } = terrain;
     const W = terrain.water;
     const H = terrain.heights;
     const shallow = pal('waterShallow');
@@ -42,7 +41,8 @@ export class WaterMesh {
     const foam = pal('barkPale');
     const muddy = new THREE.Color('#6B5A44');
     const tmp = new THREE.Color();
-    const tiles = terrain.size / TILE;
+    const tilesX = terrain.sizeX / TILE;
+    const tilesZ = terrain.sizeZ / TILE;
     // The current at each water vertex, looked up once (vertex index → [x, z]).
     const flows = new Map<number, readonly [number, number]>();
     const still = [0, 0] as const;
@@ -51,13 +51,13 @@ export class WaterMesh {
       if (!current) return still;
       let f = flows.get(i);
       if (!f) {
-        current.at((i % res) - half, Math.floor(i / res) - half, at);
+        current.at((i % res) - halfX, Math.floor(i / res) - halfZ, at);
         flows.set(i, (f = [at.x, at.z]));
       }
       return f;
     };
-    for (let tz = 0; tz < tiles; tz++)
-      for (let tx = 0; tx < tiles; tx++) {
+    for (let tz = 0; tz < tilesZ; tz++)
+      for (let tx = 0; tx < tilesX; tx++) {
         // Creek cells and puddle cells go into separate meshes with their own material.
         const creek = { pos: [] as number[], col: [] as number[], flow: [] as number[] };
         const puddle = { pos: [] as number[], col: [] as number[], flow: [] as number[] };
@@ -82,8 +82,8 @@ export class WaterMesh {
             const isPuddle = creekDistance !== undefined && creekDistance[i00] > 2;
             if (isPuddle) tmp.lerp(muddy, 0.75);
             const out = isPuddle ? puddle : creek;
-            const x0 = ix - half;
-            const z0 = iz - half;
+            const x0 = ix - halfX;
+            const z0 = iz - halfZ;
             const vertex = (p: number[], i: number) => {
               out.pos.push(...p);
               out.col.push(tmp.r, tmp.g, tmp.b);

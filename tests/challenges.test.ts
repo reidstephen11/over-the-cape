@@ -266,8 +266,8 @@ describe('Granite Spur', () => {
         for (let cz = 0; cz < p.nz; cz++)
           for (let cx = 0; cx < p.nx; cx++) {
             if (!p.cells[cz * p.nx + cx]) continue;
-            const x = p.ix0 - terrain.half + cx + 0.37,
-              z = p.iz0 - terrain.half + cz + 0.61;
+            const x = p.ix0 - terrain.halfX + cx + 0.37,
+              z = p.iz0 - terrain.halfZ + cz + 0.61;
             const h = terrain.heightAt(x, z);
             const hit = sim.physics.world.castRay(
               new R.Ray({ x, y: h + 3, z }, { x: 0, y: -1, z: 0 }),

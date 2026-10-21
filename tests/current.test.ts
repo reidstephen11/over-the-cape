@@ -109,15 +109,15 @@ describe('running water on the CREB', () => {
     const current = new WaterCurrent(world.features.creeks);
     // Mid-river and on the gravel bar.
     for (const [x, z] of [
-      [-1010, 1034],
-      [-992, 1036],
+      [-25, 2238],
+      [12, 2240],
     ]) {
       const f = current.at(x, z);
       expect(f.x).toBeGreaterThan(1.7);
       expect(Math.abs(f.z)).toBeLessThan(0.2);
     }
     // Out on the track either side it's dry.
-    expect(current.at(-1010, 1075)).toEqual({ x: 0, z: 0 });
+    expect(current.at(-40, 2300)).toEqual({ x: 0, z: 0 });
   });
 
   it('stops the short-wheelbase 4WD on the deep line, lifted and pushed downstream, and it gets across on the bar', async () => {
@@ -125,15 +125,15 @@ describe('running water on the CREB', () => {
     try {
       // Straight across the deep middle: the current lifts it, swings it round and shoves it
       // downstream, and it never reaches the far bank.
-      const path = pathFor(s.track).filter(([, z]) => z >= 1068);
-      for (let z = 1067.5; z >= 985; z -= 0.5) path.push([-1010, z]);
+      const path = pathFor(s.track).filter(([, z]) => z >= 2282);
+      for (let z = 2281.5; z >= 2190; z -= 0.5) path.push([-10, z]);
       const pilot = new Autopilot(path, 3);
       let downstream = 0;
       let lifted = 0;
       for (let t = 0; t < 40 && !pilot.done; t += DT) {
         s.inputs.set('p', pilot.input(s.v, DT));
         s.sim.step(s.inputs, DT);
-        if (s.v.position.z < 1068) downstream = Math.max(downstream, s.v.position.x + 1010);
+        if (s.v.position.z < 2270) downstream = Math.max(downstream, s.v.position.x + 10);
         lifted = Math.max(lifted, s.v.afloat);
       }
       expect(pilot.done).toBe(false);
@@ -142,11 +142,13 @@ describe('running water on the CREB', () => {
     } finally {
       s.sim.physics.free();
     }
-    const b = await scene('daintree-crossing', false, 'high', vehicleTuning);
+    const b = await scene('daintree-crossing', false, 'both', vehicleTuning);
     try {
-      // On the bar: across, but steering into the current.
-      const r = await driveLeg(b, b.track, false, 120);
-      expect(r.water).toBeLessThan(0.7);
+      // On the bar, weaving between its boulders and holes in low range with both lockers:
+      // across, but steering into the current.
+      const r = await driveLeg(b, b.track, false, 150);
+      // (Brushing the edge of a scour hole, a wheel can stand in a little more.)
+      expect(r.water).toBeLessThan(1);
       expect(b.v.swept).toBe(0);
     } finally {
       b.sim.physics.free();

@@ -111,7 +111,8 @@ function rutOffset(rut: ErosionRutDef, s: number, l: number): number {
  */
 export function buildDetailPatch(
   track: TrackInfo,
-  half: number,
+  halfX: number,
+  halfZ: number,
   coarseHeight: (x: number, z: number) => number,
 ): DetailPatch | null {
   const def = track.def;
@@ -130,18 +131,18 @@ export function buildDetailPatch(
     minZ = Math.min(minZ, poly.zs[k] - reach);
     maxZ = Math.max(maxZ, poly.zs[k] + reach);
   }
-  const ix0 = Math.floor(minX + half) - 1,
-    iz0 = Math.floor(minZ + half) - 1;
-  const nx = Math.ceil(maxX + half) + 1 - ix0,
-    nz = Math.ceil(maxZ + half) + 1 - iz0;
+  const ix0 = Math.floor(minX + halfX) - 1,
+    iz0 = Math.floor(minZ + halfZ) - 1;
+  const nx = Math.ceil(maxX + halfX) + 1 - ix0,
+    nz = Math.ceil(maxZ + halfZ) + 1 - iz0;
   const w = nx * DETAIL_SUB + 1,
     rows = nz * DETAIL_SUB + 1;
   const offset = new Float32Array(w * rows);
   const hw = def.width / 2;
   for (let j = 0; j < rows; j++)
     for (let i = 0; i < w; i++) {
-      const x = ix0 - half + i / DETAIL_SUB,
-        z = iz0 - half + j / DETAIL_SUB;
+      const x = ix0 - halfX + i / DETAIL_SUB,
+        z = iz0 - halfZ + j / DETAIL_SUB;
       // Nearest point on the centreline: distance along and signed offset (+ right).
       let d2 = Infinity,
         s = 0,
@@ -198,7 +199,7 @@ export function buildDetailPatch(
   for (let j = 0; j < rows; j++)
     for (let i = 0; i < w; i++)
       heights[j * w + i] =
-        coarseHeight(ix0 - half + i / DETAIL_SUB, iz0 - half + j / DETAIL_SUB) + offset[j * w + i];
+        coarseHeight(ix0 - halfX + i / DETAIL_SUB, iz0 - halfZ + j / DETAIL_SUB) + offset[j * w + i];
   return { ix0, iz0, nx, nz, heights, offset, cells };
 }
 
@@ -207,7 +208,7 @@ export function buildDetailPatch(
  * index. Only samples whose four cells are all covered move, and each ends below the
  * lowest fine ground in those cells, so the 1 m surface never pokes through.
  */
-export function detailUndercut(patches: readonly DetailPatch[], res: number): Map<number, number> {
+export function detailUndercut(patches: readonly DetailPatch[], resX: number): Map<number, number> {
   const drop = new Map<number, number>();
   for (const p of patches) {
     const w = patchStride(p);
@@ -230,7 +231,7 @@ export function detailUndercut(patches: readonly DetailPatch[], res: number): Ma
           iz = p.iz0 + vz;
         const base =
           p.heights[vz * DETAIL_SUB * w + vx * DETAIL_SUB] - p.offset[vz * DETAIL_SUB * w + vx * DETAIL_SUB];
-        drop.set(iz * res + ix, Math.max(0, base - floor));
+        drop.set(iz * resX + ix, Math.max(0, base - floor));
       }
   }
   return drop;

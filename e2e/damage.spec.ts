@@ -21,7 +21,7 @@ test('damage: a setting, shown on the HUD; fit a spare for a torn sidewall, camp
   await page.keyboard.press('Escape');
 
   // Away from camp (a camp mends the engine), a puncture and a hurt engine.
-  await page.evaluate(() => window.__game!.teleport(-1100, 960, 30));
+  await page.evaluate(() => window.__game!.teleport(-2, 2130, 40));
   await page.evaluate(() => window.__game!.setParkBrake(true));
   // setHealth marks a lowered tyre as a torn sidewall.
   await page.evaluate(() => window.__game!.setHealth({ engine: 0.4, tyres: [0.6, 1, 1, 1] }));

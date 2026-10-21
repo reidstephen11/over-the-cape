@@ -45,9 +45,9 @@ They run south to north and unlock in order: finish one to open the next. A fini
 
 **Mission: reach the Lions Den Hotel before dark.** June, the track has just reopened after the wet, and it rained overnight. You leave Daintree Village at 12:30 pm; it's dark at 6:15 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs.
 
-The map is 3 km square with about 5 km of track. The real trip is over 100 km, so the distances are shortened; the obstacles are full size.
+The map is a long strip, 1.3 km wide and 6 km from south to north, with about 6.6 km of track up its length. The real trip is over 100 km, so the distances are shortened; the obstacles are full size.
 
-1. **Daintree Village** (camp) to the **Daintree River crossing**: wide and over a metre deep in the middle. A gravel bar curves downstream and keeps it about half that, so take the curve, not the straight line. The river is running fast after the rain: the current pushes the car downstream, and in the deep water it can carry it away. Crocodile country: you never leave the car.
+1. **Daintree Village** (camp) to the **Daintree River crossing**: wide and over a metre deep in the middle. A gravel bar downstream keeps it about half that, but after the wet the bar is strewn with boulders and scoured into holes over a metre deep, right across the straight line over it: weave between them. The river is running fast after the rain: the current pushes the car downstream, and in the deep water it can carry it away. Crocodile country: you never leave the car.
 2. Through the **Upper Daintree paddocks** on a gravel road to the foot of the range.
 3. **Big Red**: about 130 m of red clay at around 20°, greasy after the rain and scored with deep cross-ruts. High range won't get up it, nor low range with the diffs open: low range with both lockers will. The **Big Red bypass** leaves the paddock road just before, and winds up the west side at no more than about 15°.
 4. Along the range through the rainforest, over a steep clay pinch that also needs low range and the lockers, to **Roaring Meg camp**, then the fast ford over **Roaring Meg Creek** and up its slippery bank, with a short track to **Roaring Meg Falls**. The falls are just downstream of the ford.
@@ -56,13 +56,13 @@ The map is 3 km square with about 5 km of track. The real trip is over 100 km, s
 7. **Donovan's Creek**, the **Bloomfield River** bridge at Wujal Wujal (camp), and a track west to **Wujal Wujal Falls**.
 8. North on the gravel **Bloomfield Track** through **Rossville**, across the **Little Annan River**, to the **Lions Den Hotel**.
 
-After the wet the red clay tracks are slick, the gravel roads are bumpy and potholed, and the range tracks are washed out, with channels cut across them. Mud holes lie in the dips on the flatter stretches, most of them full of brown water so you can't see how deep they are. Drive fast and the car bounces off the swells and slides on the clay, and a pothole or washout hit at speed can pinch a tyre. The creeks run fast and deep: Donovan's Creek and the Little Annan push hard, and the Daintree's deep middle stops a car dead.
+After the wet the red clay tracks are slick, the gravel roads are bumpy and potholed, and the range tracks are washed out, with channels cut across them. The potholes and washouts deep enough to pinch a tyre at speed are dark, ringed with pale gravel. Mud holes lie in the dips on the flatter stretches, most of them full of brown water so you can't see how deep they are; some are long boggy stretches of 25–45 m. Where a hole sits in a hollow the land drains into, it is a **deep bog**, 0.7 m of sticky black mud under the water: few vehicles get out without the winch, and a tree stands near either end to winch from. Off the tracks most of the flatter ground is wet **black soil**, dark beside the firm verge: drive onto it and you crawl at walking pace, and on any slope you stop. Drive fast and the car bounces off the swells and slides on the clay. The creeks run fast and deep: Donovan's Creek and the Little Annan push hard, and the Daintree's deep middle stops a car dead.
 
 The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns) except for open eucalypt woodland round the village, the paddocks and the drier hills by the Lions Den. A fallen tree lies across the track on the range: winch it aside or squeeze past.
 
 ## How an episode works
 
-- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (about six game minutes a real minute on the CREB) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
+- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (eight game minutes a real minute on the CREB) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
 - **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs.
 - **History notes** appear in the top right as you reach a place. Click one to close it.
 - **The episode ends early** when, with the difficulty that allows it:
@@ -78,9 +78,9 @@ The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns)
 
 ## Fuel, spares and plugs
 
-- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 46 L of petrol in the short-wheelbase 4WDs and 35 L of diesel in the Land Rover. Rough roads, mud and clay cost fuel, and so does every time you get stuck. The gauge is above the status strip, in litres.
+- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 54 L of petrol in the short-wheelbase 4WDs (more than the 50 L in the tank, so the jerry can goes in on the way) and 35 L of diesel in the Land Rover. Rough roads, mud and clay cost fuel, and so does every time you get stuck. The gauge is above the status strip, in litres.
 - **Jerry cans** hold 20 L. Tool menu → **Pour in a jerry can**, stopped, about 12 s. If the engine ran dry it restarts on the starter afterwards.
-- **Tyres** can be hurt two ways with Realistic damage: a **puncture** leaks down over about 40 s and takes a **plug** from the kit (tool menu → Plug the tyre, about 10 s); a **torn sidewall** goes flat in a few seconds and needs a **spare** (tool menu → Fit a spare, about 8 s). A landing of about a metre onto rock punctures a tyre; about one and a half metres tears the sidewall. Spinning a wheel hard on rock for several seconds wears through the tread. Crawling in low range barely spins. Dropping into a pothole or washout at speed pinches the tyre (a puncture): a deep one from about 40 km/h, and the faster the likelier; from about 55 km/h it can bend that corner's suspension too.
+- **Tyres** can be hurt two ways with Realistic damage: a **puncture** leaks down over about 40 s and takes a **plug** from the kit (tool menu → Plug the tyre, about 10 s); a **torn sidewall** goes flat in a few seconds and needs a **spare** (tool menu → Fit a spare, about 8 s). A landing of about a metre onto rock punctures a tyre; about one and a half metres tears the sidewall. Spinning a wheel hard on rock for several seconds wears through the tread. Crawling in low range barely spins. Dropping into a pothole or washout at speed pinches the tyre (a puncture): a deep one from about 40 km/h, and the faster the likelier; from about 55 km/h it can bend that corner's suspension too. A tyre going down squashes flat at the bottom; flat, its corner sits low, it thumps once a turn at speed, it grips poorly in corners and drags, and a flat front tyre pulls the car hard towards its side.
 - The status strip's counts show jerry cans, spares and plugs left.
 
 ## Difficulty
@@ -160,9 +160,11 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - The red clay is slick after rain: brake early, keep a steady throttle (spinning the wheels digs you in), and lock both diffs in low range before you start up any steep pinch, not halfway up it.
 - Take the mud holes steadily, in a low gear, without stopping in them.
 - **C** cycles the views; the front views look across the tyres to place a wheel, the driver's seat has working dials. **I** shows the crawl gauges (pitch, roll and the load on each tyre).
-- In deep water watch the air intake: water at the intake stalls the engine (with Realistic damage it can wreck it). Cross the Daintree on the gravel bar and keep moving, steering upstream against the current: stop on the bar and the current slowly pushes the car off it, and crawling across with the diffs open, the short-wheelbase 4WD can be pushed off too. Stopped in deep running water, the car is lifted and carried off: "Deep, fast water" warns you, "The current is taking the car" means get to shallow water now.
-- On the gravel roads about 30–40 km/h is a fair pace, and less on the clay. Faster, the swells bounce the car and the potholes and washouts pinch tyres.
-- The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range.
+- In deep water watch the air intake: water at the intake stalls the engine (with Realistic damage it can wreck it). Cross the Daintree on the gravel bar in low range with both lockers, weaving between its boulders and the darker water of its holes, and keep moving, steering upstream against the current: stop on the bar and the current slowly pushes the car off it, and taken quickly in high range the short-wheelbase 4WD is pushed off it into the deep water. Stopped in deep running water, the car is lifted and carried off: "Deep, fast water" warns you, "The current is taking the car" means get to shallow water now.
+- On the gravel roads about 30–40 km/h is a fair pace, and less on the clay. Faster, the swells bounce the car and the potholes and washouts (the dark ones ringed with pale gravel) pinch tyres.
+- Stay on the track: the dark ground off it is black soil, and bogs you. Cutting a corner onto it costs minutes.
+- The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range, and a tree stands near each end of every deep or long bog. Bogged in a deep one, hook up to the tree ahead (E), winch in (R) and drive gently with it.
+- Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
 ## Debug mode
 
@@ -173,6 +175,12 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
 - [ ] **Welcome screen:** Episode 1 is open, episodes 2–7 are listed as coming later. Pick a vehicle and a difficulty; Drive shows the briefing while the map builds, then Drive again starts at Daintree Village.
 - [ ] **The CREB Track, start to finish:** cross the Daintree on the gravel bar, climb Big Red (or take the bypass), reach Roaring Meg camp, climb Bob's Hill, take the concrete down, cross Donovan's Creek and the Bloomfield bridge, and drive the Bloomfield Track to the Lions Den before dark. How long did it take, how much fuel was left, and did the clock feel fair?
+- [ ] **v0.07 the long map:** open the map (M): it is a tall, narrow strip with the route up the middle and the rivers across it. Drive the route: about 6.6 km, 40% longer than before, with the clock running faster. Did you arrive before dark, and how close was it? Did you need the jerry can?
+- [ ] **v0.07 the Daintree crossing:** from the south bank, look at the bar: boulders stand out of the water and two patches of darker water mark the holes. Drive straight across the bar and hit them; weave between them in low range with both lockers and get across. Is it tricky but fair?
+- [ ] **v0.07 black soil:** drive off the track onto the dark ground beside it: the car slows to a crawl and stops on any slope. Does it keep you on the track? Is the firm verge beside the track clear enough?
+- [ ] **v0.07 deep and long bogs:** on the paddock road, the ridge before Roaring Meg camp, by the Bloomfield bridge and just before the Lions Den, a mud hole sits in a hollow: drive in and you should get stuck, and need to winch out to the tree near its far end. Some mud holes are now long boggy stretches. Too hard, too easy, too many?
+- [ ] **v0.07 holes you can see:** on the gravel roads, the potholes and washouts deep enough to pinch a tyre are dark, ringed with pale gravel. Can you spot them in time at 40 km/h?
+- [ ] **v0.07 flat tyres:** on Realistic, get a puncture (or a torn sidewall) and let it go flat: the tyre squashes flat at the bottom and bulges, the corner sits low, and the car pulls hard towards it, thumps at speed and slides in corners. Fix it with a plug or the spare and it drives straight again.
 - [ ] **History notes:** each named place shows its note as you arrive. Do they read well, and is there enough time to read them while driving?
 - [ ] **Camps:** reaching Roaring Meg camp shows "camp reached, progress saved". Pause → Restart from last camp puts you back there with the clock, fuel and spares as they were.
 - [ ] **Running out:** let the fuel run low and pour in the jerry can from the tool menu; then run dry with no cans and check the episode ends with a restart offered.
@@ -203,8 +211,9 @@ src/
   ui/      welcome screen, briefing, HUD, episode cards, compass, paper map, menus, tool menu
   audio/   Web Audio synthesis
   debug/   overlay, free camera, debug panel
-scripts/   route-check (track grades, heights and creek levels), creb-drive (autopilot drive of the whole
-           route with fuel and arrival time), map-preview (top-down PNG), and the labs from 4WD Simulator
+scripts/   route-check (track grades, heights and creek levels), track-profile (one track's grade against the
+           ground), creek-check (creeks standing above their banks), creb-drive (autopilot drive of the whole
+           route with fuel, winching and arrival time), map-preview (top-down PNG), and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
 e2e/       Playwright browser tests
 docs/      DECISIONS.md (choices made along the way) and HISTORY.md (sources for the history in the game)

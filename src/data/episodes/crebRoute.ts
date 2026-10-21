@@ -7,172 +7,198 @@ import type { XZ } from '../../sim/world/mapTypes';
  */
 export type Waypoint = readonly [number, number] | readonly [number, number, number];
 
-/** Daintree Village to the south bank of the Daintree River. */
+/** Daintree Village north to the south bank of the Daintree River. */
 export const upperDaintreeRoad: Waypoint[] = [
-  [-1180, 1290],
-  [-1210, 1220],
-  [-1170, 1150],
-  [-1095, 1110],
-  [-1040, 1086, 9.6],
+  [-60, 2630],
+  [-90, 2560],
+  [-50, 2480],
+  [-30, 2410],
+  [-72, 2350],
+  [-70, 2318],
+  [-40, 2300, 6],
 ];
 
-/** Across the Daintree River in a wide arc downstream, over the gravel bar. */
+/**
+ * Across the Daintree River downstream of the straight line, over the gravel bar, weaving
+ * between the boulders and scour holes on it.
+ */
 export const daintreeCrossing: Waypoint[] = [
-  [-1040, 1086, 9.6],
-  [-1010, 1068],
-  [-990, 1046],
-  [-992, 1022],
-  [-1004, 1000],
-  [-1010, 980, 8.8],
+  [-40, 2300, 6],
+  [-10, 2282],
+  [8, 2266],
+  [13.5, 2252],
+  [1.5, 2242],
+  [8, 2231],
+  [-4.5, 2221],
+  [-4, 2210],
+  [-10, 2194, 6],
 ];
 
-/** The sandy road east through the Upper Daintree paddocks to the foot of the range. */
+/** The gravel road north through the Upper Daintree paddocks to the foot of the range. */
 export const paddockRoad: Waypoint[] = [
-  [-1010, 980, 8.8],
-  [-990, 920],
-  [-930, 880],
-  [-850, 880],
-  [-770, 920],
-  [-690, 940],
-  [-610, 910],
-  [-540, 860],
-  [-470, 850],
-  [-410, 820, 21.9],
-  [-370, 770, 34],
+  [-10, 2194, 6],
+  [-2, 2130],
+  [60, 2060],
+  [150, 1990],
+  [190, 1900],
+  [150, 1815],
+  [60, 1770],
+  [-40, 1735],
+  [-150, 1700],
+  [-230, 1640],
+  [-220, 1570],
+  [-167, 1511],
+  [-118, 1440],
+  [-56, 1407],
+  [-9, 1358, 21.9],
+  [11, 1298, 34],
 ];
 
 /** Big Red: straight up the red clay face of the spur. */
 export const bigRed: Waypoint[] = [
-  [-370, 770, 34],
-  [-362, 735, 45.5],
-  [-354, 700, 57.5],
-  [-347, 668, 71],
-  [-341, 640, 82],
-  [-336, 612, 90],
+  [11, 1298, 34],
+  [7, 1262, 45.5],
+  [2, 1226, 57.5],
+  [-2, 1194, 71],
+  [-6, 1166, 82],
+  [-11, 1138, 90],
 ];
 
 /** The bypass: leaves the paddock road before Big Red and winds up the spur's west side. */
 export const bigRedBypass: Waypoint[] = [
-  [-410, 820, 21.9],
-  [-448, 792],
-  [-470, 746],
-  [-470, 702, 41],
-  [-462, 652, 52],
-  [-432, 612, 64],
-  [-392, 598, 77],
-  [-352, 594, 88],
-  [-336, 612, 90],
+  [-9, 1358, 21.9],
+  [-55, 1345],
+  [-91, 1309],
+  [-106, 1268, 41],
+  [-116, 1218, 52],
+  [-101, 1170, 64],
+  [-68, 1144, 77],
+  [-32, 1126, 88],
+  [-11, 1138, 90],
 ];
 
-/** North along the range through the rainforest to Roaring Meg Creek. */
+/** North along the crest of the range through the rainforest to Roaring Meg Creek. */
 export const crebRidge: Waypoint[] = [
-  [-336, 612, 90],
-  [-300, 560],
-  [-322, 500],
-  [-282, 450],
-  [-252, 400],
-  [-272, 340],
-  [-232, 296],
-  [-196, 272],
-  [-160, 262, 122.3],
+  [-11, 1138, 90],
+  [5, 1076],
+  [-36, 1028],
+  [-8, 960],
+  [-40, 890],
+  [-12, 820],
+  [-34, 770],
+  [-16, 727],
+  [-5, 670],
+  [-44, 620],
+  [-21, 565],
+  [4, 530],
+  [35, 508, 122.3],
 ];
 
 /** Out of Roaring Meg's gorge and up the spur to the foot of Bob's Hill. */
 export const roaringMegClimb: Waypoint[] = [
-  [-160, 262, 122.3],
-  [-150, 228],
-  [-176, 186],
-  [-182, 130],
-  [-140, 80],
-  [-110, 30],
-  [-120, -20, 129],
+  [35, 508, 122.3],
+  [32, 473],
+  [-6, 443],
+  [-31, 392],
+  [-9, 331],
+  [2, 273],
+  [-24, 230, 129],
 ];
 
 /** Bob's Hill: the steep, rutted, rocky pinch near halfway. */
 export const bobsHill: Waypoint[] = [
-  [-120, -20, 129],
-  [-102, -60, 130],
-  [-86, -100, 147],
-  [-70, -140, 151],
-  [-48, -172, 146],
+  [-24, 230, 129],
+  [-21, 186, 130],
+  [-20, 143, 147],
+  [-18, 100, 151],
+  [-9, 62, 146],
 ];
 
-/** Across the top of the range to the lookout. */
+/** Along the top of the range to the lookout. */
 export const rangeTop: Waypoint[] = [
-  [-48, -172, 146],
-  [-8, -204],
-  [-30, -252],
-  [-2, -300],
-  [20, -345, 130],
+  [-9, 62, 146],
+  [18, 19],
+  [-12, -40],
+  [22, -100],
+  [-19, -159],
+  [-9, -214],
+  [-4, -263, 130],
 ];
 
 /** The long steep descent towards Wujal Wujal, concreted on its steepest pinches. */
 export const concreteDescent: Waypoint[] = [
-  [20, -345, 130],
-  [65, -372, 116],
-  [98, -408, 99],
-  [80, -452, 86],
-  [36, -480, 81],
-  [8, -512, 70],
-  [30, -545, 55],
-  [80, -560, 47],
-  [120, -578, 35],
+  [-4, -263, 130],
+  [29, -304, 116],
+  [48, -349, 99],
+  [16, -385, 86],
+  [-35, -396, 81],
+  [-72, -416, 70],
+  [-63, -455, 55],
+  [-21, -486, 47],
+  [10, -517, 35],
 ];
 
 /** Through Donovan's Creek and down to the Bloomfield River bridge. */
 export const donovansCreek: Waypoint[] = [
-  [120, -578, 35],
-  [150, -596],
-  [176, -610],
-  [188, -618],
-  [204, -650],
-  [234, -700],
-  [262, -730, 8.5],
+  [10, -517, 35],
+  [32, -544],
+  [52, -566],
+  [61, -577],
+  [65, -613, 12],
+  [76, -670, 7.6],
+  [92, -708, 7.5],
 ];
 
 /** Over the Bloomfield River. */
 export const bloomfieldBridge: Waypoint[] = [
-  [262, -730, 8.5],
-  [290, -770],
-  [316, -812, 8.5],
+  [92, -708, 7.5],
+  [105, -755],
+  [115, -804, 7.5],
 ];
 
-/** The Bloomfield Track north-east through Rossville to the Lions Den. */
+/** The Bloomfield Track north through Rossville and across the Little Annan to the Lions Den. */
 export const bloomfieldTrack: Waypoint[] = [
-  [316, -812, 8.5],
-  [350, -880],
-  [420, -930],
-  [510, -950],
-  [600, -930],
-  [690, -950],
-  [780, -1000],
-  [880, -990],
-  [980, -960],
-  [1080, -980],
-  [1170, -1040],
-  [1215, -1120],
-  [1180, -1190],
-  [1110, -1215],
-  [1060, -1235],
-  [1074, -1262],
-  [1100, -1296],
-  [1150, -1316],
-  [1200, -1320],
+  [115, -804, 7.5],
+  [123, -879],
+  [172, -950],
+  [230, -1030],
+  [240, -1120],
+  [190, -1200],
+  [110, -1250],
+  [20, -1300],
+  [-60, -1370],
+  [-110, -1450],
+  [-120, -1540],
+  [-90, -1630],
+  [-20, -1700],
+  [60, -1760],
+  [150, -1820],
+  [210, -1900],
+  [220, -1990],
+  [170, -2070],
+  [90, -2130],
+  [10, -2190],
+  [-60, -2260],
+  [-80, -2340],
+  [-40, -2410],
+  [40, -2458],
+  [80, -2505],
+  [96, -2548],
 ];
 
 /** Side tracks to the waterfalls. */
 export const roaringMegFallsTrack: Waypoint[] = [
-  [-150, 228],
-  [-124, 244],
-  [-106, 258],
+  [32, 473],
+  [62, 479],
+  [84, 486],
 ];
 
 export const wujalFallsTrack: Waypoint[] = [
-  [234, -700],
-  [184, -716],
-  [130, -730],
-  [84, -742],
-  [62, -748],
+  [76, -670],
+  [23, -668],
+  [-32, -663],
+  [-79, -658],
+  [-102, -657],
 ];
 
 /** Strip the pinned heights: the 2D line. */

@@ -35,6 +35,9 @@ function tintColors(): THREE.Color[] {
   out[GroundTint.ForestFloor] = pal('grassSage').clone().lerp(pal('foliageDark'), 0.5);
   out[GroundTint.FaintTrack] = pal('grassDry').clone().lerp(pal('dirtTrack'), 0.55);
   out[GroundTint.Concrete] = pal('barkPale').clone().lerp(pal('rock'), 0.55);
+  // Wet black soil under thin grass: dark and sodden.
+  out[GroundTint.BlackSoil] = pal('grassSage').clone().lerp(new THREE.Color('#2A241C'), 0.72);
+  out[GroundTint.Pothole] = pal('mud').clone().lerp(new THREE.Color('#1C130D'), 0.55);
   return out;
 }
 
@@ -78,9 +81,9 @@ export class TerrainMesh {
     this.material = createGroundMaterial();
     this.group.name = 'terrain';
     const rootSize = LEVELS[ROOT].size;
-    const n = terrain.size / rootSize;
-    for (let z = 0; z < n; z++)
-      for (let x = 0; x < n; x++) this.roots.push(this.node(ROOT, x * rootSize, z * rootSize));
+    for (let z = 0; z < terrain.sizeZ / rootSize; z++)
+      for (let x = 0; x < terrain.sizeX / rootSize; x++)
+        this.roots.push(this.node(ROOT, x * rootSize, z * rootSize));
     // Pre-build the two coarse levels.
     for (const r of this.roots) {
       this.build(r);
@@ -124,16 +127,22 @@ export class TerrainMesh {
           rock = 0,
           wet = 0;
         for (const [ox, oz, weight] of TINT_SAMPLES) {
-          const sx = Math.max(0, Math.min(t.size, p.ix0 + cx + ox));
-          const sz = Math.max(0, Math.min(t.size, p.iz0 + cz + oz));
-          const tint = t.tint[sz * t.res + sx];
+          const sx = Math.max(0, Math.min(t.sizeX, p.ix0 + cx + ox));
+          const sz = Math.max(0, Math.min(t.sizeZ, p.iz0 + cz + oz));
+          const tint = t.tint[sz * t.resX + sx];
           const base = this.colors[tint] ?? this.colors[0];
           r += base.r * weight;
           g += base.g * weight;
           b += base.b * weight;
           if (tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel)
             rock += weight;
-          if (tint === GroundTint.Mud || tint === GroundTint.CreekBed) wet += weight;
+          if (
+            tint === GroundTint.Mud ||
+            tint === GroundTint.CreekBed ||
+            tint === GroundTint.BlackSoil ||
+            tint === GroundTint.Pothole
+          )
+            wet += weight;
         }
         corners.set([r, g, b, rock, wet], (cz * cw + cx) * 5);
       }
@@ -142,7 +151,7 @@ export class TerrainMesh {
         const k = j * w + i;
         const x = p.ix0 + i / DETAIL_SUB,
           z = p.iz0 + j / DETAIL_SUB;
-        pos.set([x - t.half, p.heights[k], z - t.half], k * 3);
+        pos.set([x - t.halfX, p.heights[k], z - t.halfZ], k * 3);
         const dx = (h(i - 1, j) - h(i + 1, j)) * DETAIL_SUB,
           dz = (h(i, j - 1) - h(i, j + 1)) * DETAIL_SUB;
         const length = Math.hypot(dx, 2, dz);
@@ -213,8 +222,8 @@ export class TerrainMesh {
       level,
       ix,
       iz,
-      cx: ix + size / 2 - t.half,
-      cz: iz + size / 2 - t.half,
+      cx: ix + size / 2 - t.halfX,
+      cz: iz + size / 2 - t.halfZ,
       minY,
       maxY,
       mesh: null,
@@ -338,9 +347,9 @@ export class TerrainMesh {
     const color = new THREE.Color();
     let v = 0;
     const vertex = (sx: number, sz: number, drop = 0) => {
-      const ix = Math.max(0, Math.min(t.size, sx));
-      const iz = Math.max(0, Math.min(t.size, sz));
-      pos.set([sx - t.half, t.solidSample(ix, iz) - drop, sz - t.half], v * 3);
+      const ix = Math.max(0, Math.min(t.sizeX, sx));
+      const iz = Math.max(0, Math.min(t.sizeZ, sz));
+      pos.set([sx - t.halfX, t.solidSample(ix, iz) - drop, sz - t.halfZ], v * 3);
       // The same central-difference normal at every shared vertex, including LOD seams.
       const dx = t.sample(ix - 1, iz) - t.sample(ix + 1, iz);
       const dz = t.sample(ix, iz - 1) - t.sample(ix, iz + 1);
@@ -351,16 +360,22 @@ export class TerrainMesh {
         wet = 0;
       // A narrow blend softens the square edge of track and biome paint.
       for (const [ox, oz, weight] of TINT_SAMPLES) {
-        const x = Math.max(0, Math.min(t.size, ix + ox));
-        const z = Math.max(0, Math.min(t.size, iz + oz));
-        const tint = t.tint[z * t.res + x];
+        const x = Math.max(0, Math.min(t.sizeX, ix + ox));
+        const z = Math.max(0, Math.min(t.sizeZ, iz + oz));
+        const tint = t.tint[z * t.resX + x];
         const base = this.colors[tint] ?? this.colors[0];
         color.r += base.r * weight;
         color.g += base.g * weight;
         color.b += base.b * weight;
         if (tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel)
           rock += weight;
-        if (tint === GroundTint.Mud || tint === GroundTint.CreekBed) wet += weight;
+        if (
+          tint === GroundTint.Mud ||
+          tint === GroundTint.CreekBed ||
+          tint === GroundTint.BlackSoil ||
+          tint === GroundTint.Pothole
+        )
+          wet += weight;
       }
       col.set([color.r, color.g, color.b], v * 3);
       ground.set([rock, wet], v * 2);

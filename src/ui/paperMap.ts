@@ -7,8 +7,11 @@ import { placeMapLabels, type MapLabel } from './mapLabels';
 import { trailPoint } from '../sim/world/crawlTrail';
 import { gateColours } from '../data/palette';
 
+/** The sheet's longer side (canvas px). */
 const SIZE = 1400;
 const MARGIN = 70;
+/** A long, narrow map's sheet is at least this share of SIZE across, leaving paper beside it for names. */
+const MIN_SHEET = 0.45;
 /** Closest zoom (the whole map is 1). */
 const MAX_ZOOM = 4;
 /** A sheet smaller than this (CSS px, a phone) opens zoomed in on the car. */
@@ -43,16 +46,33 @@ export class PaperMap {
   private panY = 0;
   /** Pointers down on the map, for dragging and pinching. */
   private readonly pointers = new Map<number, { x: number; y: number }>();
+  /** The sheet's size (canvas px): square for a square map, upright for a long one. */
+  private readonly width: number;
+  private readonly height: number;
+  /** Half the area drawn, east–west and north–south (m), and canvas px per metre. */
+  private readonly halfX: number;
+  private readonly halfZ: number;
+  private readonly scale: number;
 
   constructor(
     root: HTMLElement,
     private readonly world: World,
   ) {
     this.noise = new Noise2D(world.map.seed + 9);
+    this.halfX = world.map.wall[0] + 20;
+    this.halfZ = world.map.wall[1] + 20;
+    this.scale = (SIZE - 2 * MARGIN) / (2 * Math.max(this.halfX, this.halfZ));
+    this.width = Math.round(Math.max(2 * this.halfX * this.scale + 2 * MARGIN, MIN_SHEET * SIZE));
+    this.height = Math.round(Math.max(2 * this.halfZ * this.scale + 2 * MARGIN, MIN_SHEET * SIZE));
     this.el = document.createElement('div');
     this.el.className = 'paper-map hidden';
-    this.el.innerHTML = `<div class="paper-map-sheet"><div class="paper-map-view"><canvas width="${SIZE}" height="${SIZE}"></canvas></div><div class="paper-map-hint"></div></div>`;
+    this.el.innerHTML = `<div class="paper-map-sheet"><div class="paper-map-view"><canvas width="${this.width}" height="${this.height}"></canvas></div><div class="paper-map-hint"></div></div>`;
     root.appendChild(this.el);
+    // The sheet takes the map's shape, as big as fits the screen.
+    const sheet = this.el.querySelector('.paper-map-sheet') as HTMLElement;
+    const aspect = this.width / this.height;
+    sheet.style.aspectRatio = `${this.width} / ${this.height}`;
+    sheet.style.width = `min(92vw, ${(92 * aspect).toFixed(2)}vh, ${Math.round((1000 * this.width) / Math.max(this.width, this.height))}px)`;
     this.canvas = this.el.querySelector('canvas') as HTMLCanvasElement;
     this.view = this.el.querySelector('.paper-map-view') as HTMLElement;
     this.hint = this.el.querySelector('.paper-map-hint') as HTMLElement;
@@ -86,9 +106,7 @@ export class PaperMap {
 
   /** World (x, z) to map pixels. */
   private toMap(x: number, z: number): [number, number] {
-    const half = this.world.map.wallHalfExtent + 20;
-    const s = (SIZE - 2 * MARGIN) / (2 * half);
-    return [MARGIN + (x + half) * s, MARGIN + (z + half) * s];
+    return [this.width / 2 + x * this.scale, this.height / 2 + z * this.scale];
   }
 
   private building: Promise<void> | null = null;
@@ -101,14 +119,14 @@ export class PaperMap {
     if (this.base) return Promise.resolve();
     this.building ??= (async () => {
       const c = document.createElement('canvas');
-      c.width = SIZE;
-      c.height = SIZE;
+      c.width = this.width;
+      c.height = this.height;
       const g = c.getContext('2d') as CanvasRenderingContext2D;
       const yieldFrame = () => new Promise<void>((r) => setTimeout(r, 0));
       const relief = this.reliefRows();
       for (let r = relief.next(); !r.done; r = relief.next()) await yieldFrame();
       g.imageSmoothingEnabled = true;
-      g.drawImage(this.reliefCanvas as HTMLCanvasElement, 0, 0, SIZE, SIZE);
+      g.drawImage(this.reliefCanvas as HTMLCanvasElement, 0, 0, this.width, this.height);
       await yieldFrame();
       this.drawForest(g);
       await yieldFrame();
@@ -128,38 +146,34 @@ export class PaperMap {
   /** Shaded relief at half resolution, straight from the height grid, in row slices. */
   private *reliefRows(): Generator<void, void, void> {
     const t = this.world.terrain;
-    const R = SIZE / 2;
-    const m = MARGIN / 2;
+    const RW = Math.round(this.width / 2);
+    const RH = Math.round(this.height / 2);
     const c = document.createElement('canvas');
-    c.width = R;
-    c.height = R;
+    c.width = RW;
+    c.height = RH;
     const g = c.getContext('2d') as CanvasRenderingContext2D;
-    const img = g.createImageData(R, R);
+    const img = g.createImageData(RW, RH);
     const d = img.data;
-    const half = this.world.map.wallHalfExtent + 20;
-    const s = (2 * half) / (R - 2 * m);
+    const { halfX, halfZ } = this;
+    const s = 2 / this.scale;
     const H = t.heights;
-    const res = t.res;
-    const hAt = (x: number, z: number) => {
-      const ix = Math.min(res - 1, Math.max(0, Math.round(x + t.half)));
-      const iz = Math.min(res - 1, Math.max(0, Math.round(z + t.half)));
-      return H[iz * res + ix];
-    };
+    const hAt = (x: number, z: number) => H[t.index(x, z)];
+    const [wallX, wallZ] = this.world.map.wall;
     const lx = -0.55;
     const ly = 0.65;
     const lz = -0.52;
-    for (let py = 0; py < R; py++) {
+    for (let py = 0; py < RH; py++) {
       if (py % 60 === 0) yield;
-      for (let px = 0; px < R; px++) {
-        const x = (px - m) * s - half;
-        const z = (py - m) * s - half;
-        const o = (py * R + px) * 4;
+      for (let px = 0; px < RW; px++) {
+        const x = (px - RW / 2) * s;
+        const z = (py - RH / 2) * s;
+        const o = (py * RW + px) * 4;
         // Paper with a little fibre.
         const fibre = this.noise.noise(px * 0.16, py * 0.16) * 6;
         let r = 243 + fibre;
         let gg = 235 + fibre;
         let b = 218 + fibre;
-        if (px >= m && py >= m && px < R - m && py < R - m) {
+        if (Math.abs(x) <= halfX && Math.abs(z) <= halfZ) {
           const h = hAt(x, z);
           const hx = hAt(x + 2, z) - hAt(x - 2, z);
           const hz = hAt(x, z + 2) - hAt(x, z - 2);
@@ -177,10 +191,7 @@ export class PaperMap {
           r *= k;
           gg *= k;
           b *= k;
-          if (
-            Math.abs(x) > this.world.map.wallHalfExtent - 8 ||
-            Math.abs(z) > this.world.map.wallHalfExtent - 8
-          ) {
+          if (Math.abs(x) > wallX - 8 || Math.abs(z) > wallZ - 8) {
             r *= 0.92;
             gg *= 0.92;
             b *= 0.9;
@@ -209,12 +220,13 @@ export class PaperMap {
 
   private *drawContours(g: CanvasRenderingContext2D): Generator<void, void, void> {
     const t = this.world.terrain;
-    const half = this.world.map.wallHalfExtent + 20;
+    const { halfX, halfZ } = this;
     const step = 4;
-    const n = Math.floor((2 * half) / step);
-    const H = new Float32Array((n + 1) * (n + 1));
-    for (let j = 0; j <= n; j++)
-      for (let i = 0; i <= n; i++) H[j * (n + 1) + i] = t.heightAt(-half + i * step, -half + j * step);
+    const nx = Math.floor((2 * halfX) / step);
+    const nz = Math.floor((2 * halfZ) / step);
+    const H = new Float32Array((nx + 1) * (nz + 1));
+    for (let j = 0; j <= nz; j++)
+      for (let i = 0; i <= nx; i++) H[j * (nx + 1) + i] = t.heightAt(-halfX + i * step, -halfZ + j * step);
     const interval = 10;
     g.lineCap = 'round';
     for (let level = Math.ceil(10 / interval) * interval; level < 320; level += interval) {
@@ -223,20 +235,20 @@ export class PaperMap {
       g.strokeStyle = major ? 'rgba(142, 75, 43, 0.55)' : 'rgba(142, 75, 43, 0.28)';
       g.lineWidth = major ? 1.6 : 0.9;
       g.beginPath();
-      for (let j = 0; j < n; j++)
-        for (let i = 0; i < n; i++) {
-          const a = H[j * (n + 1) + i];
-          const b = H[j * (n + 1) + i + 1];
-          const c = H[(j + 1) * (n + 1) + i + 1];
-          const d = H[(j + 1) * (n + 1) + i];
+      for (let j = 0; j < nz; j++)
+        for (let i = 0; i < nx; i++) {
+          const a = H[j * (nx + 1) + i];
+          const b = H[j * (nx + 1) + i + 1];
+          const c = H[(j + 1) * (nx + 1) + i + 1];
+          const d = H[(j + 1) * (nx + 1) + i];
           let code = 0;
           if (a > level) code |= 1;
           if (b > level) code |= 2;
           if (c > level) code |= 4;
           if (d > level) code |= 8;
           if (code === 0 || code === 15) continue;
-          const x0 = -half + i * step;
-          const z0 = -half + j * step;
+          const x0 = -halfX + i * step;
+          const z0 = -halfZ + j * step;
           const lerp = (h1: number, h2: number) => (level - h1) / (h2 - h1);
           const top: [number, number] = [x0 + lerp(a, b) * step, z0];
           const right: [number, number] = [x0 + step, z0 + lerp(b, c) * step];
@@ -288,15 +300,14 @@ export class PaperMap {
 
   private drawWater(g: CanvasRenderingContext2D): void {
     const t = this.world.terrain;
-    const half = this.world.map.wallHalfExtent + 20;
     g.fillStyle = 'rgba(94, 142, 152, 0.85)';
-    const s = (SIZE - 2 * MARGIN) / (2 * half);
-    for (let iz = 0; iz < t.res; iz += 2)
-      for (let ix = 0; ix < t.res; ix += 2) {
-        if (t.water[iz * t.res + ix] <= NO_WATER) continue;
-        const x = ix - t.half;
-        const z = iz - t.half;
-        if (Math.abs(x) > half || Math.abs(z) > half) continue;
+    const s = this.scale;
+    for (let iz = 0; iz < t.resZ; iz += 2)
+      for (let ix = 0; ix < t.resX; ix += 2) {
+        if (t.water[iz * t.resX + ix] <= NO_WATER) continue;
+        const x = ix - t.halfX;
+        const z = iz - t.halfZ;
+        if (Math.abs(x) > this.halfX || Math.abs(z) > this.halfZ) continue;
         const [px, py] = this.toMap(x, z);
         g.fillRect(px - s, py - s, s * 2 + 0.5, s * 2 + 0.5);
       }
@@ -384,18 +395,21 @@ export class PaperMap {
   }
 
   private drawFrame(g: CanvasRenderingContext2D): void {
+    // The frame runs round the map drawn, MARGIN in from a square sheet's edges.
+    const [left, top] = this.toMap(-this.halfX, -this.halfZ);
+    const [right, bottom] = this.toMap(this.halfX, this.halfZ);
     const wobblyRect = (inset: number, width: number) => {
       g.strokeStyle = '#3B2A1E';
       g.lineWidth = width;
       g.beginPath();
       const steps = 120;
       const pts: [number, number][] = [];
-      const a = inset;
-      const b = SIZE - inset;
-      for (let i = 0; i <= steps; i++) pts.push([a + ((b - a) * i) / steps, a]);
-      for (let i = 0; i <= steps; i++) pts.push([b, a + ((b - a) * i) / steps]);
-      for (let i = 0; i <= steps; i++) pts.push([b - ((b - a) * i) / steps, b]);
-      for (let i = 0; i <= steps; i++) pts.push([a, b - ((b - a) * i) / steps]);
+      const [a, b] = [left - MARGIN + inset, right + MARGIN - inset];
+      const [c, d] = [top - MARGIN + inset, bottom + MARGIN - inset];
+      for (let i = 0; i <= steps; i++) pts.push([a + ((b - a) * i) / steps, c]);
+      for (let i = 0; i <= steps; i++) pts.push([b, c + ((d - c) * i) / steps]);
+      for (let i = 0; i <= steps; i++) pts.push([b - ((b - a) * i) / steps, d]);
+      for (let i = 0; i <= steps; i++) pts.push([a, d - ((d - c) * i) / steps]);
       pts.forEach(([x, y], i) => {
         const w = this.noise.noise(i * 0.09, inset) * 1.6;
         if (i === 0) g.moveTo(x + w, y + w);
@@ -410,10 +424,10 @@ export class PaperMap {
     g.font = '44px "Patrick Hand", "Nunito", sans-serif';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText(this.world.map.name, SIZE / 2, MARGIN / 2 - 2);
+    g.fillText(this.world.map.name, this.width / 2, top - MARGIN / 2 - 2);
     // North arrow.
-    const nx = SIZE - MARGIN - 50;
-    const ny = MARGIN + 70;
+    const nx = right - 50;
+    const ny = top + 70;
     g.beginPath();
     g.moveTo(nx, ny - 40);
     g.lineTo(nx + 14, ny + 10);
@@ -423,12 +437,11 @@ export class PaperMap {
     g.fill();
     g.font = '30px "Patrick Hand", "Nunito", sans-serif';
     g.fillText('N', nx, ny - 58);
-    // Scale bar: 200 m.
-    const [x0] = this.toMap(0, 0);
-    const [x1] = this.toMap(200, 0);
-    const len = x1 - x0;
-    const sx = MARGIN + 30;
-    const sy = SIZE - MARGIN - 34;
+    // Scale bar: 200 m, or 500 m on a map drawn small.
+    const metres = 200 * this.scale < 60 ? 500 : 200;
+    const len = metres * this.scale;
+    const sx = left + 30;
+    const sy = bottom - 34;
     g.lineWidth = 3;
     g.strokeStyle = '#3B2A1E';
     g.beginPath();
@@ -440,7 +453,7 @@ export class PaperMap {
     g.lineTo(sx + len, sy + 7);
     g.stroke();
     g.font = '24px "Patrick Hand", "Nunito", sans-serif';
-    g.fillText('200 m', sx + len / 2, sy - 18);
+    g.fillText(`${metres} m`, sx + len / 2, sy - 18);
   }
 
   /**
@@ -458,18 +471,18 @@ export class PaperMap {
     this.hint.textContent = hints[device];
     if (opening) {
       this.pointers.clear();
-      const side = this.view.clientWidth;
+      const [w, h] = [this.view.clientWidth, this.view.clientHeight];
       const [mx, my] = this.toMap(player.x, player.z);
       this.zoom = 1;
       this.panX = this.panY = 0;
-      if (side > 0 && side < SMALL_SHEET)
-        this.zoomAt(PHONE_ZOOM, side / 2, side / 2, (mx / SIZE) * side, (my / SIZE) * side);
+      if (w > 0 && Math.max(w, h) < SMALL_SHEET)
+        this.zoomAt(PHONE_ZOOM, w / 2, h / 2, (mx / this.width) * w, (my / this.height) * h);
       else this.applyView();
     }
     if (!this.base) {
       // Still drawing: show the paper and fill it in when ready.
       this.ctx.fillStyle = '#F3EBDA';
-      this.ctx.fillRect(0, 0, SIZE, SIZE);
+      this.ctx.fillRect(0, 0, this.width, this.height);
       void this.prepare().then(() => {
         if (this.isOpen) this.open(discovered, player, device);
       });
@@ -484,8 +497,9 @@ export class PaperMap {
         g.font = `${p.kind === 'campsite' ? 'bold ' : ''}26px "Patrick Hand", "Nunito", sans-serif`;
         return { id: p.id, x, y, width: g.measureText(p.name).width };
       }),
-      SIZE,
+      this.width,
       MARGIN,
+      this.height,
     );
     g.strokeStyle = 'rgba(59, 42, 30, 0.5)';
     g.lineWidth = 1.5;
@@ -551,10 +565,9 @@ export class PaperMap {
 
   /** Keep the map covering the view, then move the canvas. */
   private applyView(): void {
-    const side = this.view.clientWidth;
-    const min = side - side * this.zoom;
-    this.panX = Math.min(0, Math.max(min, this.panX));
-    this.panY = Math.min(0, Math.max(min, this.panY));
+    const [w, h] = [this.view.clientWidth, this.view.clientHeight];
+    this.panX = Math.min(0, Math.max(w - w * this.zoom, this.panX));
+    this.panY = Math.min(0, Math.max(h - h * this.zoom, this.panY));
     this.canvas.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
     this.view.classList.toggle('zoomed', this.zoom > 1);
   }
