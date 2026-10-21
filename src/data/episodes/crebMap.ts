@@ -47,7 +47,7 @@ const road = {
     potholeDepth: 0.3,
     washouts: 2,
     washoutDepth: 0.3,
-    bogs: 0.6,
+    bogs: 1.2,
     bogDepth: 0.3,
   },
 } as const;
@@ -65,7 +65,7 @@ const bush = {
     potholeDepth: 0.28,
     washouts: 6,
     washoutDepth: 0.38,
-    bogs: 0.8,
+    bogs: 1.6,
     bogDepth: 0.3,
   },
 } as const;

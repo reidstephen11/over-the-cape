@@ -56,7 +56,8 @@ Each episode defines (src/data/episodes.ts): its map, the mission line and goal 
 - Tropical flora: rainforest canopy trees on buttress roots, fan palms and tree ferns (more by the creeks), with open eucalypt woodland in marked areas. One leaf texture holds eucalyptus sprays, broad leaves, fan-palm leaves and fern fronds.
 - Per-map colours (red clay, greener grass) and clay track cuttings.
 - Track pins that follow the ground between fixed heights (`pinMode: 'follow'`) and rounded grade changes (`pinSmooth`); concrete track surface.
-- Rough tracks (`rough`: bumps, swells, potholes and washouts) and running water (`flow` on a creek or a creek point).
+- Rough tracks (`rough`: bumps, swells, potholes, washouts and mud holes that fill with water after rain) and running water (`flow` on a creek or a creek point).
+- A red clay track surface (`clay`) that grips like dirt when dry and loses over half its grip when wet.
 - 3 km maps (3073 × 3073 samples at 1 m); about 10 s to generate in Node.
 
 ## 6. Interface

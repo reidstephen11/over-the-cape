@@ -121,44 +121,54 @@ export function roughHole(
   return hole;
 }
 
-/** Mud holes lie only where the track climbs less than this (rise per metre)... */
-const BOG_MAX_GRADE = 0.06;
-/** ...and stretch this far along it (m). */
+/** Mud holes stretch this far along the track (m)... */
 const BOG_LENGTH = [7, 12] as const;
+/** ...settle into the lowest spot within this far (m) of where they fall... */
+const BOG_SNAP = 6;
+/** ...and lie only where the track climbs less than this (rise per metre). */
+const BOG_MAX_GRADE = 0.06;
 
 /**
- * Mud holes on a rough track's flatter stretches: dips the width of the track, deepest in
- * the middle, laid along it. `skip` rules out a point (by a creek, on a bridge).
+ * Mud holes in a rough track's dips: hollows across the track's width, deepest in the
+ * middle, laid along it, in the lowest spot of the graded ground (`heightAt`) nearby on the
+ * flatter stretches. `skip` rules out a point (by a creek, on a bridge).
  */
 export function trackMudHoles(
   track: TrackInfo,
   seed: number,
+  heightAt: (x: number, z: number) => number,
   skip: (x: number, z: number, s: number) => boolean,
 ): BogDef[] {
   const r = track.def.rough;
   if (!r?.bogs) return [];
   const rand = mulberry32(seed);
-  const { poly, profile } = track;
+  const { poly } = track;
   const out: BogDef[] = [];
   const gap = 100 / r.bogs;
-  for (let s = CLEAR_ENDS + 5 + rand() * gap; s < poly.length - CLEAR_ENDS - 5; s += gap * (0.5 + rand())) {
-    const k = Math.round(s);
-    const a = Math.max(0, k - 5);
-    const b = Math.min(poly.count - 1, k + 5);
-    if (Math.abs(profile[b] - profile[a]) / Math.max(1, b - a) > BOG_MAX_GRADE) continue;
+  const centre = (k: number) => heightAt(poly.xs[k], poly.zs[k]);
+  for (let s = CLEAR_ENDS + 6 + rand() * gap; s < poly.length - CLEAR_ENDS - 6; s += gap * (0.5 + rand())) {
+    // Settle into the lowest spot nearby.
+    let k = Math.round(s);
+    for (let j = Math.max(1, k - BOG_SNAP); j <= Math.min(poly.count - 2, k + BOG_SNAP); j++)
+      if (centre(j) < centre(k)) k = j;
     const x = poly.xs[k];
     const z = poly.zs[k];
-    if (skip(x, z, s)) continue;
+    const length = BOG_LENGTH[0] + rand() * (BOG_LENGTH[1] - BOG_LENGTH[0]);
+    const depth = (r.bogDepth ?? 0.25) * (0.7 + 0.3 * rand());
+    const a = Math.max(0, k - 5);
+    const b = Math.min(poly.count - 1, k + 5);
+    if (Math.abs(track.profile[b] - track.profile[a]) / Math.max(1, b - a) > BOG_MAX_GRADE) continue;
+    if (skip(x, z, poly.s[k])) continue;
     const heading = Math.atan2(poly.xs[b] - poly.xs[a], -(poly.zs[b] - poly.zs[a]));
     out.push({
       id: `${track.def.id}-mud-${out.length}`,
       x,
       z,
       // Across the track (the bog's x) and along it (its z), turned to the track's heading.
-      radiusX: track.def.width / 2 + 0.8,
-      radiusZ: (BOG_LENGTH[0] + rand() * (BOG_LENGTH[1] - BOG_LENGTH[0])) / 2,
+      radiusX: track.def.width / 2 + 0.3,
+      radiusZ: length / 2,
       rotationDeg: (heading * 180) / Math.PI,
-      depth: (r.bogDepth ?? 0.25) * (0.7 + 0.3 * rand()),
+      depth,
     });
   }
   return out;

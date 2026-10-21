@@ -624,7 +624,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 
   // --- Bogs, and the mud holes in rough tracks ---
   const mudHoles = tracks.flatMap((t, id) =>
-    trackMudHoles(t, map.seed * 53 + id, (x, z, s) => {
+    trackMudHoles(t, map.seed * 53 + id, sampleH, (x, z, s) => {
       const i = Math.round(z + half) * res + Math.round(x + half);
       return (
         creekDist[i] - creekHalfAt[i] < 15 || [s - 7, s, s + 7].some((q) => onBridge(t.def, q) !== undefined)
