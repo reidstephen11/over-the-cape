@@ -37,10 +37,12 @@ test('M6: audio starts with the Drive button, follows the car, and the volume se
   expect(Math.max(0, ...Object.values(driving.tyres))).toBeGreaterThan(0.1);
   await shot(page, 'M6', 'driving-with-audio-readout');
 
-  // Near the river the water ambience comes in.
+  // Near the river the water ambience comes in. Parked at the water's edge: driven into the
+  // river, the current would carry the car off and end the episode.
+  await page.evaluate(() => window.__game!.setInput({ brake: 1 }));
+  await page.evaluate(() => window.__game!.teleport(-1010, 1070, 160));
   await expect.poll(async () => (await audio(page)).water, { timeout: 180_000 }).toBeGreaterThan(0.2);
   await shot(page, 'M6', 'river-water-audio');
-  await page.evaluate(() => window.__game!.setInput({ brake: 1 }));
 
   // Volume settings.
   await page.keyboard.press('Escape');
