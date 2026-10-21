@@ -115,6 +115,11 @@ export class Sky {
 /** The map size the backdrop's rings were laid out for (4WD Simulator's 1.5 km maps). */
 const BACKDROP_MAP_SIZE = 1536;
 
+/** The square map with the same corners as `map`: the backdrop is laid out round that. */
+export function backdropSize(map: { width: number; length: number }): number {
+  return Math.hypot(map.width, map.length) / Math.SQRT2;
+}
+
 /**
  * Distant ridge silhouettes outside the map so the horizon is never empty.
  * Three rings of low-poly hills that the haze turns blue. The rings are laid out for a

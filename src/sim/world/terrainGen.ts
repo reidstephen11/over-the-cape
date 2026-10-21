@@ -6,7 +6,14 @@ import { GroundTint, NO_WATER, Terrain } from './terrain';
 import type { CreekInfo, GullyInfo, StaticBox, TerrainFeatures, TrackInfo } from './features';
 import { buildDetailPatch, type DetailPatch } from './detail';
 import { onBridge } from './bridges';
-import { roughHole, roughOffset, trackMudHoles, trackRoughness, type TrackRoughness } from './roughness';
+import {
+  roughHole,
+  roughMark,
+  roughOffset,
+  trackMudHoles,
+  trackRoughness,
+  type TrackRoughness,
+} from './roughness';
 
 /** Macro relief is evaluated on a coarser grid and upsampled. */
 const MACRO_STEP = 2;
@@ -16,11 +23,15 @@ const CREEK_BANK_REACH = 34;
 const PIN_FADE = 80;
 /** Steepest rise (height per metre) of the valley sides beyond the carved banks. */
 const CREEK_WALL_SLOPE = 1.5;
+/** Beside a track, ground the grading cut or built up by more than this (m) is a bank. */
+const BANK_CUT = 0.4;
 
 interface Grid {
-  res: number;
+  resX: number;
+  resZ: number;
   step: number;
-  origin: number;
+  originX: number;
+  originZ: number;
 }
 
 export interface GenStep {
@@ -48,24 +59,24 @@ function stampPolyline(
   owner?: Int16Array,
   ownerId = 0,
 ): void {
-  const { res, step, origin } = grid;
+  const { resX, resZ, step, originX, originZ } = grid;
   for (let k = 0; k < poly.count - 1; k++) {
     const ax = poly.xs[k];
     const az = poly.zs[k];
     const bx = poly.xs[k + 1];
     const bz = poly.zs[k + 1];
-    const minX = Math.max(0, Math.floor((Math.min(ax, bx) - radius - origin) / step));
-    const maxX = Math.min(res - 1, Math.ceil((Math.max(ax, bx) + radius - origin) / step));
-    const minZ = Math.max(0, Math.floor((Math.min(az, bz) - radius - origin) / step));
-    const maxZ = Math.min(res - 1, Math.ceil((Math.max(az, bz) + radius - origin) / step));
+    const minX = Math.max(0, Math.floor((Math.min(ax, bx) - radius - originX) / step));
+    const maxX = Math.min(resX - 1, Math.ceil((Math.max(ax, bx) + radius - originX) / step));
+    const minZ = Math.max(0, Math.floor((Math.min(az, bz) - radius - originZ) / step));
+    const maxZ = Math.min(resZ - 1, Math.ceil((Math.max(az, bz) + radius - originZ) / step));
     const vx = bx - ax;
     const vz = bz - az;
     const len2 = vx * vx + vz * vz;
     const invLen = len2 > 0 ? 1 / Math.sqrt(len2) : 0;
     for (let iz = minZ; iz <= maxZ; iz++) {
-      const pz = origin + iz * step;
+      const pz = originZ + iz * step;
       for (let ix = minX; ix <= maxX; ix++) {
-        const px = origin + ix * step;
+        const px = originX + ix * step;
         const wx = px - ax;
         const wz = pz - az;
         let t = len2 > 0 ? (wx * vx + wz * vz) / len2 : 0;
@@ -74,7 +85,7 @@ function stampPolyline(
         const cz = az + vz * t - pz;
         const d = Math.sqrt(cx * cx + cz * cz);
         if (d > radius) continue;
-        const i = iz * res + ix;
+        const i = iz * resX + ix;
         if (d < dist[i]) {
           dist[i] = d;
           param[i] = k + t;
@@ -96,6 +107,7 @@ function atParam(arr: ArrayLike<number>, p: number): number {
   return arr[i] + (arr[i + 1] - arr[i]) * f;
 }
 
+/** Valley floor height at `x` along the floor's axis. */
 function floorAt(floor: MapDef['floor'], x: number): number {
   if (x <= floor[0][0]) return floor[0][1];
   for (let i = 0; i < floor.length - 1; i++) {
@@ -171,14 +183,15 @@ function hillValue(h: HillDef, x: number, z: number): number {
   }
 }
 
-function bilinear(src: Float32Array, res: number, fx: number, fz: number): number {
-  const ix = Math.min(res - 2, Math.max(0, Math.floor(fx)));
-  const iz = Math.min(res - 2, Math.max(0, Math.floor(fz)));
+/** Bilinear sample of a grid `resX` samples wide and `resZ` long. */
+function bilinear(src: Float32Array, resX: number, resZ: number, fx: number, fz: number): number {
+  const ix = Math.min(resX - 2, Math.max(0, Math.floor(fx)));
+  const iz = Math.min(resZ - 2, Math.max(0, Math.floor(fz)));
   const tx = fx - ix;
   const tz = fz - iz;
-  const i = iz * res + ix;
+  const i = iz * resX + ix;
   const a = src[i] + (src[i + 1] - src[i]) * tx;
-  const b = src[i + res] + (src[i + res + 1] - src[i + res]) * tx;
+  const b = src[i + resX] + (src[i + resX + 1] - src[i + resX]) * tx;
   return a + (b - a) * tz;
 }
 
@@ -252,10 +265,14 @@ function boxBlur(src: Float32Array, radius: number): Float32Array {
  * so the browser can show progress between steps; call `generateTerrain` to run it all.
  */
 export function* generateTerrainSteps(map: MapDef): Generator<GenStep, GeneratedTerrain, void> {
-  const size = map.size;
-  const half = size / 2;
-  const res = size + 1;
-  const n = res * res;
+  const halfX = map.width / 2;
+  const halfZ = map.length / 2;
+  const resX = map.width + 1;
+  const resZ = map.length + 1;
+  const n = resX * resZ;
+  // Distance inside the map's edge, ragged by noise: where the border mountains rise.
+  const edgeIn = (x: number, z: number) =>
+    Math.min(halfX - Math.abs(x), halfZ - Math.abs(z)) + noise3.fbm(x / 160, z / 160, 2) * 40;
   const noise = new Noise2D(map.seed);
   const noise2 = new Noise2D(map.seed + 101);
   const noise3 = new Noise2D(map.seed + 202);
@@ -283,16 +300,18 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   yield { progress: 0.02, label: 'Shaping hills' };
 
   // --- Macro relief on a coarse grid ---
-  const mres = size / MACRO_STEP + 1;
-  const mgrid: Grid = { res: mres, step: MACRO_STEP, origin: -half };
-  const macro = new Float32Array(mres * mres);
-  const mCreekDist = new Float32Array(mres * mres).fill(1e9);
-  const mCreekParam = new Float32Array(mres * mres);
+  const mresX = map.width / MACRO_STEP + 1;
+  const mresZ = map.length / MACRO_STEP + 1;
+  const mn = mresX * mresZ;
+  const mgrid: Grid = { resX: mresX, resZ: mresZ, step: MACRO_STEP, originX: -halfX, originZ: -halfZ };
+  const macro = new Float32Array(mn);
+  const mCreekDist = new Float32Array(mn).fill(1e9);
+  const mCreekParam = new Float32Array(mn);
   for (const c of creekLines) stampPolyline(c.poly, map.noise.creekCalm, mgrid, mCreekDist, mCreekParam);
 
-  const ridgeDist = new Float32Array(mres * mres);
-  const ridgeParam = new Float32Array(mres * mres);
-  const ridgeAdd = new Float32Array(mres * mres);
+  const ridgeDist = new Float32Array(mn);
+  const ridgeParam = new Float32Array(mn);
+  const ridgeAdd = new Float32Array(mn);
   for (const ridge of map.ridges) {
     ridgeDist.fill(1e9);
     const poly = densify(ridge.points, 4);
@@ -305,12 +324,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   }
 
   const { border } = map;
-  for (let iz = 0; iz < mres; iz++) {
-    const z = -half + iz * MACRO_STEP;
-    for (let ix = 0; ix < mres; ix++) {
-      const x = -half + ix * MACRO_STEP;
-      const i = iz * mres + ix;
-      let h = floorAt(map.floor, x);
+  for (let iz = 0; iz < mresZ; iz++) {
+    const z = -halfZ + iz * MACRO_STEP;
+    for (let ix = 0; ix < mresX; ix++) {
+      const x = -halfX + ix * MACRO_STEP;
+      const i = iz * mresX + ix;
+      let h = floorAt(map.floor, map.floorAlong === 'z' ? z : x);
       const calm = 0.22 + 0.78 * smoothstep(8, map.noise.creekCalm, mCreekDist[i]);
       h +=
         calm *
@@ -320,7 +339,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       for (const hill of map.hills) h += hillValue(hill, x, z);
       h += ridgeAdd[i];
       // Border mountains close off the map edge.
-      const e = half - Math.max(Math.abs(x), Math.abs(z)) + noise3.fbm(x / 160, z / 160, 2) * 40;
+      const e = edgeIn(x, z);
       let b = smoothstep(border.width, 0, e);
       if (b > 0) {
         for (const g of border.gaps) {
@@ -350,8 +369,8 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     }
     const wallReach = c.reach + Math.max(0, top - lowBank) / CREEK_WALL_SLOPE + MACRO_STEP;
     const wallPoly = densify(c.pts, 4);
-    const mWallDist = new Float32Array(mres * mres).fill(1e9);
-    const mWallParam = new Float32Array(mres * mres);
+    const mWallDist = new Float32Array(mn).fill(1e9);
+    const mWallParam = new Float32Array(mn);
     stampPolyline(wallPoly, wallReach, mgrid, mWallDist, mWallParam);
     for (let i = 0; i < macro.length; i++) {
       const d = mWallDist[i];
@@ -368,20 +387,20 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   // --- Full resolution heights ---
   const heights = new Float32Array(n);
   const { detailAmplitude, detailScale } = map.noise;
-  for (let iz = 0; iz < res; iz++) {
-    const z = -half + iz;
+  for (let iz = 0; iz < resZ; iz++) {
+    const z = -halfZ + iz;
     const fz = iz / MACRO_STEP;
-    for (let ix = 0; ix < res; ix++) {
-      const x = -half + ix;
-      const h = bilinear(macro, mres, ix / MACRO_STEP, fz);
-      heights[iz * res + ix] =
+    for (let ix = 0; ix < resX; ix++) {
+      const x = -halfX + ix;
+      const h = bilinear(macro, mresX, mresZ, ix / MACRO_STEP, fz);
+      heights[iz * resX + ix] =
         h +
         detailAmplitude * noise2.fbm(x / detailScale, z / detailScale, 2) +
         detailAmplitude * 0.25 * noise3.noise(x / 2.3, z / 2.3);
     }
   }
 
-  const sampleH = (x: number, z: number) => bilinear(heights, res, x + half, z + half);
+  const sampleH = (x: number, z: number) => bilinear(heights, resX, resZ, x + halfX, z + halfZ);
 
   // --- Flats (campsites, hut, lookout) and prop footprints ---
   const flats: FlatDef[] = [
@@ -405,19 +424,19 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     }
     const R = f.radius + f.blend;
     for (
-      let iz = Math.max(0, Math.floor(f.z - R + half));
-      iz <= Math.min(res - 1, Math.ceil(f.z + R + half));
+      let iz = Math.max(0, Math.floor(f.z - R + halfZ));
+      iz <= Math.min(resZ - 1, Math.ceil(f.z + R + halfZ));
       iz++
     )
       for (
-        let ix = Math.max(0, Math.floor(f.x - R + half));
-        ix <= Math.min(res - 1, Math.ceil(f.x + R + half));
+        let ix = Math.max(0, Math.floor(f.x - R + halfX));
+        ix <= Math.min(resX - 1, Math.ceil(f.x + R + halfX));
         ix++
       ) {
-        const d = Math.hypot(ix - half - f.x, iz - half - f.z);
+        const d = Math.hypot(ix - halfX - f.x, iz - halfZ - f.z);
         if (d >= R) continue;
         const w = 1 - smoothstep(f.radius, R, d);
-        const i = iz * res + ix;
+        const i = iz * resX + ix;
         heights[i] += (target - heights[i]) * w;
       }
   }
@@ -425,7 +444,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   yield { progress: 0.3, label: 'Carving the creek' };
 
   // --- Creek channel ---
-  const grid: Grid = { res, step: 1, origin: -half };
+  const grid: Grid = { resX, resZ, step: 1, originX: -halfX, originZ: -halfZ };
   const water = new Float32Array(n).fill(NO_WATER);
   const creekDist = new Float32Array(n).fill(1e9);
   const creekParam = new Float32Array(n);
@@ -466,19 +485,41 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       const a = (bar.rotationDeg * Math.PI) / 180;
       const [ca, sa] = [Math.cos(a), Math.sin(a)];
       const R = Math.max(bar.radiusX, bar.radiusZ) * 1.3;
-      for (let iz = Math.floor(bar.z - R + half); iz <= Math.ceil(bar.z + R + half); iz++)
-        for (let ix = Math.floor(bar.x - R + half); ix <= Math.ceil(bar.x + R + half); ix++) {
-          if (ix < 0 || iz < 0 || ix >= res || iz >= res) continue;
-          const i = iz * res + ix;
+      for (let iz = Math.floor(bar.z - R + halfZ); iz <= Math.ceil(bar.z + R + halfZ); iz++)
+        for (let ix = Math.floor(bar.x - R + halfX); ix <= Math.ceil(bar.x + R + halfX); ix++) {
+          if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
+          const i = iz * resX + ix;
           if (water[i] <= NO_WATER) continue;
-          const x = ix - half - bar.x;
-          const z = iz - half - bar.z;
+          const x = ix - halfX - bar.x;
+          const z = iz - halfZ - bar.z;
           const r = Math.hypot((x * ca + z * sa) / bar.radiusX, (-x * sa + z * ca) / bar.radiusZ);
           const w = 1 - smoothstep(0.7, 1.15, r);
           if (w <= 0) continue;
           heights[i] = Math.max(heights[i], heights[i] + (water[i] - bar.depth - heights[i]) * w);
         }
     }
+  // Rocky stretches of bed and scour holes, under water only.
+  const underWater = (x: number, z: number, R: number, apply: (i: number, x: number, z: number) => void) => {
+    for (let iz = Math.floor(z - R + halfZ); iz <= Math.ceil(z + R + halfZ); iz++)
+      for (let ix = Math.floor(x - R + halfX); ix <= Math.ceil(x + R + halfX); ix++) {
+        if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
+        const i = iz * resX + ix;
+        if (water[i] > NO_WATER) apply(i, ix - halfX, iz - halfZ);
+      }
+  };
+  for (const c of creekLines) {
+    for (const r of c.def.rough ?? [])
+      underWater(r.x, r.z, r.radius, (i, x, z) => {
+        const fade = 1 - smoothstep(r.radius * 0.7, r.radius, Math.hypot(x - r.x, z - r.z));
+        heights[i] +=
+          r.height * fade * (noise2.noise(x / 2.2, z / 2.2) + 0.5 * noise3.noise(x / 1.1, z / 1.1));
+      });
+    for (const hole of c.def.holes ?? [])
+      underWater(hole.x, hole.z, hole.radius, (i, x, z) => {
+        const q = Math.hypot(x - hole.x, z - hole.z) / hole.radius;
+        if (q < 1) heights[i] -= hole.depth * (1 - smoothstep(0.35, 1, q));
+      });
+  }
   const creeks: CreekInfo[] = creekLines.map((c) => {
     const water = new Float32Array(c.poly.count);
     const halfWidth = new Float32Array(c.poly.count);
@@ -526,13 +567,23 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     tracks.push({ def, poly, profile, shoulders });
     rawProfiles.push(raw);
     roughs.push(trackRoughness(def, poly.length, map.seed * 31 + id));
-    const reach = def.width / 2 + (shoulders ? Math.max(...shoulders) : def.shoulder);
+    // Reach far enough out to keep black soil off the margin beside the track, too.
+    const reach =
+      def.width / 2 +
+      Math.max(
+        shoulders ? Math.max(...shoulders) : def.shoulder,
+        map.blackSoil ? map.blackSoil.margin + 1.5 : 0,
+      );
     stampPolyline(poly, reach, grid, trackDist, trackParam, trackSide, trackOwner, id);
   });
 
+  // Banks beside the tracks the grading cut into or built up by more than BANK_CUT.
+  const cutBank = new Uint8Array(n);
   // Potholes and washouts in the graded tracks: sample index → depth (m), and which are potholes.
   const holes = new Map<number, number>();
   const potholes = new Set<number>();
+  // The ones deep enough to pinch a tyre, marked to be seen: 1 inside, 2 on the rim.
+  const holeMarks = new Map<number, 1 | 2>();
   for (let i = 0; i < n; i++) {
     const id = trackOwner[i];
     if (id < 0) continue;
@@ -560,15 +611,25 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const rough = roughs[id];
     if (rough) {
       const s = atParam(t.poly.s, p);
-      target += roughOffset(rough, roughNoise, (i % res) - half, Math.floor(i / res) - half, s, trackSide[i]);
+      target += roughOffset(
+        rough,
+        roughNoise,
+        (i % resX) - halfX,
+        Math.floor(i / resX) - halfZ,
+        s,
+        trackSide[i],
+      );
       const hole = d <= hw ? roughHole(rough, s, trackSide[i]) : null;
       if (hole) {
         holes.set(i, hole.depth);
         if (hole.kind === 'pothole') potholes.add(i);
       }
+      const mark = d <= hw + 0.6 ? roughMark(rough, s, trackSide[i]) : 0;
+      if (mark) holeMarks.set(i, mark);
     }
     const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + shoulderAt(t, p), d);
     heights[i] = h + (target - h) * w;
+    if (d > hw && Math.abs(target - h) * w > BANK_CUT) cutBank[i] = 1;
   }
 
   // Staircase ledges: granite steps across the track (static boxes). Each leans with the
@@ -625,32 +686,38 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   // --- Bogs, and the mud holes in rough tracks ---
   const mudHoles = tracks.flatMap((t, id) =>
     trackMudHoles(t, map.seed * 53 + id, sampleH, (x, z, s) => {
-      const i = Math.round(z + half) * res + Math.round(x + half);
+      const i = Math.round(z + halfZ) * resX + Math.round(x + halfX);
       return (
         creekDist[i] - creekHalfAt[i] < 15 || [s - 7, s, s + 7].some((q) => onBridge(t.def, q) !== undefined)
       );
     }),
   );
   const bogMask = new Uint8Array(n);
+  // Where hollows overlap (a long boggy stretch) the ground sinks to the deepest of them.
+  const bogDip = new Map<number, number>();
   for (const b of [...map.bogs, ...mudHoles]) {
     const a = (b.rotationDeg * Math.PI) / 180;
     const c = Math.cos(a);
     const s = Math.sin(a);
     const R = Math.max(b.radiusX, b.radiusZ) * 1.6;
-    for (let iz = Math.floor(b.z - R + half); iz <= Math.ceil(b.z + R + half); iz++)
-      for (let ix = Math.floor(b.x - R + half); ix <= Math.ceil(b.x + R + half); ix++) {
-        const x = ix - half - b.x;
-        const z = iz - half - b.z;
+    for (let iz = Math.floor(b.z - R + halfZ); iz <= Math.ceil(b.z + R + halfZ); iz++)
+      for (let ix = Math.floor(b.x - R + halfX); ix <= Math.ceil(b.x + R + halfX); ix++) {
+        if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
+        const x = ix - halfX - b.x;
+        const z = iz - halfZ - b.z;
         const rx = (x * c + z * s) / b.radiusX;
         const rz = (-x * s + z * c) / b.radiusZ;
-        const r = Math.sqrt(rx * rx + rz * rz) + noise3.noise((ix - half) / 4, (iz - half) / 4) * 0.18;
+        const r = Math.sqrt(rx * rx + rz * rz) + noise3.noise((ix - halfX) / 4, (iz - halfZ) / 4) * 0.18;
         if (r > 1.5) continue;
-        const i = iz * res + ix;
-        const dip = b.depth * (1 - smoothstep(0.35, 1.05, r));
-        heights[i] -= dip - 0.06 * noise2.noise((ix - half) / 1.7, (iz - half) / 1.7) * (r < 1 ? 1 : 0);
-        if (r < 1.12) bogMask[i] = 1;
+        const i = iz * resX + ix;
+        const dip =
+          b.depth * (1 - smoothstep(0.35, 1.05, r)) -
+          0.06 * noise2.noise((ix - halfX) / 1.7, (iz - halfZ) / 1.7) * (r < 1 ? 1 : 0);
+        bogDip.set(i, Math.max(bogDip.get(i) ?? -Infinity, dip));
+        if (r < 1.12) bogMask[i] = Math.max(bogMask[i], b.deep ? 2 : 1);
       }
   }
+  for (const [i, dip] of bogDip) heights[i] -= dip;
 
   // --- Washout gullies: trench in the heightfield plus vertical lips as static boxes ---
   const gullies: GullyInfo[] = [];
@@ -682,16 +749,16 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       lipTop.push(tops);
     }
     const centreH = sampleH(g.x, g.z);
-    for (let iz = Math.floor(g.z - R + half); iz <= Math.ceil(g.z + R + half); iz++)
-      for (let ix = Math.floor(g.x - R + half); ix <= Math.ceil(g.x + R + half); ix++) {
-        if (ix < 0 || iz < 0 || ix >= res || iz >= res) continue;
-        const x = ix - half - g.x;
-        const z = iz - half - g.z;
+    for (let iz = Math.floor(g.z - R + halfZ); iz <= Math.ceil(g.z + R + halfZ); iz++)
+      for (let ix = Math.floor(g.x - R + halfX); ix <= Math.ceil(g.x + R + halfX); ix++) {
+        if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
+        const x = ix - halfX - g.x;
+        const z = iz - halfZ - g.z;
         const along = x * dirX + z * dirZ;
         const lat = Math.abs(-x * dirZ + z * dirX);
         const endFade = smoothstep(L + 1.5, L - 3, Math.abs(along));
         if (endFade <= 0 || lat > rampOut) continue;
-        const i = iz * res + ix;
+        const i = iz * resX + ix;
         const depth = g.depth * endFade;
         const carve = lat <= trenchHalf ? depth : depth * (1 - (lat - trenchHalf) / (rampOut - trenchHalf));
         heights[i] -= carve;
@@ -728,31 +795,38 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 
   yield { progress: 0.68, label: 'Laying surfaces' };
 
+  // Black soil off the tracks, away from camps and on gentle ground only.
+  const soil = map.blackSoil;
+  const blackSoilAt = (i: number, x: number, z: number, slope: number, nz: number): boolean => {
+    if (!soil || slope > soil.maxSlopeDeg + nz * 2) return false;
+    const id = trackOwner[i];
+    if (id >= 0 && trackDist[i] - tracks[id].def.width / 2 < soil.margin + (1 + nz) * 0.75) return false;
+    if (flats.some((f) => Math.hypot(x - f.x, z - f.z) < f.radius + f.blend)) return false;
+    return noise3.noise(x / 90 + 17.3, z / 90) < soil.firmAbove;
+  };
+
   // --- Surfaces and tints ---
-  for (let iz = 2; iz < res - 2; iz++) {
-    for (let ix = 2; ix < res - 2; ix++) {
-      const i = iz * res + ix;
+  for (let iz = 2; iz < resZ - 2; iz++) {
+    for (let ix = 2; ix < resX - 2; ix++) {
+      const i = iz * resX + ix;
       // Wide stencil so small bumps don't speckle the slope classes.
       const gx = (heights[i + 2] - heights[i - 2]) * 0.25;
-      const gz = (heights[i + 2 * res] - heights[i - 2 * res]) * 0.25;
+      const gz = (heights[i + 2 * resX] - heights[i - 2 * resX]) * 0.25;
       const slope = Math.atan(Math.sqrt(gx * gx + gz * gz)) * (180 / Math.PI);
-      const x = ix - half;
-      const z = iz - half;
+      const x = ix - halfX;
+      const z = iz - halfZ;
       const nz = noise2.noise(x / 16, z / 16);
       // Border mountains: steep but forested so the map edge reads as closed scrub.
-      const edge = half - Math.max(Math.abs(x), Math.abs(z)) + noise3.fbm(x / 160, z / 160, 2) * 40;
+      const edge = edgeIn(x, z);
       if (edge < border.width && slope < 52 + nz * 6) {
         surface[i] = slope > 32 ? SurfaceId.Gravel : SurfaceId.Grass;
         tint[i] = nz > 0.45 && slope > 36 ? GroundTint.Scree : GroundTint.ForestFloor;
         continue;
       }
-      // Cuttings and fill beside a track on a clay map are bare clay, not scree.
-      const bank =
-        map.clayBanks &&
-        trackOwner[i] >= 0 &&
-        trackDist[i] <
-          tracks[trackOwner[i]].def.width / 2 + shoulderAt(tracks[trackOwner[i]], trackParam[i]) + 3;
-      if (bank && slope > 22 + nz * 4) {
+      // Cuttings and fill beside a track on a clay map are bare clay, not scree. (Judged by
+      // how far the grading moved the ground rather than by slope, which the bumps along a
+      // rough road would swing to and fro, striping the banks.)
+      if (map.clayBanks && cutBank[i] && slope > 12 + nz * 3) {
         surface[i] = SurfaceId.Dirt;
         tint[i] = GroundTint.DirtEdge;
       } else if (slope > 39 + nz * 4) {
@@ -761,6 +835,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       } else if (slope > 31.5 + nz * 5) {
         surface[i] = SurfaceId.Gravel;
         tint[i] = GroundTint.Scree;
+      } else if (blackSoilAt(i, x, z, slope, nz)) {
+        surface[i] = SurfaceId.BlackSoil;
+        tint[i] = GroundTint.BlackSoil;
       } else {
         surface[i] = SurfaceId.Grass;
         const wet = creekDist[i] - creekHalfAt[i];
@@ -782,15 +859,15 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
             : kind === 'dirt'
               ? SurfaceId.Dirt
               : SurfaceId.Grass;
-    for (let iz = Math.floor(p.z - R + half); iz <= Math.ceil(p.z + R + half); iz++)
-      for (let ix = Math.floor(p.x - R + half); ix <= Math.ceil(p.x + R + half); ix++) {
-        if (ix < 0 || iz < 0 || ix >= res || iz >= res) continue;
-        const x = ix - half;
-        const z = iz - half;
+    for (let iz = Math.floor(p.z - R + halfZ); iz <= Math.ceil(p.z + R + halfZ); iz++)
+      for (let ix = Math.floor(p.x - R + halfX); ix <= Math.ceil(p.x + R + halfX); ix++) {
+        if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
+        const x = ix - halfX;
+        const z = iz - halfZ;
         const r =
           Math.hypot(x - p.x, z - p.z) / p.radius + (p.ragged ?? 0) * noise3.noise(x / 6, z / 6) * 0.5;
         if (r > 1) continue;
-        const i = iz * res + ix;
+        const i = iz * resX + ix;
         surface[i] = sid;
         if (kind === 'rock')
           tint[i] = noise2.noise(x / 6, z / 6) > -0.25 ? GroundTint.Rock : GroundTint.Scree;
@@ -827,8 +904,8 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     surface[i] = sid;
     if (def.surface === 'concrete') tint[i] = d > hw - 0.3 ? GroundTint.DirtEdge : GroundTint.Concrete;
     else if (def.surface === 'rock') {
-      const x = (i % res) - half;
-      const z = Math.floor(i / res) - half;
+      const x = (i % resX) - halfX;
+      const z = Math.floor(i / resX) - halfZ;
       tint[i] = noise2.noise(x / 5, z / 5) > -0.15 ? GroundTint.Rock : GroundTint.Scree;
     } else if (def.surface === 'gravel') tint[i] = d > hw - 0.4 ? GroundTint.DirtEdge : GroundTint.Gravel;
     else tint[i] = d > hw - 0.4 ? GroundTint.DirtEdge : GroundTint.DirtTrack;
@@ -842,22 +919,28 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       for (let dz = -3; dz <= 3; dz++)
         for (let dx = -3; dx <= 3; dx++) {
           if (dx * dx + dz * dz > 9) continue;
-          const i = (Math.round(cz + half) + dz) * res + Math.round(cx + half) + dx;
+          const i = (Math.round(cz + halfZ) + dz) * resX + Math.round(cx + halfX) + dx;
           surface[i] = SurfaceId.Rock;
           tint[i] = (dx + dz) & 1 ? GroundTint.Rock : GroundTint.Scree;
         }
     }
   }
 
-  // Potholes hold dark mud; washouts show the earth they cut into.
+  // Potholes hold dark mud; washouts show the earth they cut into. Those deep enough to
+  // pinch a tyre are darker still, ringed with pale gravel.
   for (const i of holes.keys()) {
     if (trackOwner[i] < 0 || tracks[trackOwner[i]].def.surface === 'concrete') continue;
     tint[i] = potholes.has(i) ? GroundTint.Mud : GroundTint.DirtEdge;
   }
+  for (const [i, mark] of holeMarks) {
+    if (trackOwner[i] < 0 || tracks[trackOwner[i]].def.surface === 'concrete') continue;
+    tint[i] = mark === 1 ? GroundTint.Pothole : GroundTint.Gravel;
+  }
 
   for (let i = 0; i < n; i++) {
     if (bogMask[i]) {
-      surface[i] = SurfaceId.Mud;
+      // A deep bog's floor is sticky black soil.
+      surface[i] = bogMask[i] === 2 ? SurfaceId.BlackSoil : SurfaceId.Mud;
       tint[i] = GroundTint.Mud;
     }
     if (gullyMask[i]) {
@@ -885,12 +968,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 
   yield { progress: 0.8, label: 'Terrain ready' };
 
-  const terrain = new Terrain(size, heights, surface, tint, water);
+  const terrain = new Terrain(map.width, map.length, heights, surface, tint, water);
   terrain.holes = holes;
   // Fine ruts and drainage humps over the finished 1 m ground.
   const patches: DetailPatch[] = [];
   for (const t of tracks) {
-    const patch = buildDetailPatch(t, half, (x, z) => terrain.heightAt(x, z));
+    const patch = buildDetailPatch(t, halfX, halfZ, (x, z) => terrain.heightAt(x, z));
     if (patch) patches.push(patch);
   }
   terrain.setDetail(patches);

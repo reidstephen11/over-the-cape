@@ -17,7 +17,9 @@ import {
   createCondition,
   enginePowerMultiplier,
   suspensionStiffnessMultiplier,
+  tyreDrop,
   tyreGripMultiplier,
+  tyreSideGripMultiplier,
 } from './condition';
 import { createDrivetrainState, engineBrakeForce, updateDrivetrain } from './drivetrain';
 import { floodPower, updateFlood, type FloodEvent } from './flooding';
@@ -29,6 +31,7 @@ import { axleDriveCapacity } from './differential';
 /** How readily each surface lets a stuck wheel spin (visual, dirt and sound only). */
 const LOOSENESS: Partial<Record<SurfaceId, number>> = {
   [SurfaceId.Mud]: 1,
+  [SurfaceId.BlackSoil]: 1,
   [SurfaceId.Clay]: 0.8,
   [SurfaceId.Gravel]: 0.6,
   [SurfaceId.Water]: 0.4,
@@ -168,7 +171,7 @@ export class Vehicle {
   private caps = [0, 0, 0, 0];
   private requests = [0, 0, 0, 0];
   private preload = [0, 0, 0, 0];
-  /** Sideways grip kept by each tyre in running water (1 = all of it). */
+  /** Sideways grip kept by each tyre in running water or going flat (1 = all of it). */
   private readonly sideCreep = [1, 1, 1, 1];
   private readonly wheelContacts: WheelContacts;
   private readonly rawWheelRotation = [0, 0, 0, 0];
@@ -470,7 +473,9 @@ export class Vehicle {
       this.caps[i] = w.contact ? t.longitudinalGrip * grip * w.load : 0;
       c.setWheelFrictionSlip(i, t.lateralGrip * grip);
       const deep = Math.min(1, Math.max(0, (w.water - 0.15) / (t.wheelRadius + 0.05)));
-      this.sideCreep[i] = 1 - waterLift.creep * running * deep * deep * (3 - 2 * deep);
+      this.sideCreep[i] =
+        (1 - waterLift.creep * running * deep * deep * (3 - 2 * deep)) *
+        tyreSideGripMultiplier(this.condition, i);
       c.setWheelSideFrictionStiffness(
         i,
         (handbrake && !t.wheels[i].front ? t.handbrakeSideGrip : 1) * this.sideCreep[i],
@@ -566,9 +571,13 @@ export class Vehicle {
     // A locked front axle resists the different wheel speeds needed for a tight turn.
     // A bent front corner knocks its wheel out of line, pulling the car towards that side.
     const susp = this.condition.suspension;
+    // A flat front tyre drags its wheel back, steering the car towards it.
+    const tyres = this.condition.tyres;
     const toe =
       ((damageTuning.suspension.toeDeg * Math.PI) / 180) *
-      (frontHealth(t, susp, -1) - frontHealth(t, susp, 1));
+        (frontHealth(t, susp, -1) - frontHealth(t, susp, 1)) +
+      ((damageTuning.tyre.flatToeDeg * Math.PI) / 180) *
+        (frontHealth(t, tyres, -1) - frontHealth(t, tyres, 1));
     const angle =
       Math.max(-1, Math.min(1, input.steer)) *
         maxA *
@@ -634,7 +643,7 @@ export class Vehicle {
       c.setWheelSuspensionRestLength(i, t.suspensionRestLength + extraDroop + w.sink + this.preload[i]);
       c.setWheelSuspensionStiffness(i, stiffness * suspensionStiffnessMultiplier(this.condition, i));
       // A tyre going down rolls on a smaller radius, dropping that corner.
-      c.setWheelRadius(i, t.wheelRadius - damageTuning.tyre.flatDrop * (1 - this.condition.tyres[i]));
+      c.setWheelRadius(i, t.wheelRadius - tyreDrop(this.condition, i, w.rotation));
     }
 
     this.wheelContacts.update(this.body, c, WHEEL_FILTER);
@@ -986,7 +995,7 @@ export class Vehicle {
   }
 }
 
-/** Health of the front suspension corner on one side (+1 right, -1 left). */
+/** Health of the front suspension corner (or tyre) on one side (+1 right, -1 left). */
 function frontHealth(t: VehicleTuning, suspension: readonly number[], side: 1 | -1): number {
   const i = t.wheels.findIndex((w) => w.front && Math.sign(w.x) === side);
   return i < 0 ? 1 : suspension[i];

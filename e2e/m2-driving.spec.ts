@@ -30,12 +30,12 @@ test('M2: keyboard drives the car and the chase camera follows', async ({ page }
   expect((await page.evaluate(() => window.__game!.vehicle())).range).toBe('low');
 
   // Up Big Red's red clay in low range, and along the range through the rainforest.
-  await page.evaluate(() => window.__game!.teleport(-362, 735, 350));
+  await page.evaluate(() => window.__game!.teleport(7, 1262, 330));
   await page.evaluate(() => window.__game!.setInput({ throttle: 1 }));
   await waitSim(page, 6);
   await shot(page, 'M2', 'big-red-low-range');
   await page.evaluate(() => window.__game!.setInput(null));
-  await page.evaluate(() => window.__game!.teleport(-282, 450, 330));
+  await page.evaluate(() => window.__game!.teleport(-16, 727, 310));
   await page.waitForTimeout(1500);
   await shot(page, 'M2', 'rainforest-chase');
   expect(errors).toEqual([]);

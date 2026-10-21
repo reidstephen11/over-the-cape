@@ -143,7 +143,7 @@ export class Simulation {
     };
     this.physics = new Physics(R, this.ground);
     this.physics.addTerrain(terrain);
-    this.physics.addWalls(world.map.wallHalfExtent);
+    this.physics.addWalls(...world.map.wall);
     for (const b of world.features.boxes)
       this.physics.addStaticBox(b, b.kind === 'ledge' ? SurfaceId.Rock : SurfaceId.Dirt);
     for (const r of world.features.rocks) this.physics.addStaticRock(r);

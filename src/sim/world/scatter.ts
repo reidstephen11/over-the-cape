@@ -106,15 +106,10 @@ export class SpatialGrid<T extends { x: number; z: number }> {
 export function generateScatter(map: MapDef, terrain: Terrain, features: TerrainFeatures): Scatter {
   const rand = mulberry32(map.seed + 5000);
   const noise = new Noise2D(map.seed + 303);
-  const half = terrain.half;
-  const res = terrain.res;
+  const { halfX, halfZ } = terrain;
   const veg = map.vegetation;
-  const wall = map.wallHalfExtent;
-  const nearIdx = (x: number, z: number) => {
-    const ix = Math.min(res - 1, Math.max(0, Math.round(x + half)));
-    const iz = Math.min(res - 1, Math.max(0, Math.round(z + half)));
-    return iz * res + ix;
-  };
+  const [wallX, wallZ] = map.wall;
+  const nearIdx = (x: number, z: number) => terrain.index(x, z);
   const inClearing = (x: number, z: number, pad = 0) => {
     for (const c of veg.clearings) {
       const d = Math.hypot(x - c.x, z - c.z);
@@ -146,7 +141,7 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
     if (terrain.water[i] > -1e5) return true;
     return false;
   };
-  const edgeDist = (x: number, z: number) => half - Math.max(Math.abs(x), Math.abs(z));
+  const edgeDist = (x: number, z: number) => Math.min(halfX - Math.abs(x), halfZ - Math.abs(z));
   const tropical = veg.flora === 'tropical';
   /** 1 deep in a woodland area, 0 in the rainforest, blending over the edge. */
   const woodlandAt = (x: number, z: number) => {
@@ -159,8 +154,8 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
   // --- Trees ---
   const trees: TreeInstance[] = [];
   const cell = S.treeCell;
-  for (let gz = -half; gz < half; gz += cell) {
-    for (let gx = -half; gx < half; gx += cell) {
+  for (let gz = -halfZ; gz < halfZ; gz += cell) {
+    for (let gx = -halfX; gx < halfX; gx += cell) {
       const x = gx + rand() * cell;
       const z = gz + rand() * cell;
       const r1 = rand();
@@ -218,7 +213,47 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
         leanX: (rand() - 0.5) * lean,
         leanZ: (rand() - 0.5) * lean,
         seed: rand(),
-        solid: Math.abs(x) < wall + 2 && Math.abs(z) < wall + 2,
+        solid: Math.abs(x) < wallX + 2 && Math.abs(z) < wallZ + 2,
+      });
+    }
+  }
+
+  // A tree beside either end of each deep or long bog (and its middle, if long), so a
+  // vehicle bogged in it has something to winch from, ahead whichever way it came.
+  for (const b of features.mudHoles) {
+    if (!b.winchTrees) continue;
+    const a = (b.rotationDeg * Math.PI) / 180;
+    // Along the bog (its local z) and across it.
+    const [ux, uz] = [-Math.sin(a), Math.cos(a)];
+    const [vx, vz] = [Math.cos(a), Math.sin(a)];
+    const spots = b.radiusZ > 10 ? [-1, 0, 1] : [-1, 1];
+    for (const end of spots) {
+      const along = end * (b.radiusZ + 5);
+      const spot = [4, -4, 6, -6, 8, -8]
+        .map((side) => side + Math.sign(side) * b.radiusX)
+        .map((lateral) => [b.x + ux * along + vx * lateral, b.z + uz * along + vz * lateral] as const)
+        .find(([x, z]) => {
+          if (!terrain.inBounds(x, z) || terrain.slopeDegAt(x, z) > 30) return false;
+          const i = nearIdx(x, z);
+          return features.trackDistance[i] >= 2 && terrain.water[i] <= -1e5;
+        });
+      if (!spot) continue;
+      const [x, z] = spot;
+      if (trees.some((t) => t.solid && Math.hypot(t.x - x, t.z - z) < 4)) continue;
+      const species: TreeSpecies = tropical ? (woodlandAt(x, z) > 0.5 ? 'ash' : 'rainforest') : 'candlebark';
+      const def = treeSpecies[species];
+      trees.push({
+        x,
+        y: terrain.heightAt(x, z) - 0.3,
+        z,
+        species,
+        height: (def.height[0] + def.height[1]) / 2,
+        trunkRadius: def.trunkRadius[1],
+        yaw: rand() * Math.PI * 2,
+        leanX: 0,
+        leanZ: 0,
+        seed: rand(),
+        solid: Math.abs(x) < wallX + 2 && Math.abs(z) < wallZ + 2,
       });
     }
   }
@@ -246,7 +281,7 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
       yaw: rand() * Math.PI * 2,
       anchor,
       seed: rand(),
-      solid: Math.abs(x) < wall + 2 && Math.abs(z) < wall + 2,
+      solid: Math.abs(x) < wallX + 2 && Math.abs(z) < wallZ + 2,
     });
   };
   for (const b of map.boulders) addRock(b.x, b.z, b.radius, !!b.anchor, b.sink ?? 0.3, 0.85);
@@ -285,8 +320,8 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
     }
   }
   const rcell = S.rockCell;
-  for (let gz = -half; gz < half; gz += rcell) {
-    for (let gx = -half; gx < half; gx += rcell) {
+  for (let gz = -halfZ; gz < halfZ; gz += rcell) {
+    for (let gx = -halfX; gx < halfX; gx += rcell) {
       const x = gx + rand() * rcell;
       const z = gz + rand() * rcell;
       const r1 = rand();
@@ -311,12 +346,12 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
   // --- Decorative fallen logs in the forest ---
   const logs: LogInstance[] = [];
   const lcell = S.logCell;
-  for (let gz = -half; gz < half; gz += lcell) {
-    for (let gx = -half; gx < half; gx += lcell) {
+  for (let gz = -halfZ; gz < halfZ; gz += lcell) {
+    for (let gx = -halfX; gx < halfX; gx += lcell) {
       const x = gx + rand() * lcell;
       const z = gz + rand() * lcell;
       const r1 = rand();
-      if (Math.abs(x) > wall - 5 || Math.abs(z) > wall - 5) continue;
+      if (Math.abs(x) > wallX - 5 || Math.abs(z) > wallZ - 5) continue;
       if (terrain.heightAt(x, z) > veg.snowGumAbove + 10 || r1 > 0.12) continue;
       if (terrain.slopeDegAt(x, z) > 22) continue;
       const length = 4 + rand() * 6;

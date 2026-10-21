@@ -46,7 +46,7 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   await shot(page, 'M5', 'hud-and-first-discovery');
 
   // Drive down to the Daintree River crossing.
-  await page.evaluate(() => window.__game!.teleport(-1060, 1096, 60));
+  await page.evaluate(() => window.__game!.teleport(-62, 2312, 60));
   expect(await page.evaluate(() => window.__game!.discovered())).not.toContain('daintree-crossing');
   await page.evaluate(() => window.__game!.setInput({ throttle: 0.7 }));
   await expect
@@ -88,7 +88,7 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   await expect(page.locator('.status-speed-value')).toContainText('mph');
 
   // Tool menu.
-  await page.evaluate(() => window.__game!.teleport(-1190, 1200, 340));
+  await page.evaluate(() => window.__game!.teleport(-90, 2560, 27));
   await page.waitForTimeout(1000);
   await page.keyboard.down('KeyQ');
   await expect.poll(() => page.evaluate(() => window.__game!.ui().toolMenu)).toBe(true);

@@ -4,7 +4,7 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { perentieTuning } from '../src/data/perentie';
 import { vehicleTuning } from '../src/data/vehicle';
-import { trailPoint } from '../src/sim/world/crawlTrail';
+import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
 import { Simulation } from '../src/sim/sim';
@@ -12,6 +12,7 @@ import { NO_WATER } from '../src/sim/world/terrain';
 import { buildWorld } from '../src/sim/world/world';
 import { SurfaceId } from '../src/data/surfaces';
 import { addPuddles } from '../src/sim/world/puddles';
+import { winchTuning } from '../src/data/tools';
 import { driveLeg, driver, runLeg } from './helpers/drive';
 
 const world = buildWorld(crebMap);
@@ -19,8 +20,8 @@ const wet = environmentAt(crebEpisode.startHour, crebEpisode.weather);
 const { trackOf, scene } = driver(world, wet);
 
 describe('Episode 1: the CREB Track', () => {
-  it('is a 3 km map with about 5 km of track from Daintree Village to the Lions Den', () => {
-    expect(crebMap.size).toBe(3072);
+  it('is a long, narrow map with about 6.5 km of track from Daintree Village to the Lions Den', () => {
+    expect([crebMap.width, crebMap.length]).toEqual([1280, 6144]);
     const route = [
       'upper-daintree-road',
       'daintree-crossing',
@@ -36,7 +37,7 @@ describe('Episode 1: the CREB Track', () => {
       'bloomfield-track',
     ];
     const length = route.reduce((sum, id) => sum + trackOf(id).poly.length, 0);
-    expect(length).toBeGreaterThan(4500);
+    expect(length).toBeGreaterThan(6300);
     // Each leg starts where the one before it ends, at the same height.
     for (let k = 0; k + 1 < route.length; k++) {
       const a = trackOf(route[k]);
@@ -67,6 +68,34 @@ describe('Episode 1: the CREB Track', () => {
     }
   });
 
+  it('matches its terrain collider to the ground all along the strip', async () => {
+    const R = await loadRapier();
+    const sim = new Simulation(R, world, wet);
+    try {
+      sim.step(new Map(), 1 / 60);
+      let worst = 0;
+      for (let k = 0; k < 300; k++) {
+        // Off the 1 m grid lines, where a ray straight down can slip between the cells.
+        const x = ((k * 37) % 1000) - 500 + 0.37;
+        const z = ((k * 1201) % 5800) - 2900 + 0.61;
+        const hit = sim.physics.world.castRay(
+          new R.Ray({ x, y: 1000, z }, { x: 0, y: -1, z: 0 }),
+          2000,
+          true,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          (c) => c.handle === sim.physics.terrainCollider?.handle,
+        );
+        worst = Math.max(worst, Math.abs(1000 - (hit?.timeOfImpact ?? 0) - world.terrain.heightAt(x, z)));
+      }
+      expect(worst).toBeLessThan(0.01);
+    } finally {
+      sim.physics.free();
+    }
+  });
+
   it('keeps every creek and river below its banks, with a shallow line across the Daintree', () => {
     const t = world.terrain;
     for (const c of world.features.creeks) {
@@ -84,18 +113,56 @@ describe('Episode 1: the CREB Track', () => {
           const bz = z + (dz / len) * out * side;
           // (Where two creeks meet the bank can be the other one's water, and a track's
           // ramp into a crossing can dip to the water's edge.)
-          const wi = Math.round(bz + t.half) * t.res + Math.round(bx + t.half);
+          const wi = t.index(bx, bz);
           if (t.inBounds(bx, bz) && t.water[wi] <= NO_WATER && world.features.trackDistance[wi] > 2)
             expect(t.heightAt(bx, bz), `${c.def.id} at ${k}`).toBeGreaterThan(c.water[k] - 0.05);
         }
       }
     }
-    // Straight across the Daintree is over a metre deep; the bar downstream is about half that.
-    const i = Math.round(1034 + t.half) * t.res + Math.round(-1010 + t.half);
+    // Straight across the Daintree is over a metre deep; along the weaving line over the bar
+    // downstream it is little more than half that.
+    const i = t.index(-25, 2238);
     expect(t.water[i] - t.heights[i]).toBeGreaterThan(0.9);
-    const bar = Math.round(1036 + t.half) * t.res + Math.round(-994 + t.half);
-    expect(t.water[bar]).toBeGreaterThan(NO_WATER);
-    expect(t.water[bar] - t.heights[bar]).toBeLessThan(0.65);
+    const crossing = trackOf('daintree-crossing');
+    let wettest = 0;
+    for (let s = 0; s <= crossing.poly.length; s += 0.5) {
+      const p = trailPoint(crossing, s);
+      wettest = Math.max(wettest, t.waterDepthAt(p.x, p.z));
+    }
+    expect(wettest).toBeGreaterThan(0.5);
+    expect(wettest).toBeLessThan(0.85);
+  });
+
+  it('strews the bar with boulders and scour holes across the straight line, leaving a line between them', () => {
+    const t = world.terrain;
+    const crossing = trackOf('daintree-crossing');
+    // The straight line over the bar, from where the track meets the water to where it leaves.
+    const wet = Array.from({ length: Math.ceil(crossing.poly.length) }, (_, s) =>
+      trailPoint(crossing, s),
+    ).filter((p) => t.waterDepthAt(p.x, p.z) > 0.05);
+    const [a, b] = [wet[0], wet[wet.length - 1]];
+    const hazards = [
+      ...crebMap.boulders.map((r) => ({ x: r.x, z: r.z, size: r.radius })),
+      ...crebMap.creeks
+        .find((c) => c.id === 'daintree')!
+        .holes!.map((h) => ({ x: h.x, z: h.z, size: h.radius })),
+    ];
+    const onStraight = hazards.filter((h) => {
+      const u =
+        ((h.x - a.x) * (b.x - a.x) + (h.z - a.z) * (b.z - a.z)) / ((b.x - a.x) ** 2 + (b.z - a.z) ** 2);
+      if (u < 0 || u > 1) return false;
+      return Math.hypot(a.x + (b.x - a.x) * u - h.x, a.z + (b.z - a.z) * u - h.z) < h.size + 0.9;
+    });
+    expect(onStraight.length).toBeGreaterThanOrEqual(3);
+    // The weaving line keeps a car's width and more clear of every one.
+    for (const h of hazards) {
+      if (Math.hypot(h.x - 10, h.z - 2238) > 40) continue;
+      const near = trailProgress(crossing, h.x, h.z).distance - h.size;
+      expect(near, `${h.x}, ${h.z}`).toBeGreaterThan(2);
+    }
+    // The holes are deeper than the bar round them.
+    for (const h of crebMap.creeks.find((c) => c.id === 'daintree')!.holes!)
+      expect(t.waterDepthAt(h.x, h.z)).toBeGreaterThan(0.95);
   });
 
   it('roughs up its roads and tracks after the wet, but not the concrete or the river crossing', () => {
@@ -153,21 +220,19 @@ describe('Episode 1: the CREB Track', () => {
           }),
         );
         const banks = [-1, 1].map((side) => t.heightAt(p.x + nx * side * out, p.z + nz * side * out) - road);
-        if (Math.min(...banks) > 1.5) trenches.push(`${track.def.id}@${s}`);
+        // (A mud hole is a hollow by design.)
+        const bog = world.features.mudHoles.some((b) => Math.hypot(b.x - p.x, b.z - p.z) < b.radiusZ + 3);
+        if (Math.min(...banks) > 1.5 && !bog) trenches.push(`${track.def.id}@${s}`);
       }
     }
     expect(trenches).toEqual([]);
   });
 
-  it("lets the Land Rover reverse up the concrete's bend without climbing the bank", async () => {
+  it("lets the Land Rover reverse up the concrete's bend without climbing a wall", async () => {
     // Where a player reversing up the descent stuck on the cutting's wall, tilted 40° (v0.02).
     const sim = new Simulation(await loadRapier(), world, wet);
     try {
-      const v = sim.addVehicle(
-        'p',
-        sim.poseAt(10.2, -505.4, 332, perentieTuning.wheelRadius),
-        perentieTuning,
-      );
+      const v = sim.addVehicle('p', sim.poseAt(-68, -411, 312, perentieTuning.wheelRadius), perentieTuning);
       const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
       for (let i = 0; i < 90; i++) sim.step(inputs, 1 / 60);
       v.toggleRange();
@@ -178,8 +243,14 @@ describe('Episode 1: the CREB Track', () => {
         sim.step(inputs, 1 / 60);
         tilt = Math.max(tilt, v.tiltDeg());
       }
-      expect(tilt).toBeLessThan(30);
-      expect(v.position.z).toBeGreaterThan(-494);
+      // Reversing straight while the track bends, it runs up onto the laid-back bank, tilting
+      // with the climb, but not onto a wall: before v0.04 it reached 40°.
+      expect(tilt).toBeLessThan(35);
+      // ...and gets back up the track past where it stuck.
+      const descent = trackOf('concrete-descent');
+      expect(
+        trailProgress(descent, -68, -411).along - trailProgress(descent, v.position.x, v.position.z).along,
+      ).toBeGreaterThan(11);
     } finally {
       sim.physics.free();
     }
@@ -190,7 +261,8 @@ describe('Episode 1: the CREB Track', () => {
     const on = new Set(holes.map((b) => b.id.replace(/-mud-\d+$/, '')));
     for (const id of ['paddock-road', 'creb-ridge', 'bloomfield-track']) expect(on.has(id), id).toBe(true);
     expect(holes.length).toBeGreaterThan(15);
-    for (const b of holes) expect(world.terrain.surfaceAt(b.x, b.z), b.id).toBe(SurfaceId.Mud);
+    for (const b of holes)
+      expect(world.terrain.surfaceAt(b.x, b.z), b.id).toBe(b.deep ? SurfaceId.BlackSoil : SurfaceId.Mud);
     // The rain fills most of them (those on a slope drain at their low end), hiding the mud.
     const after = buildWorld(crebMap);
     addPuddles(after, wet);
@@ -200,9 +272,72 @@ describe('Episode 1: the CREB Track', () => {
         for (let dx = -4; dx <= 4; dx++) d = Math.max(d, after.terrain.waterDepthAt(b.x + dx, b.z + dz));
       return d;
     };
-    const wetHoles = after.features.mudHoles.map(deepest);
-    expect(wetHoles.filter((d) => d > 0.05).length).toBeGreaterThan(holes.length / 2);
-    expect(Math.max(...wetHoles)).toBeGreaterThan(0.3);
+    // A long boggy stretch is a chain of hollows: it counts once, wet if any of it holds water.
+    const bogs: number[] = [];
+    after.features.mudHoles.forEach((b, k, all) => {
+      const prev = all[k - 1];
+      const linked = prev && !b.deep && !prev.deep && Math.hypot(b.x - prev.x, b.z - prev.z) < 9;
+      if (linked) bogs[bogs.length - 1] = Math.max(bogs[bogs.length - 1], deepest(b));
+      else bogs.push(deepest(b));
+    });
+    expect(bogs.filter((d) => d > 0.05).length).toBeGreaterThan(bogs.length / 2);
+    expect(Math.max(...bogs)).toBeGreaterThan(0.3);
+  });
+
+  it('makes deep bogs of the hollows, lays long boggy stretches, and plants a tree to winch from by each', () => {
+    const holes = world.features.mudHoles;
+    const deep = holes.filter((b) => b.deep);
+    expect(deep.length).toBeGreaterThanOrEqual(3);
+    for (const b of deep) {
+      expect(b.depth, b.id).toBeGreaterThan(0.55);
+      // A hollow: the ground all round stands above it.
+      for (let q = 0; q < 8; q++) {
+        const a = (q / 8) * Math.PI * 2;
+        const ring = world.terrain.heightAt(b.x + Math.cos(a) * 18, b.z + Math.sin(a) * 18);
+        expect(ring, b.id).toBeGreaterThan(world.terrain.heightAt(b.x, b.z));
+      }
+    }
+    // Long stretches are chains of hollows along the track, 25 m and more.
+    const long = holes.filter((b) => !b.deep && b.radiusZ < 6 && b.winchTrees);
+    expect(long.length).toBeGreaterThanOrEqual(6);
+    for (const b of holes.filter((h) => h.winchTrees)) {
+      const trees = world.scatter.trees.filter(
+        (t) => t.solid && Math.hypot(t.x - b.x, t.z - b.z) < b.radiusZ + winchTuning.cableLength - 8,
+      );
+      expect(trees.length, b.id).toBeGreaterThan(0);
+    }
+  });
+
+  it('is boggy black soil off the tracks over most of the flat ground, but not on them, their banks or at camp', () => {
+    const t = world.terrain;
+    const f = world.features;
+    let soil = 0;
+    let flat = 0;
+    for (let z = -2600; z <= 2600; z += 3)
+      for (let x = -300; x <= 300; x += 3) {
+        const i = t.index(x, z);
+        if (f.trackDistance[i] < 7 || f.creekDistance[i] < 3 || t.slopeDegAt(x, z) > 10) continue;
+        flat++;
+        if (t.surface[i] === SurfaceId.BlackSoil) soil++;
+        // Along the tracks and their banks the ground is firm.
+      }
+    expect(soil / flat).toBeGreaterThan(0.6);
+    for (const track of f.tracks)
+      for (let s = 0; s <= track.poly.length; s += 5) {
+        const p = trailPoint(track, s);
+        expect(
+          t.surfaceAt(p.x, p.z) === SurfaceId.BlackSoil &&
+            !world.features.mudHoles.some((b) => b.deep && Math.hypot(b.x - p.x, b.z - p.z) < b.radiusZ + 2),
+          `${track.def.id}@${s}`,
+        ).toBe(false);
+        for (const side of [-1, 1]) {
+          const q = trailPoint(track, s, side * (track.def.width / 2 + 3));
+          if (t.waterDepthAt(q.x, q.z) > 0) continue;
+          expect(t.surfaceAt(q.x, q.z), `${track.def.id}@${s} bank`).not.toBe(SurfaceId.BlackSoil);
+        }
+      }
+    for (const camp of world.pois.filter((p) => p.reset))
+      expect(t.surfaceAt(camp.reset!.x, camp.reset!.z), camp.id).not.toBe(SurfaceId.BlackSoil);
   });
 
   it('stops high range and open diffs on its wet clay climbs', async () => {
@@ -223,7 +358,7 @@ describe('Episode 1: the CREB Track', () => {
     ['daintree-crossing', 'both', 150],
     ['big-red', 'both', 200],
     ['big-red-bypass', 'both', 400],
-    ['creb-ridge', 'both', 400],
+    ['creb-ridge', 'both', 700],
     ['roaring-meg-climb', 'both', 300],
     ['bobs-hill', 'both', 200],
     ['concrete-descent', 'both', 300],
@@ -234,7 +369,8 @@ describe('Episode 1: the CREB Track', () => {
     it(`drives ${id} in the wet in the short-wheelbase 4WD`, async () => {
       const s = await scene(id, false, lockers, vehicleTuning);
       try {
-        const r = await driveLeg(s, s.track, false, limit);
+        // Bogged in a deep bog, it winches out to a tree ahead.
+        const r = await driveLeg(s, s.track, false, limit, true);
         expect(r.tilt).toBeLessThan(42);
         expect(s.v.condition.flood.stalled).toBe(false);
       } finally {

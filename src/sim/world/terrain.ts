@@ -18,17 +18,24 @@ export const GroundTint = {
   ForestFloor: 9,
   FaintTrack: 10,
   Concrete: 11,
+  BlackSoil: 12,
+  /** The dark wet inside of a pothole or washout deep enough to pinch a tyre. */
+  Pothole: 13,
 } as const;
 export type GroundTint = (typeof GroundTint)[keyof typeof GroundTint];
 
 /**
- * Terrain grid: 1 m samples, `res` × `res`, centred on the origin. Sample (ix, iz)
- * sits at x = ix - half, z = iz - half. Each cell is split into two triangles along
- * the (ix, iz)–(ix+1, iz+1) diagonal, matching the physics heightfield.
+ * Terrain grid: 1 m samples, `resX` × `resZ`, centred on the origin. Sample (ix, iz)
+ * sits at x = ix - halfX, z = iz - halfZ, at index iz * resX + ix. Each cell is split into
+ * two triangles along the (ix, iz)–(ix+1, iz+1) diagonal, matching the physics heightfield.
  */
 export class Terrain {
-  readonly res: number;
-  readonly half: number;
+  /** Samples east–west and north–south (one more than the cells). */
+  readonly resX: number;
+  readonly resZ: number;
+  /** Half the map's extent east–west and north–south (m). */
+  readonly halfX: number;
+  readonly halfZ: number;
   /** Fine ground detail (ruts, drainage humps) drawn and collided instead of the 1 m cells it covers. */
   detail: readonly DetailPatch[] = [];
   /** How far each 1 m sample hidden under fine detail is pushed down (sample index → m). */
@@ -37,15 +44,19 @@ export class Terrain {
   holes = new Map<number, number>();
   private readonly detailCells = new Map<number, DetailPatch>();
 
+  /** `sizeX` × `sizeZ` cells of 1 m: the map's width (east–west) and length (north–south). */
   constructor(
-    readonly size: number,
+    readonly sizeX: number,
+    readonly sizeZ: number,
     readonly heights: Float32Array,
     readonly surface: Uint8Array,
     readonly tint: Uint8Array,
     readonly water: Float32Array,
   ) {
-    this.res = size + 1;
-    this.half = size / 2;
+    this.resX = sizeX + 1;
+    this.resZ = sizeZ + 1;
+    this.halfX = sizeX / 2;
+    this.halfZ = sizeZ / 2;
   }
 
   /** Use fine ground detail over the 1 m cells it covers. */
@@ -55,38 +66,38 @@ export class Terrain {
     for (const p of patches)
       for (let cz = 0; cz < p.nz; cz++)
         for (let cx = 0; cx < p.nx; cx++)
-          if (p.cells[cz * p.nx + cx]) this.detailCells.set((p.iz0 + cz) * this.size + p.ix0 + cx, p);
-    this.undercut = detailUndercut(patches, this.res);
+          if (p.cells[cz * p.nx + cx]) this.detailCells.set((p.iz0 + cz) * this.sizeX + p.ix0 + cx, p);
+    this.undercut = detailUndercut(patches, this.resX);
   }
 
   /** The 1 m sample as collided and drawn: pushed under any fine detail covering it. */
   solidSample(ix: number, iz: number): number {
-    const r = this.res;
+    const r = this.resX;
     ix = ix < 0 ? 0 : ix >= r ? r - 1 : ix;
-    iz = iz < 0 ? 0 : iz >= r ? r - 1 : iz;
+    iz = iz < 0 ? 0 : iz >= this.resZ ? this.resZ - 1 : iz;
     return this.heights[iz * r + ix] - (this.undercut.get(iz * r + ix) ?? 0);
   }
 
   sample(ix: number, iz: number): number {
-    const r = this.res;
+    const r = this.resX;
     ix = ix < 0 ? 0 : ix >= r ? r - 1 : ix;
-    iz = iz < 0 ? 0 : iz >= r ? r - 1 : iz;
+    iz = iz < 0 ? 0 : iz >= this.resZ ? this.resZ - 1 : iz;
     return this.heights[iz * r + ix];
   }
 
   /** Exact height on the triangulated surface (same triangles as physics and render LOD 0). */
   heightAt(x: number, z: number): number {
-    const fx = Math.min(Math.max(x + this.half, 0), this.size - 1e-6);
-    const fz = Math.min(Math.max(z + this.half, 0), this.size - 1e-6);
+    const fx = Math.min(Math.max(x + this.halfX, 0), this.sizeX - 1e-6);
+    const fz = Math.min(Math.max(z + this.halfZ, 0), this.sizeZ - 1e-6);
     const ix = Math.floor(fx);
     const iz = Math.floor(fz);
     if (this.detailCells.size > 0) {
-      const patch = this.detailCells.get(iz * this.size + ix);
+      const patch = this.detailCells.get(iz * this.sizeX + ix);
       if (patch) return patchHeightAt(patch, fx, fz);
     }
     const tx = fx - ix;
     const tz = fz - iz;
-    const r = this.res;
+    const r = this.resX;
     const i = iz * r + ix;
     const h00 = this.heights[i];
     const h10 = this.heights[i + 1];
@@ -102,11 +113,11 @@ export class Terrain {
     z: number,
     out: { x: number; y: number; z: number },
   ): { x: number; y: number; z: number } {
-    const fx = Math.min(Math.max(x + this.half, 0), this.size - 1e-6);
-    const fz = Math.min(Math.max(z + this.half, 0), this.size - 1e-6);
+    const fx = Math.min(Math.max(x + this.halfX, 0), this.sizeX - 1e-6);
+    const fz = Math.min(Math.max(z + this.halfZ, 0), this.sizeZ - 1e-6);
     const ix = Math.floor(fx);
     const iz = Math.floor(fz);
-    const patch = this.detailCells.size > 0 ? this.detailCells.get(iz * this.size + ix) : undefined;
+    const patch = this.detailCells.size > 0 ? this.detailCells.get(iz * this.sizeX + ix) : undefined;
     if (patch) {
       const [gx, gz] = patchSlopeAt(patch, fx, fz);
       const len = Math.sqrt(gx * gx + 1 + gz * gz);
@@ -117,7 +128,7 @@ export class Terrain {
     }
     const tx = fx - ix;
     const tz = fz - iz;
-    const r = this.res;
+    const r = this.resX;
     const i = iz * r + ix;
     const h00 = this.heights[i];
     const h10 = this.heights[i + 1];
@@ -145,26 +156,27 @@ export class Terrain {
     return (Math.acos(Math.min(1, n.y)) * 180) / Math.PI;
   }
 
-  private nearestIndex(x: number, z: number): number {
-    const r = this.res;
-    let ix = Math.round(x + this.half);
-    let iz = Math.round(z + this.half);
+  /** Index of the sample nearest (x, z), clamped to the map. */
+  index(x: number, z: number): number {
+    const r = this.resX;
+    let ix = Math.round(x + this.halfX);
+    let iz = Math.round(z + this.halfZ);
     ix = ix < 0 ? 0 : ix >= r ? r - 1 : ix;
-    iz = iz < 0 ? 0 : iz >= r ? r - 1 : iz;
+    iz = iz < 0 ? 0 : iz >= this.resZ ? this.resZ - 1 : iz;
     return iz * r + ix;
   }
 
   surfaceAt(x: number, z: number): SurfaceId {
-    return this.surface[this.nearestIndex(x, z)] as SurfaceId;
+    return this.surface[this.index(x, z)] as SurfaceId;
   }
 
   /** Depth (m) of the pothole or washout a point is in, 0 where there is none. */
   holeAt(x: number, z: number): number {
-    return this.holes.size > 0 ? (this.holes.get(this.nearestIndex(x, z)) ?? 0) : 0;
+    return this.holes.size > 0 ? (this.holes.get(this.index(x, z)) ?? 0) : 0;
   }
 
   tintAt(x: number, z: number): GroundTint {
-    return this.tint[this.nearestIndex(x, z)] as GroundTint;
+    return this.tint[this.index(x, z)] as GroundTint;
   }
 
   /**
@@ -172,12 +184,10 @@ export class Terrain {
    * the four surrounding samples so the edge of the creek counts as wet.
    */
   waterSurfaceAt(x: number, z: number, levelOffset = 0): number | null {
-    const fx = x + this.half;
-    const fz = z + this.half;
-    const ix = Math.floor(fx);
-    const iz = Math.floor(fz);
-    if (ix < 0 || iz < 0 || ix >= this.size || iz >= this.size) return null;
-    const r = this.res;
+    const ix = Math.floor(x + this.halfX);
+    const iz = Math.floor(z + this.halfZ);
+    if (ix < 0 || iz < 0 || ix >= this.sizeX || iz >= this.sizeZ) return null;
+    const r = this.resX;
     const i = iz * r + ix;
     const w = Math.max(this.water[i], this.water[i + 1], this.water[i + r], this.water[i + r + 1]);
     if (w <= NO_WATER) return null;
@@ -192,7 +202,7 @@ export class Terrain {
   }
 
   inBounds(x: number, z: number): boolean {
-    return Math.abs(x) <= this.half && Math.abs(z) <= this.half;
+    return Math.abs(x) <= this.halfX && Math.abs(z) <= this.halfZ;
   }
 }
 

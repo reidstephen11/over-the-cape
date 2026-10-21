@@ -16,11 +16,12 @@ export const crebEpisode: EpisodeDef = {
   startHour: 12.5,
   weather: 'wet',
   deadline: { hour: 18.25, label: 'Dark at 6:15 pm' },
-  // Game seconds per real second: the afternoon (5¾ hours) passes in about an hour of driving.
-  clockRate: 5.5,
-  // The map is about 5 km of the real trip's 100-odd km; fuel burns to match the real distance
-  // (the autopilot uses about 46 L of petrol or 35 L of diesel on a clean run of the wet clay).
-  fuelScale: 14,
+  // Game seconds per real second: the afternoon (5¾ hours) passes in 43 minutes of driving,
+  // so a careful run that winches out of the bogs arrives in the last of the light.
+  clockRate: 8,
+  // The map is about 6.6 km of the real trip's 100-odd km; fuel burns to match the real
+  // distance. A clean run uses more than the tank holds, so the jerry can goes in on the way.
+  fuelScale: 8.5,
   loadout: { fuel: 50, jerryCans: 1, spares: 1, plugs: 3 },
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
@@ -34,7 +35,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'daintree-crossing': {
       title: 'Daintree River crossing',
-      text: 'The river is wide here and can be a metre deep in the middle. Don’t drive straight across: a gravel bar curves downstream and keeps the water shallower. Saltwater crocodiles live in this river, so don’t get out to walk the crossing.',
+      text: 'The river is wide here and can be a metre deep in the middle. Don’t drive straight across: a gravel bar curves downstream and keeps the water shallower. After the wet it is strewn with boulders and scoured into holes, so weave a line between them and take it slowly. Saltwater crocodiles live in this river, so don’t get out to walk the crossing.',
     },
     'big-red': {
       title: 'Big Red',

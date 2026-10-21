@@ -43,8 +43,6 @@ export function buildAudioFrame(
   const p = v.body.translation();
   const d = v.drivetrain;
   const t = world.terrain;
-  const ix = Math.min(t.res - 1, Math.max(0, Math.round(p.x + t.half)));
-  const iz = Math.min(t.res - 1, Math.max(0, Math.round(p.z + t.half)));
   const falls = world.pois.find((q) => q.id === audioTuning.ambience.falls.poi);
   const maxPull = winchTuning.maxForceFactor * v.tuning.mass * 9.81;
   const flood = v.condition.flood;
@@ -89,7 +87,7 @@ export function buildAudioFrame(
     ambience: {
       dt,
       altitude: p.y,
-      creekDistance: world.features.creekDistance[iz * t.res + ix],
+      creekDistance: world.features.creekDistance[t.index(p.x, p.z)],
       fallsDistance: falls ? Math.hypot(falls.x - p.x, falls.z - p.z) : Infinity,
       rain,
       interior,

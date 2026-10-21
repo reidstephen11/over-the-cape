@@ -33,8 +33,9 @@ export const crawlerCreekMap: MapDef = {
   id: 'crawler-creek',
   name: 'Crawler Creek',
   seed: 3131,
-  size: 768,
-  wallHalfExtent: 326,
+  width: 768,
+  length: 768,
+  wall: [326, 326],
   floor: [
     [-400, 20.4],
     [0, 20],

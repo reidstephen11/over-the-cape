@@ -121,17 +121,62 @@ export function roughHole(
   return hole;
 }
 
+/**
+ * Potholes and washouts this deep (m) or deeper can pinch a tyre at road speeds (from
+ * about 60 km/h squarely, 45 km/h at their deepest), so they are marked to be seen: dark
+ * inside and ringed with pale gravel kicked out of them, out to this share of their size.
+ */
+const MARKED_DEPTH = 0.2;
+const MARK_RIM = 1.7;
+
+/** Whether a point is in a marked pothole or washout (1), on its pale rim (2), or neither (0). */
+export function roughMark(rough: TrackRoughness, s: number, l: number): 0 | 1 | 2 {
+  let mark: 0 | 1 | 2 = 0;
+  for (const p of rough.potholes) {
+    if (p.depth < MARKED_DEPTH || Math.abs(s - p.s) > p.radius * MARK_RIM) continue;
+    const q = Math.hypot(s - p.s, l - p.l) / p.radius;
+    if (q < 0.9) return 1;
+    if (q < MARK_RIM) mark = 2;
+  }
+  for (const w of rough.washouts) {
+    if (w.depth < MARKED_DEPTH) continue;
+    const q = washoutDistance(w, s, l) / w.half;
+    if (q < 0.9) return 1;
+    if (q < MARK_RIM) mark = 2;
+  }
+  return mark;
+}
+
 /** Mud holes stretch this far along the track (m)... */
 const BOG_LENGTH = [7, 12] as const;
 /** ...settle into the lowest spot within this far (m) of where they fall... */
 const BOG_SNAP = 6;
 /** ...and lie only where the track climbs less than this (rise per metre). */
 const BOG_MAX_GRADE = 0.06;
+/**
+ * A mud hole is a deep bog when the ground all round it this far (m) out stands at least
+ * this much (m) higher: a hollow the water runs into and can't drain out of.
+ */
+const SUMP_RING = 18;
+const SUMP_RIM = 0.25;
+/** A deep bog stretches this far along the track (m), and comes no sooner than this (m) after another. */
+const SUMP_LENGTH = [12, 18] as const;
+const SUMP_SPACING = 300;
+/**
+ * A long boggy stretch runs this far (m), as a chain of hollows this far apart, each this
+ * long, following the track while it climbs less than this (rise per metre over 8 m).
+ */
+const LONG_BOG_LENGTH = [25, 45] as const;
+const LONG_BOG_STEP = 7;
+const LONG_BOG_LINK = 11;
+const LONG_BOG_MAX_GRADE = 0.05;
 
 /**
  * Mud holes in a rough track's dips: hollows across the track's width, deepest in the
  * middle, laid along it, in the lowest spot of the graded ground (`heightAt`) nearby on the
- * flatter stretches. `skip` rules out a point (by a creek, on a bridge).
+ * flatter stretches. One in a hollow the ground all round drains into is a deep bog with a
+ * sticky floor; a share of the others are long boggy stretches. Both have trees to winch
+ * from. `skip` rules out a point (by a creek, on a bridge).
  */
 export function trackMudHoles(
   track: TrackInfo,
@@ -145,31 +190,82 @@ export function trackMudHoles(
   const { poly } = track;
   const out: BogDef[] = [];
   const gap = 100 / r.bogs;
+  const last = poly.count - 1;
   const centre = (k: number) => heightAt(poly.xs[k], poly.zs[k]);
-  for (let s = CLEAR_ENDS + 6 + rand() * gap; s < poly.length - CLEAR_ENDS - 6; s += gap * (0.5 + rand())) {
-    // Settle into the lowest spot nearby.
-    let k = Math.round(s);
-    for (let j = Math.max(1, k - BOG_SNAP); j <= Math.min(poly.count - 2, k + BOG_SNAP); j++)
-      if (centre(j) < centre(k)) k = j;
-    const x = poly.xs[k];
-    const z = poly.zs[k];
-    const length = BOG_LENGTH[0] + rand() * (BOG_LENGTH[1] - BOG_LENGTH[0]);
-    const depth = (r.bogDepth ?? 0.25) * (0.7 + 0.3 * rand());
-    const a = Math.max(0, k - 5);
-    const b = Math.min(poly.count - 1, k + 5);
-    if (Math.abs(track.profile[b] - track.profile[a]) / Math.max(1, b - a) > BOG_MAX_GRADE) continue;
-    if (skip(x, z, poly.s[k])) continue;
+  const grade = (a: number, b: number) =>
+    Math.abs(track.profile[Math.min(last, b)] - track.profile[Math.max(0, a)]) /
+    Math.max(1, poly.s[Math.min(last, b)] - poly.s[Math.max(0, a)]);
+  const hole = (k: number, length: number, depth: number, deep: boolean, winchTrees: boolean): BogDef => {
+    const half = Math.round(Math.max(5, length / 4));
+    const [a, b] = [Math.max(0, k - half), Math.min(last, k + half)];
     const heading = Math.atan2(poly.xs[b] - poly.xs[a], -(poly.zs[b] - poly.zs[a]));
-    out.push({
+    return {
       id: `${track.def.id}-mud-${out.length}`,
-      x,
-      z,
+      x: poly.xs[k],
+      z: poly.zs[k],
       // Across the track (the bog's x) and along it (its z), turned to the track's heading.
-      radiusX: track.def.width / 2 + 0.3,
+      radiusX: track.def.width / 2 + (deep ? 0.8 : 0.3),
       radiusZ: length / 2,
       rotationDeg: (heading * 180) / Math.PI,
       depth,
-    });
+      deep: deep || undefined,
+      winchTrees: winchTrees || undefined,
+    };
+  };
+  let lastDeep = -Infinity;
+  for (let s = CLEAR_ENDS + 6 + rand() * gap; s < poly.length - CLEAR_ENDS - 6; s += gap * (0.5 + rand())) {
+    // Settle into the lowest spot nearby.
+    let k = Math.round(s);
+    for (let j = Math.max(1, k - BOG_SNAP); j <= Math.min(last - 1, k + BOG_SNAP); j++)
+      if (centre(j) < centre(k)) k = j;
+    const x = poly.xs[k];
+    const z = poly.zs[k];
+    const [pickLength, pickDepth, pickLong] = [rand(), rand(), rand()];
+    if (grade(k - 5, k + 5) > BOG_MAX_GRADE || skip(x, z, poly.s[k])) continue;
+    // In a hollow the ground all round drains into, it's a deep bog.
+    let rim = Infinity;
+    for (let q = 0; q < 16; q++) {
+      const angle = (q / 16) * Math.PI * 2;
+      rim = Math.min(rim, heightAt(x + Math.cos(angle) * SUMP_RING, z + Math.sin(angle) * SUMP_RING));
+    }
+    if (r.sumpDepth !== undefined && rim > centre(k) + SUMP_RIM && poly.s[k] - lastDeep > SUMP_SPACING) {
+      lastDeep = poly.s[k];
+      const length = SUMP_LENGTH[0] + pickLength * (SUMP_LENGTH[1] - SUMP_LENGTH[0]);
+      out.push(hole(k, length, r.sumpDepth * (0.85 + 0.15 * pickDepth), true, true));
+      continue;
+    }
+    const depth = (r.bogDepth ?? 0.25) * (0.7 + 0.3 * pickDepth);
+    if (pickLong < (r.longBogs ?? 0)) {
+      // A chain of hollows along the track either way from here while it stays flat and clear.
+      const want = LONG_BOG_LENGTH[0] + pickLength * (LONG_BOG_LENGTH[1] - LONG_BOG_LENGTH[0]);
+      const ok = (j: number) =>
+        poly.s[j] > CLEAR_ENDS + 6 &&
+        poly.s[j] < poly.length - CLEAR_ENDS - 6 &&
+        grade(j - 4, j + 4) < LONG_BOG_MAX_GRADE &&
+        !skip(poly.xs[j], poly.zs[j], poly.s[j]);
+      let [from, to] = [k, k];
+      while (to - from < want - LONG_BOG_LINK) {
+        const grew = [to + LONG_BOG_STEP, from - LONG_BOG_STEP].find((j) => j >= 0 && j <= last && ok(j));
+        if (grew === undefined) break;
+        if (grew > to) to = grew;
+        else from = grew;
+      }
+      if (to - from + LONG_BOG_LINK >= LONG_BOG_LENGTH[0]) {
+        for (let j = from; j <= to; j += LONG_BOG_STEP)
+          out.push(
+            hole(
+              j,
+              LONG_BOG_LINK,
+              depth * (0.85 + 0.3 * rand()),
+              false,
+              j === from || j + LONG_BOG_STEP > to,
+            ),
+          );
+        s = Math.max(s, poly.s[to] + LONG_BOG_LINK);
+        continue;
+      }
+    }
+    out.push(hole(k, BOG_LENGTH[0] + pickLength * (BOG_LENGTH[1] - BOG_LENGTH[0]), depth, false, false));
   }
   return out;
 }

@@ -39,13 +39,74 @@ export interface Scene {
   lockers: { front: boolean; rear: boolean };
 }
 
+/**
+ * Self-recovery as a player does it: bogged for `after` seconds, hook the winch to the tree
+ * or boulder furthest along the path ahead within reach (and near it), then winch in while
+ * driving until the vehicle is nearly there or running free. `update` returns whether to
+ * hold the winch in this step.
+ */
+export class WinchRecovery {
+  /** How many times the winch was used. */
+  uses = 0;
+  private stuck = 0;
+  private free = 0;
+  private target = -1;
+
+  constructor(
+    private readonly sim: Simulation,
+    private readonly v: Vehicle,
+    private readonly path: ReadonlyArray<readonly [number, number]>,
+    private readonly after = 6,
+  ) {}
+
+  private indexOf(x: number, z: number): { i: number; d: number } {
+    let best = { i: 0, d: Infinity };
+    this.path.forEach(([px, pz], i) => {
+      const d = Math.hypot(px - x, pz - z);
+      if (d < best.d) best = { i, d };
+    });
+    return best;
+  }
+
+  update(dt: number): boolean {
+    const { sim, v } = this;
+    const winch = sim.toolsOf(v.id).winch;
+    const here = this.indexOf(v.position.x, v.position.z).i;
+    if (winch.attached) {
+      this.free = Math.abs(v.speed) > 1.6 ? this.free + dt : 0;
+      if (here >= this.target - 6 || winch.length < 3 || this.free > 1.5) {
+        sim.detachWinch(v.id);
+        this.stuck = 0;
+        return false;
+      }
+      return true;
+    }
+    this.stuck = Math.abs(v.speed) < 0.3 ? this.stuck + dt : 0;
+    if (this.stuck < this.after) return false;
+    let best: { anchor: ReturnType<Simulation['findAnchors']>[number]; i: number } | null = null;
+    for (const anchor of sim.findAnchors(v.id)) {
+      const { i, d } = this.indexOf(anchor.point.x, anchor.point.z);
+      if (i > here + 8 && d < 12 && (!best || i > best.i)) best = { anchor, i };
+    }
+    this.stuck = 0;
+    if (!best) return false;
+    sim.attachTo(v.id, best.anchor);
+    this.target = best.i;
+    this.uses++;
+    return true;
+  }
+}
+
 /** Hands the event loop back to Vitest so its worker messages don't time out on long drives. */
 const yieldToRunner = () => new Promise((resolve) => setImmediate(resolve));
 
-export async function runLeg(s: Scene, track: TrackInfo, back = false, limit = 110) {
+/** Drive a leg with the autopilot; with `winch`, it winches out of a bog to a tree ahead as a player would. */
+export async function runLeg(s: Scene, track: TrackInfo, back = false, limit = 110, winch = false) {
   const { sim, v, inputs } = s;
   const high = v.drivetrain.range === 'high';
-  const pilot = new Autopilot(pathFor(track, back), high ? 1.5 : 0.7);
+  const path = pathFor(track, back);
+  const pilot = new Autopilot(path, high ? 1.5 : 0.7);
+  const recovery = winch ? new WinchRecovery(sim, v, path) : null;
   pilot.lowRange = !high;
   let tilt = 0,
     pitch = 0,
@@ -63,6 +124,7 @@ export async function runLeg(s: Scene, track: TrackInfo, back = false, limit = 1
       command.throttle = 1;
       command.brake = 0;
     }
+    if (recovery) command.winchIn = recovery.update(DT);
     for (const axle of ['front', 'rear'] as const)
       if (v.differentials[axle] !== s.lockers[axle]) v.toggleDiff(axle);
     inputs.set('p', command);
@@ -90,11 +152,13 @@ export async function runLeg(s: Scene, track: TrackInfo, back = false, limit = 1
     deviation,
     /** Deepest water any wheel stood in (m). */
     water,
+    /** Times the winch pulled it out of a bog. */
+    winched: recovery?.uses ?? 0,
   };
 }
 
-export async function driveLeg(s: Scene, track: TrackInfo, back = false, limit = 110) {
-  const result = await runLeg(s, track, back, limit);
+export async function driveLeg(s: Scene, track: TrackInfo, back = false, limit = 110, winch = false) {
+  const result = await runLeg(s, track, back, limit, winch);
   if (!result.done) throw new Error(`${track.def.id} stopped ${result.remaining.toFixed(1)} m from the end`);
   return result;
 }

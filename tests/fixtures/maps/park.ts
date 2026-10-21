@@ -26,8 +26,9 @@ export const ironbarkParkMap: MapDef = {
   id: 'ironbark-park',
   name: 'Ironbark 4WD Park',
   seed: 4242,
-  size: 768,
-  wallHalfExtent: 326,
+  width: 768,
+  length: 768,
+  wall: [326, 326],
   floor: [
     [-400, 19.6],
     [0, 20],

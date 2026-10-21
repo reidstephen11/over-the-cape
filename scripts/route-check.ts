@@ -28,7 +28,7 @@ for (const t of features.tracks) {
       worst = g;
       worstAt = s[k];
     }
-    const i = Math.round(t.poly.zs[k] + terrain.half) * terrain.res + Math.round(t.poly.xs[k] + terrain.half);
+    const i = terrain.index(t.poly.xs[k], t.poly.zs[k]);
     if (terrain.water[i] > NO_WATER) wet = Math.max(wet, terrain.water[i] - terrain.heights[i]);
   }
   let lo = Infinity;

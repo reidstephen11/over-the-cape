@@ -617,11 +617,10 @@ export class Vegetation {
       const r2 = rand();
       const r3 = rand();
       if (!t.inBounds(x, z)) continue;
-      const res = t.res;
-      const i = Math.round(z + t.half) * res + Math.round(x + t.half);
+      const i = t.index(x, z);
       const tint = t.tint[i];
       const surf = t.surface[i];
-      if (surf !== SurfaceId.Grass) continue;
+      if (surf !== SurfaceId.Grass && surf !== SurfaceId.BlackSoil) continue;
       if (f.trackDistance[i] < 1 || f.creekDistance[i] < 1) continue;
       const forest = tint === GroundTint.ForestFloor;
       const shrub = r1 < (forest ? shrubShare * 4 : shrubShare * 0.35);

@@ -8,6 +8,7 @@ export const SurfaceId = {
   Water: 5,
   Wood: 6,
   Clay: 7,
+  BlackSoil: 8,
 } as const;
 export type SurfaceId = (typeof SurfaceId)[keyof typeof SurfaceId];
 
@@ -106,6 +107,19 @@ export const surfaces: Record<SurfaceId, SurfaceDef> = {
     spray: true,
     wetGripLoss: 0.55,
     dirtRate: 0.03,
+  },
+  // Wet black soil off the tracks turns to glue: the wheels sink and spin, and barely move
+  // the car on the flat. Dry, it is firm enough to drive slowly.
+  [SurfaceId.BlackSoil]: {
+    id: SurfaceId.BlackSoil,
+    name: 'Black soil',
+    grip: 0.5,
+    rollingResistance: 0.3,
+    sink: 0.2,
+    dust: false,
+    spray: true,
+    wetGripLoss: 0.45,
+    dirtRate: 0.07,
   },
   [SurfaceId.Wood]: {
     id: SurfaceId.Wood,

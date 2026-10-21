@@ -83,9 +83,10 @@ export class Meadow {
         const x = (gx + hash2(gx, gz, 17) * 0.8) * spacing;
         const z = (gz + hash2(gx, gz, 29) * 0.8) * spacing;
         const distance = Math.hypot(x - cx, z - cz);
-        if (distance > radius || !terrain.inBounds(x, z) || terrain.surfaceAt(x, z) !== SurfaceId.Grass)
-          continue;
-        const index = Math.round(z + terrain.half) * terrain.res + Math.round(x + terrain.half);
+        if (distance > radius || !terrain.inBounds(x, z)) continue;
+        const surface = terrain.surfaceAt(x, z);
+        if (surface !== SurfaceId.Grass && surface !== SurfaceId.BlackSoil) continue;
+        const index = terrain.index(x, z);
         if (this.world.features.trackDistance[index] < 1.3 || this.world.features.creekDistance[index] < 1)
           continue;
         if (terrain.tint[index] === GroundTint.ForestFloor && seed > 0.23) continue;

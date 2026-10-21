@@ -86,11 +86,31 @@ export interface CreekBarDef {
   depth: number;
 }
 
+/** A rough stretch of creek bed: bumps of `height` metres either way, a couple of metres apart, within `radius`. */
+export interface CreekRoughDef {
+  x: number;
+  z: number;
+  radius: number;
+  height: number;
+}
+
+/** A scour hole in a creek bed: a bowl `depth` metres deeper than the bed round it. */
+export interface CreekHoleDef {
+  x: number;
+  z: number;
+  radius: number;
+  depth: number;
+}
+
 export interface CreekDef {
   id: string;
   name: string;
   points: readonly CreekPoint[];
   bars?: readonly CreekBarDef[];
+  /** Rocky, uneven stretches of the bed (after any bars). */
+  rough?: readonly CreekRoughDef[];
+  /** Scour holes in the bed (after any bars). */
+  holes?: readonly CreekHoleDef[];
   /** How far out (m) the banks are carved at `bankSlope`; a wide valley rather than a gorge (default 34). */
   valley?: number;
   /**
@@ -180,6 +200,13 @@ export interface TrackRoughDef {
   /** Mud holes per 100 m on the flatter stretches, and how deep the deepest are (m, default 0.25). */
   bogs?: number;
   bogDepth?: number;
+  /**
+   * A mud hole in a hollow the land drains into is a deep bog this deep (m), floored with
+   * sticky black soil: few get out without the winch. None when absent.
+   */
+  sumpDepth?: number;
+  /** Share of the other mud holes (0..1) that are long boggy stretches of 25–45 m (where the track runs straight and flat). */
+  longBogs?: number;
 }
 
 /**
@@ -248,6 +275,10 @@ export interface BogDef {
   radiusZ: number;
   rotationDeg: number;
   depth: number;
+  /** Its floor is sticky black soil rather than mud. */
+  deep?: boolean;
+  /** A tree stands near either end to winch a bogged vehicle out. */
+  winchTrees?: boolean;
 }
 
 /** A washed-out gap: straight trench with vertical lips leaving a gap of `gap` metres. */
@@ -448,16 +479,32 @@ export interface BorderDef {
   gaps: ReadonlyArray<{ x: number; z: number; radius: number }>;
 }
 
+/**
+ * Black soil country: off the tracks the flatter ground is black soil, which bogs a
+ * vehicle when wet. It starts `margin` metres out from a track's edge (up to a metre and
+ * a half further, ragged), leaves camps and their surrounds firm, and stops on slopes steeper
+ * than `maxSlopeDeg`, which shed the water. Noise leaves patches of firm grass where it
+ * is above `firmAbove` (-1..1; 1 = none).
+ */
+export interface BlackSoilDef {
+  margin: number;
+  maxSlopeDeg: number;
+  firmAbove: number;
+}
+
 export interface MapDef {
   id: string;
   name: string;
   seed: number;
-  /** Side length in metres (square map centred on the origin). */
-  size: number;
-  /** Playable half-extent: an invisible wall stops the car beyond this. */
-  wallHalfExtent: number;
-  /** Valley floor height along x: pairs of [x, height]. */
+  /** Extent east–west (x) in metres; the map is centred on the origin. A multiple of 256. */
+  width: number;
+  /** Extent north–south (z) in metres. A multiple of 256. */
+  length: number;
+  /** Playable half-extents east–west and north–south: an invisible wall stops the car beyond these. */
+  wall: readonly [number, number];
+  /** Valley floor height along x: pairs of [x, height] (or along z, south to north, with `floorAlong: 'z'`). */
   floor: readonly XZ[];
+  floorAlong?: 'x' | 'z';
   noise: {
     macroAmplitude: number;
     macroScale: number;
@@ -492,6 +539,8 @@ export interface MapDef {
   palette?: PaletteOverrides;
   /** Steep cuttings and fill beside the tracks are bare clay, not scree. */
   clayBanks?: boolean;
+  /** Boggy black soil over most of the ground off the tracks (none when absent). */
+  blackSoil?: BlackSoilDef;
   /** POI id of the spawn campsite. */
   spawnCampsite: string;
 }

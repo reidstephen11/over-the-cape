@@ -87,7 +87,7 @@ test('camps save the run; the clock, an empty tank, a flat with no spare and the
   await waitEngine(page);
 
   // Out in the deep, running Daintree the current lifts the car and carries it off.
-  await page.evaluate(() => window.__game!.teleport(-1250, 1048, 90));
+  await page.evaluate(() => window.__game!.teleport(-250, 2244, 90));
   await expect(page.locator('.prompts')).toContainText('The current is taking the car', { timeout: 120_000 });
   await expect.poll(async () => (await episode(page)).reason, { timeout: 120_000 }).toBe('swept');
   await expect(page.locator('.result-card')).toContainText('The current took the vehicle');

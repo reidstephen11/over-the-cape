@@ -1,3 +1,5 @@
+import { damageTuning as D } from '../../data/damage';
+
 /**
  * Vehicle condition (SPEC §6.4, §11): dirt, dents and engine flooding, and the health
  * of the engine, tyres and suspension corners (1 = as new) that mechanical damage
@@ -81,6 +83,23 @@ export function enginePowerMultiplier(c: VehicleCondition): number {
 
 export function tyreGripMultiplier(c: VehicleCondition, wheel: number): number {
   return 0.6 + 0.4 * c.tyres[wheel];
+}
+
+/** Cornering grip a soft or flat tyre keeps as its sidewall folds (1 when inflated). */
+export function tyreSideGripMultiplier(c: VehicleCondition, wheel: number): number {
+  return 1 - D.tyre.flatSideLoss * (1 - c.tyres[wheel]);
+}
+
+/**
+ * How far a soft or flat tyre lowers its corner (m): the wheel rolls on its radius less
+ * this. A flat one rises a little once a turn as its folded tread comes round (`rotation`,
+ * the wheel's angle in radians), which shakes the car at speed.
+ */
+export function tyreDrop(c: VehicleCondition, wheel: number, rotation: number): number {
+  const flat = 1 - c.tyres[wheel];
+  if (flat <= 0) return 0;
+  const pulse = Math.max(0, Math.cos(rotation)) ** 4;
+  return D.tyre.flatDrop * flat - D.tyre.flatThump * flat * flat * pulse;
 }
 
 export function suspensionStiffnessMultiplier(c: VehicleCondition, wheel: number): number {
