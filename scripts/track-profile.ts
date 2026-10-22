@@ -1,14 +1,16 @@
 /**
  * Dev helper: print one track's graded profile against the bare ground every few metres,
- * with the grade, water and surface. Usage: npx vite-node scripts/track-profile.ts <track id> [step] [from] [to]
+ * with the grade, water and surface. Usage: npx vite-node scripts/track-profile.ts <track id> [step] [from] [to] [map id]
  */
-import { crebMap } from '../src/data/episodes/crebMap';
+import { isMapId, maps } from '../src/data/maps';
 import { generateTerrain } from '../src/sim/world/terrainGen';
 import { trailPoint } from '../src/sim/world/crawlTrail';
 
-const [id, step = '5', from = '0', to = '1e9'] = process.argv.slice(2);
-const bare = generateTerrain({ ...crebMap, tracks: [] }).terrain;
-const { terrain, features } = generateTerrain(crebMap);
+const [id, step = '5', from = '0', to = '1e9', mapId = 'creb'] = process.argv.slice(2);
+if (!isMapId(mapId)) throw new Error(`Unknown map ${mapId}`);
+const map = maps[mapId].def;
+const bare = generateTerrain({ ...map, tracks: [] }).terrain;
+const { terrain, features } = generateTerrain(map);
 const t = features.tracks.find((x) => x.def.id === id);
 if (!t) throw new Error(`Unknown track ${id}`);
 const deg = (r: number) => (Math.atan(r) * 180) / Math.PI;

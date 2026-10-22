@@ -34,7 +34,7 @@ They run south to north and unlock in order: finish one to open the next. A fini
 | #   | Episode               | Route                                                | Status       |
 | --- | --------------------- | ---------------------------------------------------- | ------------ |
 | 1   | The CREB Track        | Daintree Village to the Lions Den Hotel              | Playable     |
-| 2   | The Old Coach Road    | Maytown to Laura through the Palmer River goldfields | Coming later |
+| 2   | The Old Coach Road    | Maytown to Laura through the Palmer River goldfields | Playable     |
 | 3   | Port Stewart          | Musgrave east through the swamps to the coast        | Coming later |
 | 4   | The Frenchmans Track  | Across the Pascoe and Wenlock rivers                 | Coming later |
 | 5   | Telegraph Track South | Bramwell Junction to Gunshot Creek                   | Coming later |
@@ -62,9 +62,25 @@ The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns)
 
 Beyond the map's edge the real country carries on to the horizon, brought in closer and lower in step with the map. East, between the range and the Coral Sea, stand Thornton Peak, Mt Pieter Botte, Mt Sorrow behind Cape Tribulation, and Mt Finnigan's granite tops, and the Daintree and the Bloomfield run out to the sea. West, rainforest ranges rise to the flat-topped tablelands of the Great Dividing Range. North of the Lions Den the country dries out to open woodland round the black boulder heaps of Black Mountain. South are the Daintree's cane and cattle flats and the ranges towards Mossman. Far land fades into the sky with distance, as it does on a humid day.
 
+### Episode 2: The Old Coach Road
+
+**Mission: through Maytown to Laura before dark.** August, the middle of the dry season: the rivers are down to shallow runs of water over wide beds of soft sand. You leave the Palmer River at 10:00 am; it's dark at 6:30 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs. There is no fuel on the way.
+
+The map is 1.3 km wide and 7.2 km from south to north, with about 7 km of road on the main line. The real trip is 70-odd km.
+
+1. **Palmer River camp** to the **Palmer River**: a shallow channel across a wide bed of soft sand. Keep moving: stop in the sand and the wheels dig in.
+2. The ruins of **Maytown** (camp), the goldfield's town from the 1870s: the baker's oven, two chimneys, the stone kerbing of Leslie Street, a rebuilt hut and the cemetery.
+3. North on the **old coach road** through open woodland and termite mounds to the **North Palmer River**, where it divides: straight through the sand, or upstream over a bar of rock (signposted "Rocky crossing").
+4. The **Conglomerate Range**, three ways up its face: the **middle line** goes straight up over bands of rock (low range and both lockers, and don't spin the wheels on the rock); the **old coach road** (signposted) slants up to the west in deep ruts; the **bypass** (signposted) winds round to the east, long but easy.
+5. Along the range top past the **Hotel site** (camp) to the **big step**: a sandy gully and a metre of bare sandstone out of it, or the **eastern track** (signposted) round it.
+6. The steep, rocky **descent** off the north face: low range, first gear, and let the engine hold you back.
+7. North through two dry creek beds of sand, across the **Little Laura River**, into **Laura**.
+
+The country is dry eucalypt woodland, straw-coloured grass and orange dirt, with termite mounds from knee height to taller than a person (they're solid: don't hit one). Beyond the map's edge, south are the goldfield's hills, the Conglomerate Range runs on east and west, and north round Laura stand the flat-topped sandstone escarpments of Quinkan country.
+
 ## How an episode works
 
-- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (eight game minutes a real minute on the CREB) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
+- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (eight game minutes a real minute on the CREB, 17 on the Old Coach Road) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
 - **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs. It keeps what you'd found by then: restart from it and anything picked up after it is back where it was.
 - **History notes** appear in the top right as you reach a place. Click one to close it.
 - **The episode ends early** when, with the difficulty that allows it:
@@ -80,7 +96,7 @@ Beyond the map's edge the real country carries on to the horizon, brought in clo
 
 ## Fuel, spares and plugs
 
-- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 54 L of petrol in the short-wheelbase 4WDs (more than the 50 L in the tank, so the jerry can goes in on the way), 37 L of diesel in the Land Rover, 40 L of petrol in the Hilux and 66 L of diesel in the Unimog (the jerry can goes in, with very little to spare) and 49 L of diesel in the Troop Carrier. Rough roads, mud and clay cost fuel, and so does every time you get stuck. The gauge is above the status strip, in litres.
+- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 54 L of petrol in the short-wheelbase 4WDs (more than the 50 L in the tank, so the jerry can goes in on the way), 37 L of diesel in the Land Rover, 40 L of petrol in the Hilux and 66 L of diesel in the Unimog (the jerry can goes in, with very little to spare) and 49 L of diesel in the Troop Carrier. On the Old Coach Road it is about 51 L in the short-wheelbase 4WDs (the jerry can again), 35 L in the Land Rover, 42 L in the Hilux, 46 L in the Troop Carrier and 69 L in the Unimog (the jerry can, with under 2 L to spare). Rough roads, mud and clay cost fuel, and so does every time you get stuck. The gauge is above the status strip, in litres.
 - **Jerry cans** hold 20 L. Tool menu → **Pour in a jerry can**, stopped, about 12 s. If the engine ran dry it restarts on the starter afterwards.
 - **Tyres** can be hurt two ways with Realistic damage: a **puncture** leaks down over about 40 s and takes a **plug** from the kit (tool menu → Plug the tyre, about 10 s); a **torn sidewall** goes flat in a few seconds and needs a **spare** (tool menu → Fit a spare, about 8 s). A landing of about a metre onto rock punctures a tyre; about one and a half metres tears the sidewall. Spinning a wheel hard on rock for several seconds wears through the tread. Crawling in low range barely spins. Dropping into a pothole or washout at speed pinches the tyre (a puncture): a deep one from about 40 km/h, and the faster the likelier; from about 55 km/h it can bend that corner's suspension too. A tyre going down squashes flat at the bottom; flat, its corner sits low, it thumps once a turn at speed, it grips poorly in corners and drags, and a flat front tyre pulls the car hard towards its side.
 - **Finds off the main line.** Two side tracks on the range lead to huts with something to load: two tyre plugs at the Old line camp (a short level spur off the ridge, signposted "Line camp") and a full 20 L jerry can at the Linesman's hut (about 110 m down the range top's west flank along the old poles, signposted "Old line", with a greasy climb back up). Drive up to the crate by the hut and stop: it goes on board and the counts go up. Each can be taken once. The trip costs daylight and a little fuel, a few minutes there and back; neither is needed on a clean run, but either can save a run that's gone wrong.
@@ -174,6 +190,9 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - On the gravel roads about 30–40 km/h is a fair pace, and less on the clay. Faster, the swells bounce the car and the potholes and washouts (the dark ones ringed with pale gravel) pinch tyres.
 - Stay on the track: the dark ground off it is black soil, and bogs you. Cutting a corner onto it costs minutes.
 - The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range, and a tree stands near each end of every deep or long bog. Bogged in a deep one, hook up to the tree ahead (E), winch in (R) and drive gently with it.
+- **Soft sand** (the pale ground in the dry riverbeds) drags the car and lets the wheels dig in. Take it steadily in a low gear and keep moving: stopped in it, the car has to climb out of its own ruts.
+- On the Old Coach Road's **middle line** and at the **big step**, crawl in low range with both lockers and let the tyres climb the rock rather than spin on it. Going down the **descent**, low range and first gear hold the car back.
+- **Termite mounds** are as hard as rock. Steer round them off the road.
 - At a fork, the sign names the other line. The short line is the quicker one if you drive it well; the long way round is there for when it's going badly, or the river is up.
 - Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
@@ -184,8 +203,9 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 ## What to test
 
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
-- [ ] **Welcome screen:** Episode 1 is open, episodes 2–7 are listed as coming later. Pick a vehicle and a difficulty; Drive shows the briefing while the map builds, then Drive again starts at Daintree Village.
+- [ ] **Welcome screen:** Episode 1 is open; Episode 2 is listed but shut until Episode 1 is finished; episodes 3–7 are listed as coming later. Pick a vehicle and a difficulty; Drive shows the briefing while the map builds, then Drive again starts at Daintree Village.
 - [ ] **The CREB Track, start to finish:** cross the Daintree on the gravel bar, climb Big Red (or take the bypass), reach Roaring Meg camp, climb Bob's Hill, take the concrete down, cross Donovan's Creek and the Bloomfield bridge, and drive the Bloomfield Track to the Lions Den before dark. How long did it take, how much fuel was left, and did the clock feel fair?
+- [ ] **v0.16 Episode 2, the Old Coach Road:** finish Episode 1 and press **Next episode**: the welcome screen should open on Episode 2. Read the briefing, then drive from the Palmer River camp. Cross the Palmer's sand: does the soft sand feel different from dirt, and does stopping in it bog you? Look round the ruins of Maytown (baker's oven, chimneys, kerbing, hut, headstones). At the North Palmer, try both lines. At the range face, try the middle line in high range (on Realistic you should spin and cut tyres), then in low range with both lockers; try the old coach road and the bypass. Is each sign easy to see? Climb the big step or take the eastern track, crawl down the descent, cross the Little Laura and reach Laura. How long did it take, did you need the jerry can, and did you get in before dark? Do the termite mounds look right, and are there too many or too few? Does the woodland look like dry Cape York country?
 - [ ] **v0.15 varied stretches:** drive the route and note how each stretch feels different. The paddock road: fast and potholed, with no mud but one deep bog early on; try it at 30 km/h, then faster (on Realistic you should pinch a tyre). The ridge: a washout across the track past the "Washout" sign; try to drive over it (you can't, except in the Unimog), then bridge it with the planks. The rock ledge above Roaring Meg: try it in high range (you should spin and cut a tyre on Realistic), then crawl up in low range with both lockers. The range-top sideling: does the lean feel scary but fair? Taken fast, the car slides towards the edge. The Bloomfield Track: three creek crossings; at the middle one, stop in the water and see what the current does. Is the route more interesting than before? Too hard anywhere? Did you miss the mud?
 - [ ] **v0.12 side trips:** on the ridge after Big Red, take the "Line camp" spur and stop by the crate at the hut: the plug count goes up by two. On the range top after Bob's Hill, follow the "Old line" sign and the poles down to the Linesman's hut and stop by the crate: one more jerry can. Drive back up to the main track. Was each trip worth the time? Reach Bloomfield camp, go back to the hut (or restart from Roaring Meg camp): after a restart from a camp reached before a find, it's back at its hut.
 - [ ] **v0.07 the long map:** open the map (M): it is a tall, narrow strip with the route up the middle and the rivers across it. Drive the route: about 6.6 km, 40% longer than before, with the clock running faster. Did you arrive before dark, and how close was it? Did you need the jerry can?
@@ -230,9 +250,10 @@ src/
   audio/   Web Audio synthesis
   debug/   overlay, free camera, debug panel
 scripts/   route-check (track grades, heights and creek levels), track-profile (one track's grade against the
-           ground), creek-check (creeks standing above their banks), creb-drive (autopilot drive of the whole
-           route with fuel, winching and arrival time), map-preview (top-down PNG), studio (one vehicle on plain
-           ground; studio-shots photographs it), and the labs from 4WD Simulator
+           ground), creek-check (creeks standing above their banks) and map-preview (top-down PNG), each for a
+           map id (creb or coach); creb-drive and coach-drive (autopilot drive of each episode's whole route
+           with fuel, winching and arrival time); studio (one vehicle on plain ground; studio-shots
+           photographs it); and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
 e2e/       Playwright browser tests
 docs/      DECISIONS.md (choices made along the way) and HISTORY.md (sources for the history in the game)

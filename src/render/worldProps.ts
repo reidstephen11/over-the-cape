@@ -324,6 +324,79 @@ function powerPole(b: MeshBuilder): void {
   }
 }
 
+const stone = () => pal('rock').clone().lerp(pal('dirtTrack'), 0.3);
+const brick = () => pal('barkOchre').clone().lerp(pal('dirtDark'), 0.35);
+
+function bakerOven(b: MeshBuilder): void {
+  const d = propDims.bakerOven;
+  // Rubble-stone base, the brick dome on it, and the arched mouth and its hearth stone.
+  b.push().translate(0, d.base / 2, 0);
+  b.box(d.w, d.base, d.d, stone());
+  b.pop();
+  b.push().translate(0, d.base, 0.1);
+  b.blob(1.05, brick(), 0.08, 1, d.dome / 1.05);
+  b.pop();
+  b.push().translate(0, d.base + 0.25, -d.d / 2 + 0.02);
+  b.box(0.6, 0.45, 0.06, pal('vehicleTrim').clone().multiplyScalar(0.3));
+  b.pop();
+  b.push().translate(0, d.base - 0.05, -d.d / 2 - 0.15);
+  b.box(0.9, 0.1, 0.35, stone().multiplyScalar(0.9));
+  b.pop();
+  // A few fallen stones round the foot.
+  const rand = mulberry32(31);
+  for (let i = 0; i < 6; i++) {
+    b.push().translate((rand() - 0.5) * 3.6, 0.1, (rand() - 0.5) * 3.8);
+    b.blob(0.16 + rand() * 0.12, stone(), 0.25, 0, 0.7);
+    b.pop();
+  }
+}
+
+function chimney(b: MeshBuilder): void {
+  const d = propDims.chimney;
+  // Stepped in at the top like a bush chimney, with the fireplace opening on the front.
+  b.push().translate(0, d.h * 0.3, 0);
+  b.box(d.w, d.h * 0.6, d.d, stone());
+  b.pop();
+  b.push().translate(0, d.h * 0.8, 0.05);
+  b.box(d.w * 0.6, d.h * 0.4, d.d * 0.75, stone().multiplyScalar(0.95));
+  b.pop();
+  b.push().translate(0, 0.55, -d.d / 2 + 0.02);
+  b.box(0.8, 1.0, 0.06, pal('vehicleTrim').clone().multiplyScalar(0.3));
+  b.pop();
+}
+
+function headstone(b: MeshBuilder): void {
+  const d = propDims.headstone;
+  b.push().translate(0, d.h / 2, 0);
+  b.box(d.w, d.h, d.t, pal('barkPale').clone().lerp(pal('rock'), 0.4));
+  b.pop();
+  // The grave's low kerb in front of it.
+  for (const x of [-0.42, 0.42]) {
+    b.push().translate(x, 0.06, -1.0);
+    b.box(0.1, 0.12, 1.9, stone());
+    b.pop();
+  }
+  b.push().translate(0, 0.06, -1.95);
+  b.box(0.94, 0.12, 0.1, stone());
+  b.pop();
+}
+
+function stoneKerb(b: MeshBuilder): void {
+  const d = propDims.stoneKerb;
+  const rand = mulberry32(17);
+  // Rough-dressed kerbstones end to end along local x, some sunk or missing.
+  for (let x = -d.l / 2; x < d.l / 2; x += 0.6) {
+    if (rand() < 0.12) continue;
+    b.push().translate(x + 0.3, d.h / 2 - rand() * 0.06, 0);
+    b.box(0.56, d.h, d.w, stone().multiplyScalar(0.9 + rand() * 0.15));
+    b.pop();
+  }
+  // The stone-lined drain beside it.
+  b.push().translate(0, 0.01, 0.35);
+  b.box(d.l, 0.02, 0.35, stone().multiplyScalar(0.8));
+  b.pop();
+}
+
 const builders: Record<PropDef['kind'], (b: MeshBuilder) => void> = {
   powerPole,
   hut,
@@ -335,6 +408,10 @@ const builders: Record<PropDef['kind'], (b: MeshBuilder) => void> = {
   oldUte,
   mineEntrance,
   cattleGrid,
+  bakerOven,
+  chimney,
+  headstone,
+  stoneKerb,
 };
 
 /**

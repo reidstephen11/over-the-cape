@@ -1,12 +1,14 @@
 /**
  * Dev helper: list the places where a creek's water stands above the ground a little way
- * out from its banks (it would run perched, as in an aqueduct). Usage: npx vite-node scripts/creek-check.ts
+ * out from its banks (it would run perched, as in an aqueduct). Usage: npx vite-node scripts/creek-check.ts [map id]
  */
-import { crebMap } from '../src/data/episodes/crebMap';
+import { isMapId, maps } from '../src/data/maps';
 import { buildWorld } from '../src/sim/world/world';
 import { NO_WATER } from '../src/sim/world/terrain';
 
-const world = buildWorld(crebMap);
+const mapId = process.argv[2] ?? 'creb';
+if (!isMapId(mapId)) throw new Error(`Unknown map ${mapId}`);
+const world = buildWorld(maps[mapId].def);
 const t = world.terrain;
 for (const c of world.features.creeks) {
   let bad = 0;

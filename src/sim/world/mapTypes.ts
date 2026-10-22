@@ -67,8 +67,8 @@ export interface CreekPoint {
   depth: number;
   /** Bank steepness (rise per metre beyond the water's edge). */
   bankSlope?: number;
-  /** Bed surface: water (default) or gravel for fords. */
-  bed?: 'water' | 'gravel';
+  /** Bed surface: water (default), gravel for fords, or the soft sand of a dry-country river. */
+  bed?: 'water' | 'gravel' | 'sand';
   /** Speed of the current mid-channel (m/s); the creek's `flow` where not given. */
   flow?: number;
 }
@@ -118,6 +118,8 @@ export interface CreekDef {
    * runs from the first point to the last. Default 0: still water.
    */
   flow?: number;
+  /** Where the bed is sand: how far the dry sand runs out beyond the water's edge (m). */
+  sandBank?: number;
 }
 
 export interface TrackStepsDef {
@@ -153,8 +155,11 @@ export interface TrackDef {
   batter?: number;
   /** Smoothing radius (m) for the height profile. */
   smooth: number;
-  /** Concrete: strips laid on the steepest pinches, gripping like rock. Clay: red clay, slippery when wet. */
-  surface: 'dirt' | 'clay' | 'gravel' | 'rock' | 'concrete';
+  /**
+   * Concrete: strips laid on the steepest pinches, gripping like rock. Clay: red clay, slippery
+   * when wet. Sand: soft river sand.
+   */
+  surface: 'dirt' | 'clay' | 'gravel' | 'rock' | 'concrete' | 'sand';
   /** Depth of the worn wheel ruts. */
   ruts: number;
   /** Fraction of the natural cross-slope kept (0 = level, 1 = untouched). */
@@ -164,6 +169,10 @@ export interface TrackDef {
   steps?: readonly TrackStepsDef[];
   /** Rocky steps: short sharp rises along the profile. */
   rockySteps?: ReadonlyArray<{ at: number; rise: number }>;
+  /** Stretches [from, to] (metres along) through soft sand: the dry creek beds it crosses. */
+  sand?: ReadonlyArray<readonly [number, number]>;
+  /** Rock steps, slabs and boulders set on the track (as on a crawl trail, without its markers and scoring). */
+  stones?: readonly TrailStoneDef[];
   /** Lower the graded track: [metres along, depth] pairs, interpolated (a cutting or gully floor). */
   cut?: ReadonlyArray<readonly [number, number]>;
   /** Extra lean across the track: [metres along, degrees] pairs, interpolated (+ raises the right side). */
@@ -265,7 +274,7 @@ export interface ErosionRutDef {
   depth: number;
 }
 
-export type SurfaceKind = 'dirt' | 'grass' | 'gravel' | 'rock' | 'mud';
+export type SurfaceKind = 'dirt' | 'grass' | 'gravel' | 'rock' | 'mud' | 'sand';
 
 export interface PatchDef {
   id: string;
@@ -328,7 +337,11 @@ export type PropKind =
   | 'mineEntrance'
   | 'cattleGrid'
   | 'waterTank'
-  | 'powerPole';
+  | 'powerPole'
+  | 'bakerOven'
+  | 'chimney'
+  | 'headstone'
+  | 'stoneKerb';
 
 export interface PropDef {
   kind: PropKind;
@@ -435,6 +448,8 @@ export interface VegetationDef {
   /** Keep trees this far from track edges. */
   trackClearance: number;
   boulderDensity: number;
+  /** Termite mounds per hectare on the open, gentler grassland (none when absent). */
+  termiteMounds?: number;
 }
 
 export type TrailDifficulty = 'easy' | 'moderate' | 'hard' | 'extreme';

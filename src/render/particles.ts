@@ -234,6 +234,7 @@ export class Particles {
   private readonly acc = new Float32Array(4 * 4 + 4);
   private wetness = 0;
   private readonly cDust = mixPal('dirtTrack', 'barkPale', 0.62);
+  private readonly cSandDust = mixPal('sand', 'barkPale', 0.35);
   private readonly cGravelDust = mixPal('rock', 'barkPale', 0.55);
   private readonly cGrassDust = mixPal('grassDry', 'barkPale', 0.5);
   private readonly cMud = pal('mud').clone();
@@ -398,7 +399,7 @@ export class Particles {
 
       const d = P.dust;
       const scale =
-        w.surface === SurfaceId.Dirt || w.surface === SurfaceId.Clay
+        w.surface === SurfaceId.Dirt || w.surface === SurfaceId.Clay || w.surface === SurfaceId.Sand
           ? d.surfaceScale.dirt
           : w.surface === SurfaceId.Gravel
             ? d.surfaceScale.gravel
@@ -415,7 +416,9 @@ export class Particles {
             ? this.cGravelDust
             : w.surface === SurfaceId.Grass
               ? this.cGrassDust
-              : this.cDust;
+              : w.surface === SurfaceId.Sand
+                ? this.cSandDust
+                : this.cDust;
         for (let j = 0; j < n; j++) {
           this.tmpColor.copy(col).multiplyScalar(0.94 + Math.random() * 0.12);
           this.dust.spawn(

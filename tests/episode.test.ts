@@ -19,7 +19,7 @@ const goal: PoiDef = { id: 'goal', name: 'Goal', kind: 'campsite', x: 0, z: -500
 
 describe('episodes', () => {
   it('run in story order, each with a mission, a goal and a fixed load', () => {
-    expect(episodeOrder).toEqual(['creb']);
+    expect(episodeOrder).toEqual(['creb', 'coach']);
     for (const id of episodeOrder) {
       const e = episodes[id];
       expect(e.number).toBe(episodeOrder.indexOf(id) + 1);

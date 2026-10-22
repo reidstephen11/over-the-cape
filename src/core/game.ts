@@ -440,14 +440,15 @@ export class Game {
     this.save();
   }
 
-  save(): boolean {
+  /** Save, with the welcome screen to open on `episode` (this one unless given). */
+  save(episode: EpisodeId = this.episode.id): boolean {
     const ok = writeSave({
       version: 1,
       settings: this.settings,
       vehicle: this.vehicleId,
-      episode: this.episode.id,
+      episode,
       episodes: this.progress,
-      replay: this.replay,
+      replay: episode === this.episode.id ? this.replay : null,
       crawlBests: this.crawlRuns.bests,
     });
     if (!ok && this.storageOk) {
@@ -533,9 +534,12 @@ export class Game {
     this.sim.startEngine(LOCAL_VEHICLE);
   }
 
-  /** Back to the welcome screen (pause menu): save and reload without starting. */
-  async toMainMenu(): Promise<void> {
-    this.save();
+  /**
+   * Back to the welcome screen: save and reload without starting, on `episode` (the next one,
+   * after finishing) or this one.
+   */
+  async toMainMenu(episode: EpisodeId = this.episode.id): Promise<void> {
+    this.save(episode);
     await this.fade.run(() => {
       this.loop.paused = true;
       location.reload();
@@ -785,7 +789,7 @@ export class Game {
       this.runStats(),
       buttons,
       (id) => {
-        if (id === 'menu') void this.toMainMenu();
+        if (id === 'menu') void this.toMainMenu(next);
         else this.loop.paused = this.pause.isOpen || this.map.isOpen;
       },
     );
