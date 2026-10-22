@@ -21,7 +21,7 @@ import {
   tyreGripMultiplier,
   tyreSideGripMultiplier,
 } from './condition';
-import { createDrivetrainState, engineBrakeForce, updateDrivetrain } from './drivetrain';
+import { coupledRpm, createDrivetrainState, engineBrakeForce, updateDrivetrain } from './drivetrain';
 import { floodPower, updateFlood, type FloodEvent } from './flooding';
 import { mulberry32 } from '../world/rng';
 import { type Quat, type Vec3, dot, headingToYaw, rotate, v3, yawQuat } from './math';
@@ -319,8 +319,21 @@ export class Vehicle {
 
   toggleRange(): boolean {
     if (Math.abs(this.speed) > 20 / 3.6) return false;
-    this.drivetrain.range = this.drivetrain.range === 'high' ? 'low' : 'high';
-    this.drivetrain.shiftTimer = Math.max(this.drivetrain.shiftTimer, 0.5);
+    const d = this.drivetrain;
+    d.range = d.range === 'high' ? 'low' : 'high';
+    d.shiftTimer = Math.max(d.shiftTimer, 0.5);
+    // Changing range on the move, pick the gear that suits the new range, so the engine
+    // neither labours nor overruns (the Unimog's road and field gears are far apart).
+    const g = this.tuning.gearbox;
+    if (d.gear > 0) {
+      while (d.gear > 0 && coupledRpm(this.tuning, this.speed, d.gear, d.range) < g.downshiftRpm.full)
+        d.gear--;
+      while (
+        d.gear < g.ratios.length - 1 &&
+        coupledRpm(this.tuning, this.speed, d.gear, d.range) > g.upshiftRpm.full
+      )
+        d.gear++;
+    }
     return true;
   }
 

@@ -11,6 +11,8 @@ export class Autopilot {
   private rangeCooldown = 0;
   /** Prefer low range from the start. */
   lowRange = false;
+  /** Stay in low range on a climb once it has dropped into it, as a driver would. */
+  holdLowOnClimbs = false;
   done = false;
 
   constructor(
@@ -51,6 +53,7 @@ export class Autopilot {
     if (this.remaining(v) < 2.5) this.done = true;
     const f = v.forward();
     const fx = f.x;
+    const fy = f.y;
     const fz = f.z;
     const fl = Math.hypot(fx, fz) || 1;
     const tx = target[0] - p.x;
@@ -75,7 +78,13 @@ export class Autopilot {
     if (inp.throttle > 0.9 && Math.abs(v.speed) < 1) this.stuckTime += dt;
     else this.stuckTime = Math.max(0, this.stuckTime - dt);
     const wantLow = this.lowRange || this.stuckTime > 2;
-    if (this.rangeCooldown <= 0 && wantLow !== (v.drivetrain.range === 'low') && Math.abs(v.speed) < 5) {
+    const climbing = this.holdLowOnClimbs && fy / Math.hypot(fx, fy, fz) > 0.08;
+    if (
+      this.rangeCooldown <= 0 &&
+      wantLow !== (v.drivetrain.range === 'low') &&
+      Math.abs(v.speed) < 5 &&
+      (wantLow || !climbing)
+    ) {
       inp.toggleRange = true;
       this.rangeCooldown = 3;
     }
