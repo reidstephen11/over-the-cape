@@ -18,6 +18,7 @@ import {
 } from './crebRoute';
 import { crebWashout, stretchCreeks, stretchPois, stretchProps, stretchTracks } from './crebStretches';
 import { crebFindFlats, crebFindPois, crebFindProps, crebFinds, crebFindTracks } from './crebFinds';
+import { crebForkPois, crebForkProps, crebForkTracks, littleAnnanBars } from './crebForks';
 
 /**
  * Episode 1, the CREB Track: from Daintree Village across the Daintree River, through the
@@ -216,6 +217,8 @@ const baseTracks: TrackDef[] = [
     ruts: 0.03,
   },
   ...crebFindTracks,
+  // The forks: other lines past the deep bog, the concrete and the Little Annan's ford.
+  ...crebForkTracks,
 ];
 // Each stretch's own obstacles and mud (crebStretches.ts).
 const tracks = baseTracks.map((t) => ({ ...t, ...stretchTracks[t.id] }));
@@ -636,6 +639,7 @@ export const crebMap: MapDef = {
         { x: 300, z: -2478, water: 9.4, halfWidth: 6, depth: 0.7 },
         { x: 640, z: -2500, water: 9, halfWidth: 6, depth: 0.8 },
       ],
+      bars: littleAnnanBars,
     },
     ...stretchCreeks,
   ],
@@ -756,6 +760,7 @@ export const crebMap: MapDef = {
     },
     ...stretchPois,
     ...crebFindPois,
+    ...crebForkPois,
   ],
   props: [
     { kind: 'signpost', x: -46, z: 2612, headingDeg: 180, text: 'CREB Track' },
@@ -775,6 +780,7 @@ export const crebMap: MapDef = {
     { kind: 'signpost', x: 80, z: -2538, headingDeg: 270, text: 'Lions Den Hotel' },
     ...stretchProps,
     ...crebFindProps,
+    ...crebForkProps,
   ],
   finds: crebFinds,
   boulders: [
