@@ -5,6 +5,7 @@ import { headlightTuning, nextHeadlightMode, type HeadlightMode } from '../src/d
 import { camelTuning } from '../src/data/camel';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
 import { keyBindings } from '../src/data/controls';
 import { VehicleModel } from '../src/render/vehicleModel';
@@ -81,7 +82,7 @@ describe('headlights', () => {
   });
 
   it('throws its beams ahead of the car, forward and a little down, high beam further than low', async () => {
-    for (const tuning of [vehicleTuning, camelTuning, perentieTuning, hiluxTuning]) {
+    for (const tuning of [vehicleTuning, camelTuning, perentieTuning, hiluxTuning, unimogTuning]) {
       const s = await makeScene({ tuning });
       const model = new VehicleModel(tuning, true);
       const beams = model.beams!;

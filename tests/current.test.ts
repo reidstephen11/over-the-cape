@@ -4,6 +4,7 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { unimogTuning } from '../src/data/unimog';
 import { SurfaceId, sweptTuning } from '../src/data/surfaces';
 import { vehicleTuning } from '../src/data/vehicle';
 import { WaterCurrent } from '../src/sim/world/current';
@@ -98,6 +99,21 @@ describe('running water', () => {
       expect(r.vehicle.position.x - x0, tuning.name).toBeGreaterThan(3);
       r.physics.world.free();
     }
+  });
+
+  it('leaves the 7 t Unimog standing in 1.3 m of running water, where the others are carried off, until it drowns its intake', async () => {
+    const s = await makeScene({ tuning: unimogTuning, ground: river(1.3, 2) });
+    const x0 = s.vehicle.position.x;
+    s.run(10, {});
+    expect(s.vehicle.afloat).toBeLessThan(sweptTuning.lift);
+    expect(s.vehicle.swept).toBe(0);
+    expect(s.vehicle.position.x - x0).toBeLessThan(1);
+    expect(s.vehicle.condition.flood.stalled).toBe(false);
+    s.physics.world.free();
+    const deep = await makeScene({ tuning: unimogTuning, ground: river(unimogTuning.intakeHeight + 0.5, 0) });
+    deep.run(12, { throttle: 0.3 });
+    expect(deep.vehicle.condition.flood.stalled).toBe(true);
+    deep.physics.world.free();
   });
 });
 
