@@ -12,10 +12,10 @@ A single-player 4WD adventure up Cape York for the browser, told in episodes lik
 | Maps | About 3 km square, with the real route's landmarks in their real order and obstacles at full size; the distances between are shortened. |
 | Stakes | An episode ends on an empty tank with no jerry cans, a missed deadline, being swept away by a river, a flat tyre with nothing left to fix it, or a wrecked engine. The damage setting decides which apply (§4). |
 | Restart | From the last camp reached. Camps save the run: position, clock and what's on board. |
-| Supplies | Each episode starts with a fixed load set by the story: fuel, 20 L jerry cans, spare wheels, tyre plugs. A vehicle can carry extras on top (from v0.11, the Troop Carrier's full sub-tank and second spare). Nothing carries over between episodes. |
+| Supplies | Each episode starts with a fixed load set by the story: fuel, 20 L jerry cans, spare wheels, tyre plugs. A vehicle can carry extras on top (from v0.12, the Troop Carrier's full sub-tank and second spare). Nothing carries over between episodes. |
 | Conditions | The story sets the time of day and weather; the clock runs and the sun moves. A finished episode can be replayed in conditions you choose, with the clock stopped and no deadline. |
-| Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; and from v0.11 the 1990s LandCruiser 75 Series Troop Carrier. A modern 4WD comes later. |
-| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Troop Carrier. Then Episode 2, then trailers and towing (delivering another vehicle or fuel drums) for later episodes, each update bringing the mechanics it needs. |
+| Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; from v0.11 the Army Unimog UL1700L truck; and from v0.12 the 1990s LandCruiser 75 Series Troop Carrier. A modern 4WD comes later. |
+| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.12: the Troop Carrier. Then Episode 2, then trailers and towing (delivering another vehicle or fuel drums) for later episodes, each update bringing the mechanics it needs. |
 | Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; everything generated in code. |
 
 ## 2. Episodes

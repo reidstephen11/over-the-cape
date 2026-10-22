@@ -78,6 +78,38 @@ test('the Hilux is chosen on the welcome screen, drives off, and has its own cab
   expect(errors).toEqual([]);
 });
 
+test('the Unimog is chosen on the welcome screen, drives off, and has its own cab', async ({ page }) => {
+  test.setTimeout(900_000);
+  const errors = collectErrors(page);
+  await lowGraphics(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: /Unimog UL1700L/ }).click();
+  await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
+    'data-value',
+    'unimog',
+  );
+  await expect(page.locator('.welcome-card')).toContainText('portal axles');
+  await shot(page, 'vehicle', 'welcome-unimog');
+  // Five vehicles still fit across a phone held upright, without scrolling sideways.
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog'])
+    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  await waitReady(page);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('unimog');
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await waitSim(page, 4);
+  expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
+  await page.evaluate(() => window.__game!.setInput(null));
+  await shot(page, 'vehicle', 'unimog-in-game');
+  await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
+  await waitSim(page, 1);
+  await shot(page, 'vehicle', 'unimog-cockpit');
+  expect(errors).toEqual([]);
+});
+
 test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tank and second spare, and drives off', async ({
   page,
 }) => {
@@ -92,9 +124,9 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   );
   await expect(page.locator('.welcome-card')).toContainText('sub-tank');
   await shot(page, 'vehicle', 'welcome-troopy');
-  // Five vehicles still fit across a phone held upright, without scrolling sideways.
+  // Six vehicles still fit across a phone held upright, without scrolling sideways.
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'troopy'])
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy'])
     await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });

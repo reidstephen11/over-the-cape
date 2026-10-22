@@ -592,7 +592,41 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 
 **Tests.** New: `tests/hilux.test.ts` (its gearing, idle, acceleration, a full-lock turn, a 30° climb, a swap, the model and the save) and a test of the petrol four's sound. The Hilux joins the park brake, wet braking, deep water, headlight, engine start and CREB climb tests, and a browser test chooses it on the welcome screen, checks the four vehicle buttons fit on a phone, and drives it.
 
-## v0.11: the Troop Carrier
+## v0.11: the Unimog
+
+**What the owner asked.** A new vehicle, the Unimog: slower than the others but much more capable over all terrain and at towing. There are no trailers yet (they are planned after Episode 2), so asked how to handle towing, they chose the Unimog now with what towing needs (a strong winch, low gearing, a tow hitch) and trailers in their own update. Asked which Unimog, they chose the Australian Army's UL1700L.
+
+**Which Unimog.** The Army's Mercedes-Benz Unimog UL1700L 4-tonne truck from the early 1980s (the 435 series), which served alongside the Perentie. What it copies: a 3.85 m wheelbase, about 1.86 m track, 12.5R20 tyres (1.12 m across) on portal axles with hub reduction gears, coil springs, the 5.7 L OM352A turbo-diesel six (about 124 kW and 500 Nm, governed at 2800 rpm), an eight-speed gearbox in two groups of four (road and field gears), and pneumatic lockers front and rear that engage on the move. The exact gear and axle ratios weren't found: the game uses 4.8, 2.9, 1.7 and 1.0 for the road gears, 3.85 for the field group (the low range), and an axle ratio with the hub gears of 6.83, so top gear gives 82 km/h at 2750 rpm and first field gear creeps at 1.4 km/h at idle. It weighs about 6 t empty; with two aboard, the winch, fuel and gear and the tray empty it weighs 6.4 t. Loads come with the trailers.
+
+**The look.** Army green with flat paint like the Perentie: a short bonnet sloping down to a black slotted grille, round headlamps low beside it behind wire guards, flat-topped mudguards standing clear of the front wheels, a square cab with a big upright windscreen and a canvas roof, door mirrors on long arms, a two-rung step under each door, the spare wheel standing on the frame behind the cab beside the air intake stack, a dropside steel tray under a canvas tilt, and the ladder frame showing high above the axles. Inside: a flat steel dash with the dials in front of the right-hand driver, two seats either side of the gearbox hump with its row of levers, a big three-spoke wheel on a steep column, and a floor handbrake lever. The Army plates read 41-108 (the plate drawing is shared with the Perentie). The axles are drawn as the other vehicles' are, not as portal axles.
+
+**Added for the game.** A winch behind the front bumper, as on the other vehicles. Its pull is set by the vehicle's weight (1.5×), so it pulls three times as hard as the Land Rover's. The recovery boards ride on the tilt roof. Two jerry cans hang under the back of the tray, and the rear crossmember carries a pintle hook and trailer socket at the tow point.
+
+**How it drives,** measured headlessly:
+
+- It idles at about 620 rpm and reaches 40 km/h in 8.5 s and 60 km/h in 30 s (the Land Rover 4.9 s and 10.9 s). Top speed on flat dirt is about 68 km/h.
+- Its first road gear climbs 20°; low range climbs 30°, 35° and 40° (the others stop short of 40°).
+- It has about 0.6 m under its chassis and the most clearance of any of the vehicles, the longest wheel travel, and the biggest tyres, which grip a little better (longitudinal grip 1.08 against 0.95).
+- The centre of mass is about 1.0 m off the ground on its wide track, so it tips on a side slope at about the Land Rover's angle. At 1.15 m (a loaded tray) it rolled in a full-lock turn at 40 km/h and tipped off a lumpy side slope on the Bloomfield Track that the Land Rover crosses.
+- Big Red and Bob's Hill stop it in high range. In low range Bob's Hill goes with the diffs open, where the others need both lockers; Big Red still needs the lockers.
+- It stays put in 1.3 m of running water that carries the others away (6.4 t on narrow-ish body boxes floats only a quarter of its weight), and only stalls when the water reaches its intake at about 2.3 m.
+- Its brakes are sized so it stops from 60 km/h in about 14 m on dry dirt, about 17 m in the rain, like the others.
+- The autopilot's clean run of the whole route takes 35.8 minutes of driving and arrives at 5:16 pm, on 64.3 L of diesel: the jerry can goes in, with little to spare. Being three times the Land Rover's weight it does far more work, so the fuel's efficiency is set at 0.46 (a turbo direct-injection diesel; the Land Rover's 0.38). At 0.38 and 7.2 t it burned 85 L and couldn't finish.
+
+**Changing range on the move** now picks the gear that suits the new range (`Vehicle.toggleRange`). Before, the gearbox kept its gear: changing from low to high at 17 km/h left the Unimog in top gear at about 570 rpm, and it stalled on the next rise. The other vehicles' ranges are closer together, so it mattered less.
+
+**The test driver.** Two changes to how the autopilot drives, found driving the Unimog:
+
+- In `scripts/creb-drive.ts` it no longer changes back up to high range on a climb (a new `Autopilot.holdLowOnClimbs` option; the tests keep the old behaviour, which some of them check high range with). It changed up at the start of a pinch on the Bloomfield Track, lost its run-up, rolled back and slid off the wet cross-slope.
+- In `scripts/creb-drive.ts` it counts as stuck when it has made less than half a metre of progress in 4 s, not only when stopped, so it locks the diffs when rocking on the spot on a wet clay rise.
+
+The Land Rover's run (35.0 L, 5:01 pm) and the short-wheelbase 4WD's (54.2 L, 5:04 pm) are unchanged by both.
+
+**Engine sound.** A new tuning: six cylinders firing 1-5-3-6-2-4, a 650 rpm idle, the diesel knock, a long exhaust under the tray with a deep boom, a turbo whistle on overrun, louder gear whine from the hub gears, and a big slow starter (1.5 s).
+
+**Tests.** New: `tests/unimog.test.ts` (its gearing and creep, clearance against the others, idle, acceleration and top speed, a full-lock turn, a 30° climb, a swap, the model and the save), a test of the diesel six's sound, a running water test (it stands in 1.3 m that carries the others off, and floods past its intake) and CREB tests (stopped in high range and on Big Red with open diffs; climbs Bob's Hill with open diffs; drives Big Red and Bob's Hill with both lockers). It joins the park brake, wet braking and headlight tests, and a browser test chooses it on the welcome screen, checks the five vehicle buttons fit on a phone, and drives it.
+
+## v0.12: the Troop Carrier
 
 **What the owner asked.** Asked which vehicles to add next, they were offered a modern 4WD (already planned), a 75 Series Troop Carrier, a Suzuki Sierra, a GQ Patrol and a 1950s vehicle for later episodes, and chose the Troop Carrier first. Its real advantage on the Cape is range, but every episode sets the same load for every vehicle, so it was asked whether the Troop Carrier should start with more on board. They chose yes: its second tank and an extra spare.
 
@@ -607,12 +641,14 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 **How it drives,** measured headlessly:
 
 - It idles at about 680 rpm stopped in gear and reaches 60 km/h in about 11 s (the Hilux 9 s, the Land Rover 10.9 s); low range climbs 30°.
-- The longer wheelbase is what makes it roll in a hard turn: with the Hilux's settings but the Troop Carrier's wheelbase and wheels, the Hilux rolls at 50 km/h too. With its centre of mass 0.8 m off the ground it stays upright in a full-lock turn at 40 km/h and rolls at 50 (the others at 60). At 0.88 m it rolled at 40, which would be too easy to do by accident.
-- In a river its weight holds it on the bed. Parked in 1.3 m of water running at 2 m/s, where the current carries the other vehicles away, it drifts a few metres and stops; it takes about 1.5 m at 2.5 m/s, or 1.3 m at 3 m/s, to carry it off. Asked whether to keep that or match the others, the owner chose to keep it, so the swept-away test now checks the Troop Carrier on its own: it holds at 1.3 m and 2 m/s and goes at 1.5 m and 2.5 m/s. It still floods when the water reaches its intake.
+- The longer wheelbase is what makes it roll in a hard turn: with the Hilux's settings but the Troop Carrier's wheelbase and wheels, the Hilux rolls at 50 km/h too. With its centre of mass 0.8 m off the ground it stays upright in a full-lock turn at 40 km/h and rolls at 50 (the other 4WDs at 60). At 0.88 m it rolled at 40, which would be too easy to do by accident.
+- In a river its weight holds it on the bed. Parked in 1.3 m of water running at 2 m/s, where the current carries the smaller vehicles away (the Unimog, merged as v0.11 while this was being built, also stands in it), it drifts a few metres and stops; it takes about 1.5 m at 2.5 m/s, or 1.3 m at 3 m/s, to carry it off. Asked whether to keep that or match the others, the owner chose to keep it, so the swept-away test now checks the Troop Carrier on its own: it holds at 1.3 m and 2 m/s and goes at 1.5 m and 2.5 m/s. It still floods when the water reaches its intake.
 - Parked across a slope it goes over at 31° (the short-wheelbase 4WD at 32°, the Land Rover and Hilux at 33°). That difference is small; the turn is where it is noticeably more top-heavy.
 - On the CREB in the wet, Big Red and Bob's Hill stop it in high range and in low range with the diffs open; with both lockers it drives them.
 - The autopilot's clean run of the whole route takes 34.5 minutes of driving and arrives at 5:05 pm, on 45.8 L of diesel: more than the Hilux (38 L) and the Land Rover (35 L), less than the six (54 L). With 110 L aboard it finishes with over half left and never needs the jerry can.
 
 **Engine sound.** A new diesel-six tuning for the synthesiser, built on the Land Rover's diesel: six cylinders firing 1-5-3-6-2-4, a 700 rpm idle, governed at 4000, a longer exhaust, a softer knock and a slow, heavy starter (1.4 s).
 
-**Tests.** New: `tests/troopy.test.ts` (its gearing and tanks, the extra load at the start, filling both tanks, idle, acceleration, a full-lock turn, a 30° climb, the side slope, the model and the save) and a test of the diesel six's sound. It joins the park brake, wet braking, headlight and CREB climb tests, has its own running-water test, and a browser test chooses it, checks the five vehicle buttons fit on a phone and the briefing's load, and drives it.
+**Tests.** New: `tests/troopy.test.ts` (its gearing and tanks, the extra load at the start, filling both tanks, idle, acceleration, a full-lock turn, a 30° climb, the side slope, the model and the save) and a test of the diesel six's sound. It joins the park brake, wet braking, headlight and CREB climb tests, has its own running-water test, and a browser test chooses it, checks the six vehicle buttons fit on a phone and the briefing's load, and drives it.
+
+**Merged with the Unimog.** The Unimog (v0.11) went into `main` while this was being built, so the Troop Carrier became v0.12. Both added a diesel-six engine sound named `dieselSixSynthTuning`; the Unimog's keeps the name and the Troop Carrier's is now `troopyDieselSynthTuning`. Six vehicle buttons now share the welcome screen, and the browser test checks they still fit on a phone.
