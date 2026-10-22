@@ -655,7 +655,40 @@ The autopilot drives slowly (1.5 m/s in high range); a player will be quicker, a
 
 **Tests.** New `tests/finds.test.ts`: both side tracks are driven out and back in the wet with both lockers in the short-wheelbase 4WD and the Land Rover; their ends are in reach of the finds and their starts at the main track's height; a find loads once, only when stopped, and a checkpoint before it puts it back; saves keep what was taken. New `e2e/finds.spec.ts`: loading the plugs shows in the supplies, a camp keeps them, and restarting from it puts back a jerry can taken after it. The test hook gains `finds()` and `restartFromCamp()`.
 
-## v0.13: the Troop Carrier
+## v0.13: forks on the CREB
+
+**What the owner said.** The first level is a bit boring: the difficulty is good now, but it's rinse and repeat. Of five ideas the owner liked, this is the one for route choices: more places where a short, risky line competes with a longer, safer one, like Big Red and its bypass. (Four other updates, one for each of the other ideas, are being made alongside this one.)
+
+**Three forks.** Each leaves the main route at a signpost, shows on the paper map as a split in the track from the start, and has a place and a note (shown on arrival, like the history notes) that says what the choice is. They are built on the route's named hazards, a deep bog, the concrete and a river ford, and not on the scattered holes along the main line. The data is in a new `src/data/episodes/crebForks.ts`, which `crebMap.ts` spreads into its tracks, props, places and the Little Annan's creek; the notes are in `creb.ts`. The new tracks come after all the old ones in the list, so the old tracks' potholes, washouts and mud holes, which are seeded by a track's place in the list, are unchanged. Driven on the map without the forks, every main line gives the same times to the second.
+
+- **The chicken track** (the ridge, before Roaring Meg camp): the main line drops into the saddle where the ridge's deep bog lies, a hollow 0.7 m deep with a black-soil floor. The chicken track leaves 100 m before it and goes round the west side of the saddle, down 20 m across the slope and back up at up to about 17°: 220 m against 155 m on the main line, leaning with the hill (it keeps more than half the cross-slope), with potholes and washouts but no mud holes. The sign reads "Chicken track". The v0.12 spur to the Old line camp leaves the main line on the other side, 25 m before the bog.
+- **The steep shortcut** (the concrete): where the concrete swings 90 m west and back, a rocky line runs straight down the spur, 110 m against 190 m, at 20–27° with four rock ledges that drop 0.7–0.75 m, and washouts across it. The sign reads "Steep shortcut".
+- **The shallow crossing** (the Little Annan, just before the Lions Den): the road fords the river where it is 0.55–0.6 m deep and running at 2.4 m/s. A new gravel bar 120 m downstream, where the river widens, is about 0.3 m under. The shallow crossing leaves the road 90 m before the ford, runs east along the south bank 25–35 m from the road, crosses on the bar and comes back west to the road past the ford: 265 m against 160 m. The sign reads "Shallow crossing".
+
+**Both lines driven.** `scripts/fork-drive.ts` drives both lines of each fork from 40 m before the split to 30 m past the join (4 m at the Little Annan, where the deep bog before the Lions Den is just beyond), in the wet afternoon, on Realistic damage, winching to a tree ahead when stuck. Low range with both lockers (seconds, winches):
+
+| Fork           | Vehicle         | Short line             | Long line        |
+| -------------- | --------------- | ---------------------- | ---------------- |
+| Chicken track  | short-wheelbase | 153 s, winched once    | 172 s, no winch  |
+| Chicken track  | Land Rover      | 164 s, pushed through  | 174 s            |
+| Steep shortcut | short-wheelbase | 93 s                   | 141 s (concrete) |
+| Steep shortcut | Land Rover      | 92 s                   | 143 s (concrete) |
+| Little Annan   | short-wheelbase | 123 s, 0.61 m of water | 183 s, 0.34 m    |
+| Little Annan   | Land Rover      | 126 s, 0.61 m          | 188 s, 0.34 m    |
+
+So driven well the short line is the quicker one everywhere. What each costs:
+
+- **The bog** in the short-wheelbase 4WD is a winch job however it's driven (crawling, with the diffs open, in high range at 16 km/h): the autopilot hooks on as soon as it has been stuck 6 s, which a player won't, so the 19 s the bog saves the autopilot is about what a quick winching takes; a slow one makes the chicken track the quicker way. It also burns more fuel than the chicken track (2.6 L against 1.5 L), spinning in the mud. The heavier Land Rover pushes through at a crawl. The chicken track is rough rather than slow: at road pace (32 km/h) it cut four tyres in its washouts and stuck.
+- **The shortcut** needs care, not lockers: going downhill the lockers make little difference (with the diffs open it is the same 93 s). Crawling or at 16 km/h it gets down whole, tilting up to 46° nose-down off the ledges; at 32 km/h it cut all four tyres. The idea of a climb that needs the lockers didn't fit the ground: the route climbs where the main line is already straight, and Big Red has its bypass, so the switchback the CREB makes on its way down was the place to cut.
+- **The ford** is quick today: the river is only just over half a metre deep. The shallow line is the one to take when the river is higher, which is where a change in the weather would make the choice matter.
+
+**Found, not fixed.** On the Bloomfield Track's approach to the Little Annan ford, a 12° lump at about (14, −2443) rolls the short-wheelbase 4WD driven at 16 km/h in high range; it was there before this update (driven on the map without the forks, it rolls the same way), and the clean run, at road pace, gets over it. It is on the main line, so it is left to the update that is changing the obstacles along it.
+
+**Time and fuel.** The clean run on the main lines is unchanged: about 34 minutes of driving, arriving about 5:04 pm, with 54 L of petrol (34.3 minutes, 54.4 L, 5:04 pm in this run). Taking all three other lines in the short-wheelbase 4WD comes to about the same: 34.0 minutes, 53.2 L, 5:02 pm. The autopilot crawls the whole range, so it gives the shortcut's time back on the chicken track and the shallow crossing; a player who picks the short line at each fork and drives it well saves a few minutes over either. Nothing was retuned.
+
+**Tests.** New `tests/crebForks.test.ts`: each fork's other line leaves and rejoins the main line level with it, one line is at least 20% longer than the other, a sign stands within 16 m of the split clear of both lines, and each fork has a place and a note; the deep bog lies on the main line within the chicken track's fork and the chicken track has no mud holes; the bar at the Little Annan is under 65% as deep as the ford; and both lines of each fork are driven in the wet in the short-wheelbase 4WD and the Land Rover, with no cut tyres, the long way round needing no winch and the short line quicker. `tests/helpers/drive.ts` has `forkPaths` and `driveFork` for them, and `scripts/creb-drive.ts` takes `chicken`, `shortcut` and `shallow` to drive the whole route on the other lines.
+
+## v0.14: the Troop Carrier
 
 **What the owner asked.** Asked which vehicles to add next, they were offered a modern 4WD (already planned), a 75 Series Troop Carrier, a Suzuki Sierra, a GQ Patrol and a 1950s vehicle for later episodes, and chose the Troop Carrier first. Its real advantage on the Cape is range, but every episode sets the same load for every vehicle, so it was asked whether the Troop Carrier should start with more on board. They chose yes: its second tank and an extra spare.
 
@@ -680,4 +713,4 @@ The autopilot drives slowly (1.5 m/s in high range); a player will be quicker, a
 
 **Tests.** New: `tests/troopy.test.ts` (its gearing and tanks, the extra load at the start, filling both tanks, idle, acceleration, a full-lock turn, a 30° climb, the side slope, the model and the save) and a test of the diesel six's sound. It joins the park brake, wet braking, headlight and CREB climb tests, has its own running-water test, and a browser test chooses it, checks the six vehicle buttons fit on a phone and the briefing's load, and drives it.
 
-**Merged with the Unimog.** The Unimog (v0.11) went into `main` while this was being built, so the Troop Carrier became v0.12; then side trips (v0.12) went in as well, and it became v0.13. The Unimog's test expected it to be last in the vehicle list; it now only checks it is there. Both added a diesel-six engine sound named `dieselSixSynthTuning`; the Unimog's keeps the name and the Troop Carrier's is now `troopyDieselSynthTuning`. Six vehicle buttons now share the welcome screen, and the browser test checks they still fit on a phone.
+**Merged with the Unimog.** The Unimog (v0.11) went into `main` while this was being built, so the Troop Carrier became v0.12; then side trips (v0.12) and the CREB's route forks (v0.13) went in as well, and it became v0.14. The Unimog's test expected it to be last in the vehicle list; it now only checks it is there. Both added a diesel-six engine sound named `dieselSixSynthTuning`; the Unimog's keeps the name and the Troop Carrier's is now `troopyDieselSynthTuning`. Six vehicle buttons now share the welcome screen, and the browser test checks they still fit on a phone.

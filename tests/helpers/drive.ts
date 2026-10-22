@@ -8,6 +8,7 @@ import type { Vehicle } from '../../src/sim/vehicle/vehicle';
 import { trailPoint, trailProgress } from '../../src/sim/world/crawlTrail';
 import type { TrackInfo } from '../../src/sim/world/features';
 import type { World } from '../../src/sim/world/world';
+import type { CrebFork } from '../../src/data/episodes/crebForks';
 
 /** Scripted test drives along a world's tracks, shared by the obstacle tests (and free of Vitest, so dev scripts can use them). */
 export const DT = 1 / 60;
@@ -20,6 +21,32 @@ export function pathFor(track: TrackInfo, back = false) {
     return [p.x, p.z] as [number, number];
   });
   return back ? path.reverse() : path;
+}
+
+/**
+ * Both lines of a fork as paths: from `lead` metres before the fork on the main track to
+ * `tail` metres past where the lines meet again, along the main track ('main') or the
+ * other line ('alt').
+ */
+export function forkPaths(world: World, fork: CrebFork, lead = 40, tail = fork.tail ?? 30) {
+  const track = (id: string) => world.features.tracks.find((t) => t.def.id === id)!;
+  const main = track(fork.main);
+  const alt = track(fork.alt);
+  const from = trailProgress(main, alt.poly.xs[0], alt.poly.zs[0]).along;
+  const to = trailProgress(main, alt.poly.xs[alt.poly.count - 1], alt.poly.zs[alt.poly.count - 1]).along;
+  const along = (a: number, b: number) =>
+    Array.from({ length: Math.ceil((b - a) / 0.5) + 1 }, (_, i) => {
+      const p = trailPoint(main, Math.min(b, a + i * 0.5));
+      return [p.x, p.z] as [number, number];
+    });
+  const start = Math.max(0, from - lead);
+  const end = Math.min(main.poly.length, to + tail);
+  return {
+    main: along(start, end),
+    alt: [...along(start, from).slice(0, -1), ...pathFor(alt), ...along(to, end).slice(1)],
+    from,
+    to,
+  };
 }
 
 /** Nose-up pitch and right-side-down roll, in degrees. */
@@ -213,4 +240,59 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
   }
 
   return { trackOf, scene, drive };
+}
+
+/**
+ * Drive one line of a fork (see `forkPaths`) in low range with both lockers, as a careful
+ * player would, winching out of a bog to a tree ahead. Reports the time taken, the winching
+ * and any cut tyres (damage on Realistic).
+ */
+export async function driveFork(
+  world: World,
+  env: EnvironmentConfig,
+  path: ReadonlyArray<readonly [number, number]>,
+  tuning: VehicleTuning,
+  limit = 400,
+) {
+  const sim = new Simulation(await loadRapier(), world, env);
+  try {
+    sim.damage = 'realistic';
+    const [[x0, z0], [x1, z1]] = [path[0], path[4]];
+    const heading = (Math.atan2(x1 - x0, -(z1 - z0)) * 180) / Math.PI;
+    const v = sim.addVehicle('p', sim.poseAt(x0, z0, heading, tuning.wheelRadius), tuning);
+    const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
+    for (let i = 0; i < 90; i++) sim.step(inputs, DT);
+    v.toggleRange();
+    v.precisionCrawl = true;
+    const pilot = new Autopilot(path, 1.2);
+    pilot.lowRange = true;
+    const recovery = new WinchRecovery(sim, v, path);
+    let cuts = 0;
+    sim.events.on('damage', (e) => {
+      if (e.part === 'tyre') cuts++;
+    });
+    let time = 0;
+    for (let step = 0; time < limit; time += DT, step++) {
+      if (step % 600 === 599) await yieldToRunner();
+      const command = pilot.input(v, DT);
+      if (pilot.done) break;
+      command.throttle = 1;
+      command.brake = 0;
+      command.winchIn = recovery.update(DT);
+      for (const axle of ['front', 'rear'] as const)
+        if (!v.differentials[axle] && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
+      inputs.set('p', command);
+      sim.step(inputs, DT);
+    }
+    return {
+      done: pilot.done,
+      remaining: pilot.remaining(v),
+      time,
+      winched: recovery.uses,
+      cuts,
+      stalled: v.condition.flood.stalled,
+    };
+  } finally {
+    sim.physics.free();
+  }
 }
