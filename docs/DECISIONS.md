@@ -567,3 +567,27 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 **What failed.** After v0.08, two browser tests failed when they switched to low range: the keyboard driving test and the phone controls test. The phone test already failed on v0.07. Range only changes below 20 km/h (`Vehicle.toggleRange`), and both tests switched while the car could still be moving faster than that. The keyboard test held S for 3 s to stop, but S brakes and then reverses, and it left the car reversing at about 20 km/h. The phone test let go of the throttle at about 26 km/h and tapped HAND on and off, which doesn't wait for the car to stop. How fast the car was going at the switch depended on how long the screenshots took while the throttle was held (the software renderer is slower on the 6 km map), so the result turned on timing.
 
 **Fix.** Both tests now stop the car on the park brake and wait until it is below 0.5 m/s before switching range. The game is unchanged.
+
+## v0.10: the Hilux
+
+**What the owner asked.** Another vehicle to choose from: an early Toyota Hilux single cab with the styleside tub. They also want Episode 2, and at some stage towing missions with a trailer (another vehicle, fuel drums). Asked the order, they chose the Hilux first, then Episode 2, then trailers and towing. Asked about the Hilux, they chose the 1979–83 model, the factory tub rather than a flat tray, and red paint.
+
+**Which Hilux.** The 1979–83 Hilux was the first with 4WD, from January 1979. The Australian 4WD versions (RN36 and RN46 in parts catalogues) all had the 2.0 L 18R petrol four, about 63–65 kW; the diesel came with the next model. What it copies: a 2.8 m wheelbase, 1.43 m front and 1.40 m rear track, about 1.69 m wide, 4.7 m long and 1.77 m tall, 7.00-16 tyres, leaf springs on both solid axles, a four-speed manual, the RF1A transfer case (1.0 and 2.28) and 4.375 axles. The ratios inside its four-speed weren't found; the game uses those of Toyota's other four-speed of the time (3.57, 2.06, 1.38, 1.0), which may differ a little. Sources give 1,410–1,460 kg empty; with two aboard, the bull bar, winch, rack and gear it weighs 1,650 kg.
+
+**The look.** A long flat bonnet between flat-topped wings; a full-width grille with round headlamps in square chrome bezels at its ends, park lamps and indicators in the panel below, and a chrome bumper; a raked windscreen; door glass with a vent window and round chrome door mirrors; a short cab with a small rear window; the tub's smooth sides flush with the cab, with a crease along the side above the wheel openings, vertical tail lamps in its rear corners, a drop-down tailgate and a chrome step bumper. Pale steel wheels with six studs and free-wheeling hubs. Inside: a vinyl bench seat, a padded dash with the instrument hood in front of the right-hand driver, a two-spoke steering wheel (the steering wheel now comes in a two-spoke kind), the umbrella-handle handbrake under the dash, and the gear and transfer levers on the floor. There are no maker's badges or tailgate lettering, and the plates read RN-036.
+
+**Added for the game.** As on the other vehicles: a black bull bar with a winch in a cradle behind it, and front and rear lockers. The recovery boards are 2.4 m long and the tub is about 2 m, so they ride on a ladder rack over the tub, which also guards the rear window. A jerry can and a toolbox stand in the tub.
+
+**How it drives,** measured headlessly:
+
+- It idles at about 700 rpm stopped in gear and reaches 60 km/h in 9.1 s (the short-wheelbase 4WD 6.6 s, the Land Rover 10.9 s).
+- High range won't take it up 20° from a standstill, where the six's does; low range climbs 30° and 35°.
+- With the centre of mass 0.71 m off the ground it never rolled, even in a full-lock turn at 70 km/h, while the other vehicles roll at 60. At 0.78 m, the same as the Land Rover's (the rack and its load sit high), it rolls at 60 km/h and not at 50.
+- On the CREB in the wet, Big Red, Bob's Hill and the ridge pinch stop it in high range and in low range with the diffs open. With both lockers it drives every hard section, and winches out of the ridge's deep bog.
+- The autopilot's clean run of the whole route takes 35.1 minutes of driving and arrives at 5:10 pm (the short-wheelbase 4WD at about 5:04), on 37.8 L of petrol. The short-wheelbase 4WD burns 54 L and the Land Rover 35 L of diesel. The small four is the thrifty choice: a clean run gets there without the jerry can.
+
+**Engine sound.** A new tuning for the synthesiser: four cylinders firing 1-3-4-2, a 750 rpm idle, revs to 5500, a shorter exhaust, a higher valve tick and a quicker starter (0.85 s).
+
+**Vehicle studio.** On the software renderer here, loading the 6 km map takes minutes for each picture. A dev-only page (`scripts/studio/`) shows one vehicle on plain ground, and `scripts/studio-shots.ts` photographs it from all round and from the driver's seat. It is not part of the build.
+
+**Tests.** New: `tests/hilux.test.ts` (its gearing, idle, acceleration, a full-lock turn, a 30° climb, a swap, the model and the save) and a test of the petrol four's sound. The Hilux joins the park brake, wet braking, deep water, headlight, engine start and CREB climb tests, and a browser test chooses it on the welcome screen, checks the four vehicle buttons fit on a phone, and drives it.

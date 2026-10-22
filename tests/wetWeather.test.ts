@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { environmentFor, type EnvironmentConfig } from '../src/data/environment';
 import { ironbarkParkMap } from './fixtures/maps/park';
+import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
 import { SurfaceId } from '../src/data/surfaces';
 import { vehicleTuning } from '../src/data/vehicle';
@@ -35,7 +36,7 @@ async function stop(tuning: typeof vehicleTuning, env: EnvironmentConfig) {
 }
 
 describe('wet weather', () => {
-  for (const tuning of [vehicleTuning, perentieTuning])
+  for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning])
     it(`the ${tuning.name} stops further on wet dirt, locking wheels, and still in a straight line`, async () => {
       const dry = await stop(tuning, clear);
       const damp = await stop(tuning, wet);
