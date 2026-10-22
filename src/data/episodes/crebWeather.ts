@@ -18,7 +18,19 @@ export const crebStorm: WeatherTimeline = {
     [18.75, 0],
   ],
   ground: { before: 0.7, soakHours: 0.4, dryHours: 3 },
-  creeks: { risePerHour: 0.15, maxRise: 0.5, fallPerHour: 0.3, flowPerMetre: 2 },
+  creeks: {
+    risePerHour: 0.15,
+    maxRise: 0.5,
+    fallPerHour: 0.3,
+    flowPerMetre: 2,
+    // The little creeks across the Bloomfield Track drain small slopes: they rise about a
+    // third as much as the rivers.
+    shares: {
+      'bloomfield-creek-south': 0.35,
+      'bloomfield-creek-middle': 0.35,
+      'bloomfield-creek-north': 0.35,
+    },
+  },
   notes: [
     { hour: 15, text: 'Rain coming in — the clay will turn greasy and the creeks will rise' },
     { hour: 16.75, text: 'Heavy rain — the creeks are coming up fast' },

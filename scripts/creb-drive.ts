@@ -1,23 +1,26 @@
 /**
  * Dev helper: drive the whole CREB Track episode route in one go with the autopilot and
- * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie] [clear|wet|rain|storm] [bypass]
- * 'storm' (the default) is the episode's own weather: wet, with its afternoon storm following the clock.
+ * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie|hilux|unimog] [clear|wet|rain|storm] [bypass] [chicken] [shortcut] [shallow]
+ * (the last three take the other line at each fork; see src/data/episodes/crebForks.ts). 'storm' (the
+ * default) is the episode's own weather: wet, with its afternoon storm following the clock.
  */
 import { environmentFor, type Weather } from '../src/data/environment';
 import { episodeWeatherAt } from '../src/data/weatherTimeline';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { crebEpisode } from '../src/data/episodes/creb';
+import { crebForks } from '../src/data/episodes/crebForks';
 import { clockTime } from '../src/data/episodes';
 import { isVehicleId, vehicles } from '../src/data/vehicles';
 import { Autopilot } from '../src/sim/input/autopilot';
 import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
 import { Simulation } from '../src/sim/sim';
-import { trailPoint } from '../src/sim/world/crawlTrail';
+import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { buildWorld, campsite } from '../src/sim/world/world';
 import { addPuddles } from '../src/sim/world/puddles';
-import { spreadCreekBanks } from '../src/sim/world/flood';
-import { WinchRecovery } from '../tests/helpers/drive';
+import { prepareFlood } from '../src/sim/world/flood';
+import { crawlStretches, crebWashout } from '../src/data/episodes/crebStretches';
+import { PlankCrossing, pathFor, WinchRecovery } from '../tests/helpers/drive';
 
 const id = process.argv[2] ?? 'shortie';
 if (!isVehicleId(id)) throw new Error(`Unknown vehicle ${id}`);
@@ -25,6 +28,14 @@ const weatherArg = process.argv[3] ?? 'storm';
 const storm = weatherArg === 'storm' ? crebEpisode.storm : undefined;
 const weather = (storm ? crebEpisode.weather : weatherArg) as Weather;
 const bypass = process.argv.includes('bypass');
+const forkArgs: Record<string, string> = {
+  chicken: 'chicken-track',
+  shortcut: 'steep-shortcut',
+  shallow: 'shallow-crossing',
+};
+const forks = crebForks.filter((f) =>
+  Object.entries(forkArgs).some(([a, id]) => id === f.id && process.argv.includes(a)),
+);
 const tuning = vehicles[id].tuning;
 const DT = 1 / 60;
 const deg = 180 / Math.PI;
@@ -53,7 +64,7 @@ const env = storm
   : environmentFor({ time: 'afternoon', weather });
 // After rain the mud holes fill, as in the game.
 addPuddles(world, env);
-if (storm) spreadCreekBanks(world, storm.creeks.maxRise);
+if (storm) prepareFlood(world, storm);
 const sim = new Simulation(await loadRapier(), world, env);
 const hourAt = (seconds: number) => crebEpisode.startHour + (seconds * crebEpisode.clockRate) / 3600;
 /** The storm follows the clock, as in the game (every few game minutes). */
@@ -92,28 +103,58 @@ for (const [trackId, mode] of legs) {
     });
     path = path.slice(0, cut + 1);
   }
+  // Taking the other line at a fork on this leg.
+  for (const fork of forks.filter((f) => f.main === trackId)) {
+    const alt = world.features.tracks.find((t) => t.def.id === fork.alt)!;
+    const from = trailProgress(track, alt.poly.xs[0], alt.poly.zs[0]).along;
+    const to = trailProgress(track, alt.poly.xs[alt.poly.count - 1], alt.poly.zs[alt.poly.count - 1]).along;
+    path = [
+      ...path.slice(0, Math.floor(from / 0.5)),
+      ...pathFor(alt),
+      ...path.slice(Math.ceil(to / 0.5) + 1),
+    ];
+  }
   const pilot = new Autopilot(path, mode === 'road' ? 9 : mode === 'bush' ? 4.5 : 1.2);
-  const crawl = mode === 'crawl';
+  const zones = crawlStretches[trackId] ?? [];
+  let crawl = mode === 'crawl';
   if (crawl && v.drivetrain.range === 'high' && Math.abs(v.speed) < 5) v.toggleRange();
   if (!crawl && v.drivetrain.range === 'low' && Math.abs(v.speed) < 5) v.toggleRange();
   v.precisionCrawl = crawl;
   pilot.lowRange = crawl;
+  pilot.holdLowOnClimbs = true;
   let time = 0;
   let tilt = 0;
   let tiltAt = '';
   let water = 0;
   let stuck = 0;
+  const track4: { x: number; z: number }[] = [];
   // Bogged, the driver winches out to a tree ahead.
   const recovery = new WinchRecovery(sim, v, path);
+  // The washout on the ridge is bridged with the planks.
+  const planks = trackId === 'creb-ridge' ? new PlankCrossing(sim, v, crebWashout) : null;
   for (; time < 900; time += DT) {
     followStorm(hourAt(total + time));
-    const cmd = pilot.input(v, DT);
+    // Slow right down for the creeks and the like, and crawl through them in low range.
+    if (zones.length) {
+      const at = trailProgress(track, v.position.x, v.position.z).along;
+      const near = zones.some(([a, b]) => at > a - 25 && at < b);
+      const inside = zones.some(([a, b]) => at > a - 4 && at < b);
+      pilot.targetSpeed = near ? 1.2 : 9;
+      if (inside !== crawl && Math.abs(v.speed) < 4) {
+        crawl = inside;
+        if (crawl !== (v.drivetrain.range === 'low')) v.toggleRange();
+        v.precisionCrawl = crawl;
+        pilot.lowRange = crawl;
+      }
+    }
+    let cmd = pilot.input(v, DT);
     if (pilot.done) break;
     cmd.winchIn = recovery.update(DT);
     if (crawl) {
       cmd.throttle = 1;
       cmd.brake = 0;
     }
+    if (planks) cmd = planks.update(cmd, DT);
     for (const axle of ['front', 'rear'] as const) {
       const want = crawl || stuck > 4;
       if (v.differentials[axle] !== want && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
@@ -125,7 +166,11 @@ for (const [trackId, mode] of legs) {
       tiltAt = `${v.position.x.toFixed(0)},${v.position.z.toFixed(0)}`;
     }
     for (const w of v.wheels) water = Math.max(water, w.water);
-    stuck = Math.abs(v.speed) < 0.3 ? stuck + DT : 0;
+    // Stuck: under half a metre of progress in the last 4 s (rocking on the spot counts).
+    track4.push({ x: v.position.x, z: v.position.z });
+    if (track4.length > 240) track4.shift();
+    const ago = track4[0];
+    stuck = Math.hypot(v.position.x - ago.x, v.position.z - ago.z) < 0.5 ? stuck + DT : 0;
     if (stuck > 25) break;
   }
   const startedAt = clockTime(hourAt(total));

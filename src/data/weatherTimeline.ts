@@ -29,6 +29,8 @@ export interface WeatherTimeline {
     fallPerHour: number;
     /** Extra current per metre of rise, as a share of each creek's own flow. */
     flowPerMetre: number;
+    /** Creeks that rise less than the rest (small ones off the hills), by id: their share of the rise. */
+    shares?: Record<string, number>;
   };
   /** HUD notes at clock times (hours): the first drops, the rain easing. */
   notes: ReadonlyArray<{ hour: number; text: string }>;

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { EngineSynth, type EngineInputs } from '../src/audio/engine/engineSynth';
 import { firingHz } from '../src/audio/mix';
-import { dieselSynthTuning } from '../src/data/audio';
+import {
+  dieselSixSynthTuning,
+  dieselSynthTuning,
+  petrolFourSynthTuning,
+  troopyDieselSynthTuning,
+} from '../src/data/audio';
 
 const SR = 48000;
 const base: EngineInputs = {
@@ -151,5 +156,68 @@ describe('engine synthesiser', () => {
     const whine = 37 * 33;
     const near = band(road, whine - 80, whine - 30) / 5;
     expect(power(road, whine)).toBeLessThan(10 * near);
+  });
+
+  it("the Hilux's petrol four fires twice per crank turn and revs cleanly to its 5500 rpm redline", () => {
+    const four = () => new EngineSynth(SR, 3, petrolFourSynthTuning);
+    for (const inp of [
+      { rpm: 750 },
+      { rpm: 3600, throttle: 1, load: 1 },
+      { rpm: 5600, throttle: 1, load: 1 },
+      { rpm: 4000, throttle: 0 },
+    ]) {
+      const x = render(1, inp, four());
+      let peak = 0;
+      for (const v of x) peak = Number.isFinite(v) ? Math.max(peak, Math.abs(v)) : Infinity;
+      expect(peak).toBeLessThanOrEqual(1);
+      expect(rms(x, SR / 4)).toBeGreaterThan(0.01);
+    }
+    for (const rpm of [900, 1800, 3000]) {
+      const f = firingHz(rpm, 4);
+      const x = render(1.5, { rpm, throttle: 0.6, load: 0.6 }, four());
+      expect(power(x, f)).toBeGreaterThan(power(x, f * 1.27) * 4);
+    }
+  });
+
+  it("the Unimog's diesel six fires three times per crank turn and stays clean to its 2800 rpm governor", () => {
+    const six = () => new EngineSynth(SR, 3, dieselSixSynthTuning);
+    for (const inp of [
+      { rpm: 650 },
+      { rpm: 1800, throttle: 1, load: 1 },
+      { rpm: 2850, throttle: 1, load: 1 },
+      { rpm: 2000, throttle: 0 },
+    ]) {
+      const x = render(1, inp, six());
+      let peak = 0;
+      for (const v of x) peak = Number.isFinite(v) ? Math.max(peak, Math.abs(v)) : Infinity;
+      expect(peak).toBeLessThanOrEqual(1);
+      expect(rms(x, SR / 4)).toBeGreaterThan(0.01);
+    }
+    for (const rpm of [800, 1400, 2200]) {
+      const f = firingHz(rpm, 6);
+      const x = render(1.5, { rpm, throttle: 0.6, load: 0.6 }, six());
+      expect(power(x, f)).toBeGreaterThan(power(x, f * 1.27) * 4);
+    }
+  });
+
+  it("the Troop Carrier's diesel six fires three times per crank turn and stays clean to its 4000 rpm governor", () => {
+    const six = () => new EngineSynth(SR, 3, troopyDieselSynthTuning);
+    for (const inp of [
+      { rpm: 700 },
+      { rpm: 2200, throttle: 1, load: 1 },
+      { rpm: 4100, throttle: 1, load: 1 },
+      { rpm: 3000, throttle: 0 },
+    ]) {
+      const x = render(1, inp, six());
+      let peak = 0;
+      for (const v of x) peak = Number.isFinite(v) ? Math.max(peak, Math.abs(v)) : Infinity;
+      expect(peak).toBeLessThanOrEqual(1);
+      expect(rms(x, SR / 4)).toBeGreaterThan(0.01);
+    }
+    for (const rpm of [800, 1600, 2600]) {
+      const f = firingHz(rpm, 6);
+      const x = render(1.5, { rpm, throttle: 0.6, load: 0.6 }, six());
+      expect(power(x, f)).toBeGreaterThan(power(x, f * 1.27) * 4);
+    }
   });
 });

@@ -1,5 +1,9 @@
 import { camelTuning } from './camel';
+import { hiluxTuning } from './hilux';
 import { perentieTuning } from './perentie';
+import { TROOPY_SUB_TANK, troopyTuning } from './troopy';
+import { unimogTuning } from './unimog';
+import type { EpisodeLoadout } from './episodes';
 import { vehicleTuning, type VehicleId, type VehicleTuning } from './vehicle';
 
 type Point = { x: number; y: number; z: number };
@@ -40,7 +44,7 @@ export interface CabinLayout {
     radius: number;
     /** Steering-wheel turn per degree at the front wheels. */
     ratio: number;
-    spokes: 3 | 4;
+    spokes: 2 | 3 | 4;
   };
 }
 
@@ -49,6 +53,8 @@ export interface VehicleDef {
   /** One line for the vehicle menu. */
   blurb: string;
   cabin: CabinLayout;
+  /** Carried on top of the episode's load: fuel in a second tank (L) and spare wheels. */
+  extraLoad?: { fuel: number; spares: number };
 }
 
 /** The short-wheelbase 4WD's cab, shared by its Camel Trophy version. */
@@ -124,9 +130,123 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
       },
     },
   },
+  hilux: {
+    tuning: hiluxTuning,
+    blurb: '1979–83 Toyota Hilux 4WD single cab with the styleside tub, 2.0 L petrol four, four-speed.',
+    cabin: {
+      // Low on the bench seat, close under the roof, looking down the long bonnet.
+      eye: { x: 0.37, y: 1.06, z: 0.05 },
+      pitch: -0.13,
+      dialY: 0.69,
+      dialZ: -0.535,
+      dials: {
+        speed: { x: 0.445, radius: 0.052, max: 160, major: 20, minor: 10 },
+        rpm: { x: 0.295, radius: 0.052, max: 7000, major: 1000, minor: 500 },
+        oil: { x: 0.565, radius: 0.032, max: 1, major: 0.5, minor: 0.25 },
+      },
+      lamps: { xs: [0.22, 0.27, 0.32, 0.37, 0.42, 0.47, 0.52], y: 0.612, z: -0.538 },
+      // The umbrella-handle handbrake under the dash, left of the column.
+      handbrake: {
+        kind: 'pull',
+        base: { x: 0.17, y: 0.55, z: -0.57 },
+        tip: { x: 0.17, y: 0.54, z: -0.45 },
+        travel: 0.1,
+      },
+      steeringWheel: {
+        centre: { x: 0.37, y: 0.77, z: -0.27 },
+        columnBase: { x: 0.37, y: 0.56, z: -0.58 },
+        radius: 0.19,
+        // No power steering: nearly two turns to full lock.
+        ratio: 22,
+        spokes: 2,
+      },
+    },
+  },
+  unimog: {
+    tuning: unimogTuning,
+    blurb:
+      'Army Unimog UL1700L 4-tonne truck on portal axles, 5.7 L turbo-diesel six. Slow, but goes almost anywhere.',
+    cabin: {
+      // High above the front wheels behind a big upright screen, looking down over the bonnet.
+      eye: { x: 0.5, y: 1.74, z: -0.6 },
+      pitch: -0.2,
+      dialY: 1.24,
+      dialZ: -1.335,
+      dials: {
+        speed: { x: 0.5, radius: 0.06, max: 100, major: 20, minor: 10 },
+        rpm: { x: 0.355, radius: 0.046, max: 3000, major: 500, minor: 250 },
+        oil: { x: 0.645, radius: 0.036, max: 1, major: 0.5, minor: 0.25 },
+      },
+      lamps: { xs: [0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65], y: 1.135, z: -1.338 },
+      // The handbrake lever on the floor, inboard of the driver's seat.
+      handbrake: {
+        kind: 'lever',
+        base: { x: 0.18, y: 0.76, z: -0.7 },
+        tip: { x: 0.17, y: 1.0, z: -0.86 },
+        travel: 0.6,
+      },
+      steeringWheel: {
+        // A big wheel on a steep column, almost flat like a bus's.
+        centre: { x: 0.5, y: 1.36, z: -1.02 },
+        columnBase: { x: 0.5, y: 0.95, z: -1.42 },
+        radius: 0.22,
+        // Power steering: about two turns to full lock.
+        ratio: 22,
+        spokes: 3,
+      },
+    },
+  },
+  troopy: {
+    tuning: troopyTuning,
+    blurb:
+      '1990s LandCruiser 75 Series Troop Carrier, 4.2 L diesel six, five-speed. A sub-tank and a second spare.',
+    // The full sub-tank, and a second spare wheel on the roof rack.
+    extraLoad: { fuel: TROOPY_SUB_TANK, spares: 1 },
+    cabin: {
+      // High up behind an upright screen, looking down the short, square bonnet.
+      eye: { x: 0.4, y: 1.32, z: 0.02 },
+      pitch: -0.17,
+      dialY: 1.04,
+      dialZ: -0.6,
+      dials: {
+        speed: { x: 0.47, radius: 0.058, max: 160, major: 20, minor: 10 },
+        rpm: { x: 0.31, radius: 0.058, max: 5000, major: 1000, minor: 500 },
+        oil: { x: 0.6, radius: 0.034, max: 1, major: 0.5, minor: 0.25 },
+      },
+      lamps: { xs: [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55], y: 0.955, z: -0.603 },
+      // The handbrake lever on the floor beside the driver's seat.
+      handbrake: {
+        kind: 'lever',
+        base: { x: 0.12, y: 0.42, z: -0.12 },
+        tip: { x: 0.12, y: 0.6, z: -0.3 },
+        travel: 0.55,
+      },
+      steeringWheel: {
+        centre: { x: 0.4, y: 1.0, z: -0.34 },
+        columnBase: { x: 0.4, y: 0.78, z: -0.66 },
+        radius: 0.2,
+        // Power steering, about 1¾ turns to full lock.
+        ratio: 21,
+        spokes: 4,
+      },
+    },
+  },
 };
 
-export const vehicleOrder: readonly VehicleId[] = ['shortie', 'camel', 'perentie'];
+/** What a vehicle carries at the start of an episode: the episode's load and its own extras. */
+export function vehicleLoadout(load: EpisodeLoadout, id: VehicleId): EpisodeLoadout {
+  const extra = vehicles[id].extraLoad;
+  return extra ? { ...load, fuel: load.fuel + extra.fuel, spares: load.spares + extra.spares } : load;
+}
+
+export const vehicleOrder: readonly VehicleId[] = [
+  'shortie',
+  'camel',
+  'perentie',
+  'hilux',
+  'unimog',
+  'troopy',
+];
 
 export function isVehicleId(x: unknown): x is VehicleId {
   return typeof x === 'string' && x in vehicles;

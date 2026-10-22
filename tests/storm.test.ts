@@ -11,7 +11,7 @@ import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
 import { Simulation } from '../src/sim/sim';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
-import { spreadCreekBanks } from '../src/sim/world/flood';
+import { prepareFlood, riseShare } from '../src/sim/world/flood';
 import { addPuddles } from '../src/sim/world/puddles';
 import { NO_WATER } from '../src/sim/world/terrain';
 import { buildWorld } from '../src/sim/world/world';
@@ -27,7 +27,7 @@ const depths = Array.from({ length: 4000 }, (_, k) => {
   const z = ((k * 1201) % 6000) - 3000 + 0.61;
   return { x, z, depth: world.terrain.waterDepthAt(x, z, start.env.waterLevelOffset) };
 });
-const spread = spreadCreekBanks(world, storm.creeks.maxRise);
+const spread = prepareFlood(world, storm);
 
 /** 3 pm, 4 pm, 5 pm (the autopilot's clean run reaches the Little Annan about then) and 5:45 pm. */
 const at = (hour: number) => episodeWeatherAt(hour, crebEpisode.weather, storm);
@@ -132,10 +132,16 @@ describe('the CREB storm', () => {
         d.depth,
         5,
       );
-    // A risen creek's water stands only on creek cells: the mud holes keep their level.
+    // The rivers rise in full and the little creeks across the Bloomfield Track by a third;
+    // the rain-filled mud holes keep their level.
     const t = world.terrain;
-    const hole = world.features.mudHoles.find((b) => t.water[t.index(b.x, b.z)] > NO_WATER)!;
-    expect(world.features.creekDistance[t.index(hole.x, hole.z)]).toBeGreaterThan(4);
+    const share = (x: number, z: number) => riseShare(world, t.index(x, z));
+    expect(share(40, -2458)).toBe(1);
+    expect(share(64, -613)).toBe(1);
+    expect(share(-82.83, -1399.01)).toBeCloseTo(0.35, 5);
+    const holes = world.features.mudHoles.filter((b) => t.water[t.index(b.x, b.z)] > NO_WATER);
+    expect(holes.length).toBeGreaterThan(0);
+    for (const b of holes) expect(share(b.x, b.z)).toBe(0);
   });
 
   for (const tuning of [vehicleTuning, perentieTuning]) {
@@ -159,6 +165,15 @@ describe('the CREB storm', () => {
     const steady = await cross('bloomfield-track', 40, -2458, 17.75, vehicleTuning, 'steady');
     expect(steady.across, JSON.stringify(steady)).toBe(true);
   }, 240_000);
+
+  for (const tuning of [vehicleTuning, perentieTuning])
+    it(`the ${tuning.name} crawls over the Bloomfield Track's middle creek and the Little Annan's shallow crossing late`, async () => {
+      const creek = await cross('bloomfield-track', -82.83, -1399.01, 17.75, tuning, 'crawl');
+      expect(creek.across, JSON.stringify(creek)).toBe(true);
+      const shallow = await cross('shallow-crossing', 124, -2466, 17.75, tuning, 'crawl');
+      expect(shallow.across, JSON.stringify(shallow)).toBe(true);
+      expect(shallow.swept).toBeLessThan(1);
+    }, 240_000);
 
   it('lets the heavier Land Rover crawl over the Little Annan late, in deeper water', async () => {
     const early = await cross('bloomfield-track', 40, -2458, 15, perentieTuning, 'crawl');

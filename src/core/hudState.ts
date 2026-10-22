@@ -38,6 +38,8 @@ export interface HudInputs {
   refuel?: { kind: RepairKind; possible: boolean } | null;
   /** The episode's mission and clock. */
   episode?: EpisodeHud | null;
+  /** Something to load nearby (src/sim/finds.ts), and whether it is in reach. */
+  find?: { name: string; inReach: boolean } | null;
   /** Show the fuel gauge and supplies (an episode is under way). */
   supplies?: boolean;
 }
@@ -105,6 +107,13 @@ export function buildHudState(i: HudInputs): HudState {
       else if (wait > 0) prompts.push({ keys: '!', text: `Engine flooded — drying out (${wait} s)` });
       else prompts.push({ keys: g.accelerate ?? 'W', text: 'Restart engine' });
     } else if (flood.submerged) prompts.push({ keys: '!', text: 'Water at the air intake!' });
+    if (i.find && !t.repair)
+      prompts.push({
+        keys: i.find.inReach ? 'Stop' : '!',
+        text: i.find.inReach
+          ? `Stop here to load the ${i.find.name.toLowerCase()}`
+          : `${i.find.name} by the hut — pull up beside it`,
+      });
     if (t.planks.inReach(v).length > 0) prompts.push({ keys: g.interact ?? 'E', text: 'Pick up planks' });
     else if (t.winch.attached) {
       prompts.push({ keys: `${g.winchIn} / ${g.winchOut}`, text: 'Winch in / out' });

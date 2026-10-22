@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { CREEK_MARGIN } from '../sim/world/flood';
 import { particleTuning as P } from '../data/particles';
 import type { QualityPreset } from '../data/quality';
 import { SurfaceId } from '../data/surfaces';
@@ -234,9 +233,9 @@ export class Particles {
   /** Fractional particles carried between frames, per wheel and effect. */
   private readonly acc = new Float32Array(4 * 4 + 4);
   private wetness = 0;
-  /** A storm's creek rise (m), on the creek cells (`creekDistance` within CREEK_MARGIN). */
+  /** A storm's creek rise (m), and each sample's share of it (features.creekRise). */
   creekRise = 0;
-  creekDistance: Uint8Array | null = null;
+  riseShare: Float32Array | null = null;
   private readonly cDust = mixPal('dirtTrack', 'barkPale', 0.62);
   private readonly cGravelDust = mixPal('rock', 'barkPale', 0.55);
   private readonly cGrassDust = mixPal('grassDry', 'barkPale', 0.5);
@@ -294,8 +293,8 @@ export class Particles {
   /** The water surface at (x, z) as the vehicle meets it: risen creeks included. */
   private waterAt(x: number, z: number, offset: number): number | null {
     const w = this.terrain.waterSurfaceAt(x, z, offset);
-    if (w === null || this.creekRise === 0 || !this.creekDistance) return w;
-    return this.creekDistance[this.terrain.index(x, z)] <= CREEK_MARGIN ? w + this.creekRise : w;
+    if (w === null || this.creekRise === 0 || !this.riseShare) return w;
+    return w + this.creekRise * this.riseShare[this.terrain.index(x, z)];
   }
 
   setWetness(w: number): void {

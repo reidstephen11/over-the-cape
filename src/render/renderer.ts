@@ -85,6 +85,7 @@ export class GameRenderer {
       env.waterLevelOffset,
       world.features.creekDistance,
       new WaterCurrent(world.features.creeks),
+      world.features.creekRise,
     );
     this.scene.add(this.water.group);
     this.vegetation = new Vegetation(world, quality);
@@ -96,7 +97,7 @@ export class GameRenderer {
     this.gates = new GateMarkers(world);
     this.scene.add(this.gates.group);
     this.particles = new Particles(world.terrain, quality, env.waterLevelOffset);
-    this.particles.creekDistance = world.features.creekDistance;
+    this.particles.riseShare = world.features.creekRise ?? null;
     this.particles.setWetness(env.wetness);
     groundUniforms.groundWetness.value = env.wetness;
     this.scene.add(this.particles.group);

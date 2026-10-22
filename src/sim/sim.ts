@@ -14,7 +14,7 @@ import { deckAt } from './world/bridges';
 import { StaticMeshBatcher } from './world/staticMesh';
 import type { FallenTreeDef } from './world/mapTypes';
 import { WaterCurrent } from './world/current';
-import { isCreekCell } from './world/flood';
+import { riseShare } from './world/flood';
 import { scatterTuning } from '../data/vegetation';
 import { winchTuning } from '../data/tools';
 import { VehicleTools, type RepairKind, type ToolEvent } from './tools/tools';
@@ -129,7 +129,8 @@ export class Simulation {
   fuelScale = 0;
   /**
    * A storm raising the creeks (src/data/weatherTimeline.ts): metres above their own
-   * level, and their current as a multiple of its own. Puddles and mud holes stay as laid.
+   * level, and their current as a multiple of its own, each creek by its share of the rise
+   * (`features.creekRise`). Puddles and mud holes stay as laid.
    */
   readonly creeks = { rise: 0, flowScale: 1 };
 
@@ -145,15 +146,15 @@ export class Simulation {
       surfaceAt: (x, z) => terrain.surfaceAt(x, z),
       waterSurfaceAt: (x, z) => {
         const w = terrain.waterSurfaceAt(x, z);
-        return w === null || creeks.rise === 0 || !isCreekCell(world, terrain.index(x, z))
-          ? w
-          : w + creeks.rise;
+        return w === null || creeks.rise === 0 ? w : w + creeks.rise * riseShare(world, terrain.index(x, z));
       },
       heightAt: (x, z) => terrain.heightAt(x, z),
       waterFlowAt: (x, z, out) => {
         current.at(x, z, out);
-        out.x *= creeks.flowScale;
-        out.z *= creeks.flowScale;
+        if (creeks.flowScale === 1) return out;
+        const k = 1 + (creeks.flowScale - 1) * riseShare(world, terrain.index(x, z));
+        out.x *= k;
+        out.z *= k;
         return out;
       },
       holeAt: (x, z) => terrain.holeAt(x, z),

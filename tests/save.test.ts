@@ -33,7 +33,7 @@ describe('exploration and saving', () => {
   it('round-trips each episode’s progress and the camp a run restarts from', () => {
     const s = new MemoryStore();
     const checkpoint = {
-      ...startCheckpoint(crebEpisode, 'roaring-meg-camp'),
+      ...startCheckpoint(crebEpisode, 'roaring-meg-camp', 'shortie'),
       hour: 14.25,
       elapsed: 900,
       fuel: 31.5,
