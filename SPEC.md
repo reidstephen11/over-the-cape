@@ -2,20 +2,24 @@
 
 A single-player 4WD adventure up Cape York for the browser, told in episodes like an Australian 4WD travel show: each episode a stage of the trip north with a core mission. Same graphics and mechanics as [4WD Simulator](https://github.com/reidstephen11/4wd-simulator) (v0.18), which this code started from; its spec and decisions still describe the engine (see docs/DECISIONS.md).
 
+Its feel is inspired by Over The Hill: simple but good-looking graphics, and a trip you can take slowly to enjoy the scenery. Its purpose is to tell the history of the places on the route.
+
 ## 1. Decisions at a glance
 
 | Area | Decision |
 |---|---|
-| Players | Single player. Your vehicle only: no other vehicles and no people in the game. |
-| Story | Told through on-screen text: a briefing before each episode, history notes at places, a closing note. History is kept to what sources say (docs/HISTORY.md). No real TV shows or presenters are named. |
+| Players | Single player. The story may place other vehicles and people, kept simple: a parked or bogged vehicle to winch or tow, a person at a camp spoken to through on-screen text. No traffic on the tracks. |
+| Story | You retrace your grandparent's 1986 trip up the Cape from their diary (§2a). Told through on-screen text: a briefing and diary entry before each episode, history notes at places, a closing note. History is kept to what sources say (docs/HISTORY.md); only the diary and its people are invented. No real TV shows or presenters are named. |
 | Episodes | Seven, south to north, one map each. They unlock in order; finished ones can be replayed. |
 | Maps | Long, narrow strips (the CREB 1.3 × 6 km, the Old Coach Road 1.3 × 7.2 km), with the real route's landmarks in their real order and obstacles at full size; the distances between are shortened. |
+| Goals | Each episode's goal is a different kind of remote-travel job (§2a), not only reaching a place: deliver supplies, tow someone out of a bog before the river rises, cross before a storm closes a crossing. Every deadline has a reason in the story. |
 | Stakes | An episode ends on an empty tank with no jerry cans, a missed deadline, being swept away by a river, a flat tyre with nothing left to fix it, or a wrecked engine. The damage setting decides which apply (§4). |
 | Restart | From the last camp reached. Camps save the run: position, clock, what's on board and which finds were taken. |
 | Supplies | Each episode starts with a load set by the story: fuel, 20 L jerry cans, spare wheels, tyre plugs. A vehicle can carry extras on top (from v0.14, the Troop Carrier's full sub-tank and second spare). Finds on the map, at the end of side tracks off the main line, can add to it, each once. Nothing carries over between episodes. |
 | Conditions | The story sets the time of day and weather; the clock runs and the sun moves. A finished episode can be replayed in conditions you choose, with the clock stopped and no deadline. |
-| Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; from v0.11 the Army Unimog UL1700L truck; and from v0.14 the 1990s LandCruiser 75 Series Troop Carrier. A modern 4WD comes later. |
+| Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; from v0.11 the Army Unimog UL1700L truck; from v0.14 the 1990s LandCruiser 75 Series Troop Carrier; and from v0.19 the GQ Patrol. A modern 4WD comes later. |
 | Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.14: the Troop Carrier. v0.17: Episode 2, the Old Coach Road. Then trailers and towing (delivering another vehicle or fuel drums) for later episodes, each update bringing the mechanics it needs. |
+| Look | The game's current look, made more realistic (§5a). Not photo-real or highly detailed; vehicle bodies with accurate shapes come first. |
 | Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; everything generated in code. |
 
 ## 2. Episodes
@@ -29,6 +33,18 @@ A single-player 4WD adventure up Cape York for the browser, told in episodes lik
 | 5 | Telegraph Track South | Bramwell Junction, Palm Creek, the Ducie, Gunshot Creek | Get past Gunshot, by the drop or the bypass |
 | 6 | Telegraph Track North | Fruit Bat, Eliot and Twin Falls, Cypress Creek's log bridge, Nolans Brook | Cross Nolans without drowning the engine |
 | 7 | The Tip | The Jardine ferry, the Ussher Point track and a WWII aircraft wreck, the northernmost point | Stand at the Tip |
+
+## 2a. The story and the goals
+
+The player retraces a trip their grandparent made up Cape York in 1986, using the grandparent's diary. In 1986 the Bloomfield Track was newly built (1983–84) and the Telegraph Line was still in use (closing date to be checked before the game states it). Each episode opens with a diary entry; each camp reached can open the next one. The diary points the player to the history along the way and gives each deadline its reason. The diary may name the grandparent's own vehicle; the player still drives any vehicle.
+
+Goals vary from episode to episode and carry the feel of remote travel, with the deadline coming from the story or the weather rather than only the clock:
+
+- Deliver supplies (fuel, a part, food) to someone waiting at a camp.
+- Tow or winch someone out of a bog before the river rises.
+- Cross a river before an incoming storm makes the crossing impossible.
+
+The planned missions in the table above will be rewritten in this frame as each episode is built or revisited.
 
 Each episode defines (src/data/episodes.ts): its map, the mission line and goal (a camp POI), start time and weather, any storm that comes through (`storm`, src/data/weatherTimeline.ts), the deadline, the clock rate (game seconds per real second), the fuel scale (fuel burnt per litre the engine really uses, because the map shortens the distance), the load, the briefing, history notes by POI, the closing paragraphs and a sentence for each way it can end.
 
@@ -67,11 +83,18 @@ Each episode defines (src/data/episodes.ts): its map, the mission line and goal 
 - Ruin props: a baker's oven, chimneys, headstones and stone kerbing.
 - Long maps of up to about 1.3 × 7.2 km, sampled every metre.
 
+## 5a. Look
+
+Keep the game's current look and lighting, made more realistic rather than stylised. A mock-up in Over The Hill's folded-paper style was tried and turned down. Not photo-real and not highly detailed. In practice:
+
+- Vehicle bodies come first: accurate shapes and proportions, and the details that make each one recognisable (bull bar, snorkel, roof rack, wheel arches, mudguards over the wheels, lamps). The 40 Series shorty is the first, from a mock-up the owner signs off before it goes into the game.
+- Ground, trees and lighting stay as they are for now.
+
 ## 6. Interface
 
 - Welcome screen: episode list (later episodes listed as coming), Continue / Start again, vehicle, difficulty, and for finished episodes the conditions.
 - Loading screen: the briefing, then Drive.
-- HUD: mission panel top left (episode, mission, clock and deadline); fuel gauge and supplies above the status strip; history notes top right; result card centred. On a touch screen the fuel and the mission sit under the status strip (sideways, the clock only), and a history note stops the game and shows centred until tapped.
+- HUD: kept quiet so the scenery comes first (planned). Every icon has a short word label, and supplies (recovery boards, spares, plugs, jerry cans) show only when they change or when the tool menu is open. Mission panel top left (episode, mission, clock and deadline); fuel gauge and supplies above the status strip; history notes top right; result card centred. On a touch screen the fuel and the mission sit under the status strip (sideways, the clock only), and a history note stops the game and shows centred until tapped.
 - Pause menu: Resume, Map, Restart from last camp, Vehicle (restarts from the camp), Settings, Controls, Main menu.
 - Tool menu: Winch / Detach winch, the diff locks, planks, precision crawl, headlights, the repair needed, Pour in a jerry can.
 

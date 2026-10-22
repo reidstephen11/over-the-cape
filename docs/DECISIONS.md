@@ -886,3 +886,16 @@ Across 1000 seeds every run gets its two trees and its rockfall, at 60 different
 - The Daintree's deep water doesn't reach its snorkel.
 
 **Tests.** `tests/patrol.test.ts` comes from the simulator (gearing, idle, acceleration, a full-lock turn, a 30° climb, wading through the snorkel, the model and the save), with the vehicle order check loosened to "it's in the list", a check of the 95 L tank, and the save written with this game's save helper. The TD42 sound test comes across too. The Patrol joins the park brake, wet braking, headlight and CREB climb tests. A browser test picks it on the welcome screen and drives it, and the Troop Carrier's browser test now checks seven vehicle buttons fit on a phone.
+
+## v0.20: the game's direction
+
+Agreed with the owner in an interview, and written into SPEC.md. Nothing in the game changes in this version; later updates build towards it.
+
+- **Over The Hill as a second inspiration** for the feel: a slow trip to enjoy the scenery, with simple but good-looking graphics.
+- **The look: the current one, more realistic** (SPEC.md §5a). A mock-up of the shorty in Over The Hill's stylised, folded-paper look was compared side by side with the game, and the owner preferred the game's look. They want the vehicle bodies more accurate, not photo-real or highly detailed, starting with the 40 Series.
+- **The story is a grandparent's 1986 diary.** It gives every deadline a reason and leads the player to the history, which stays factual; only the diary and its people are invented. 1986 suits the route (the Bloomfield Track was new) and the vehicles. The Telegraph Line's closing date is to be checked against sources before the game states it.
+- **Deadlines stay.** The owner wants them kept, with a story reason each, rather than removed for a slower pace.
+- **Goals vary.** Deliveries, tows out of bogs before a river rises, and crossings before a storm, in place of "reach X before dark" every time.
+- **Other vehicles and people are allowed**, replacing the earlier rule that there were none. Kept simple: stuck vehicles to winch or tow and a person at camp shown through on-screen text; no traffic.
+- **A quieter HUD** with labelled icons; supplies show only when they change or in the tool menu.
+- **The GQ Patrol** (v0.19) is added to the spec's vehicle list.
