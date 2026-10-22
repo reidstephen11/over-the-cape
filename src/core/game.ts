@@ -374,7 +374,7 @@ export class Game {
     const checkpoint =
       choice.resume && saved && mapDef.pois.some((p) => p.id === saved.camp && p.kind === 'campsite')
         ? saved
-        : startCheckpoint(def, mapDef.spawnCampsite);
+        : startCheckpoint(def, mapDef.spawnCampsite, choice.vehicle);
     const env = choice.replay ? environmentFor(choice.replay) : environmentAt(checkpoint.hour, def.weather);
     // The map's own colours (red clay, greener grass) before any mesh is built.
     usePalette(mapDef.palette);

@@ -68,7 +68,11 @@ describe('Finds off the CREB’s main line', () => {
       expect(f.near(s.v.position.x, s.v.position.z)).toBeNull();
 
       // A camp reached after loading it keeps it; restarting from a camp before puts it back.
-      const run = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'daintree-village'), true);
+      const run = new EpisodeRun(
+        crebEpisode,
+        startCheckpoint(crebEpisode, 'daintree-village', 'shortie'),
+        true,
+      );
       const before = checkpointAt('roaring-meg-camp', run, s.v, [], []);
       const after = checkpointAt('bloomfield-camp', run, s.v, [], f.taken);
       expect(after.taken).toEqual(['linesmans-jerry-can']);
@@ -99,7 +103,10 @@ describe('Finds off the CREB’s main line', () => {
 
   it('keeps what was taken in the save, and reads old saves as nothing taken', () => {
     const store = new MemoryStore();
-    const checkpoint = { ...startCheckpoint(crebEpisode, 'roaring-meg-camp'), taken: ['line-camp-plugs'] };
+    const checkpoint = {
+      ...startCheckpoint(crebEpisode, 'roaring-meg-camp', 'shortie'),
+      taken: ['line-camp-plugs'],
+    };
     writeSave(saveData({ episodes: { creb: { completed: false, checkpoint } } }), store);
     expect(loadSave(store)?.episodes.creb?.checkpoint?.taken).toEqual(['line-camp-plugs']);
     const old: Partial<typeof checkpoint> = { ...checkpoint };

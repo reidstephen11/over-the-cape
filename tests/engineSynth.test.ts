@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { EngineSynth, type EngineInputs } from '../src/audio/engine/engineSynth';
 import { firingHz } from '../src/audio/mix';
-import { dieselSixSynthTuning, dieselSynthTuning, petrolFourSynthTuning } from '../src/data/audio';
+import {
+  dieselSixSynthTuning,
+  dieselSynthTuning,
+  petrolFourSynthTuning,
+  troopyDieselSynthTuning,
+} from '../src/data/audio';
 
 const SR = 48000;
 const base: EngineInputs = {
@@ -189,6 +194,27 @@ describe('engine synthesiser', () => {
       expect(rms(x, SR / 4)).toBeGreaterThan(0.01);
     }
     for (const rpm of [800, 1400, 2200]) {
+      const f = firingHz(rpm, 6);
+      const x = render(1.5, { rpm, throttle: 0.6, load: 0.6 }, six());
+      expect(power(x, f)).toBeGreaterThan(power(x, f * 1.27) * 4);
+    }
+  });
+
+  it("the Troop Carrier's diesel six fires three times per crank turn and stays clean to its 4000 rpm governor", () => {
+    const six = () => new EngineSynth(SR, 3, troopyDieselSynthTuning);
+    for (const inp of [
+      { rpm: 700 },
+      { rpm: 2200, throttle: 1, load: 1 },
+      { rpm: 4100, throttle: 1, load: 1 },
+      { rpm: 3000, throttle: 0 },
+    ]) {
+      const x = render(1, inp, six());
+      let peak = 0;
+      for (const v of x) peak = Number.isFinite(v) ? Math.max(peak, Math.abs(v)) : Infinity;
+      expect(peak).toBeLessThanOrEqual(1);
+      expect(rms(x, SR / 4)).toBeGreaterThan(0.01);
+    }
+    for (const rpm of [800, 1600, 2600]) {
       const f = firingHz(rpm, 6);
       const x = render(1.5, { rpm, throttle: 0.6, load: 0.6 }, six());
       expect(power(x, f)).toBeGreaterThan(power(x, f * 1.27) * 4);

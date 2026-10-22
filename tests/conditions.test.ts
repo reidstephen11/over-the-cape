@@ -88,7 +88,7 @@ describe('time of day and weather', () => {
       resume: false,
       replay: null,
     });
-    const checkpoint = startCheckpoint(crebEpisode, 'roaring-meg-camp');
+    const checkpoint = startCheckpoint(crebEpisode, 'roaring-meg-camp', 'shortie');
     writeSave(saveData({ episodes: { creb: { completed: false, checkpoint } } }), s);
     expect(choiceFromSave(loadSave(s)).resume).toBe(true);
     // A replay's conditions only count once the episode is finished; broken ones are dropped.
