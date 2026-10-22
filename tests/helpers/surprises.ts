@@ -76,7 +76,10 @@ export class TrackRecovery {
       if (anchor.kind !== 'tree') continue;
       const t = sideOf(track, anchor.point.x, anchor.point.z);
       const off = Math.abs(t.lateral);
-      if (t.along < here + 5 || off > 10 || anchor.point.y > v.position.y + 1.0) continue;
+      // Up a bank: well above the track level with it.
+      const c = trailPoint(track, t.along);
+      const bank = anchor.point.y - 1.1 - sim.world.terrain.heightAt(c.x, c.z);
+      if (t.along < here + 5 || off > 10 || bank > 1.5) continue;
       if (!best || off < best.off) best = { anchor, off, along: t.along };
     }
     if (process.env.SURPRISE_DEBUG)
@@ -404,7 +407,7 @@ export async function getPast(
           b.x + 2 * (q.x * q.y - q.w * q.z) * h,
           b.z + 2 * (q.y * q.z + q.w * q.x) * h,
         );
-        over = crown.lateral * -passSide > 0.3;
+        over = crown.lateral * -passSide > 0.6;
       }
       if (over || winch.length <= 3 || winchTime > 45) {
         sim.detachWinch('p');
