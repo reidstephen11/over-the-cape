@@ -177,7 +177,7 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - Stay on the track: the dark ground off it is black soil, and bogs you. Cutting a corner onto it costs minutes.
 - The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range, and a tree stands near each end of every deep or long bog. Bogged in a deep one, hook up to the tree ahead (E), winch in (R) and drive gently with it.
 - At a fork, the sign names the other line. The short line is the quicker one if you drive it well; the long way round is there for when it's going badly, or the river is up.
-- A tree down across the track: stop well short of it, on the side its roots are, and pick **Fallen tree (crown end)** with the tool menu's Winch (E picks the nearest hook, which may not be the one you want). Winch in on the handbrake, holding the brake so the car doesn't creep towards the tree, and the crown swings round towards you; if it still lies across, back up a few metres and pull again. Then back off and drive past on the other side.
+- A tree down across the track: stop well short of it, on the side its roots are, and pick **Fallen tree (crown end)** with the tool menu's Winch (E picks the nearest hook, which may not be the one you want). Winch in on the handbrake, holding the brake so the car doesn't creep towards the tree, and the crown swings round towards you; stop once it's round, or the winch drags the whole tree towards you; if it still lies across, back up a few metres and pull again. Then back off and drive past on the other side.
 - Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
 ## Debug mode
