@@ -37,7 +37,13 @@ function sideOf(track: TrackInfo, x: number, z: number) {
 }
 
 /** Tracks the route drive crawls (scripts/creb-drive.ts). */
-export const CRAWLED = new Set(['big-red', 'creb-ridge', 'roaring-meg-climb', 'bobs-hill', 'concrete-descent']);
+export const CRAWLED = new Set([
+  'big-red',
+  'creb-ridge',
+  'roaring-meg-climb',
+  'bobs-hill',
+  'concrete-descent',
+]);
 
 /**
  * Where to start the drive up to a spot: `approach` metres short of it, or just past a
