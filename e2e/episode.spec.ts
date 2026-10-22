@@ -17,7 +17,7 @@ test('camps save the run; the clock, an empty tank, a flat with no spare and the
   test.setTimeout(1_200_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   // Realistic damage, so a flat tyre with nothing to fix it ends the episode.
   await page.locator('[data-group="damage"][data-value="realistic"]').click();
   await waitReady(page);
@@ -103,7 +103,7 @@ test('reaching the Lions Den finishes the episode and opens replays in other con
   test.setTimeout(1_200_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await waitReady(page);
   await page.evaluate(() => window.__game!.teleportPoi('lions-den'));
   await expect

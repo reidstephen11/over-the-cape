@@ -7,7 +7,18 @@ import { createNoiseBank, type NoiseBank } from './buffers';
 import { EngineSound, HornSound } from './engineSound';
 import type { AudioFrame } from './frame';
 import { knockLevel, thumpLevel } from './mix';
-import { clunk, dentCrunch, knock, puncture, ratchet, stallClunk, switchClick, thump } from './oneShots';
+import {
+  clunk,
+  dentCrunch,
+  knock,
+  puncture,
+  ratchet,
+  rockSlide,
+  stallClunk,
+  switchClick,
+  thump,
+  treeFall,
+} from './oneShots';
 import { TyreSound } from './tyreSound';
 import { UiSounds } from './uiSounds';
 import { WinchSound } from './winchSound';
@@ -292,6 +303,14 @@ export class AudioSystem {
   dent(impact: number): void {
     const g = this.live();
     if (g) dentCrunch(g.ctx, g.fxBus, g.noise, Math.min(1, Math.max(0.35, (impact - 2.5) / 6)));
+  }
+
+  /** A surprise up ahead: a tree coming down (landing after `seconds`) or rocks off a bank. */
+  surprise(kind: 'treefall' | 'rockfall', seconds: number): void {
+    const g = this.live();
+    if (!g) return;
+    if (kind === 'treefall') treeFall(g.ctx, g.fxBus, g.noise, seconds);
+    else rockSlide(g.ctx, g.fxBus, g.noise, seconds);
   }
 
   discovery(): void {

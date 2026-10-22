@@ -15,7 +15,7 @@ test('changing to the Land Rover from the pause menu restarts from the last camp
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('shortie');
   await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
@@ -50,7 +50,7 @@ test('the Hilux is chosen on the welcome screen, drives off, and has its own cab
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await page.getByRole('button', { name: /Hilux single cab/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',
@@ -86,7 +86,7 @@ test('the Unimog is chosen on the welcome screen, drives off, and has its own ca
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await page.getByRole('button', { name: /Unimog UL1700L/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',
@@ -124,7 +124,7 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await page.getByRole('button', { name: /Troop Carrier/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',

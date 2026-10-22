@@ -62,6 +62,8 @@ After the wet the red clay tracks are slick, the gravel roads are bumpy and poth
 
 The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns) except for open eucalypt woodland round the village, the paddocks and the drier hills by the Lions Den. A fallen tree lies across the track on the range: winch it aside or squeeze past.
 
+**Surprises.** The route isn't the same every run. After the wet, dead trees come down and the clay cuttings shed rocks: each run, two dead trees fall across the track somewhere along the way (in the timber at the top of the paddocks, through the rainforest on the range or on the Bloomfield Track), and rocks come off a cutting's bank onto the track somewhere on the range. You see the dead tree standing at the roadside, then as you come along it cracks and crashes down across the track 45–70 m ahead (further ahead the faster you're going, so there's room to stop): never onto the car. Hook its crown end and winch it round so it lies along one side, then squeeze past on the other. Rocks land on the bank's side of the track, two big ones and a scatter of small ones you can crawl over in low range: keep to the far side, or winch a big one aside. Where they happen changes with each new run; restarting from a camp brings the same ones back in the same places.
+
 Beyond the map's edge the real country carries on to the horizon, brought in closer and lower in step with the map. East, between the range and the Coral Sea, stand Thornton Peak, Mt Pieter Botte, Mt Sorrow behind Cape Tribulation, and Mt Finnigan's granite tops, and the Daintree and the Bloomfield run out to the sea. West, rainforest ranges rise to the flat-topped tablelands of the Great Dividing Range. North of the Lions Den the country dries out to open woodland round the black boulder heaps of Black Mountain. South are the Daintree's cane and cattle flats and the ranges towards Mossman. Far land fades into the sky with distance, as it does on a humid day.
 
 ### Episode 2: The Old Coach Road
@@ -83,7 +85,7 @@ The country is dry eucalypt woodland, straw-coloured grass and orange dirt, with
 ## How an episode works
 
 - **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (eight game minutes a real minute on the CREB, 17 on the Old Coach Road) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
-- **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs. It keeps what you'd found by then: restart from it and anything picked up after it is back where it was.
+- **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs. It keeps what you'd found by then: restart from it and anything picked up after it is back where it was. A tree or rocks that came down before the camp stay down; those still to come happen again the same way.
 - **History notes** appear in the top right as you reach a place. Click one to close it.
 - **The episode ends early** when, with the difficulty that allows it:
   - the tank is empty, you have no jerry cans left and the car has rolled to a stop (any difficulty);
@@ -196,12 +198,15 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - On the Old Coach Road's **middle line** and at the **big step**, crawl in low range with both lockers and let the tyres climb the rock rather than spin on it. Going down the **descent**, low range and first gear hold the car back.
 - **Termite mounds** are as hard as rock. Steer round them off the road.
 - At a fork, the sign names the other line. The short line is the quicker one if you drive it well; the long way round is there for when it's going badly, or the river is up.
+- A tree down across the track: stop well short of it, on the side its roots are, and pick **Fallen tree (crown end)** with the tool menu's Winch (E picks the nearest hook, which may not be the one you want). Winch in on the handbrake, holding the brake so the car doesn't creep towards the tree, and the crown swings round towards you; stop once it's round, or the winch drags the whole tree towards you; if it still lies across, back up a few metres and pull again. Then back off and drive past on the other side.
 - Keep an eye on the clock once it rains: the creeks only get higher. In a risen creek, a steady pace in high range can get the short-wheelbase 4WD across where crawling lets the current take it.
 - Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
 ## Debug mode
 
 Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle state, flooding, sound levels) and a panel with a free-fly camera (also the **backtick** key), collider wireframes, a button that moves the clock on 30 minutes (to try the storm and the dusk), a teleport button for every place on the map and live vehicle tuning sliders.
+
+Add `?seed=7` (any number) to start a new run with that run's surprises, to see the same ones again, or `?surprises=off` to drive without them.
 
 ## What to test
 
@@ -223,6 +228,7 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **v0.11 the Unimog:** on the welcome screen pick **Unimog UL1700L** (the five vehicle buttons should fit, on a phone too). Walk round it: Army green, the short sloping bonnet and black grille, round headlamps low beside it behind guards, the square cab with its canvas roof, the spare wheel and air stack behind the cab, the canvas tilt over the tray, and the boards on the tilt roof. Press C for the driver's seat: high up behind a big upright screen, a big three-spoke wheel, the dials working. Listen: a deep, slow diesel six. Drive the CREB: does it feel slow but unstoppable? Bob's Hill should go in low range without the lockers; Big Red still needs them. Try the Daintree's deep middle. Did the fuel last (you'll likely need the jerry can)? Does the chase camera sit too close behind such a long truck?
 - [ ] **v0.14 the Troop Carrier:** on the welcome screen pick **Troop Carrier** (the six vehicle buttons should fit, on a phone too). The briefing should say 110 L of fuel and 2 spare wheels, and the fuel gauge and status strip should show them once you drive. Walk round it: white, round headlamps either side of a slatted grille, a sliding window and a fixed one in each side, barn doors at the back with a spare on the wide one, the bull bar and winch, and the second spare, a jerry can and the boards on the roof rack. Press C for the driver's seat: two seats, a four-spoke wheel, the dials working and not hidden by the wheel. Listen to the engine: a deeper, smoother diesel than the Land Rover's. Drive the CREB: does it feel heavier and more top-heavy than the others? Does the long tail catch anywhere? Stop in the Daintree's deep water: it should hold its ground where the others are carried away. At Roaring Meg camp change to the Hilux: the fuel that won't fit its tank is left behind, and changing back to the Troop Carrier doesn't refill it.
 - [ ] **v0.16 the storm:** drive the CREB from the start. The briefing and the welcome screen mention storms from 3 pm. At 3 pm a note says rain is coming; the sky greys, rain falls and is heard (louder on the roof from the driver's seat), and from about 4:45 a note says the rain is heavy. Do the clay climbs and the corners get noticeably greasier? Do Donovan's Creek and the Little Annan look higher, browner and faster? Cross the Little Annan before 5 pm, then (with `?debug`, **Clock +30 min**) try it again later: is it clearly harder, but still fair? Late, is the shallow crossing the safer way? Restart from a camp: is the weather as it was when you got there? Replay with chosen conditions: does the weather stay as picked?
+- [ ] **v0.18 surprises on the CREB:** start a new run and drive the route (the storm still comes at 3 pm: is a tree down in the rain still fair?). Twice a tree should crack and come down across the track ahead of you, and once rocks should come off a bank on the range, each with a crash and a message. Did it ever land on or right in front of the car, even driving fast? Winch the tree round by its crown end and squeeze past; pick a line past the rocks. Is it clear what to do, and does it take too long? Start again: they should happen in different places. Restart from a camp past one of them: the ones before the camp stay down, and the ones after happen again in the same places.
 - [ ] **History notes:** each named place shows its note as you arrive. Do they read well, and is there enough time to read them while driving?
 - [ ] **Camps:** reaching Roaring Meg camp shows "camp reached, progress saved". Pause → Restart from last camp puts you back there with the clock, fuel and spares as they were.
 - [ ] **Running out:** let the fuel run low and pour in the jerry can from the tool menu; then run dry with no cans and check the episode ends with a restart offered.
@@ -256,7 +262,8 @@ src/
 scripts/   route-check (track grades, heights and creek levels), track-profile (one track's grade against the
            ground), creek-check (creeks standing above their banks) and map-preview (top-down PNG), each for a
            map id (creb or coach); creb-drive and coach-drive (autopilot drive of each episode's whole route
-           with fuel, winching and arrival time); studio (one vehicle on plain ground; studio-shots
+           with fuel, winching and arrival time); surprise-check (where
+           runs' surprises land on the CREB) and surprise-drive (drive up to them and get past); studio (one vehicle on plain ground; studio-shots
            photographs it); and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
 e2e/       Playwright browser tests
