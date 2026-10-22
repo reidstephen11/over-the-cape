@@ -104,10 +104,14 @@ test.describe('phone', () => {
     await waitSim(page, 0.2);
     expect((await page.evaluate(() => window.__game!.vehicle())).throttle).toBe(0);
 
-    // HAND latches the park brake on and off.
+    // HAND latches the park brake on and off. Let it stop the car while it's on: range
+    // (below) only changes under 20 km/h.
     await f.tap('[data-tap="handbrake"]');
     await expect.poll(() => page.evaluate(() => window.__game!.parkBrake())).toBe(true);
     await expect(page.locator('[data-tap="handbrake"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect
+      .poll(async () => Math.abs((await page.evaluate(() => window.__game!.vehicle())).speed))
+      .toBeLessThan(0.5);
     await f.tap('[data-tap="handbrake"]');
     await expect.poll(() => page.evaluate(() => window.__game!.parkBrake())).toBe(false);
 
