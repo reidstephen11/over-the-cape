@@ -6,6 +6,7 @@ import { camelTuning } from '../src/data/camel';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
 import { troopyTuning } from '../src/data/troopy';
+import { patrolTuning } from '../src/data/patrol';
 import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
 import { keyBindings } from '../src/data/controls';
@@ -90,6 +91,7 @@ describe('headlights', () => {
       hiluxTuning,
       unimogTuning,
       troopyTuning,
+      patrolTuning,
     ]) {
       const s = await makeScene({ tuning });
       const model = new VehicleModel(tuning, true);
@@ -119,8 +121,9 @@ describe('headlights', () => {
       expect(high.head).toBeGreaterThan(low.head);
       expect(high.distance).toBeGreaterThan(low.distance);
       expect(high.dir.y).toBeGreaterThan(low.dir.y);
-      // Only the Camel Trophy car has roof lamps, and they come on with high beam.
-      expect(high.roof > 0, tuning.name).toBe(tuning === camelTuning);
+      // Only the Camel Trophy car's roof lamps and the Patrol's driving lamps light up, with
+      // high beam.
+      expect(high.roof > 0, tuning.name).toBe(tuning === camelTuning || tuning === patrolTuning);
       expect(low.roof).toBe(0);
       model.dispose();
       s.physics.world.free();

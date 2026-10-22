@@ -132,10 +132,10 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   );
   await expect(page.locator('.welcome-card')).toContainText('sub-tank');
   await shot(page, 'vehicle', 'welcome-troopy');
-  // Six vehicles still fit across a phone held upright, without scrolling sideways (the
+  // Seven vehicles still fit across a phone held upright, without scrolling sideways (the
   // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy']) {
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy', 'patrol']) {
     const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
     await button.scrollIntoViewIfNeeded();
     await expect(button).toBeInViewport({ ratio: 0.9 });
@@ -162,5 +162,31 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
   await waitSim(page, 1);
   await shot(page, 'vehicle', 'troopy-cockpit');
+  expect(errors).toEqual([]);
+});
+
+test('the GQ Patrol is chosen on the welcome screen and drives off', async ({ page }) => {
+  test.setTimeout(900_000);
+  const errors = collectErrors(page);
+  await lowGraphics(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: /GQ Patrol/ }).click();
+  await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
+    'data-value',
+    'patrol',
+  );
+  await expect(page.locator('.welcome-card')).toContainText('TD42');
+  await shot(page, 'vehicle', 'welcome-patrol');
+  await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
+  await driveFromBriefing(page);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('patrol');
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await waitSim(page, 3);
+  expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
+  await page.evaluate(() => window.__game!.setInput(null));
+  await shot(page, 'vehicle', 'patrol-in-game');
+  await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
+  await waitSim(page, 1);
+  await shot(page, 'vehicle', 'patrol-cockpit');
   expect(errors).toEqual([]);
 });
