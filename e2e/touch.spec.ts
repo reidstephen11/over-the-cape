@@ -76,7 +76,7 @@ test.describe('phone', () => {
   }) => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
-    await page.goto('/');
+    await page.goto('/?surprises=off');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await waitReady(page);
@@ -189,7 +189,7 @@ test.describe('phone on the CREB', () => {
   test("the HUD's panels keep clear of each other and the buttons in every view", async ({ page }) => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
-    await page.goto('/');
+    await page.goto('/?surprises=off');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await waitReady(page);
@@ -276,7 +276,7 @@ test.describe('phone on the CREB', () => {
 test('desktop shows no touch controls', async ({ page }) => {
   test.setTimeout(600_000);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await waitReady(page);
   await expect(page.locator('.touch-controls')).toBeHidden();
   await expect(page.locator('.status-drive').first()).toBeVisible();

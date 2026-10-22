@@ -1,4 +1,5 @@
 import type { EpisodeDef } from '../episodes';
+import { crebSurprises } from './crebSurprises';
 import { crebStorm } from './crebWeather';
 
 /**
@@ -26,6 +27,8 @@ export const crebEpisode: EpisodeDef = {
   // distance. A clean run uses more than the tank holds, so the jerry can goes in on the way.
   fuelScale: 10.4,
   loadout: { fuel: 50, jerryCans: 1, spares: 1, plugs: 3 },
+  // After the wet, dead trees come down and cuttings shed rocks: where, each run decides.
+  surprises: crebSurprises,
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
     'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. It rained overnight: the red clay on the climbs will be slippery.',

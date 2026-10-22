@@ -5,7 +5,7 @@ test('M2: keyboard drives the car and the chase camera follows', async ({ page }
   test.setTimeout(600_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?debug');
+  await page.goto('/?debug&surprises=off');
   await waitReady(page);
   await page.waitForTimeout(1000);
   await shot(page, 'M2', 'spawn-chase-camera');
@@ -62,7 +62,7 @@ test('M2: a gamepad drives the car', async ({ page }) => {
     Object.defineProperty(navigator, 'getGamepads', { value: () => [pad] });
   });
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await waitReady(page);
   const a = await page.evaluate(() => window.__game!.vehicle());
   await waitSim(page, 4);

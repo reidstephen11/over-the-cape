@@ -94,6 +94,8 @@ export const audioTuning = {
   dent: { gain: 0.6 },
   /** A tyre cut on a rock: a sharp crack, then air hissing out over a few seconds. */
   puncture: { crack: 0.5, hiss: 0.12, hissSeconds: 3 },
+  /** Surprises up ahead: a dead tree cracking and crashing down, rocks coming off a bank. */
+  surprise: { treeGain: 0.8, rockGain: 0.6 },
 
   winch: {
     /** Motor whine pitch (Hz) with no load and at the pull limit. */
