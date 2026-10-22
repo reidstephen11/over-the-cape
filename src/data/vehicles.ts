@@ -1,6 +1,8 @@
 import { camelTuning } from './camel';
 import { hiluxTuning } from './hilux';
 import { perentieTuning } from './perentie';
+import { TROOPY_SUB_TANK, troopyTuning } from './troopy';
+import type { EpisodeLoadout } from './episodes';
 import { vehicleTuning, type VehicleId, type VehicleTuning } from './vehicle';
 
 type Point = { x: number; y: number; z: number };
@@ -50,6 +52,8 @@ export interface VehicleDef {
   /** One line for the vehicle menu. */
   blurb: string;
   cabin: CabinLayout;
+  /** Carried on top of the episode's load: fuel in a second tank (L) and spare wheels. */
+  extraLoad?: { fuel: number; spares: number };
 }
 
 /** The short-wheelbase 4WD's cab, shared by its Camel Trophy version. */
@@ -157,9 +161,50 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
       },
     },
   },
+  troopy: {
+    tuning: troopyTuning,
+    blurb:
+      '1990s LandCruiser 75 Series Troop Carrier, 4.2 L diesel six, five-speed. A sub-tank and a second spare.',
+    // The full sub-tank, and a second spare wheel on the roof rack.
+    extraLoad: { fuel: TROOPY_SUB_TANK, spares: 1 },
+    cabin: {
+      // High up behind an upright screen, looking down the short, square bonnet.
+      eye: { x: 0.4, y: 1.32, z: 0.02 },
+      pitch: -0.17,
+      dialY: 1.04,
+      dialZ: -0.6,
+      dials: {
+        speed: { x: 0.47, radius: 0.058, max: 160, major: 20, minor: 10 },
+        rpm: { x: 0.31, radius: 0.058, max: 5000, major: 1000, minor: 500 },
+        oil: { x: 0.6, radius: 0.034, max: 1, major: 0.5, minor: 0.25 },
+      },
+      lamps: { xs: [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55], y: 0.955, z: -0.603 },
+      // The handbrake lever on the floor beside the driver's seat.
+      handbrake: {
+        kind: 'lever',
+        base: { x: 0.12, y: 0.42, z: -0.12 },
+        tip: { x: 0.12, y: 0.6, z: -0.3 },
+        travel: 0.55,
+      },
+      steeringWheel: {
+        centre: { x: 0.4, y: 1.0, z: -0.34 },
+        columnBase: { x: 0.4, y: 0.78, z: -0.66 },
+        radius: 0.2,
+        // Power steering, about 1¾ turns to full lock.
+        ratio: 21,
+        spokes: 4,
+      },
+    },
+  },
 };
 
-export const vehicleOrder: readonly VehicleId[] = ['shortie', 'camel', 'perentie', 'hilux'];
+/** What a vehicle carries at the start of an episode: the episode's load and its own extras. */
+export function vehicleLoadout(load: EpisodeLoadout, id: VehicleId): EpisodeLoadout {
+  const extra = vehicles[id].extraLoad;
+  return extra ? { ...load, fuel: load.fuel + extra.fuel, spares: load.spares + extra.spares } : load;
+}
+
+export const vehicleOrder: readonly VehicleId[] = ['shortie', 'camel', 'perentie', 'hilux', 'troopy'];
 
 export function isVehicleId(x: unknown): x is VehicleId {
   return typeof x === 'string' && x in vehicles;

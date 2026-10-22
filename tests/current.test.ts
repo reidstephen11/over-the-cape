@@ -4,6 +4,7 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { troopyTuning } from '../src/data/troopy';
 import { SurfaceId, sweptTuning } from '../src/data/surfaces';
 import { vehicleTuning } from '../src/data/vehicle';
 import { WaterCurrent } from '../src/sim/world/current';
@@ -78,7 +79,7 @@ describe('running water', () => {
   });
 
   it('lifts the vehicle off its tyres in deep water, and a current then carries it away', async () => {
-    for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning]) {
+    for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, troopyTuning]) {
       const s = await makeScene({ tuning, ground: river(1.3, 0) });
       const v = s.vehicle;
       s.run(6, {});

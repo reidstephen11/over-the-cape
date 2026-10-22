@@ -20,7 +20,14 @@ import type { PoiDef } from '../sim/world/mapTypes';
 import { poiApproach } from '../sim/world/poiApproach';
 import { headingOf } from '../sim/vehicle/math';
 import { Exploration } from '../sim/exploration';
-import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
+import {
+  applyCheckpoint,
+  checkpointAt,
+  EpisodeRun,
+  moveLoad,
+  startCheckpoint,
+  type Checkpoint,
+} from '../sim/episode';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
 import { CrawlRuns, type CrawlBests, type CrawlRunEvent } from '../sim/crawlRuns';
 import { GateCount, footprintSize, type GateEvent } from '../sim/gateCount';
@@ -364,8 +371,8 @@ export class Game {
     const saved = episodeProgress[def.id]?.checkpoint;
     const checkpoint =
       choice.resume && saved && mapDef.pois.some((p) => p.id === saved.camp && p.kind === 'campsite')
-        ? saved
-        : startCheckpoint(def, mapDef.spawnCampsite);
+        ? moveLoad(saved, choice.vehicle)
+        : startCheckpoint(def, mapDef.spawnCampsite, choice.vehicle);
     const env = choice.replay ? environmentFor(choice.replay) : environmentAt(checkpoint.hour, def.weather);
     // The map's own colours (red clay, greener grass) before any mesh is built.
     usePalette(mapDef.palette);
@@ -533,6 +540,7 @@ export class Game {
   /** Change vehicle (pause menu): the run goes back to the last camp in the new one. */
   async changeVehicle(id: VehicleId): Promise<void> {
     if (id === this.vehicleId) return;
+    this.checkpoint = moveLoad(this.checkpoint, id);
     await this.fade.run(() => this.swapVehicle(id));
     await this.restartFromCamp();
     this.hud.toast(vehicles[id].tuning.name, 1800);

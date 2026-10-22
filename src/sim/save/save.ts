@@ -134,6 +134,7 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     jerryCans: Math.max(0, Math.round(num(c.jerryCans))),
     spares: Math.max(0, Math.round(num(c.spares))),
     plugs: Math.max(0, Math.round(num(c.plugs))),
+    ...(isVehicleId(c.vehicle) ? { vehicle: c.vehicle } : {}),
     tyres: four(c.tyres, (x): x is number => typeof x === 'number' && Number.isFinite(x), 1).map((h) =>
       Math.min(1, Math.max(0, h)),
     ),

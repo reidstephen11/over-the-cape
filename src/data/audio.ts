@@ -409,10 +409,52 @@ export const petrolFourSynthTuning: EngineSynthTuning = {
   outputGain: 1,
 };
 
+/**
+ * The Troop Carrier's 4.2 L 1HZ diesel six: the Perentie's diesel knock and clatter, but
+ * six firings every two turns, so a smoother, deeper idle with less lope, softer knock
+ * (indirect injection), a long exhaust under the body out to the back, and a big starter
+ * that turns it slowly against the compression.
+ */
+export const dieselSixSynthTuning: EngineSynthTuning = {
+  ...dieselSynthTuning,
+  idleRpm: 700,
+  limiterRpm: 4050,
+  firingOrder: [1, 5, 3, 6, 2, 4],
+  runners: {
+    delayMs: [0.42, 0.24, 0.06, 0.1, 0.28, 0.46],
+    strength: [0.97, 1.0, 1.03, 1.03, 0.99, 0.96],
+  },
+  jitter: { idle: 0.1, load: 0.035, timingDeg: 2.5, lopeRpm: 8 },
+  exhaust: {
+    soundSpeed: 500,
+    headPipe: { length: 1.8, reflection: -0.35, dampingHz: 2400 },
+    muffler: { cutoffHz: 760, q: 0.6, boomHz: 68, boomQ: 1.2, boomDb: 4, leak: 0.22 },
+    tailPipe: { length: 2.8, reflection: -0.3, dampingHz: 3100 },
+    radiationHz: 32,
+    gain: 1.05,
+  },
+  block: { cutoffHz: 180, gain: 0.45 },
+  valves: { hz: [1600, 2700], q: 4, gain: 0.7 },
+  fan: { hz: 600, gain: 0.12 },
+  starter: {
+    seconds: 1.4,
+    rpm: 165,
+    compressionDip: 0.45,
+    meshPerCrankTurn: 120,
+    toneHz: 780,
+    brushHz: 2300,
+    gain: 0.28,
+  },
+  catch: { seconds: 1.9, flareRpm: 1100, flareSeconds: 0.35, settleSeconds: 0.6 },
+  whine: { teeth: [39, 29], second: 0.55, harmonic: 0.12, shaftAm: 0.3, wobble: 0.15, gain: 0.012 },
+  knock: { hz: [1000, 1800], q: 2.5, idle: 0.8, load: 0.25, gain: 3.2 },
+};
+
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
   camel: engineSynthTuning,
   perentie: dieselSynthTuning,
   hilux: petrolFourSynthTuning,
+  troopy: dieselSixSynthTuning,
 } as const;

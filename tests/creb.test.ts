@@ -4,6 +4,7 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { troopyTuning } from '../src/data/troopy';
 import { vehicleTuning } from '../src/data/vehicle';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { emptyInput } from '../src/sim/input/vehicleInput';
@@ -343,7 +344,7 @@ describe('Episode 1: the CREB Track', () => {
 
   it('stops high range and open diffs on its wet clay climbs', async () => {
     for (const id of ['big-red', 'bobs-hill'])
-      for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning])
+      for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, troopyTuning])
         for (const lockers of ['high', 'open'] as const) {
           const s = await scene(id, false, lockers, tuning);
           try {
@@ -379,7 +380,7 @@ describe('Episode 1: the CREB Track', () => {
       }
     }, 300_000);
 
-  for (const tuning of [perentieTuning, hiluxTuning])
+  for (const tuning of [perentieTuning, hiluxTuning, troopyTuning])
     for (const id of ['big-red', 'bobs-hill'])
       it(`drives ${id} in the wet in the ${tuning.name}`, async () => {
         const s = await scene(id, false, 'both', tuning);
