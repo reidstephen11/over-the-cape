@@ -21,7 +21,7 @@ export const crebEpisode: EpisodeDef = {
   clockRate: 8,
   // The map is about 6.6 km of the real trip's 100-odd km; fuel burns to match the real
   // distance. A clean run uses more than the tank holds, so the jerry can goes in on the way.
-  fuelScale: 8.5,
+  fuelScale: 10.4,
   loadout: { fuel: 50, jerryCans: 1, spares: 1, plugs: 3 },
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
@@ -40,6 +40,22 @@ export const crebEpisode: EpisodeDef = {
     'big-red': {
       title: 'Big Red',
       text: 'To many drivers the hardest climb on the CREB: straight up red clay that turns to grease in the wet. Low range, both lockers and a steady throttle — or take the bypass round the west side.',
+    },
+    'ridge-washout': {
+      title: 'Washout',
+      text: 'Water running off the range in the wet has cut a channel across the track, too wide and deep to drive over. Stop short of it, lay the planks across the gap in line with the wheels, and crawl over them in low range. Leave them behind: once you are well past, Recall planks in the tool menu puts them back on the roof rack.',
+    },
+    'roaring-meg-ledge': {
+      title: 'Rock ledge',
+      text: 'A step of rock about a metre high across the climb. Low range, both lockers and a slow crawl walk the wheels up it. Spin them on the rock and you will cut the tyres.',
+    },
+    'range-sideling': {
+      title: 'Sideling',
+      text: 'The track sidles round the hill here, leaning out towards the drop. Taken fast on wet clay, the car slides down towards the edge. Crawl across, keep to the high side and never turn downhill.',
+    },
+    'bloomfield-creeks': {
+      title: 'Creek crossings',
+      text: 'After the wet, creeks off the hills run fast across the Bloomfield Track. Slow right down before the water and keep moving once you are in it: stop in the current and it pushes the car downstream, into the scour hole below the ford.',
     },
     'bobs-hill': {
       title: 'Bob’s Hill',

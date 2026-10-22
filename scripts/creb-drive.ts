@@ -14,7 +14,9 @@ import { Simulation } from '../src/sim/sim';
 import { trailPoint } from '../src/sim/world/crawlTrail';
 import { buildWorld, campsite } from '../src/sim/world/world';
 import { addPuddles } from '../src/sim/world/puddles';
-import { WinchRecovery } from '../tests/helpers/drive';
+import { crawlStretches, crebWashout } from '../src/data/episodes/crebStretches';
+import { trailProgress } from '../src/sim/world/crawlTrail';
+import { PlankCrossing, WinchRecovery } from '../tests/helpers/drive';
 
 const id = process.argv[2] ?? 'shortie';
 if (!isVehicleId(id)) throw new Error(`Unknown vehicle ${id}`);
@@ -76,7 +78,8 @@ for (const [trackId, mode] of legs) {
     path = path.slice(0, cut + 1);
   }
   const pilot = new Autopilot(path, mode === 'road' ? 9 : mode === 'bush' ? 4.5 : 1.2);
-  const crawl = mode === 'crawl';
+  const zones = crawlStretches[trackId] ?? [];
+  let crawl = mode === 'crawl';
   if (crawl && v.drivetrain.range === 'high' && Math.abs(v.speed) < 5) v.toggleRange();
   if (!crawl && v.drivetrain.range === 'low' && Math.abs(v.speed) < 5) v.toggleRange();
   v.precisionCrawl = crawl;
@@ -88,14 +91,30 @@ for (const [trackId, mode] of legs) {
   let stuck = 0;
   // Bogged, the driver winches out to a tree ahead.
   const recovery = new WinchRecovery(sim, v, path);
+  // The washout on the ridge is bridged with the planks.
+  const planks = trackId === 'creb-ridge' ? new PlankCrossing(sim, v, crebWashout) : null;
   for (; time < 900; time += DT) {
-    const cmd = pilot.input(v, DT);
+    // Slow right down for the creeks and the like, and crawl through them in low range.
+    if (zones.length) {
+      const at = trailProgress(track, v.position.x, v.position.z).along;
+      const near = zones.some(([a, b]) => at > a - 25 && at < b);
+      const inside = zones.some(([a, b]) => at > a - 4 && at < b);
+      pilot.targetSpeed = near ? 1.2 : 9;
+      if (inside !== crawl && Math.abs(v.speed) < 4) {
+        crawl = inside;
+        if (crawl !== (v.drivetrain.range === 'low')) v.toggleRange();
+        v.precisionCrawl = crawl;
+        pilot.lowRange = crawl;
+      }
+    }
+    let cmd = pilot.input(v, DT);
     if (pilot.done) break;
     cmd.winchIn = recovery.update(DT);
     if (crawl) {
       cmd.throttle = 1;
       cmd.brake = 0;
     }
+    if (planks) cmd = planks.update(cmd, DT);
     for (const axle of ['front', 'rear'] as const) {
       const want = crawl || stuck > 4;
       if (v.differentials[axle] !== want && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);

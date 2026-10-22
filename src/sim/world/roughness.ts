@@ -187,11 +187,16 @@ export function trackMudHoles(
   const r = track.def.rough;
   if (!r?.bogs) return [];
   const rand = mulberry32(seed);
+  // Which holes stay in is drawn separately, so leaving some out moves none of the others.
+  const keepRand = mulberry32(seed * 7 + 3);
+  const keep = (share: number | undefined) => keepRand() < (share ?? 1);
   const { poly } = track;
   const out: BogDef[] = [];
+  let count = 0;
   const gap = 100 / r.bogs;
   const last = poly.count - 1;
-  const centre = (k: number) => heightAt(poly.xs[k], poly.zs[k]);
+  // The graded profile, without its bumps and potholes, so how rough a track is never moves its bogs.
+  const centre = (k: number) => track.profile[k];
   const grade = (a: number, b: number) =>
     Math.abs(track.profile[Math.min(last, b)] - track.profile[Math.max(0, a)]) /
     Math.max(1, poly.s[Math.min(last, b)] - poly.s[Math.max(0, a)]);
@@ -200,7 +205,7 @@ export function trackMudHoles(
     const [a, b] = [Math.max(0, k - half), Math.min(last, k + half)];
     const heading = Math.atan2(poly.xs[b] - poly.xs[a], -(poly.zs[b] - poly.zs[a]));
     return {
-      id: `${track.def.id}-mud-${out.length}`,
+      id: `${track.def.id}-mud-${count++}`,
       x: poly.xs[k],
       z: poly.zs[k],
       // Across the track (the bog's x) and along it (its z), turned to the track's heading.
@@ -213,6 +218,7 @@ export function trackMudHoles(
     };
   };
   let lastDeep = -Infinity;
+  let [sumps, longs] = [0, 0];
   for (let s = CLEAR_ENDS + 6 + rand() * gap; s < poly.length - CLEAR_ENDS - 6; s += gap * (0.5 + rand())) {
     // Settle into the lowest spot nearby.
     let k = Math.round(s);
@@ -230,6 +236,8 @@ export function trackMudHoles(
     }
     if (r.sumpDepth !== undefined && rim > centre(k) + SUMP_RIM && poly.s[k] - lastDeep > SUMP_SPACING) {
       lastDeep = poly.s[k];
+      // Past the track's quota a hollow is left as firm ground.
+      if (++sumps > (r.sumps ?? Infinity)) continue;
       const length = SUMP_LENGTH[0] + pickLength * (SUMP_LENGTH[1] - SUMP_LENGTH[0]);
       out.push(hole(k, length, r.sumpDepth * (0.85 + 0.15 * pickDepth), true, true));
       continue;
@@ -251,21 +259,23 @@ export function trackMudHoles(
         else from = grew;
       }
       if (to - from + LONG_BOG_LINK >= LONG_BOG_LENGTH[0]) {
-        for (let j = from; j <= to; j += LONG_BOG_STEP)
-          out.push(
-            hole(
-              j,
-              LONG_BOG_LINK,
-              depth * (0.85 + 0.3 * rand()),
-              false,
-              j === from || j + LONG_BOG_STEP > to,
-            ),
+        const kept = ++longs <= (r.longBogsKept ?? Infinity);
+        for (let j = from; j <= to; j += LONG_BOG_STEP) {
+          const h = hole(
+            j,
+            LONG_BOG_LINK,
+            depth * (0.85 + 0.3 * rand()),
+            false,
+            j === from || j + LONG_BOG_STEP > to,
           );
+          if (kept) out.push(h);
+        }
         s = Math.max(s, poly.s[to] + LONG_BOG_LINK);
         continue;
       }
     }
-    out.push(hole(k, BOG_LENGTH[0] + pickLength * (BOG_LENGTH[1] - BOG_LENGTH[0]), depth, false, false));
+    const plain = hole(k, BOG_LENGTH[0] + pickLength * (BOG_LENGTH[1] - BOG_LENGTH[0]), depth, false, false);
+    if (keep(r.plainBogs)) out.push(plain);
   }
   return out;
 }
