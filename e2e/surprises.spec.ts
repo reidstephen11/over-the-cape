@@ -42,7 +42,7 @@ test('Surprises: a dead tree comes down across the track ahead, and the message 
     [tree, v] as const,
   );
   await page.waitForTimeout(1000);
-  await shot(page, 'v0.10', 'tree-down-across-the-track');
+  await shot(page, 'v0.11', 'tree-down-across-the-track');
   await page.evaluate(() => window.__game!.useChaseCamera());
   expect(errors).toEqual([]);
 });
