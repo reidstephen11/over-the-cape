@@ -98,6 +98,24 @@ export async function getPast(
     startedSpeed = v.speed;
   });
   const here = () => trailProgress(track, v.position.x, v.position.z).along;
+  // Where the pieces lie now, for the log.
+  const layout = () =>
+    pieces
+      .map((o) => {
+        const b = o.body.translation();
+        const where = (x: number, z: number) => {
+          const t = sideOf(track, x, z);
+          return `${(t.along - plan.at).toFixed(1)} m, ${t.lateral.toFixed(1)} across`;
+        };
+        if (!o.def) return `${o.id.split(':')[1]} at ${where(b.x, b.z)}`;
+        const q = o.body.rotation();
+        // The trunk's axis is its local +y.
+        const ax = 2 * (q.x * q.y - q.w * q.z);
+        const az = 2 * (q.y * q.z + q.w * q.x);
+        const h = o.def.length / 2;
+        return `root ${where(b.x - ax * h, b.z - az * h)}, crown ${where(b.x + ax * h, b.z + az * h)}`;
+      })
+      .join('; ');
   // Bogged on the way (a mud hole, not the surprise), winch out to a tree ahead.
   let recovery = new WinchRecovery(sim, v, approachPath) as WinchRecovery | null;
   let approachStuck = 0;
@@ -116,7 +134,8 @@ export async function getPast(
     return pathAlong(
       at,
       end,
-      (s) => passSide * Math.min(1.1, Math.max(0, 1.1 - (Math.abs(s - plan.at) - 14) / 8)),
+      // Over to the far side within 6 m, and back to the middle past the spot.
+      (s) => passSide * 1.1 * Math.max(0, Math.min(1, (s - at) / 6, (plan.at + 22 - s) / 8)),
     );
   };
   const hook = (prefer?: string) => {
@@ -206,7 +225,7 @@ export async function getPast(
       }
     }
     if (mode === 'toTree' && pilot.done) {
-      log(`at the tree, ${(here() - plan.at).toFixed(1)} m`);
+      log(`at the tree, ${(here() - plan.at).toFixed(1)} m; ${layout()}`);
       mode = 'hook';
       cmd = { ...emptyInput(), handbrake: true };
     }
@@ -234,7 +253,8 @@ export async function getPast(
       // Back up a few metres (the brake pedal reverses once stopped) to pull again.
       backTime += DT;
       cmd = { ...emptyInput(), brake: 1 };
-      if (backTime > 5) {
+      // Before driving past, back far enough to pull out round the crown.
+      if (backTime > (thenPass ? 8 : 5)) {
         cmd = { ...emptyInput(), handbrake: true };
         if (Math.abs(v.speed) < 0.1) {
           mode = thenPass ? 'past' : 'hook';
@@ -251,24 +271,7 @@ export async function getPast(
       winchTime += DT;
       if (winch.length <= 3 || winchTime > 45) {
         sim.detachWinch('p');
-        log(
-          `winched ${winchTime.toFixed(0)} s, cable ${winch.length.toFixed(1)} m; ${pieces
-            .map((o) => {
-              const b = o.body.translation();
-              const where = (x: number, z: number) => {
-                const t = sideOf(track, x, z);
-                return `${(t.along - plan.at).toFixed(1)} m, ${t.lateral.toFixed(1)} across`;
-              };
-              if (!o.def) return `${o.id.split(':')[1]} at ${where(b.x, b.z)}`;
-              const q = o.body.rotation();
-              // The trunk's axis is its local +y.
-              const ax = 2 * (q.x * q.y - q.w * q.z);
-              const az = 2 * (q.y * q.z + q.w * q.x);
-              const h = o.def.length / 2;
-              return `root ${where(b.x - ax * h, b.z - az * h)}, crown ${where(b.x + ax * h, b.z + az * h)}`;
-            })
-            .join('; ')}`,
-        );
+        log(`winched ${winchTime.toFixed(0)} s, cable ${winch.length.toFixed(1)} m; ${layout()}`);
         stuck = 0;
         pulls++;
         // Pull again from further back until the crown has come over to the root's side.

@@ -119,7 +119,7 @@ export const surpriseTuning = {
   trunkLength: [10, 14] as const,
   trunkRadius: [0.3, 0.38] as const,
   trunkMass: 420,
-  rootPlate: 300,
+  rootPlate: 450,
   /** Seconds it takes to topple. */
   trunkFall: 2.6,
   /** A rockfall needs a bank rising at least this much (m) beside the track, 9 m out. */
