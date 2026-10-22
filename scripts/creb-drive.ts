@@ -1,9 +1,11 @@
 /**
  * Dev helper: drive the whole CREB Track episode route in one go with the autopilot and
- * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie|hilux|unimog] [clear|wet|rain] [bypass] [chicken] [shortcut] [shallow]
- * (the last three take the other line at each fork; see src/data/episodes/crebForks.ts)
+ * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie|hilux|unimog] [clear|wet|rain|storm] [bypass] [chicken] [shortcut] [shallow]
+ * (the last three take the other line at each fork; see src/data/episodes/crebForks.ts). 'storm' (the
+ * default) is the episode's own weather: wet, with its afternoon storm following the clock.
  */
 import { environmentFor, type Weather } from '../src/data/environment';
+import { episodeWeatherAt } from '../src/data/weatherTimeline';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { crebForks } from '../src/data/episodes/crebForks';
@@ -16,12 +18,15 @@ import { Simulation } from '../src/sim/sim';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { buildWorld, campsite } from '../src/sim/world/world';
 import { addPuddles } from '../src/sim/world/puddles';
+import { prepareFlood } from '../src/sim/world/flood';
 import { crawlStretches, crebWashout } from '../src/data/episodes/crebStretches';
 import { PlankCrossing, pathFor, WinchRecovery } from '../tests/helpers/drive';
 
 const id = process.argv[2] ?? 'shortie';
 if (!isVehicleId(id)) throw new Error(`Unknown vehicle ${id}`);
-const weather = (process.argv[3] ?? 'wet') as Weather;
+const weatherArg = process.argv[3] ?? 'storm';
+const storm = weatherArg === 'storm' ? crebEpisode.storm : undefined;
+const weather = (storm ? crebEpisode.weather : weatherArg) as Weather;
 const bypass = process.argv.includes('bypass');
 const forkArgs: Record<string, string> = {
   chicken: 'chicken-track',
@@ -54,10 +59,22 @@ const legs: [string, Mode][] = [
 ];
 
 const world = buildWorld(crebMap);
-const env = environmentFor({ time: 'afternoon', weather });
+const env = storm
+  ? episodeWeatherAt(crebEpisode.startHour, weather, storm).env
+  : environmentFor({ time: 'afternoon', weather });
 // After rain the mud holes fill, as in the game.
 addPuddles(world, env);
+if (storm) prepareFlood(world, storm);
 const sim = new Simulation(await loadRapier(), world, env);
+const hourAt = (seconds: number) => crebEpisode.startHour + (seconds * crebEpisode.clockRate) / 3600;
+/** The storm follows the clock, as in the game (every few game minutes). */
+let weatherHour = -1;
+const followStorm = (hour: number) => {
+  if (!storm || Math.abs(hour - weatherHour) < 0.05) return;
+  weatherHour = hour;
+  const w = episodeWeatherAt(hour, weather, storm);
+  sim.setWeather(w.env, w.creekRise, w.flowScale);
+};
 // The fallen tree is winched aside in play; here it is moved out of the way.
 for (const d of sim.dynamics.values())
   if (d.kind === 'fallenTree') d.body.setTranslation({ x: 0, y: -500, z: 0 }, true);
@@ -116,6 +133,7 @@ for (const [trackId, mode] of legs) {
   // The washout on the ridge is bridged with the planks.
   const planks = trackId === 'creb-ridge' ? new PlankCrossing(sim, v, crebWashout) : null;
   for (; time < 900; time += DT) {
+    followStorm(hourAt(total + time));
     // Slow right down for the creeks and the like, and crawl through them in low range.
     if (zones.length) {
       const at = trailProgress(track, v.position.x, v.position.z).along;
@@ -155,15 +173,16 @@ for (const [trackId, mode] of legs) {
     stuck = Math.hypot(v.position.x - ago.x, v.position.z - ago.z) < 0.5 ? stuck + DT : 0;
     if (stuck > 25) break;
   }
+  const startedAt = clockTime(hourAt(total));
   total += time;
   const q = v.body.rotation();
   const pitch = Math.asin(Math.max(-1, Math.min(1, 2 * (q.w * q.x - q.y * q.z)))) * deg;
   console.log(
-    `${trackId.padEnd(22)} ${(1000 - v.condition.fuel).toFixed(1).padStart(5)} L ${pilot.done ? 'done ' : 'STUCK'} ${time.toFixed(0).padStart(4)} s  winched ${recovery.uses}  tilt ${tilt.toFixed(0)}° at ${tiltAt}  water ${water.toFixed(2)} m  ${pilot.done ? '' : `${pilot.remaining(v).toFixed(0)} m short, pitch ${pitch.toFixed(0)}°`}  flood ${v.condition.flood.stalled ? 'STALLED' : 'ok'}`,
+    `${trackId.padEnd(22)} ${startedAt.padStart(8)} ${(1000 - v.condition.fuel).toFixed(1).padStart(5)} L ${pilot.done ? 'done ' : 'STUCK'} ${time.toFixed(0).padStart(4)} s  winched ${recovery.uses}  tilt ${tilt.toFixed(0)}° at ${tiltAt}  water ${water.toFixed(2)} m  ${pilot.done ? '' : `${pilot.remaining(v).toFixed(0)} m short, pitch ${pitch.toFixed(0)}°`}  flood ${v.condition.flood.stalled ? 'STALLED' : 'ok'}`,
   );
   if (!pilot.done) break;
 }
 console.log(
-  `${id} in ${weather}: ${(total / 60).toFixed(1)} min driving, ${(1000 - v.condition.fuel).toFixed(1)} L of fuel, arriving ${clockTime(crebEpisode.startHour + (total * crebEpisode.clockRate) / 3600)}`,
+  `${id} in ${storm ? 'the storm' : weather}: ${(total / 60).toFixed(1)} min driving, ${(1000 - v.condition.fuel).toFixed(1)} L of fuel, arriving ${clockTime(hourAt(total))}${storm ? `, the creeks ${(sim.creeks.rise * 100).toFixed(0)} cm up` : ''}`,
 );
 sim.physics.free();

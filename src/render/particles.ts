@@ -233,6 +233,9 @@ export class Particles {
   /** Fractional particles carried between frames, per wheel and effect. */
   private readonly acc = new Float32Array(4 * 4 + 4);
   private wetness = 0;
+  /** A storm's creek rise (m), and each sample's share of it (features.creekRise). */
+  creekRise = 0;
+  riseShare: Float32Array | null = null;
   private readonly cDust = mixPal('dirtTrack', 'barkPale', 0.62);
   private readonly cSandDust = mixPal('sand', 'barkPale', 0.35);
   private readonly cGravelDust = mixPal('rock', 'barkPale', 0.55);
@@ -286,6 +289,13 @@ export class Particles {
 
   setQuality(q: QualityPreset): void {
     this.rateScale = q.particles;
+  }
+
+  /** The water surface at (x, z) as the vehicle meets it: risen creeks included. */
+  private waterAt(x: number, z: number, offset: number): number | null {
+    const w = this.terrain.waterSurfaceAt(x, z, offset);
+    if (w === null || this.creekRise === 0 || !this.riseShare) return w;
+    return w + this.creekRise * this.riseShare[this.terrain.index(x, z)];
   }
 
   setWetness(w: number): void {
@@ -442,7 +452,7 @@ export class Particles {
     if (maxWater > W.minDepth && speed > W.fromSpeed) {
       const k = Math.min(1, speed / 4);
       v.localToWorld(0, 0, -2.0, this.bow);
-      const surface = this.terrain.waterSurfaceAt(this.bow.x, this.bow.z, this.waterLevelOffset);
+      const surface = this.waterAt(this.bow.x, this.bow.z, this.waterLevelOffset);
       if (surface !== null) {
         for (let n = this.count(4, 0, W.rate * k * Math.min(1, S) * dt); n > 0; n--)
           this.wakes.spawn(
@@ -461,7 +471,7 @@ export class Particles {
       }
       for (const i of [2, 3]) {
         const cp = v.wheels[i].contactPoint;
-        const s = this.terrain.waterSurfaceAt(cp.x, cp.z, this.waterLevelOffset);
+        const s = this.waterAt(cp.x, cp.z, this.waterLevelOffset);
         if (s === null) continue;
         for (let n = this.count(4, i - 1, W.rearRate * k * Math.min(1, S) * dt); n > 0; n--)
           this.wakes.spawn(

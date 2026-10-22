@@ -1,5 +1,6 @@
 import type { MapId } from './maps';
 import type { Weather } from './environment';
+import type { WeatherTimeline } from './weatherTimeline';
 import { coachEpisode } from './episodes/coach';
 import { crebEpisode } from './episodes/creb';
 
@@ -36,6 +37,8 @@ export interface EpisodeDef {
   /** Time of day at the start (hours, 13.5 = 1:30 pm). */
   startHour: number;
   weather: Weather;
+  /** Weather that changes through the run (a storm coming through), from `weather` at the start. */
+  storm?: WeatherTimeline;
   /** Miss this and the episode ends (hours), with a label for the HUD. */
   deadline?: { hour: number; label: string };
   /** Game seconds per real second while driving. */
