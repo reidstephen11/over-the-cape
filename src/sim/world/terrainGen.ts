@@ -156,7 +156,8 @@ function scarpValue(scarp: ScarpDef, x: number, z: number, noise: Noise2D): numb
   return height * smoothstep(-width / 2, width / 2, d);
 }
 
-function hillValue(h: HillDef, x: number, z: number): number {
+/** Height a hill adds at (x, z). */
+export function hillValue(h: HillDef, x: number, z: number): number {
   let dx = x - h.x;
   let dz = z - h.z;
   if (h.stretch) {
@@ -346,10 +347,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
           const gd = Math.hypot(x - g.x, z - g.z);
           b *= smoothstep(g.radius * 0.4, g.radius * 2.6, gd);
         }
-        h +=
-          b *
-          border.height *
-          (0.75 + 0.35 * noise3.fbm(x / 240, z / 240, 3) + 0.2 * noise2.ridged(x / 130, z / 130, 2));
+        // Forested hills are rounded: no sharp crests.
+        const crests = border.forested ? 0 : 0.2 * noise2.ridged(x / 130, z / 130, 2);
+        h += b * border.height * (0.75 + 0.35 * noise3.fbm(x / 240, z / 240, 3) + crests);
       }
       macro[i] = h;
     }
@@ -820,7 +820,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       const edge = edgeIn(x, z);
       if (edge < border.width && slope < 52 + nz * 6) {
         surface[i] = slope > 32 ? SurfaceId.Gravel : SurfaceId.Grass;
-        tint[i] = nz > 0.45 && slope > 36 ? GroundTint.Scree : GroundTint.ForestFloor;
+        tint[i] = !border.forested && nz > 0.45 && slope > 36 ? GroundTint.Scree : GroundTint.ForestFloor;
         continue;
       }
       // Cuttings and fill beside a track on a clay map are bare clay, not scree. (Judged by

@@ -5,7 +5,8 @@ import type { World } from '../sim/world/world';
 import { applyFogEnvironment } from './fog';
 import { groundUniforms } from './groundMaterial';
 import { Lighting } from './lighting';
-import { Sky, backdropSize, createBackdrop } from './sky';
+import { Horizon } from './horizon';
+import { Sky } from './sky';
 import { TerrainMesh } from './terrainMesh';
 import { WaterMesh } from './water';
 import { WaterCurrent } from '../sim/world/current';
@@ -24,6 +25,8 @@ export class GameRenderer {
   readonly camera: THREE.PerspectiveCamera;
   readonly lighting: Lighting;
   readonly sky: Sky;
+  /** Land and sea round the map out to the horizon. */
+  readonly horizon: Horizon;
   readonly terrainMesh: TerrainMesh;
   readonly water: WaterMesh;
   readonly vegetation: Vegetation;
@@ -71,7 +74,8 @@ export class GameRenderer {
     this.sky = new Sky(env);
     this.scene.add(this.sky.mesh);
     this.updateReflections(env);
-    this.scene.add(createBackdrop(world.map.seed, backdropSize(world.map)));
+    this.horizon = new Horizon(world.map, world.terrain, env);
+    this.scene.add(this.horizon.mesh);
 
     this.terrainMesh = new TerrainMesh(world.terrain, world.map.seed);
     this.scene.add(this.terrainMesh.group);
@@ -109,6 +113,7 @@ export class GameRenderer {
     this.renderer.shadowMap.enabled = q.shadows;
     this.lighting.setQuality(q);
     this.camera.far = q.drawDistance;
+    this.horizon.setReach(q.drawDistance * 0.9);
     this.camera.updateProjectionMatrix();
     this.terrainMesh.setLodDistances(q.terrainLod);
     this.vegetation?.setQuality(q);
@@ -137,6 +142,7 @@ export class GameRenderer {
     this.env = env;
     this.lighting.setEnvironment(env);
     this.sky.setEnvironment(env);
+    this.horizon.setEnvironment(env);
     this.updateReflections(env);
     this.renderer.toneMapping =
       env.toneMapping === 'agx' ? THREE.AgXToneMapping : THREE.ACESFilmicToneMapping;

@@ -1,4 +1,4 @@
-import type { MapDef, TrackDef } from '../../sim/world/mapTypes';
+import type { HorizonDef, MapDef, TrackDef } from '../../sim/world/mapTypes';
 import {
   bigRed,
   bigRedBypass,
@@ -215,6 +215,244 @@ const tracks: TrackDef[] = [
   },
 ];
 
+/**
+ * The country round the CREB, out to the horizon. Real landforms in their real directions,
+ * brought in closer and lower in step with the map (about a quarter of their height):
+ *   east  – the Coral Sea, with Thornton Peak (1374 m), Mt Pieter Botte and Mt Sorrow behind
+ *           Cape Tribulation between the range and the coast, and Mt Finnigan's granite
+ *           tops east of the Bloomfield Track; the Daintree and the Bloomfield run out to
+ *           the sea, the Bloomfield into Weary Bay
+ *   west  – rainforest ranges rising to the flat-topped tablelands of the Great Dividing
+ *           Range; the Bloomfield comes down a gorge from the high country
+ *   north – drier, open eucalypt woodland, the Annan River and the black granite boulder
+ *           heaps of Black Mountain (Kalkajaka) north of the Lions Den; Mt Cook at Cooktown
+ *   south – the Daintree's cane and cattle flats, the ranges towards Mossman and Mt Demi
+ */
+const horizon: HorizonDef = {
+  base: 45,
+  relief: 40,
+  coastPlain: 700,
+  // South to north, sea to the east.
+  coast: [
+    [3600, 30000],
+    [3000, 9000],
+    [2700, 5500],
+    [2350, 3600],
+    [2120, 2700],
+    [2150, 2350],
+    [2450, 1700],
+    [2700, 1000],
+    [2500, 450],
+    [2350, -100],
+    [1950, -550],
+    [1650, -900],
+    [1750, -1300],
+    [2250, -1700],
+    [2600, -2500],
+    [2850, -3600],
+    [2950, -4600],
+    [2800, -5600],
+    [2400, -7000],
+    [2600, -10000],
+    [3500, -30000],
+  ],
+  hills: [
+    // East: the coastal ranges between the CREB and the sea.
+    { id: 'thornton-peak', x: 1350, z: 1450, radius: 950, height: 330, shape: 'dome', bare: 0.88 },
+    {
+      id: 'thornton-range',
+      x: 1300,
+      z: 900,
+      radius: 1300,
+      height: 120,
+      shape: 'dome',
+      stretch: [0.45, 1, 0],
+    },
+    { id: 'pieter-botte', x: 1200, z: 150, radius: 650, height: 240, shape: 'dome', bare: 0.84 },
+    { id: 'mt-sorrow', x: 2150, z: 350, radius: 500, height: 165, shape: 'dome' },
+    { id: 'snapper-island', x: 2750, z: 2150, radius: 170, height: 38, shape: 'dome' },
+    { id: 'mt-finnigan', x: 1600, z: -1700, radius: 850, height: 285, shape: 'dome', bare: 0.85 },
+    { id: 'cedar-bay-hills', x: 2250, z: -3200, radius: 600, height: 90, shape: 'dome' },
+    { id: 'archer-point', x: 2650, z: -4300, radius: 450, height: 65, shape: 'dome' },
+    { id: 'mt-cook', x: 1900, z: -6600, radius: 600, height: 110, shape: 'dome' },
+    // West: the tablelands of the Great Dividing Range and the high country before them.
+    { id: 'tablelands', x: -4200, z: 900, radius: 4200, height: 265, shape: 'mesa', stretch: [0.32, 1, 6] },
+    { id: 'bloomfield-headwaters', x: -2600, z: -1300, radius: 900, height: 170, shape: 'dome' },
+    { id: 'mt-spurgeon', x: -3000, z: 4800, radius: 1100, height: 250, shape: 'dome' },
+    // South: the ranges towards Mossman.
+    { id: 'mt-demi', x: -1400, z: 5800, radius: 800, height: 280, shape: 'dome' },
+    // North: Black Mountain, heaps of bare black granite boulders.
+    {
+      id: 'black-mountain',
+      x: -300,
+      z: -4250,
+      radius: 450,
+      height: 100,
+      shape: 'cone',
+      bare: 0,
+      granite: 'black',
+    },
+    {
+      id: 'black-mountain-east',
+      x: 0,
+      z: -4450,
+      radius: 320,
+      height: 75,
+      shape: 'dome',
+      bare: 0,
+      granite: 'black',
+    },
+    {
+      id: 'black-mountain-west',
+      x: -560,
+      z: -4480,
+      radius: 300,
+      height: 65,
+      shape: 'cone',
+      bare: 0,
+      granite: 'black',
+    },
+  ],
+  ridges: [
+    // Rainforest ranges west of the CREB.
+    {
+      id: 'west-ranges',
+      points: [
+        [-1700, 3200],
+        [-1900, 1500],
+        [-1600, 0],
+        [-1900, -1500],
+        [-2300, -2400],
+      ],
+      height: 140,
+      width: 900,
+    },
+    // The range behind Mt Finnigan.
+    {
+      id: 'finnigan-range',
+      points: [
+        [1100, -1150],
+        [1500, -1900],
+        [1800, -2600],
+      ],
+      height: 110,
+      width: 700,
+    },
+    // South of the Daintree towards Mossman.
+    {
+      id: 'mossman-ranges',
+      points: [
+        [-2600, 4300],
+        [-1200, 4700],
+        [300, 5200],
+        [1600, 5800],
+      ],
+      height: 170,
+      width: 1000,
+    },
+  ],
+  valleys: [
+    {
+      id: 'daintree-mouth',
+      points: [
+        { x: 640, z: 2205, level: 4.6 },
+        { x: 1100, z: 2260, level: 3.2 },
+        { x: 1600, z: 2380, level: 1.8 },
+        { x: 2150, z: 2480, level: -1 },
+      ],
+      channel: 24,
+      floor: 260,
+      slope: 0.12,
+      cleared: true,
+    },
+    {
+      id: 'upper-daintree',
+      points: [
+        { x: -640, z: 2250, level: 5.4 },
+        { x: -1100, z: 2350, level: 6.5 },
+        { x: -1800, z: 2700, level: 9 },
+        { x: -2600, z: 3300, level: 14 },
+        { x: -3400, z: 4100, level: 22 },
+      ],
+      channel: 20,
+      floor: 200,
+      slope: 0.15,
+      cleared: true,
+    },
+    {
+      id: 'roaring-meg-creek',
+      points: [
+        { x: 640, z: 830, level: 5 },
+        { x: 1100, z: 860, level: 3.5 },
+        { x: 1700, z: 820, level: 2 },
+        { x: 2300, z: 900, level: 0.5 },
+        { x: 2900, z: 950, level: -2 },
+      ],
+      channel: 7,
+      floor: 60,
+      slope: 0.35,
+    },
+    {
+      id: 'bloomfield-mouth',
+      points: [
+        { x: 640, z: -880, level: 2.7 },
+        { x: 950, z: -930, level: 1.6 },
+        { x: 1300, z: -950, level: 0.4 },
+        { x: 1800, z: -990, level: -2 },
+      ],
+      channel: 18,
+      floor: 140,
+      slope: 0.2,
+      cleared: true,
+    },
+    {
+      id: 'bloomfield-gorge',
+      points: [
+        { x: -640, z: -640, level: 80 },
+        { x: -1100, z: -560, level: 95 },
+        { x: -1700, z: -450, level: 120 },
+        { x: -2400, z: -300, level: 160 },
+        { x: -3000, z: -200, level: 200 },
+      ],
+      channel: 7,
+      floor: 25,
+      slope: 0.6,
+    },
+    {
+      id: 'little-annan-upper',
+      points: [
+        { x: -640, z: -2420, level: 29 },
+        { x: -1200, z: -2500, level: 38 },
+        { x: -2000, z: -2700, level: 55 },
+        { x: -2900, z: -2900, level: 80 },
+      ],
+      channel: 5,
+      floor: 40,
+      slope: 0.3,
+    },
+    {
+      id: 'annan',
+      points: [
+        { x: 640, z: -2500, level: 9 },
+        { x: 1100, z: -2750, level: 7 },
+        { x: 1600, z: -3300, level: 5 },
+        { x: 2100, z: -4000, level: 3 },
+        { x: 2500, z: -4700, level: 1 },
+        { x: 3000, z: -5300, level: -2 },
+      ],
+      channel: 9,
+      floor: 90,
+      slope: 0.2,
+    },
+  ],
+  // North of the Bloomfield the country dries out to open eucalypt woodland.
+  woodland: [
+    { x: 0, z: -5600, radius: 3800 },
+    { x: -2400, z: -3200, radius: 1700 },
+    { x: 1300, z: -3700, radius: 1300 },
+  ],
+};
+
 export const crebMap: MapDef = {
   id: 'creb',
   name: 'The CREB Track',
@@ -240,7 +478,9 @@ export const crebMap: MapDef = {
   },
   border: {
     width: 230,
-    height: 170,
+    // Rainforest ridges either side of the range, not mountains: the country beyond is in `horizon`.
+    height: 80,
+    forested: true,
     gaps: [
       { x: -640, z: 2250, radius: 80 },
       { x: 640, z: 2205, radius: 80 },
@@ -249,8 +489,11 @@ export const crebMap: MapDef = {
       { x: 640, z: -880, radius: 120 },
       { x: -640, z: -2420, radius: 80 },
       { x: 640, z: -2500, radius: 80 },
+      // North of the Lions Den, where the road runs on past Black Mountain to Cooktown.
+      { x: 60, z: -3072, radius: 220 },
     ],
   },
+  horizon,
   scarps: [],
   hills: [
     // The range: a long ridge north from the Daintree flats to the Bloomfield, with the

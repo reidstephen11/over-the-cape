@@ -477,6 +477,53 @@ export interface BorderDef {
   height: number;
   /** Passes through the border (creek in/out, road in). */
   gaps: ReadonlyArray<{ x: number; z: number; radius: number }>;
+  /** Rounded hills under forest rather than rugged mountains: no sharp crests or scree. */
+  forested?: boolean;
+}
+
+/** A peak or massif in the country round the map. */
+export interface HorizonHillDef extends HillDef {
+  /** Bare granite above this share of its height (0 = all rock). */
+  bare?: number;
+  /** Colour of the bare granite: grey, or the black of Black Mountain's boulders. */
+  granite?: 'grey' | 'black';
+}
+
+/** A river running on beyond the map's edge to the sea or up into the ranges. */
+export interface HorizonValleyDef {
+  id: string;
+  /** Centreline with the water level at each point (the first at the map's edge, matching the creek there). */
+  points: ReadonlyArray<{ x: number; z: number; level: number }>;
+  /** Half width of the river itself (m). */
+  channel: number;
+  /** Half width of the flat valley floor (m). */
+  floor: number;
+  /** Rise of the valley sides per metre beyond the floor. */
+  slope: number;
+  /** The floor is cleared paddocks and cane rather than forest. */
+  cleared?: boolean;
+}
+
+/**
+ * The country beyond the map's edge, drawn as distant land and sea out to the horizon
+ * (render/horizon.ts). Positions are map coordinates, so landforms can sit kilometres out.
+ */
+export interface HorizonDef {
+  /** Height of the rolling foothills (m), before hills, ranges and valleys. */
+  base: number;
+  /** Height of the smaller hills and gullies on the foothills (m). */
+  relief: number;
+  /**
+   * The coastline, listed south to north with the sea to the east. The land falls to the
+   * sea over `coastPlain` metres inland. Omit both for no sea.
+   */
+  coast?: readonly XZ[];
+  coastPlain?: number;
+  hills: readonly HorizonHillDef[];
+  ridges: readonly RidgeDef[];
+  valleys: readonly HorizonValleyDef[];
+  /** Drier open eucalypt woodland rather than rainforest (edges blend over a third of the radius). */
+  woodland: readonly ClearingDef[];
 }
 
 /**
@@ -516,6 +563,8 @@ export interface MapDef {
     creekCalm: number;
   };
   border: BorderDef;
+  /** The land and sea beyond the edge (rolling forested hills all round when absent). */
+  horizon?: HorizonDef;
   scarps: readonly ScarpDef[];
   hills: readonly HillDef[];
   ridges: readonly RidgeDef[];
