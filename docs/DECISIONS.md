@@ -562,7 +562,13 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 
 **Tests.** New `tests/horizon.test.ts`: the named peaks keep their height; the sea is east of the whole strip and never west; the Daintree and the Bloomfield reach the sea; Black Mountain is black granite and Thornton Peak grey-topped with rainforest below; the mesh lies outside the map, never rises above the map's edge between its first-ring vertices, faces up, draws its farthest ring first and is drawn behind the world without depth. The old backdrop test went with the backdrop.
 
-## v0.09: the Hilux
+## v0.09: browser tests stop before changing range
+
+**What failed.** After v0.08, two browser tests failed when they switched to low range: the keyboard driving test and the phone controls test. The phone test already failed on v0.07. Range only changes below 20 km/h (`Vehicle.toggleRange`), and both tests switched while the car could still be moving faster than that. The keyboard test held S for 3 s to stop, but S brakes and then reverses, and it left the car reversing at about 20 km/h. The phone test let go of the throttle at about 26 km/h and tapped HAND on and off, which doesn't wait for the car to stop. How fast the car was going at the switch depended on how long the screenshots took while the throttle was held (the software renderer is slower on the 6 km map), so the result turned on timing.
+
+**Fix.** Both tests now stop the car on the park brake and wait until it is below 0.5 m/s before switching range. The game is unchanged.
+
+## v0.10: the Hilux
 
 **What the owner asked.** Another vehicle to choose from: an early Toyota Hilux single cab with the styleside tub. They also want Episode 2, and at some stage towing missions with a trailer (another vehicle, fuel drums). Asked the order, they chose the Hilux first, then Episode 2, then trailers and towing. Asked about the Hilux, they chose the 1979–83 model, the factory tub rather than a flat tray, and red paint.
 
@@ -585,5 +591,3 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 **Vehicle studio.** On the software renderer here, loading the 6 km map takes minutes for each picture. A dev-only page (`scripts/studio/`) shows one vehicle on plain ground, and `scripts/studio-shots.ts` photographs it from all round and from the driver's seat. It is not part of the build.
 
 **Tests.** New: `tests/hilux.test.ts` (its gearing, idle, acceleration, a full-lock turn, a 30° climb, a swap, the model and the save) and a test of the petrol four's sound. The Hilux joins the park brake, wet braking, deep water, headlight, engine start and CREB climb tests, and a browser test chooses it on the welcome screen, checks the four vehicle buttons fit on a phone, and drives it.
-
-**A browser test fixed.** The keyboard driving test held S for 3 s before changing to low range. Since v0.07 moved Daintree Village onto a slope, the car had stopped by then and was reversing downhill at about 20.5 km/h, over the 20 km/h limit for changing range, so the change was refused (it fails the same way on v0.08). It now lets go of S as the car stops.
