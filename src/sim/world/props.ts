@@ -16,9 +16,12 @@ export const propDims = {
   signpost: { h: 2.1 },
   logSeat: { l: 2.2, r: 0.22, y: 0.2, sides: 7 },
   cattleGrid: { w: 5, d: 2.4 },
+  powerPole: { h: 8.5, r: 0.13, arm: 2.2 },
 } as const;
 
 const shapes: Record<PropKind, PropShape[]> = {
+  // Upright; a leaning pole's lower part, the bit a vehicle can hit, is close enough.
+  powerPole: [{ type: 'cylinder', x: 0, y: 1.5, z: 0, r: 0.13, hh: 1.5, sides: 7 }],
   hut: [{ type: 'box', x: 0, y: 1.95, z: 0, hx: 3, hy: 1.95, hz: 2.3 }],
   waterTank: [{ type: 'cylinder', x: 0, y: 1.05, z: 0, r: 1.15, hh: 1.05 }],
   fireRing: [],

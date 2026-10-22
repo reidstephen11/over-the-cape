@@ -1,6 +1,6 @@
 /**
  * Dev helper: drive the whole CREB Track episode route in one go with the autopilot and
- * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie] [clear|wet|rain] [bypass] [chicken] [shortcut] [shallow]
+ * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie|hilux|unimog] [clear|wet|rain] [bypass] [chicken] [shortcut] [shallow]
  * (the last three take the other line at each fork; see src/data/episodes/crebForks.ts)
  */
 import { environmentFor, type Weather } from '../src/data/environment';
@@ -102,11 +102,13 @@ for (const [trackId, mode] of legs) {
   if (!crawl && v.drivetrain.range === 'low' && Math.abs(v.speed) < 5) v.toggleRange();
   v.precisionCrawl = crawl;
   pilot.lowRange = crawl;
+  pilot.holdLowOnClimbs = true;
   let time = 0;
   let tilt = 0;
   let tiltAt = '';
   let water = 0;
   let stuck = 0;
+  const track4: { x: number; z: number }[] = [];
   // Bogged, the driver winches out to a tree ahead.
   const recovery = new WinchRecovery(sim, v, path);
   for (; time < 900; time += DT) {
@@ -128,7 +130,11 @@ for (const [trackId, mode] of legs) {
       tiltAt = `${v.position.x.toFixed(0)},${v.position.z.toFixed(0)}`;
     }
     for (const w of v.wheels) water = Math.max(water, w.water);
-    stuck = Math.abs(v.speed) < 0.3 ? stuck + DT : 0;
+    // Stuck: under half a metre of progress in the last 4 s (rocking on the spot counts).
+    track4.push({ x: v.position.x, z: v.position.z });
+    if (track4.length > 240) track4.shift();
+    const ago = track4[0];
+    stuck = Math.hypot(v.position.x - ago.x, v.position.z - ago.z) < 0.5 ? stuck + DT : 0;
     if (stuck > 25) break;
   }
   total += time;

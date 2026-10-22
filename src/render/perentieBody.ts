@@ -130,13 +130,22 @@ const GLYPHS: Record<string, number[][]> = {
   '-': [[0.15, 0.5, 0.85, 0.5]],
 };
 
-/** Black plate with white "48-001" (the plate faces -z before `facing` turns it). */
-function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: 1 | -1): void {
+/**
+ * Black Army plate with white digits, "48-001" unless told otherwise (the plate faces -z
+ * before `facing` turns it). Draws 0, 1, 4, 8 and the dash.
+ */
+export function armyPlate(
+  b: VehicleBuilder,
+  x: number,
+  y: number,
+  z: number,
+  facing: 1 | -1,
+  text = '48-001',
+): void {
   b.push()
     .translate(x, y, z)
     .rotate(0, facing > 0 ? Math.PI : 0, 0);
   b.block(0, 0, 0, 0.34, 0.11, 0.012, black, M.Rubber, Z.Trim, 0.006);
-  const text = '48-001';
   const w = 0.03,
     h = 0.055,
     pitch = 0.047;
@@ -395,7 +404,7 @@ function rearBody(b: VehicleBuilder): void {
       Z.Rear,
     );
   }
-  plate(b, -0.38, 0.22, TAIL + 0.04, 1);
+  armyPlate(b, -0.38, 0.22, TAIL + 0.04, 1);
   // Load floor between the wheel boxes, full width ahead of and behind them, and
   // inward-facing bench seats, seen from the cab under the tilt.
   b.block(0, 0.2, (B_PILLAR + TAIL) / 2, 1.12, 0.03, TAIL - B_PILLAR, black, M.Rubber, Z.Trim);
@@ -593,7 +602,7 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
       Z.Front,
     );
   }
-  plate(b, -0.5, 0.12, bz - 0.01, -1);
+  armyPlate(b, -0.5, 0.12, bz - 0.01, -1);
   // Winch drum tucked behind the bar, with a roller fairlead at the cable exit.
   b.rod({ x: -0.2, y: 0.14, z: -2.16 }, { x: 0.2, y: 0.14, z: -2.16 }, 0.065, black, M.Metal, Z.Front);
   const mount = tuning.winchMount;

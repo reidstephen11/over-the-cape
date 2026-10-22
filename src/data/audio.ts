@@ -409,10 +409,68 @@ export const petrolFourSynthTuning: EngineSynthTuning = {
   outputGain: 1,
 };
 
+/**
+ * The Unimog's 5.7 L OM352A turbo-diesel six: a slow idle, six evenly spaced firings
+ * smoother than the four but with the same diesel knock, a deeper exhaust through a long
+ * pipe under the tray, a turbo that soaks up the sharpest of the pulses, a big starter that
+ * turns it over slowly, and loud gear whine from the portal hub gears.
+ */
+export const dieselSixSynthTuning: EngineSynthTuning = {
+  idleRpm: 650,
+  limiterRpm: 2850,
+  firingOrder: [1, 5, 3, 6, 2, 4],
+  runners: {
+    delayMs: [0.5, 0.28, 0.06, 0.1, 0.32, 0.55],
+    strength: [0.97, 1.0, 1.03, 1.03, 0.99, 0.96],
+  },
+  pulse: { riseMs: [0.45, 0.25], decayMs: [2.2, 1.3], minRiseDeg: 2, minDecayDeg: 6, maxDecayDeg: 26 },
+  turbulence: { idle: 0.35, load: 0.7 },
+  pressure: { idle: 0.32, compression: 0.06 },
+  manifoldSeconds: 0.12,
+  jitter: { idle: 0.1, load: 0.035, timingDeg: 2, lopeRpm: 8 },
+  exhaust: {
+    soundSpeed: 500,
+    headPipe: { length: 1.9, reflection: -0.3, dampingHz: 2000 },
+    muffler: { cutoffHz: 650, q: 0.6, boomHz: 58, boomQ: 1.2, boomDb: 5, leak: 0.2 },
+    tailPipe: { length: 3.2, reflection: -0.3, dampingHz: 2800 },
+    radiationHz: 28,
+    gain: 1.1,
+  },
+  block: { cutoffHz: 150, gain: 0.55 },
+  valves: { hz: [1500, 2600], q: 4, gain: 0.7 },
+  intake: {
+    openDeg: 380,
+    riseDeg: 34,
+    decayDeg: 40,
+    noiseHz: 430,
+    noiseGain: 1.1,
+    honkHz: 90,
+    honkQ: 3,
+    honkGain: 0.2,
+  },
+  fan: { hz: 520, gain: 0.16 },
+  // Lifting off cuts the fuel; the turbo whistles as it spins down.
+  overrun: { fromRpm: 1200, misfire: 0.85, popChance: 0, popGain: 1, whistleHz: 3400, whistleGain: 0.08 },
+  starter: {
+    seconds: 1.5,
+    rpm: 150,
+    compressionDip: 0.5,
+    meshPerCrankTurn: 130,
+    toneHz: 700,
+    brushHz: 2100,
+    gain: 0.3,
+  },
+  catch: { seconds: 2, flareRpm: 1000, flareSeconds: 0.4, settleSeconds: 0.7 },
+  whine: { teeth: [37, 23], second: 0.6, harmonic: 0.2, shaftAm: 0.3, wobble: 0.15, gain: 0.03 },
+  knock: { hz: [900, 1700], q: 2.5, idle: 0.85, load: 0.3, gain: 3.5 },
+  outputGain: 1,
+};
+
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
   camel: engineSynthTuning,
   perentie: dieselSynthTuning,
   hilux: petrolFourSynthTuning,
+  unimog: dieselSixSynthTuning,
 } as const;
