@@ -53,7 +53,7 @@ function park(sim: Simulation, x: number, z: number, headingDeg: number) {
 }
 
 describe('Surprises on the CREB', () => {
-  it('gives each run two tree falls and a rockfall on different stretches, varying with the seed', () => {
+  it("gives each run two tree falls and a rockfall on different stretches, clear of the route's own obstacles, varying with the seed", () => {
     const spots = new Set<string>();
     for (let seed = 1; seed <= 60; seed++) {
       const plans = planSurprises(world, crebSurprises, seed);
@@ -66,6 +66,12 @@ describe('Surprises on the CREB', () => {
         expect(p.at).toBeLessThanOrEqual(site.to);
         for (const q of plans) if (q !== p) expect(Math.hypot(q.x - p.x, q.z - p.z)).toBeGreaterThan(140);
         spots.add(`${p.site}@${Math.round(p.at / 10)}`);
+        // Clear of each stretch's own obstacle: the washout, the rock ledge, the sideling.
+        for (const g of world.map.gullies) expect(Math.hypot(g.x - p.x, g.z - p.z)).toBeGreaterThan(50);
+        const def = trackOf(p.track).def;
+        for (const r of def.rockySteps ?? []) expect(Math.abs(r.at - p.at)).toBeGreaterThan(50);
+        if (def.cant)
+          expect(p.at < def.cant[0][0] - 40 || p.at > def.cant[def.cant.length - 1][0] + 40).toBe(true);
       }
       // The same seed, the same run.
       expect(planSurprises(world, crebSurprises, seed)).toEqual(plans);
@@ -251,15 +257,15 @@ describe('Surprises on the CREB', () => {
   });
 
   it('keeps the run seed and what has happened in camp checkpoints and saves', () => {
-    const start = startCheckpoint(crebEpisode, 'daintree-village', 1234);
+    const start = startCheckpoint(crebEpisode, 'daintree-village', 'shortie', 1234);
     expect(start).toMatchObject({ seed: 1234, surprises: [] });
-    expect(startCheckpoint(crebEpisode, 'daintree-village').seed).not.toBe(
-      startCheckpoint(crebEpisode, 'daintree-village').seed,
+    expect(startCheckpoint(crebEpisode, 'daintree-village', 'shortie').seed).not.toBe(
+      startCheckpoint(crebEpisode, 'daintree-village', 'shortie').seed,
     );
     const run = new EpisodeRun(crebEpisode, start, true);
     const sim = new Simulation(R, world, wet);
     const v = sim.addVehicle('p', sim.poseAt(0, 2600, 0));
-    const cp = checkpointAt('roaring-meg-camp', run, v, [], ['treefall-ridge-south']);
+    const cp = checkpointAt('roaring-meg-camp', run, v, [], [], ['treefall-ridge-south']);
     expect(cp).toMatchObject({ seed: 1234, surprises: ['treefall-ridge-south'] });
     const store = new MemoryStore();
     writeSave(saveData({ episodes: { creb: { completed: false, checkpoint: cp } } }), store);

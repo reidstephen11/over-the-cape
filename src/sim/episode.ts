@@ -1,6 +1,8 @@
 import type { DamageMode } from '../data/damage';
 import { sweptTuning } from '../data/surfaces';
 import type { EpisodeDef, FailReason } from '../data/episodes';
+import type { VehicleId } from '../data/vehicle';
+import { vehicleLoadout } from '../data/vehicles';
 import type { TyreFault } from './vehicle/condition';
 import type { Vehicle } from './vehicle/vehicle';
 import type { PoiDef } from './world/mapTypes';
@@ -22,6 +24,8 @@ export interface Checkpoint {
   tyres: number[];
   tyreFault: TyreFault[];
   discovered: string[];
+  /** Finds off the main line already loaded (src/sim/finds.ts). */
+  taken: string[];
   /** The run's seed: where its surprises happen (kept, so a restart sees the same ones). */
   seed: number;
   /** Surprises that had happened by the camp (they stay as they fell). */
@@ -117,6 +121,7 @@ export function checkpointAt(
   run: EpisodeRun,
   v: Vehicle,
   discovered: Iterable<string>,
+  taken: Iterable<string> = [],
   surprises: Iterable<string> = [],
 ): Checkpoint {
   const c = v.condition;
@@ -131,6 +136,7 @@ export function checkpointAt(
     tyres: [...c.tyres],
     tyreFault: [...c.tyreFault],
     discovered: [...discovered],
+    taken: [...taken],
     seed: run.seed,
     surprises: [...surprises],
   };
@@ -160,9 +166,18 @@ export function applyCheckpoint(v: Vehicle, c: Checkpoint): void {
   k.suspension.fill(1);
 }
 
-/** The checkpoint an episode starts from. */
-export function startCheckpoint(def: EpisodeDef, spawnCamp: string, seed = newRunSeed()): Checkpoint {
-  const l = def.loadout;
+/**
+ * The checkpoint an episode starts from, with the episode's load and the vehicle's own
+ * extras. Only here: changing vehicle later carries the load across as it is (fuel that
+ * won't fit the new tank stays behind), so changing back and forth never adds anything.
+ */
+export function startCheckpoint(
+  def: EpisodeDef,
+  spawnCamp: string,
+  vehicle: VehicleId,
+  seed = newRunSeed(),
+): Checkpoint {
+  const l = vehicleLoadout(def.loadout, vehicle);
   return {
     camp: spawnCamp,
     hour: def.startHour,
@@ -174,6 +189,7 @@ export function startCheckpoint(def: EpisodeDef, spawnCamp: string, seed = newRu
     tyres: [1, 1, 1, 1],
     tyreFault: ['none', 'none', 'none', 'none'],
     discovered: [],
+    taken: [],
     seed,
     surprises: [],
   };

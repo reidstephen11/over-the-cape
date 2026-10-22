@@ -116,6 +116,10 @@ export interface GameHook {
     replay: { time: string; weather: string } | null;
   };
   /** Set the clock (hours); the light follows. */
+  /** Ids of the finds loaded so far this run. */
+  finds(): string[];
+  /** Restart from the last camp, as the pause menu does. */
+  restartFromCamp(): Promise<void>;
   setHour(hour: number): void;
   /** The weather, and how wet and rainy that makes it. */
   conditions(): { weather: string; wetness: number; rain: number };
@@ -335,6 +339,8 @@ export function installHook(game: Game): void {
       camp: g.checkpoint.camp,
       replay: g.replay,
     }),
+    finds: () => [...g.finds.taken],
+    restartFromCamp: () => g.restartFromCamp(),
     setHour: (hour) => {
       g.run.hour = hour;
     },

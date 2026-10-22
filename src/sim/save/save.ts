@@ -138,16 +138,17 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
       Math.min(1, Math.max(0, h)),
     ),
     tyreFault: four(c.tyreFault, (x): x is TyreFault => faults.includes(x as TyreFault), 'none'),
-    discovered: Array.isArray(c.discovered)
-      ? c.discovered.filter((x): x is string => typeof x === 'string')
-      : [],
+    discovered: strings(c.discovered),
+    // Saves from before v0.09 have none.
+    taken: strings(c.taken),
     // Saves from before surprises: any fixed seed keeps a restart the same as the run.
     seed: Math.max(1, Math.floor(Math.abs(num(c.seed, 1)))),
-    surprises: Array.isArray(c.surprises)
-      ? c.surprises.filter((x): x is string => typeof x === 'string')
-      : [],
+    surprises: strings(c.surprises),
   };
 }
+
+const strings = (raw: unknown): string[] =>
+  Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : [];
 
 function readBests(raw: unknown): CrawlBests {
   const out: CrawlBests = {};

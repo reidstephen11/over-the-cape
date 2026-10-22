@@ -1,7 +1,7 @@
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import type { DamageMode } from '../data/damage';
 import { timeLabels, weatherLabels, type Conditions } from '../data/environment';
-import { clockTime, type EpisodeDef } from '../data/episodes';
+import { clockTime, type EpisodeDef, type EpisodeLoadout } from '../data/episodes';
 import { isTouchDevice } from './touchControls';
 
 /** The ways an episode can end with each damage setting. */
@@ -61,7 +61,13 @@ export class LoadingScreen {
   }
 
   /** The episode's story, mission, conditions and load. */
-  briefing(def: EpisodeDef, replay: Conditions | null, resumeFrom: string | null, damage: DamageMode): void {
+  briefing(
+    def: EpisodeDef,
+    load: EpisodeLoadout,
+    replay: Conditions | null,
+    resumeFrom: string | null,
+    damage: DamageMode,
+  ): void {
     const el = this.el.querySelector('.briefing') as HTMLElement;
     el.classList.remove('hidden');
     this.el.classList.add('with-briefing');
@@ -73,7 +79,7 @@ export class LoadingScreen {
       para.textContent = p;
       text.appendChild(para);
     }
-    const l = def.loadout;
+    const l = load;
     const facts = [
       `Mission: ${def.mission}.`,
       replay

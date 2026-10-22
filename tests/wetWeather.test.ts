@@ -3,6 +3,8 @@ import { environmentFor, type EnvironmentConfig } from '../src/data/environment'
 import { ironbarkParkMap } from './fixtures/maps/park';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { troopyTuning } from '../src/data/troopy';
+import { unimogTuning } from '../src/data/unimog';
 import { SurfaceId } from '../src/data/surfaces';
 import { vehicleTuning } from '../src/data/vehicle';
 import { emptyInput } from '../src/sim/input/vehicleInput';
@@ -36,7 +38,7 @@ async function stop(tuning: typeof vehicleTuning, env: EnvironmentConfig) {
 }
 
 describe('wet weather', () => {
-  for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning])
+  for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, unimogTuning, troopyTuning])
     it(`the ${tuning.name} stops further on wet dirt, locking wheels, and still in a straight line`, async () => {
       const dry = await stop(tuning, clear);
       const damp = await stop(tuning, wet);

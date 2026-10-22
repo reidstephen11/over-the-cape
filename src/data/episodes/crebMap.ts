@@ -16,6 +16,9 @@ import {
   upperDaintreeRoad,
   wujalFallsTrack,
 } from './crebRoute';
+import { crebWashout, stretchCreeks, stretchPois, stretchProps, stretchTracks } from './crebStretches';
+import { crebFindFlats, crebFindPois, crebFindProps, crebFinds, crebFindTracks } from './crebFinds';
+import { crebForkPois, crebForkProps, crebForkTracks, littleAnnanBars } from './crebForks';
 
 /**
  * Episode 1, the CREB Track: from Daintree Village across the Daintree River, through the
@@ -78,7 +81,7 @@ const bush = {
 /** The steep pinches: scored with deep cross-ruts by water running down them. */
 const pinch = { bumps: 0.1, washouts: 9, washoutDepth: 0.42 } as const;
 
-const tracks: TrackDef[] = [
+const baseTracks: TrackDef[] = [
   {
     id: 'upper-daintree-road',
     name: 'Upper Daintree Road',
@@ -213,7 +216,12 @@ const tracks: TrackDef[] = [
     ...bush,
     ruts: 0.03,
   },
+  ...crebFindTracks,
+  // The forks: other lines past the deep bog, the concrete and the Little Annan's ford.
+  ...crebForkTracks,
 ];
+// Each stretch's own obstacles and mud (crebStretches.ts).
+const tracks = baseTracks.map((t) => ({ ...t, ...stretchTracks[t.id] }));
 
 /**
  * The country round the CREB, out to the horizon. Real landforms in their real directions,
@@ -521,6 +529,7 @@ export const crebMap: MapDef = {
     { id: 'bloomfield-camp', x: 81, z: -662, radius: 14, blend: 12 },
     { id: 'roaring-meg-camp', x: -23, z: 661, radius: 12, blend: 14 },
     { id: 'lions-den', x: 100, z: -2560, radius: 22, blend: 16 },
+    ...crebFindFlats,
   ],
   creeks: [
     {
@@ -630,7 +639,9 @@ export const crebMap: MapDef = {
         { x: 300, z: -2478, water: 9.4, halfWidth: 6, depth: 0.7 },
         { x: 640, z: -2500, water: 9, halfWidth: 6, depth: 0.8 },
       ],
+      bars: littleAnnanBars,
     },
+    ...stretchCreeks,
   ],
   tracks,
   patches: [
@@ -639,7 +650,7 @@ export const crebMap: MapDef = {
     { id: 'village-dirt', kind: 'dirt', x: -56, z: 2636, radius: 8, ragged: 0.5 },
   ],
   bogs: [],
-  gullies: [],
+  gullies: [crebWashout],
   pois: [
     {
       id: 'daintree-village',
@@ -747,6 +758,9 @@ export const crebMap: MapDef = {
       reset: { x: 92, z: -2548, headingDeg: 20 },
       note: 'Built in 1875',
     },
+    ...stretchPois,
+    ...crebFindPois,
+    ...crebForkPois,
   ],
   props: [
     { kind: 'signpost', x: -46, z: 2612, headingDeg: 180, text: 'CREB Track' },
@@ -764,7 +778,11 @@ export const crebMap: MapDef = {
     { kind: 'hut', x: 116, z: -2576, headingDeg: 190, flatten: 10 },
     { kind: 'waterTank', x: 128, z: -2568, headingDeg: 0 },
     { kind: 'signpost', x: 80, z: -2538, headingDeg: 270, text: 'Lions Den Hotel' },
+    ...stretchProps,
+    ...crebFindProps,
+    ...crebForkProps,
   ],
+  finds: crebFinds,
   boulders: [
     // On the Daintree's bar: across the straight line and either side of the weaving one,
     // standing a metre or so out of the water.

@@ -213,6 +213,8 @@ function clearAlong(world: World, ax: number, az: number, bx: number, bz: number
   for (const r of world.features.rocks) if (segDist(r.x, r.z, ax, az, bx, bz) < pad + 2) return false;
   for (const b of world.features.boxes)
     if (segDist(b.x, b.z, ax, az, bx, bz) < pad + Math.hypot(b.hx, b.hz)) return false;
+  // Signposts, huts and the like.
+  for (const p of world.map.props) if (segDist(p.x, p.z, ax, az, bx, bz) < pad + 1.5) return false;
   return true;
 }
 
@@ -239,6 +241,19 @@ function badSpot(world: World, x: number, z: number): boolean {
   return false;
 }
 
+/**
+ * Too near one of the route's own obstacles (a washout, a rock ledge, a sideling): each
+ * stretch keeps its own challenge, and a surprise on top of one could leave no way past.
+ */
+function nearObstacle(world: World, track: TrackInfo, at: number): boolean {
+  const p = pointAt(track.poly, at);
+  for (const g of world.map.gullies) if (Math.hypot(g.x - p.x, g.z - p.z) < 50 + g.length / 2) return true;
+  if (track.def.rockySteps?.some((r) => Math.abs(r.at - at) < 50)) return true;
+  const cant = track.def.cant;
+  if (cant && cant.length > 0 && at > cant[0][0] - 40 && at < cant[cant.length - 1][0] + 40) return true;
+  return false;
+}
+
 /** Track point and directions: along (tx, tz) and across (nx, nz), as `trailPoint` lays laterals. */
 function frame(track: TrackInfo, at: number) {
   const p = pointAt(track.poly, at);
@@ -249,7 +264,7 @@ function frame(track: TrackInfo, at: number) {
 function planTreefall(world: World, track: TrackInfo, at: number, rand: () => number): TrunkPiece | null {
   const T = surpriseTuning;
   const f = frame(track, at);
-  if (badSpot(world, f.x, f.z)) return null;
+  if (badSpot(world, f.x, f.z) || nearObstacle(world, track, at)) return null;
   const hw = track.def.width / 2;
   const side = rand() < 0.5 ? -1 : 1;
   // It stands just off the edge and falls across, angled up to 25° along the track.
@@ -317,7 +332,7 @@ function planTreefall(world: World, track: TrackInfo, at: number, rand: () => nu
 function planRockfall(world: World, track: TrackInfo, at: number, rand: () => number): RockPiece[] | null {
   const T = surpriseTuning;
   const f = frame(track, at);
-  if (badSpot(world, f.x, f.z)) return null;
+  if (badSpot(world, f.x, f.z) || nearObstacle(world, track, at)) return null;
   const h = world.terrain.heightAt.bind(world.terrain);
   const h0 = h(f.x, f.z);
   const rise = (side: number) => h(f.x + f.nx * side * 9, f.z + f.nz * side * 9) - h0;

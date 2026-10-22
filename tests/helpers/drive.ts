@@ -8,6 +8,9 @@ import type { Vehicle } from '../../src/sim/vehicle/vehicle';
 import { trailPoint, trailProgress } from '../../src/sim/world/crawlTrail';
 import type { TrackInfo } from '../../src/sim/world/features';
 import type { World } from '../../src/sim/world/world';
+import type { GullyDef } from '../../src/sim/world/mapTypes';
+import { plankTuning } from '../../src/data/tools';
+import type { CrebFork } from '../../src/data/episodes/crebForks';
 
 /** Scripted test drives along a world's tracks, shared by the obstacle tests (and free of Vitest, so dev scripts can use them). */
 export const DT = 1 / 60;
@@ -20,6 +23,32 @@ export function pathFor(track: TrackInfo, back = false) {
     return [p.x, p.z] as [number, number];
   });
   return back ? path.reverse() : path;
+}
+
+/**
+ * Both lines of a fork as paths: from `lead` metres before the fork on the main track to
+ * `tail` metres past where the lines meet again, along the main track ('main') or the
+ * other line ('alt').
+ */
+export function forkPaths(world: World, fork: CrebFork, lead = 40, tail = fork.tail ?? 30) {
+  const track = (id: string) => world.features.tracks.find((t) => t.def.id === id)!;
+  const main = track(fork.main);
+  const alt = track(fork.alt);
+  const from = trailProgress(main, alt.poly.xs[0], alt.poly.zs[0]).along;
+  const to = trailProgress(main, alt.poly.xs[alt.poly.count - 1], alt.poly.zs[alt.poly.count - 1]).along;
+  const along = (a: number, b: number) =>
+    Array.from({ length: Math.ceil((b - a) / 0.5) + 1 }, (_, i) => {
+      const p = trailPoint(main, Math.min(b, a + i * 0.5));
+      return [p.x, p.z] as [number, number];
+    });
+  const start = Math.max(0, from - lead);
+  const end = Math.min(main.poly.length, to + tail);
+  return {
+    main: along(start, end),
+    alt: [...along(start, from).slice(0, -1), ...pathFor(alt), ...along(to, end).slice(1)],
+    from,
+    to,
+  };
 }
 
 /** Nose-up pitch and right-side-down roll, in degrees. */
@@ -97,16 +126,73 @@ export class WinchRecovery {
   }
 }
 
+/**
+ * Bridging a washout as a player does it: stop short of the gap, square up, lay the two
+ * planks across it under the wheels and crawl over. `update` takes the driver's command and
+ * returns the one to use this step.
+ */
+export class PlankCrossing {
+  /** Whether the planks went down. */
+  placed = false;
+  private stopped = 0;
+
+  constructor(
+    private readonly sim: Simulation,
+    private readonly v: Vehicle,
+    private readonly gully: GullyDef,
+  ) {}
+
+  /** Distance (m) from the vehicle's front wheels to the middle of the gap, along its heading. */
+  private frontToGap(): number {
+    const g = this.gully;
+    const a = (g.headingDeg * Math.PI) / 180;
+    const [dirX, dirZ] = [Math.sin(a), -Math.cos(a)];
+    const f = this.v.forward();
+    const fl = Math.hypot(f.x, f.z) || 1;
+    // Across the gully, signed towards it.
+    const [nx, nz] = [-dirZ, dirX];
+    const p = this.v.position;
+    const lat = (g.x - p.x) * nx + (g.z - p.z) * nz;
+    const cos = ((f.x / fl) * nx + (f.z / fl) * nz) * Math.sign(lat || 1);
+    return Math.abs(lat) / Math.max(0.5, cos) - Math.abs(Math.min(...this.v.tuning.wheels.map((w) => w.z)));
+  }
+
+  update(command: VehicleInput, dt: number): VehicleInput {
+    if (this.placed) return command;
+    const gap = this.frontToGap();
+    if (gap > plankTuning.length / 2 + 1.2 || gap < 0) return command;
+    // Pull up and stop.
+    this.stopped = Math.abs(this.v.speed) < 0.25 ? this.stopped + dt : 0;
+    if (this.stopped < 1) return { ...command, throttle: 0, brake: 1, handbrake: true };
+    const kit = this.sim.toolsOf(this.v.id).planks;
+    kit.angleDeg = 0;
+    kit.distance = Math.max(0, gap - plankTuning.length / 2 - this.v.tuning.wheelRadius * 0.6);
+    this.placed = this.sim.placePlanks(this.v.id);
+    return { ...command, throttle: 0, brake: 1, handbrake: true };
+  }
+}
+
 /** Hands the event loop back to Vitest so its worker messages don't time out on long drives. */
 const yieldToRunner = () => new Promise((resolve) => setImmediate(resolve));
 
-/** Drive a leg with the autopilot; with `winch`, it winches out of a bog to a tree ahead as a player would. */
-export async function runLeg(s: Scene, track: TrackInfo, back = false, limit = 110, winch = false) {
+/**
+ * Drive a leg with the autopilot; with `winch`, it winches out of a bog to a tree ahead as a
+ * player would, and with `planks` it bridges that washout.
+ */
+export async function runLeg(
+  s: Scene,
+  track: TrackInfo,
+  back = false,
+  limit = 110,
+  winch = false,
+  planks?: GullyDef,
+) {
   const { sim, v, inputs } = s;
   const high = v.drivetrain.range === 'high';
   const path = pathFor(track, back);
   const pilot = new Autopilot(path, high ? 1.5 : 0.7);
   const recovery = winch ? new WinchRecovery(sim, v, path) : null;
+  const bridge = planks ? new PlankCrossing(sim, v, planks) : null;
   pilot.lowRange = !high;
   let tilt = 0,
     pitch = 0,
@@ -118,12 +204,13 @@ export async function runLeg(s: Scene, track: TrackInfo, back = false, limit = 1
     time = 0;
   for (let step = 0; time < limit; time += DT, step++) {
     if (step % 600 === 599) await yieldToRunner();
-    const command = pilot.input(v, DT);
+    let command = pilot.input(v, DT);
     if (pilot.done) break;
     if (!high) {
       command.throttle = 1;
       command.brake = 0;
     }
+    if (bridge) command = bridge.update(command, DT);
     if (recovery) command.winchIn = recovery.update(DT);
     for (const axle of ['front', 'rear'] as const)
       if (v.differentials[axle] !== s.lockers[axle]) v.toggleDiff(axle);
@@ -157,8 +244,15 @@ export async function runLeg(s: Scene, track: TrackInfo, back = false, limit = 1
   };
 }
 
-export async function driveLeg(s: Scene, track: TrackInfo, back = false, limit = 110, winch = false) {
-  const result = await runLeg(s, track, back, limit, winch);
+export async function driveLeg(
+  s: Scene,
+  track: TrackInfo,
+  back = false,
+  limit = 110,
+  winch = false,
+  planks?: GullyDef,
+) {
+  const result = await runLeg(s, track, back, limit, winch, planks);
   if (!result.done) throw new Error(`${track.def.id} stopped ${result.remaining.toFixed(1)} m from the end`);
   return result;
 }
@@ -212,5 +306,151 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
     }
   }
 
-  return { trackOf, scene, drive };
+  /**
+   * Drive part of a track, from `from` to `to` metres along it, starting parked: crawling in
+   * low range with both lockers ('crawl') or in high range at `speed` m/s with open diffs
+   * ('high'). Realistic damage, so a careless line shows as cut tyres and bent corners.
+   */
+  async function stretch(
+    trackId: string,
+    from: number,
+    to: number,
+    mode: 'crawl' | 'high',
+    tuning: VehicleTuning = vehicleTuning,
+    {
+      speed = 1.2,
+      limit = 120,
+      stopAt,
+      planks,
+    }: { speed?: number; limit?: number; stopAt?: number; planks?: GullyDef } = {},
+  ) {
+    const sim = new Simulation(await loadRapier(), world, env);
+    try {
+      sim.damage = 'realistic';
+      const track = trackOf(trackId);
+      const start = trailPoint(track, from);
+      const v = sim.addVehicle(
+        'p',
+        sim.poseAt(start.x, start.z, start.headingDeg + (to < from ? 180 : 0), tuning.wheelRadius),
+        tuning,
+      );
+      const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
+      for (let i = 0; i < 90; i++) sim.step(inputs, DT);
+      const crawl = mode === 'crawl';
+      if (crawl) {
+        v.toggleRange();
+        v.precisionCrawl = true;
+      }
+      const path: [number, number][] = [];
+      const step = to > from ? 0.5 : -0.5;
+      for (let s = from; step > 0 ? s <= to : s >= to; s += step) {
+        const p = trailPoint(track, s);
+        path.push([p.x, p.z]);
+      }
+      const pilot = new Autopilot(path, crawl ? 0.7 : speed);
+      pilot.lowRange = crawl;
+      const bridge = planks ? new PlankCrossing(sim, v, planks) : null;
+      let [tilt, roll, deviation, time, stopped, swept] = [0, 0, 0, 0, 0, 0];
+      for (let n = 0; time < limit; time += DT, n++) {
+        if (n % 600 === 599) await yieldToRunner();
+        let command = pilot.input(v, DT);
+        if (pilot.done) break;
+        if (crawl) {
+          command.throttle = 1;
+          command.brake = 0;
+        }
+        if (bridge) command = bridge.update(command, DT);
+        const along = trailProgress(track, v.position.x, v.position.z).along;
+        // Stopping part way (in a creek, say) and waiting there.
+        if (stopAt !== undefined && stopped < 20 && Math.abs(along - stopAt) < 1) {
+          Object.assign(command, { throttle: 0, brake: 1, steer: 0 });
+          stopped += DT;
+        }
+        for (const axle of ['front', 'rear'] as const)
+          if (v.differentials[axle] !== crawl && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
+        inputs.set('p', command);
+        sim.step(inputs, DT);
+        tilt = Math.max(tilt, v.tiltDeg());
+        roll = Math.max(roll, Math.abs(attitude(v).roll));
+        const near = trailProgress(track, v.position.x, v.position.z);
+        deviation = Math.max(deviation, near.distance);
+        swept = Math.max(swept, v.swept);
+      }
+      const c = v.condition;
+      return {
+        done: pilot.done,
+        remaining: pilot.remaining(v),
+        time,
+        tilt,
+        roll,
+        deviation,
+        /** Tyres cut on the way. */
+        cuts: c.tyreFault.filter((f) => f !== 'none').length,
+        /** Worst suspension corner (1 = sound). */
+        suspension: Math.min(...c.suspension),
+        /** Longest the current carried it (s); 4 s is swept away. */
+        swept,
+        flooded: c.flood.stalled,
+      };
+    } finally {
+      sim.physics.free();
+    }
+  }
+
+  return { trackOf, scene, drive, stretch };
+}
+
+/**
+ * Drive one line of a fork (see `forkPaths`) in low range with both lockers, as a careful
+ * player would, winching out of a bog to a tree ahead. Reports the time taken, the winching
+ * and any cut tyres (damage on Realistic).
+ */
+export async function driveFork(
+  world: World,
+  env: EnvironmentConfig,
+  path: ReadonlyArray<readonly [number, number]>,
+  tuning: VehicleTuning,
+  limit = 400,
+) {
+  const sim = new Simulation(await loadRapier(), world, env);
+  try {
+    sim.damage = 'realistic';
+    const [[x0, z0], [x1, z1]] = [path[0], path[4]];
+    const heading = (Math.atan2(x1 - x0, -(z1 - z0)) * 180) / Math.PI;
+    const v = sim.addVehicle('p', sim.poseAt(x0, z0, heading, tuning.wheelRadius), tuning);
+    const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
+    for (let i = 0; i < 90; i++) sim.step(inputs, DT);
+    v.toggleRange();
+    v.precisionCrawl = true;
+    const pilot = new Autopilot(path, 1.2);
+    pilot.lowRange = true;
+    const recovery = new WinchRecovery(sim, v, path);
+    let cuts = 0;
+    sim.events.on('damage', (e) => {
+      if (e.part === 'tyre') cuts++;
+    });
+    let time = 0;
+    for (let step = 0; time < limit; time += DT, step++) {
+      if (step % 600 === 599) await yieldToRunner();
+      const command = pilot.input(v, DT);
+      if (pilot.done) break;
+      command.throttle = 1;
+      command.brake = 0;
+      command.winchIn = recovery.update(DT);
+      for (const axle of ['front', 'rear'] as const)
+        if (!v.differentials[axle] && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
+      inputs.set('p', command);
+      sim.step(inputs, DT);
+    }
+    return {
+      done: pilot.done,
+      remaining: pilot.remaining(v),
+      time,
+      winched: recovery.uses,
+      cuts,
+      stalled: v.condition.flood.stalled,
+    };
+  } finally {
+    sim.physics.free();
+  }
 }
