@@ -25,6 +25,8 @@ import { Exploration } from '../sim/exploration';
 import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
+import { planDuration, planSurprises } from '../sim/world/surprisePlan';
+import { surpriseMessage } from './surpriseMessages';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
 import { CrawlRuns, type CrawlBests, type CrawlRunEvent } from '../sim/crawlRuns';
 import { GateCount, footprintSize, type GateEvent } from '../sim/gateCount';
@@ -263,6 +265,12 @@ export class Game {
     });
 
     sim.events.on('tool', ({ event }) => this.onToolEvent(event));
+    sim.events.on('surprise', (e) => {
+      this.hud.toast(surpriseMessage(e), e.phase === 'started' ? 2600 : 4200);
+      if (e.phase !== 'started') return;
+      const plan = sim.surprises?.plans.find((p) => p.id === e.id);
+      this.audio.surprise(e.kind, plan ? planDuration(plan) : 2);
+    });
     sim.events.on('rangeChanged', ({ range }) => {
       this.hud.toast(range === 'low' ? 'Low range' : 'High range', 1400);
       this.audio.drivetrainClunk('range');
@@ -380,10 +388,13 @@ export class Game {
     const mapDef = maps[def.mapId].def;
     const episodeProgress = save?.episodes ?? {};
     const saved = episodeProgress[def.id]?.checkpoint;
+    // ?seed=N starts a new run with that run's surprises; ?surprises=off leaves them out.
+    const params = new URLSearchParams(location.search);
+    const seed = Math.floor(Number(params.get('seed')));
     const checkpoint =
       choice.resume && saved && mapDef.pois.some((p) => p.id === saved.camp && p.kind === 'campsite')
         ? saved
-        : startCheckpoint(def, mapDef.spawnCampsite, choice.vehicle);
+        : startCheckpoint(def, mapDef.spawnCampsite, choice.vehicle, seed > 0 ? seed : undefined);
     // Replays keep the conditions picked; the story's own run has its storm (if any).
     const storm = choice.replay ? undefined : def.storm;
     const weather = choice.replay
@@ -413,6 +424,9 @@ export class Game {
     await nextFrame();
     const sim = new Simulation(await rapier, world, env);
     sim.setWeather(env, weather.creekRise, weather.flowScale);
+    // This run's surprises, from its seed: the same ones again after a restart from camp.
+    if (def.surprises && params.get('surprises') !== 'off')
+      sim.addSurprises(planSurprises(world, def.surprises, checkpoint.seed), checkpoint.surprises);
     progress(0.92, 'Building meshes');
     await nextFrame();
     // Sign lettering uses the web font; wait for it (but never block on a slow network).
@@ -537,6 +551,7 @@ export class Game {
       this.result.close();
       this.history.clear();
       this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
+      this.sim.surprises?.reset(this.checkpoint.surprises);
       applyCheckpoint(this.vehicle, this.checkpoint);
       // What was taken after the camp is back where it was found.
       this.finds.reset(this.checkpoint.taken);
@@ -909,6 +924,7 @@ export class Game {
         this.vehicle,
         this.exploration.discovered,
         this.finds.taken,
+        this.sim.surprises?.happened(),
       );
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);

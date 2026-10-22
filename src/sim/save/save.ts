@@ -141,6 +141,9 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     discovered: strings(c.discovered),
     // Saves from before v0.09 have none.
     taken: strings(c.taken),
+    // Saves from before surprises: any fixed seed keeps a restart the same as the run.
+    seed: Math.max(1, Math.floor(Math.abs(num(c.seed, 1)))),
+    surprises: strings(c.surprises),
   };
 }
 

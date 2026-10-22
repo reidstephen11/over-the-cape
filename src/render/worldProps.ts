@@ -632,8 +632,14 @@ export class WorldProps {
     this.group.add(mesh);
 
     for (const obj of dynamics) {
-      if (obj.kind !== 'fallenTree' || !obj.def) continue;
-      const m = new THREE.Mesh(this.buildFallenTree(obj.def.length, obj.def.radius), this.material);
+      const geometry =
+        obj.kind === 'fallenTree' && obj.def
+          ? this.buildFallenTree(obj.def.length, obj.def.radius)
+          : obj.kind === 'rock' && obj.shape
+            ? this.buildLooseRock(obj.shape, rand)
+            : null;
+      if (!geometry) continue;
+      const m = new THREE.Mesh(geometry, this.material);
       m.castShadow = true;
       m.receiveShadow = true;
       this.group.add(m);
@@ -667,6 +673,23 @@ export class WorldProps {
     b.push().translate(0.2, half + 0.6, 0);
     b.blob(1.3, pal('foliageDark').clone().lerp(pal('barkOchre'), 0.5), 0.35, 0, 0.6);
     b.pop();
+    return b.build();
+  }
+
+  /** A rock come off a bank: fresh grey faces with clay on the underside. */
+  private buildLooseRock(shape: { vertices: Float32Array; indices: Uint32Array }, rand: () => number) {
+    const b = new MeshBuilder(405);
+    const c = pal('rock')
+      .clone()
+      .lerp(pal('rockDark'), 0.1 + rand() * 0.4);
+    const v = (i: number) => new THREE.Vector3().fromArray(shape.vertices, i * 3);
+    for (let i = 0; i < shape.indices.length; i += 3) {
+      const a = v(shape.indices[i]),
+        bb = v(shape.indices[i + 1]),
+        cc = v(shape.indices[i + 2]);
+      const low = (a.y + bb.y + cc.y) / 3 < 0;
+      b.tri(a, bb, cc, low ? c.clone().lerp(pal('dirtTrack'), 0.55) : c);
+    }
     return b.build();
   }
 

@@ -19,7 +19,7 @@ Its feel is inspired by Over The Hill: simple but good-looking graphics, and a t
 | Conditions | The story sets the time of day and weather; the clock runs and the sun moves. A finished episode can be replayed in conditions you choose, with the clock stopped and no deadline. |
 | Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; from v0.11 the Army Unimog UL1700L truck; from v0.14 the 1990s LandCruiser 75 Series Troop Carrier; and from v0.19 the GQ Patrol. A modern 4WD comes later. |
 | Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.14: the Troop Carrier. v0.17: Episode 2, the Old Coach Road. Then trailers and towing (delivering another vehicle or fuel drums) for later episodes, each update bringing the mechanics it needs. |
-| Look | The general look of Over The Hill (§5a): stylised, not photo-real. Vehicles with accurate shapes and their key details, kept clean and smooth; plain textures; a soft palette; warm light, long shadows and colourful sunsets. |
+| Look | The game's current look, made more realistic (§5a). Not photo-real or highly detailed; vehicle bodies with accurate shapes come first. |
 | Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; everything generated in code. |
 
 ## 2. Episodes
@@ -58,6 +58,7 @@ Each episode defines (src/data/episodes.ts): its map, the mission line and goal 
 - **Rough tracks.** A track's `rough` adds bumps (about 3 m apart), swells (about 10 m apart), potholes in the wheel lines and washouts (channels cut across the track at 15–50°) to the graded 1 m ground. A wheel dropping into a pothole or washout makes a strike: speed × the hole's depth, give or take a quarter. A strike over 3.6 pinches the tyre (a puncture); over 4.8 it also bends that corner.
 - **Camps.** On arriving: the engine and suspension are mended and punctures patched (a torn sidewall stays torn), then the checkpoint is saved. Restarting restores the checkpoint's clock, fuel, cans, spares, plugs and tyres, and puts back any find taken since.
 - **Finds.** A map's `finds` are things to load (a jerry can, tyre plugs, a spare), each at the end of a side track. Stopped (under 0.6 m/s) within a find's reach, it goes on board, once; the HUD prompts from a little further out. A side trip should cost about what it gives back: daylight and some fuel for insurance a clean run doesn't need.
+- **Surprises.** An episode can list stretches of its route where one-off events happen: a dead tree falling across the track, rocks coming off a bank. Each run picks where from its seed, kept in camp checkpoints with those that have happened, so a restart from camp sees the same ones. An event starts as the car comes along the track towards it, far enough ahead to stop, comes down on a scripted path that passes through the car, and is then a movable object to winch or push aside.
 - **Ending.** Checked every physics step: the goal POI's radius completes the episode; otherwise the rules in §4. The game pauses behind the result card.
 
 ## 4. Difficulty (the damage setting)
@@ -84,12 +85,10 @@ Each episode defines (src/data/episodes.ts): its map, the mission line and goal 
 
 ## 5a. Look
 
-Match the general look of Over The Hill (and Art of Rally, from the same studio): shapes that look folded from paper, flat clean faces, plain textures, a soft pastel palette, warm light, long shadows and colourful sunsets, and wide open views with tall grass and trees. In practice:
+Keep the game's current look and lighting, made more realistic rather than stylised. A mock-up in Over The Hill's folded-paper style was tried and turned down. Not photo-real and not highly detailed. In practice:
 
-- Vehicles rebuilt with accurate shapes and proportions and the details that make each one recognisable (bull bar, snorkel, roof rack, wheel arches, mudguards over the wheels), in the same clean style.
-- Fewer busy textures on the ground and trees.
-- A softer colour palette.
-- More work on lighting, shadows and sunsets.
+- Vehicle bodies come first: accurate shapes and proportions, and the details that make each one recognisable (bull bar, snorkel, roof rack, wheel arches, mudguards over the wheels, lamps). The 40 Series shorty is the first, from a mock-up the owner signs off before it goes into the game.
+- Ground, trees and lighting stay as they are for now.
 
 ## 6. Interface
 
