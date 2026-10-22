@@ -246,8 +246,8 @@ export async function getPast(
       }
     }
     if (mode === 'winch') {
-      // Winch in on the handbrake until it has come round or the cable is short.
-      cmd = { ...emptyInput(), handbrake: true, winchIn: true };
+      // Winch in on the handbrake, holding the brake (it eases back against the pull), until it has come round or the cable is short.
+      cmd = { ...emptyInput(), handbrake: true, brake: 1, winchIn: true };
       winchTime += DT;
       if (winch.length <= 3 || winchTime > 45) {
         sim.detachWinch('p');

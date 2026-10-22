@@ -169,7 +169,7 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - On the gravel roads about 30–40 km/h is a fair pace, and less on the clay. Faster, the swells bounce the car and the potholes and washouts (the dark ones ringed with pale gravel) pinch tyres.
 - Stay on the track: the dark ground off it is black soil, and bogs you. Cutting a corner onto it costs minutes.
 - The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range, and a tree stands near each end of every deep or long bog. Bogged in a deep one, hook up to the tree ahead (E), winch in (R) and drive gently with it.
-- A tree down across the track: stop well short of it, on the side its roots are, and pick **Fallen tree (crown end)** with the tool menu's Winch (E picks the nearest hook, which may not be the one you want). Winch in on the handbrake and the crown swings round towards you; if it still lies across, back up a few metres and pull again. Then back off and drive past on the other side.
+- A tree down across the track: stop well short of it, on the side its roots are, and pick **Fallen tree (crown end)** with the tool menu's Winch (E picks the nearest hook, which may not be the one you want). Winch in on the handbrake, holding the brake so the car doesn't creep towards the tree, and the crown swings round towards you; if it still lies across, back up a few metres and pull again. Then back off and drive past on the other side.
 - Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
 ## Debug mode

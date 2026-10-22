@@ -118,8 +118,8 @@ export const surpriseTuning = {
   /** The dead tree: length range (m), radius (m) and mass (kg). */
   trunkLength: [10, 14] as const,
   trunkRadius: [0.3, 0.38] as const,
-  trunkMass: 650,
-  rootPlate: 450,
+  trunkMass: 420,
+  rootPlate: 300,
   /** Seconds it takes to topple. */
   trunkFall: 2.6,
   /** A rockfall needs a bank rising at least this much (m) beside the track, 9 m out. */
@@ -271,6 +271,17 @@ function planTreefall(world: World, track: TrackInfo, at: number, rand: () => nu
   if (badSpot(world, tipX, tipZ)) return null;
   // Its own trunk stands clear of the scatter, and it lands clear of trees and rocks.
   if (!clearAlong(world, bx, bz, tipX, tipZ, radius + 0.7)) return null;
+  // Winched round by its crown, it swings back towards a car coming along the track about
+  // its root: the outer part of that sweep must be clear too, or it jams on a tree.
+  for (let deg = 15; deg <= 60; deg += 15) {
+    const a = (deg * Math.PI) / 180;
+    const sx = fx * Math.cos(a) - f.tx * Math.sin(a);
+    const sz = fz * Math.cos(a) - f.tz * Math.sin(a);
+    const n = Math.hypot(sx, sz);
+    const ex = bx + (sx / n) * length;
+    const ez = bz + (sz / n) * length;
+    if (!clearAlong(world, bx + (ex - bx) * 0.4, bz + (ez - bz) * 0.4, ex, ez, radius + 0.7)) return null;
+  }
   const h = world.terrain.heightAt.bind(world.terrain);
   const hb = h(bx, bz);
   const ht = h(tipX, tipZ);

@@ -195,7 +195,7 @@ describe('Surprises on the CREB', () => {
     sim.surprises!.trigger(plan.id);
     step(Math.ceil((planDuration(plan) + 2) / DT));
     const after = v.body.translation();
-    // Settling on its tyres, not shoved by a 700 kg trunk.
+    // Settling on its tyres, not shoved by a falling trunk.
     expect(Math.hypot(after.x - before.x, after.y - before.y, after.z - before.z)).toBeLessThan(0.3);
     expect(sim.surprises!.phaseOf(plan.id)).toBe('falling');
     // Moved on, it comes down solid.
