@@ -51,11 +51,14 @@ export async function getPast(
   log: (s: string) => void = () => {},
   approach = 120,
   speed = 4.5,
+  /** Fuel on board (a big tank, to measure what it burns). */
+  fuel?: number,
 ): Promise<GetPastResult> {
   const track = sim.world.features.tracks.find((t) => t.def.id === plan.track)!;
   const from = Math.max(0, plan.at - approach);
   const start = trailPoint(track, from);
   const v = sim.addVehicle('p', sim.poseAt(start.x, start.z, start.headingDeg, tuning.wheelRadius), tuning);
+  if (fuel !== undefined) v.condition.fuel = fuel;
   const inputs = new Map<string, VehicleInput>([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
   for (let i = 0; i < 90; i++) sim.step(inputs, DT);
   const pieces = [...sim.dynamics.values()].filter((o) => o.id.startsWith(`${plan.id}:`));
@@ -274,7 +277,11 @@ export async function getPast(
           const q = trunk.body.rotation();
           const b = trunk.body.translation();
           const h = trunk.def.length / 2;
-          const crown = sideOf(track, b.x + 2 * (q.x * q.y - q.w * q.z) * h, b.z + 2 * (q.y * q.z + q.w * q.x) * h);
+          const crown = sideOf(
+            track,
+            b.x + 2 * (q.x * q.y - q.w * q.z) * h,
+            b.z + 2 * (q.y * q.z + q.w * q.x) * h,
+          );
           if (crown.lateral * -passSide < 0.6) {
             mode = 'backUp';
             backTime = 0;
@@ -294,7 +301,9 @@ export async function getPast(
   }
   const past = here() > plan.at + 12;
   const last = sideOf(track, v.position.x, v.position.z);
-  log(`ended at ${(last.along - plan.at).toFixed(1)} m, ${last.lateral.toFixed(1)} across, heading off by ${(v.tiltDeg()).toFixed(0)}° tilt`);
+  log(
+    `ended at ${(last.along - plan.at).toFixed(1)} m, ${last.lateral.toFixed(1)} across, heading off by ${v.tiltDeg().toFixed(0)}° tilt`,
+  );
   recovered += recovery?.uses ?? 0;
   return { past, time, startedShort, startedSpeed, closest, winched: winched + recovered, starts };
 }

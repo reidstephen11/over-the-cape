@@ -7,7 +7,7 @@ test('changing to the Land Rover from the pause menu restarts from the last camp
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('shortie');
   await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));

@@ -10,10 +10,14 @@ import { planSurprises } from '../src/sim/world/surprisePlan';
 const seeds = Number(process.argv[2] ?? 40);
 const world = buildWorld(crebMap);
 const used = new Map<string, number>();
+const spots = new Set<string>();
 const t0 = performance.now();
 for (let seed = 1; seed <= seeds; seed++) {
   const plans = planSurprises(world, crebSurprises, seed);
-  for (const p of plans) used.set(p.site, (used.get(p.site) ?? 0) + 1);
+  for (const p of plans) {
+    used.set(p.site, (used.get(p.site) ?? 0) + 1);
+    spots.add(`${p.site}@${Math.round(p.at / 10)}`);
+  }
   if (seed <= 12)
     console.log(
       seed,
@@ -26,5 +30,7 @@ for (let seed = 1; seed <= seeds; seed++) {
   if (trees !== crebSurprises.treefalls || rocks !== crebSurprises.rockfalls)
     console.log(`seed ${seed}: only ${trees} tree falls and ${rocks} rockfalls`);
 }
-console.log(`${((performance.now() - t0) / seeds).toFixed(1)} ms a plan`);
+console.log(
+  `${((performance.now() - t0) / seeds).toFixed(1)} ms a plan; ${spots.size} different spots (to 10 m)`,
+);
 for (const s of crebSurprises.sites) console.log(s.id.padEnd(20), used.get(s.id) ?? 0);

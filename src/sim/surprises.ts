@@ -131,6 +131,8 @@ const GHOST = groups(Groups.DYNAMIC, 0);
  */
 export class Surprises {
   private readonly live: Live[];
+  /** Started by `trigger`, told on the next step. */
+  private readonly pending: SurpriseEvent[] = [];
 
   constructor(
     private readonly R: Rapier,
@@ -191,7 +193,9 @@ export class Surprises {
   /** Start an event now, wherever the car is (tests and the debug tools). */
   trigger(id: string): void {
     const l = this.live.find((q) => q.plan.id === id);
-    if (l && l.phase === 'waiting') this.start(l);
+    if (!l || l.phase !== 'waiting') return;
+    this.start(l);
+    this.pending.push(this.event(l, 'started'));
   }
 
   /**
@@ -200,7 +204,7 @@ export class Surprises {
    * solid once the car is clear of it.
    */
   update(car: Vehicle | undefined, dt: number): SurpriseEvent[] {
-    const events: SurpriseEvent[] = [];
+    const events = this.pending.splice(0);
     const p = car?.body.translation();
     for (const l of this.live) {
       if (l.phase === 'waiting') {

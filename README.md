@@ -175,6 +175,8 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 
 Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle state, flooding, sound levels) and a panel with a free-fly camera (also the **backtick** key), collider wireframes, a teleport button for every place on the map and live vehicle tuning sliders.
 
+Add `?seed=7` (any number) to start a new run with that run's surprises, to see the same ones again, or `?surprises=off` to drive without them.
+
 ## What to test
 
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
@@ -187,7 +189,7 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **v0.07 holes you can see:** on the gravel roads, the potholes and washouts deep enough to pinch a tyre are dark, ringed with pale gravel. Can you spot them in time at 40 km/h?
 - [ ] **v0.07 flat tyres:** on Realistic, get a puncture (or a torn sidewall) and let it go flat: the tyre squashes flat at the bottom and bulges, the corner sits low, and the car pulls hard towards it, thumps at speed and slides in corners. Fix it with a plug or the spare and it drives straight again.
 - [ ] **v0.08 the horizon:** at the range lookout, look east: the Coral Sea beyond the forest, fading into the sky with no hard line. Look west: a long, flat-topped range on the horizon (the tablelands). From the Upper Daintree paddocks, look east: Thornton Peak stands over the trees. From the Lions Den, look north: Black Mountain, dark and rounded, through a gap in the hills. No sharp alpine peaks and no grey rock walls anywhere at the map's edges. Check on Low, Medium and High: the far land shows on all three. Any gaps or flicker where the map's edge meets the far land? Has the frame rate dropped?
-- [ ] **v0.09 surprises:** start a new run and drive the route. Twice a tree should crack and come down across the track ahead of you, and once rocks should come off a bank on the range, each with a crash and a message. Did it ever land on or right in front of the car, even driving fast? Winch the tree round by its crown end and squeeze past; pick a line past the rocks. Is it clear what to do, and does it take too long? Start again: they should happen in different places. Restart from a camp past one of them: the ones before the camp stay down, and the ones after happen again in the same places.
+- [ ] **v0.10 surprises:** start a new run and drive the route. Twice a tree should crack and come down across the track ahead of you, and once rocks should come off a bank on the range, each with a crash and a message. Did it ever land on or right in front of the car, even driving fast? Winch the tree round by its crown end and squeeze past; pick a line past the rocks. Is it clear what to do, and does it take too long? Start again: they should happen in different places. Restart from a camp past one of them: the ones before the camp stay down, and the ones after happen again in the same places.
 - [ ] **History notes:** each named place shows its note as you arrive. Do they read well, and is there enough time to read them while driving?
 - [ ] **Camps:** reaching Roaring Meg camp shows "camp reached, progress saved". Pause → Restart from last camp puts you back there with the clock, fuel and spares as they were.
 - [ ] **Running out:** let the fuel run low and pour in the jerry can from the tool menu; then run dry with no cans and check the episode ends with a restart offered.

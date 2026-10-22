@@ -7,7 +7,7 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   const drive = page.locator('[data-welcome-drive]');
   await expect(drive).toBeVisible();
   const on = (group: string) => page.locator(`.welcome-option.on[data-group="${group}"]`);

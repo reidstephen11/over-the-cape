@@ -4,6 +4,7 @@ import type { VehicleInput } from '../sim/input/vehicleInput';
 import type { AudioInfo } from '../audio/audioSystem';
 import { Autopilot } from '../sim/input/autopilot';
 import { poiApproach } from '../sim/world/poiApproach';
+import { trailPoint } from '../sim/world/crawlTrail';
 import { headingOf } from '../sim/vehicle/math';
 import type { Game } from './game';
 import type { CameraPreset } from '../data/camera';
@@ -63,6 +64,17 @@ export interface GameHook {
   /** Plain-data simulation snapshot. */
   state(): unknown;
   returnToCampsite(id: string): void;
+  /** This run's surprises: where each lands, a spot `back` metres short of it on its track, and its phase. */
+  surprises(back?: number): {
+    id: string;
+    kind: string;
+    phase: string;
+    x: number;
+    z: number;
+    approach: { x: number; z: number; headingDeg: number };
+  }[];
+  /** Start a surprise now, wherever the car is. */
+  triggerSurprise(id: string): void;
   /** Debug: turn the car upside down where it is. */
   flip(): void;
   pois(): { id: string; name: string; x: number; z: number; radius: number }[];
@@ -229,6 +241,19 @@ export function installHook(game: Game): void {
       remaining: g.autopilot ? g.autopilot.remaining(g.vehicle) : 0,
     }),
     heightAt: (x, z) => g.world.terrain.heightAt(x, z),
+    surprises: (back = 90) =>
+      (g.sim.surprises?.plans ?? []).map((p) => {
+        const track = g.world.features.tracks.find((t) => t.def.id === p.track)!;
+        return {
+          id: p.id,
+          kind: p.kind,
+          phase: g.sim.surprises?.phaseOf(p.id) ?? 'waiting',
+          x: p.x,
+          z: p.z,
+          approach: trailPoint(track, Math.max(0, p.at - back)),
+        };
+      }),
+    triggerSurprise: (id) => g.sim.surprises?.trigger(id),
     teleport: (x, z, h) => {
       g.crawlRuns.cancel();
       g.vehicle.teleport(g.sim.poseAt(x, z, h, g.vehicle.tuning.wheelRadius));

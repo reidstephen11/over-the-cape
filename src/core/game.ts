@@ -370,10 +370,13 @@ export class Game {
     const mapDef = maps[def.mapId].def;
     const episodeProgress = save?.episodes ?? {};
     const saved = episodeProgress[def.id]?.checkpoint;
+    // ?seed=N starts a new run with that run's surprises; ?surprises=off leaves them out.
+    const params = new URLSearchParams(location.search);
+    const seed = Math.floor(Number(params.get('seed')));
     const checkpoint =
       choice.resume && saved && mapDef.pois.some((p) => p.id === saved.camp && p.kind === 'campsite')
         ? saved
-        : startCheckpoint(def, mapDef.spawnCampsite);
+        : startCheckpoint(def, mapDef.spawnCampsite, seed > 0 ? seed : undefined);
     const env = choice.replay ? environmentFor(choice.replay) : environmentAt(checkpoint.hour, def.weather);
     // The map's own colours (red clay, greener grass) before any mesh is built.
     usePalette(mapDef.palette);

@@ -16,7 +16,7 @@ test('M4: winch, planks, jack, flooding, dirt and dents', async ({ page }) => {
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?debug');
+  await page.goto('/?debug&surprises=off');
   await waitReady(page);
 
   // --- Winch up Big Red to a rainforest tree ---

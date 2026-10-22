@@ -20,7 +20,7 @@ test('orbit camera: mouse, zoom, recenter button and menu isolation', async ({ p
       JSON.stringify({ version: 1, settings: { quality: 'low', masterVolume: 0 } }),
     ),
   );
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await waitReady(page);
   await page.evaluate(() => window.__game!.setInput({ handbrake: true }));
   await expect(page.locator('.camera-help')).toBeVisible();

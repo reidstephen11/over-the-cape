@@ -7,7 +7,7 @@ test('night: dusk turns the headlights on, N cycles them, and they light the gro
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?surprises=off');
   await waitReady(page);
   expect((await page.evaluate(() => window.__game!.vehicle())).lights).toBe('off');
   // The clock runs on into the evening: at dusk the lamps come on by themselves.
