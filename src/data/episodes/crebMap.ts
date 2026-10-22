@@ -16,6 +16,7 @@ import {
   upperDaintreeRoad,
   wujalFallsTrack,
 } from './crebRoute';
+import { crebFindFlats, crebFindPois, crebFindProps, crebFinds, crebFindTracks } from './crebFinds';
 
 /**
  * Episode 1, the CREB Track: from Daintree Village across the Daintree River, through the
@@ -213,6 +214,7 @@ const tracks: TrackDef[] = [
     ...bush,
     ruts: 0.03,
   },
+  ...crebFindTracks,
 ];
 
 /**
@@ -521,6 +523,7 @@ export const crebMap: MapDef = {
     { id: 'bloomfield-camp', x: 81, z: -662, radius: 14, blend: 12 },
     { id: 'roaring-meg-camp', x: -23, z: 661, radius: 12, blend: 14 },
     { id: 'lions-den', x: 100, z: -2560, radius: 22, blend: 16 },
+    ...crebFindFlats,
   ],
   creeks: [
     {
@@ -747,6 +750,7 @@ export const crebMap: MapDef = {
       reset: { x: 92, z: -2548, headingDeg: 20 },
       note: 'Built in 1875',
     },
+    ...crebFindPois,
   ],
   props: [
     { kind: 'signpost', x: -46, z: 2612, headingDeg: 180, text: 'CREB Track' },
@@ -764,7 +768,9 @@ export const crebMap: MapDef = {
     { kind: 'hut', x: 116, z: -2576, headingDeg: 190, flatten: 10 },
     { kind: 'waterTank', x: 128, z: -2568, headingDeg: 0 },
     { kind: 'signpost', x: 80, z: -2538, headingDeg: 270, text: 'Lions Den Hotel' },
+    ...crebFindProps,
   ],
+  finds: crebFinds,
   boulders: [
     // On the Daintree's bar: across the straight line and either side of the weaving one,
     // standing a metre or so out of the water.
