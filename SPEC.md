@@ -14,8 +14,8 @@ A single-player 4WD adventure up Cape York for the browser, told in episodes lik
 | Restart | From the last camp reached. Camps save the run: position, clock, what's on board and which finds were taken. |
 | Supplies | Each episode starts with a load set by the story: fuel, 20 L jerry cans, spare wheels, tyre plugs. Finds on the map, at the end of side tracks off the main line, can add to it, each once. Nothing carries over between episodes. |
 | Conditions | The story sets the time of day and weather; the clock runs and the sun moves. A finished episode can be replayed in conditions you choose, with the clock stopped and no deadline. |
-| Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie. A modern 4WD comes later. |
-| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. Then one episode per update, each bringing the mechanics it needs. |
+| Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; and from v0.10 the 1979–83 Hilux single cab. A modern 4WD comes later. |
+| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. Then Episode 2, then trailers and towing (delivering another vehicle or fuel drums) for later episodes, each update bringing the mechanics it needs. |
 | Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; everything generated in code. |
 
 ## 2. Episodes

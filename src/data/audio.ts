@@ -350,9 +350,69 @@ export const dieselSynthTuning: EngineSynthTuning = {
   outputGain: 1,
 };
 
+/**
+ * The Hilux's 2.0 L 18R single-cam petrol four: a quicker, buzzier idle than the six
+ * (two firings a turn, evenly spaced, so less burble), a chain-driven valve train that
+ * ticks a little higher, a short exhaust from a cast four-into-one manifold, and a
+ * smaller starter that spins it faster.
+ */
+export const petrolFourSynthTuning: EngineSynthTuning = {
+  idleRpm: 750,
+  limiterRpm: 5650,
+  firingOrder: [1, 3, 4, 2],
+  runners: { delayMs: [0.35, 0.12, 0.1, 0.33], strength: [0.98, 1.02, 1.03, 0.97] },
+  pulse: { riseMs: [0.4, 0.18], decayMs: [1.4, 0.8], minRiseDeg: 2, minDecayDeg: 5, maxDecayDeg: 24 },
+  turbulence: { idle: 0.28, load: 0.62 },
+  pressure: { idle: 0.24, compression: 0.035 },
+  manifoldSeconds: 0.05,
+  jitter: { idle: 0.09, load: 0.03, timingDeg: 2.5, lopeRpm: 12 },
+  exhaust: {
+    soundSpeed: 510,
+    headPipe: { length: 1.4, reflection: -0.35, dampingHz: 2700 },
+    muffler: { cutoffHz: 1050, q: 0.6, boomHz: 105, boomQ: 1.3, boomDb: 3, leak: 0.24 },
+    tailPipe: { length: 1.1, reflection: -0.3, dampingHz: 3700 },
+    radiationHz: 42,
+    gain: 1,
+  },
+  block: { cutoffHz: 180, gain: 0.32 },
+  valves: { hz: [2900, 4600], q: 9, gain: 2.2 },
+  intake: {
+    openDeg: 380,
+    riseDeg: 30,
+    decayDeg: 28,
+    noiseHz: 720,
+    noiseGain: 1.3,
+    honkHz: 160,
+    honkQ: 4,
+    honkGain: 0.45,
+  },
+  fan: { hz: 1200, gain: 0.22 },
+  overrun: {
+    fromRpm: 1900,
+    misfire: 0.15,
+    popChance: 0.025,
+    popGain: 1.2,
+    whistleHz: 3100,
+    whistleGain: 0.14,
+  },
+  starter: {
+    seconds: 0.85,
+    rpm: 210,
+    compressionDip: 0.3,
+    meshPerCrankTurn: 100,
+    toneHz: 980,
+    brushHz: 2700,
+    gain: 0.24,
+  },
+  catch: { seconds: 1.4, flareRpm: 1500, flareSeconds: 0.28, settleSeconds: 0.45 },
+  whine: { teeth: [41, 29], second: 0.5, harmonic: 0.22, shaftAm: 0.3, wobble: 0.15, gain: 0.04 },
+  outputGain: 1,
+};
+
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
   camel: engineSynthTuning,
   perentie: dieselSynthTuning,
+  hilux: petrolFourSynthTuning,
 } as const;
