@@ -1,6 +1,7 @@
 import type { MapId } from './maps';
 import type { Weather } from './environment';
 import { crebEpisode } from './episodes/creb';
+import type { SurpriseSetDef } from '../sim/world/surprisePlan';
 
 /**
  * Episodes, south to north up Cape York. Each has its own map, a core mission, the
@@ -42,6 +43,8 @@ export interface EpisodeDef {
   /** Fuel burnt per litre the engine really uses (the map shortens the distance). */
   fuelScale: number;
   loadout: EpisodeLoadout;
+  /** One-off events on the way, placed afresh each run (a tree coming down, rocks off a bank). */
+  surprises?: SurpriseSetDef;
   /** Paragraphs shown before the episode. */
   briefing: string[];
   /** History notes shown on reaching a place (by POI id). */

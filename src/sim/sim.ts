@@ -29,13 +29,8 @@ import {
 } from './vehicle/damage';
 import { emptyInput } from './input/vehicleInput';
 import { headingOf, rotate, v3 } from './vehicle/math';
-
-/** Branch stubs on the Fallen Tree: [position along the trunk (−1..1), offset x, offset z]. */
-export const FALLEN_TREE_STUBS: ReadonlyArray<readonly [number, number, number]> = [
-  [-0.4, 0.45, 0.2],
-  [0.1, -0.4, 0.35],
-  [0.55, 0.3, -0.4],
-];
+import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } from './surprises';
+import type { SurprisePlan } from './world/surprisePlan';
 
 /** Rotation that lays a +y capsule flat (90° about x) and then turns it `yaw` about y. */
 export function quatYawX(yaw: number): { x: number; y: number; z: number; w: number } {
@@ -47,13 +42,7 @@ export function quatYawX(yaw: number): { x: number; y: number; z: number; w: num
   return { w: cy * c, x: cy * sx, y: sy * c, z: -sy * sx };
 }
 
-/** A movable world object (the Fallen Tree; later, planks). */
-export interface DynamicObject {
-  id: string;
-  kind: 'fallenTree' | 'plank';
-  body: RAPIER.RigidBody;
-  def?: FallenTreeDef;
-}
+export { FALLEN_TREE_STUBS, type DynamicObject } from './surprises';
 
 export interface SimEvents extends Record<string, unknown> {
   vehicleSpawned: { id: string };
@@ -76,6 +65,8 @@ export interface SimEvents extends Record<string, unknown> {
   /** The chassis knocked into the ground or a rock (impulse, N·s). */
   bodyKnock: { id: string; impulse: number };
   returned: { id: string; campsite: string };
+  /** A one-off event on the way started (a tree or rocks coming down ahead) or is down. */
+  surprise: SurpriseEvent;
 }
 
 /** Plain-data snapshot of the simulation (SPEC §11: sim state must be serialisable). */
@@ -118,6 +109,8 @@ export class Simulation {
   readonly ground: GroundQuery;
   readonly dynamics = new Map<string, DynamicObject>();
   readonly tools = new Map<string, VehicleTools>();
+  /** This run's one-off events on the way (none unless the game adds them). */
+  surprises: Surprises | null = null;
   time = 0;
   /** How harsh mechanical damage is (the settings choice; off unless the game sets it). */
   damage: DamageMode = 'off';
@@ -226,30 +219,26 @@ export class Simulation {
         .setLinearDamping(0.4)
         .setAngularDamping(1.2),
     );
-    const member = groups(Groups.DYNAMIC, 0xffff);
-    const half = f.length / 2 - f.radius;
-    const trunk = this.physics.world.createCollider(
-      R.ColliderDesc.capsule(half, f.radius)
-        .setMass(f.mass * 0.85)
-        .setFriction(0.8)
-        .setCollisionGroups(member),
-      body,
-    );
-    this.physics.colliderSurface.set(trunk.handle, SurfaceId.Wood);
-    // Broken branch stubs stop it rolling like a pipe.
-    for (const [ay, ox, oz] of FALLEN_TREE_STUBS) {
-      const stub = this.physics.world.createCollider(
-        R.ColliderDesc.capsule(0.35, 0.09)
-          .setTranslation(ox, ay * half, oz)
-          .setRotation({ x: 0, y: 0, z: Math.sin(Math.PI / 4), w: Math.cos(Math.PI / 4) })
-          .setMass((f.mass * 0.15) / 3)
-          .setFriction(0.9)
-          .setCollisionGroups(member),
-        body,
-      );
-      this.physics.colliderSurface.set(stub.handle, SurfaceId.Wood);
-    }
+    addTrunkColliders(R, this.physics, body, f.length, f.radius, f.mass);
     this.dynamics.set(f.id, { id: f.id, kind: 'fallenTree', body, def: f });
+  }
+
+  /**
+   * Add a run's surprises (before the renderer is built, so it draws them). Those in
+   * `happened` are put down where they landed; the rest wait to start.
+   */
+  addSurprises(plans: readonly SurprisePlan[], happened: Iterable<string> = []): Surprises {
+    const s = new Surprises(
+      this.R,
+      this.physics,
+      (x, z) => this.world.terrain.heightAt(x, z),
+      plans,
+      this.world.features.tracks,
+      happened,
+    );
+    for (const obj of s.objects()) this.dynamics.set(obj.id, obj);
+    this.surprises = s;
+    return s;
   }
 
   /** Spawn pose on the ground (or a bridge deck) at (x, z) for wheels of this radius. */
@@ -385,6 +374,9 @@ export class Simulation {
       v.externalLoad = tools.winch.tension;
       tools.jack.step(v, input.jack, dt, this.R, (x, z) => this.world.terrain.heightAt(x, z));
     }
+    if (this.surprises)
+      for (const e of this.surprises.update(this.vehicles.values().next().value, dt))
+        this.events.emit('surprise', e);
     this.physics.step();
     for (const [id, v] of this.vehicles) {
       v.postStep(dt);
@@ -438,6 +430,21 @@ export class Simulation {
       });
     }
     for (const obj of this.dynamics.values()) {
+      if (obj.kind === 'rock') {
+        // A strap round a fallen rock.
+        const p = obj.body.translation();
+        if (!within(p.x, p.y, p.z)) continue;
+        out.push({
+          kind: 'object',
+          id: `obj:${obj.id}`,
+          point: v3(p.x, p.y, p.z),
+          radius: obj.radius ?? 0.4,
+          body: obj.body,
+          local: v3(0, 0, 0),
+          label: 'Fallen rock',
+        });
+        continue;
+      }
       if (obj.kind !== 'fallenTree' || !obj.def) continue;
       // Hook the trunk at the point nearest the winch.
       const p = obj.body.translation();
@@ -447,19 +454,32 @@ export class Simulation {
         -half,
         Math.min(half, (m.x - p.x) * axis.x + (m.y - p.y) * axis.y + (m.z - p.z) * axis.z),
       );
-      const wx = p.x + axis.x * s;
-      const wy = p.y + axis.y * s;
-      const wz = p.z + axis.z * s;
-      if (!within(wx, wy, wz)) continue;
-      out.push({
-        kind: 'object',
-        id: `obj:${obj.id}`,
-        point: v3(wx, wy, wz),
-        radius: obj.def.radius,
-        body: obj.body,
-        local: v3(0, s, 0),
-        label: 'Fallen tree',
-      });
+      // A surprise's dead tree before it comes down is a fixed anchor like any tree.
+      const label = obj.body.isKinematic() ? 'Dead tree' : 'Fallen tree';
+      // Strapped where it's nearest, or near either end to swing it round.
+      const hooks: [number, string, string][] = [];
+      if (!obj.body.isKinematic())
+        for (const [end, name] of [
+          [-half, 'root'],
+          [half, 'crown'],
+        ] as const)
+          hooks.push([end, `${label} (${name} end)`, `:${name}`]);
+      if (hooks.every(([end]) => Math.abs(end - s) > 1.5)) hooks.push([s, label, '']);
+      for (const [at, name, suffix] of hooks) {
+        const wx = p.x + axis.x * at;
+        const wy = p.y + axis.y * at;
+        const wz = p.z + axis.z * at;
+        if (!within(wx, wy, wz)) continue;
+        out.push({
+          kind: 'object',
+          id: `obj:${obj.id}${suffix}`,
+          point: v3(wx, wy, wz),
+          radius: obj.def.radius,
+          body: obj.body,
+          local: v3(0, at, 0),
+          label: name,
+        });
+      }
     }
     for (const other of this.vehicles.values()) {
       if (other === v) continue;

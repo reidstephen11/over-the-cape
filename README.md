@@ -60,12 +60,14 @@ After the wet the red clay tracks are slick, the gravel roads are bumpy and poth
 
 The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns) except for open eucalypt woodland round the village, the paddocks and the drier hills by the Lions Den. A fallen tree lies across the track on the range: winch it aside or squeeze past.
 
+**Surprises.** The route isn't the same every run. After the wet, dead trees come down and the clay cuttings shed rocks: each run, two dead trees fall across the track somewhere along the way (in the timber at the top of the paddocks, through the rainforest on the range or on the Bloomfield Track), and rocks come off a cutting's bank onto the track somewhere on the range. You see the dead tree standing at the roadside, then as you come along it cracks and crashes down across the track 45–70 m ahead (further ahead the faster you're going, so there's room to stop): never onto the car. Hook its crown end and winch it round so it lies along one side, then squeeze past on the other. Rocks land on the bank's side of the track, two big ones and a scatter of small ones you can crawl over in low range: keep to the far side, or winch a big one aside. Where they happen changes with each new run; restarting from a camp brings the same ones back in the same places.
+
 Beyond the map's edge the real country carries on to the horizon, brought in closer and lower in step with the map. East, between the range and the Coral Sea, stand Thornton Peak, Mt Pieter Botte, Mt Sorrow behind Cape Tribulation, and Mt Finnigan's granite tops, and the Daintree and the Bloomfield run out to the sea. West, rainforest ranges rise to the flat-topped tablelands of the Great Dividing Range. North of the Lions Den the country dries out to open woodland round the black boulder heaps of Black Mountain. South are the Daintree's cane and cattle flats and the ranges towards Mossman. Far land fades into the sky with distance, as it does on a humid day.
 
 ## How an episode works
 
 - **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (eight game minutes a real minute on the CREB) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
-- **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs.
+- **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A tree or rocks that came down before the camp stay down; those still to come happen again the same way. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs.
 - **History notes** appear in the top right as you reach a place. Click one to close it.
 - **The episode ends early** when, with the difficulty that allows it:
   - the tank is empty, you have no jerry cans left and the car has rolled to a stop (any difficulty);
@@ -166,6 +168,7 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - On the gravel roads about 30–40 km/h is a fair pace, and less on the clay. Faster, the swells bounce the car and the potholes and washouts (the dark ones ringed with pale gravel) pinch tyres.
 - Stay on the track: the dark ground off it is black soil, and bogs you. Cutting a corner onto it costs minutes.
 - The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range, and a tree stands near each end of every deep or long bog. Bogged in a deep one, hook up to the tree ahead (E), winch in (R) and drive gently with it.
+- A tree down across the track: stop well short of it, on the side its roots are, and pick **Fallen tree (crown end)** with the tool menu's Winch (E picks the nearest hook, which may not be the one you want). Winch in on the handbrake and the crown swings round towards you; if it still lies across, back up a few metres and pull again. Then back off and drive past on the other side.
 - Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
 ## Debug mode
@@ -184,6 +187,7 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **v0.07 holes you can see:** on the gravel roads, the potholes and washouts deep enough to pinch a tyre are dark, ringed with pale gravel. Can you spot them in time at 40 km/h?
 - [ ] **v0.07 flat tyres:** on Realistic, get a puncture (or a torn sidewall) and let it go flat: the tyre squashes flat at the bottom and bulges, the corner sits low, and the car pulls hard towards it, thumps at speed and slides in corners. Fix it with a plug or the spare and it drives straight again.
 - [ ] **v0.08 the horizon:** at the range lookout, look east: the Coral Sea beyond the forest, fading into the sky with no hard line. Look west: a long, flat-topped range on the horizon (the tablelands). From the Upper Daintree paddocks, look east: Thornton Peak stands over the trees. From the Lions Den, look north: Black Mountain, dark and rounded, through a gap in the hills. No sharp alpine peaks and no grey rock walls anywhere at the map's edges. Check on Low, Medium and High: the far land shows on all three. Any gaps or flicker where the map's edge meets the far land? Has the frame rate dropped?
+- [ ] **v0.09 surprises:** start a new run and drive the route. Twice a tree should crack and come down across the track ahead of you, and once rocks should come off a bank on the range, each with a crash and a message. Did it ever land on or right in front of the car, even driving fast? Winch the tree round by its crown end and squeeze past; pick a line past the rocks. Is it clear what to do, and does it take too long? Start again: they should happen in different places. Restart from a camp past one of them: the ones before the camp stay down, and the ones after happen again in the same places.
 - [ ] **History notes:** each named place shows its note as you arrive. Do they read well, and is there enough time to read them while driving?
 - [ ] **Camps:** reaching Roaring Meg camp shows "camp reached, progress saved". Pause → Restart from last camp puts you back there with the clock, fuel and spares as they were.
 - [ ] **Running out:** let the fuel run low and pour in the jerry can from the tool menu; then run dry with no cans and check the episode ends with a restart offered.
@@ -216,7 +220,8 @@ src/
   debug/   overlay, free camera, debug panel
 scripts/   route-check (track grades, heights and creek levels), track-profile (one track's grade against the
            ground), creek-check (creeks standing above their banks), creb-drive (autopilot drive of the whole
-           route with fuel, winching and arrival time), map-preview (top-down PNG), and the labs from 4WD Simulator
+           route with fuel, winching and arrival time), surprise-check (where runs' surprises land) and
+           surprise-drive (drive up to them and get past), map-preview (top-down PNG), and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
 e2e/       Playwright browser tests
 docs/      DECISIONS.md (choices made along the way) and HISTORY.md (sources for the history in the game)

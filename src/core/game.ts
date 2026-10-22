@@ -21,6 +21,8 @@ import { poiApproach } from '../sim/world/poiApproach';
 import { headingOf } from '../sim/vehicle/math';
 import { Exploration } from '../sim/exploration';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
+import { planDuration, planSurprises } from '../sim/world/surprisePlan';
+import { surpriseMessage } from './surpriseMessages';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
 import { CrawlRuns, type CrawlBests, type CrawlRunEvent } from '../sim/crawlRuns';
 import { GateCount, footprintSize, type GateEvent } from '../sim/gateCount';
@@ -245,6 +247,12 @@ export class Game {
     });
 
     sim.events.on('tool', ({ event }) => this.onToolEvent(event));
+    sim.events.on('surprise', (e) => {
+      this.hud.toast(surpriseMessage(e), e.phase === 'started' ? 2600 : 4200);
+      if (e.phase !== 'started') return;
+      const plan = sim.surprises?.plans.find((p) => p.id === e.id);
+      this.audio.surprise(e.kind, plan ? planDuration(plan) : 2);
+    });
     sim.events.on('rangeChanged', ({ range }) => {
       this.hud.toast(range === 'low' ? 'Low range' : 'High range', 1400);
       this.audio.drivetrainClunk('range');
@@ -387,6 +395,9 @@ export class Game {
     progress(0.86, 'Starting physics');
     await nextFrame();
     const sim = new Simulation(await rapier, world, env);
+    // This run's surprises, from its seed: the same ones again after a restart from camp.
+    if (def.surprises)
+      sim.addSurprises(planSurprises(world, def.surprises, checkpoint.seed), checkpoint.surprises);
     progress(0.92, 'Building meshes');
     await nextFrame();
     // Sign lettering uses the web font; wait for it (but never block on a slow network).
@@ -509,6 +520,7 @@ export class Game {
       this.result.close();
       this.history.clear();
       this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
+      this.sim.surprises?.reset(this.checkpoint.surprises);
       applyCheckpoint(this.vehicle, this.checkpoint);
       this.exploration.lastCampsite = this.checkpoint.camp;
       this.run.restart(this.checkpoint);
@@ -835,7 +847,13 @@ export class Game {
     if (found.discovered.length > 0) this.audio.discovery();
     if (found.campsite && found.campsite !== this.episode.goal && this.run.status === 'driving') {
       const camp = this.world.pois.find((q) => q.id === found.campsite);
-      this.checkpoint = checkpointAt(found.campsite, this.run, this.vehicle, this.exploration.discovered);
+      this.checkpoint = checkpointAt(
+        found.campsite,
+        this.run,
+        this.vehicle,
+        this.exploration.discovered,
+        this.sim.surprises?.happened(),
+      );
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();

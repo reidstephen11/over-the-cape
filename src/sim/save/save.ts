@@ -141,6 +141,11 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     discovered: Array.isArray(c.discovered)
       ? c.discovered.filter((x): x is string => typeof x === 'string')
       : [],
+    // Saves from before surprises: any fixed seed keeps a restart the same as the run.
+    seed: Math.max(1, Math.floor(Math.abs(num(c.seed, 1)))),
+    surprises: Array.isArray(c.surprises)
+      ? c.surprises.filter((x): x is string => typeof x === 'string')
+      : [],
   };
 }
 
