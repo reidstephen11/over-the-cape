@@ -20,6 +20,8 @@ import type { PoiDef } from '../sim/world/mapTypes';
 import { poiApproach } from '../sim/world/poiApproach';
 import { headingOf } from '../sim/vehicle/math';
 import { Exploration } from '../sim/exploration';
+import { Finds } from '../sim/finds';
+import { FindMarkers } from '../render/finds';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
 import { CrawlRuns, type CrawlBests, type CrawlRunEvent } from '../sim/crawlRuns';
@@ -105,6 +107,9 @@ export class Game {
   readonly toolsView: ToolsView;
   readonly tool: ToolController;
   readonly exploration: Exploration;
+  /** Things to load off the main line, and what's been taken since the start. */
+  readonly finds: Finds;
+  private readonly findMarkers: FindMarkers;
   /** Optional scored runs on the crawl trails. */
   readonly crawlRuns: CrawlRuns;
   /** Gates driven on a gate trail (Crawler Creek). */
@@ -176,6 +181,10 @@ export class Game {
     if (sim.env.lampBeams) this.vehicle.lights = 'low';
     this.model = new VehicleModel(tuning, sim.env.lampBeams);
     view.scene.add(this.model.root);
+    this.finds = new Finds(world.map.finds ?? [], this.checkpoint.taken);
+    this.findMarkers = new FindMarkers(world);
+    this.findMarkers.show(this.finds.defs, this.finds.taken);
+    view.scene.add(this.findMarkers.group);
     this.toolsView = new ToolsView();
     view.scene.add(this.toolsView.group);
     this.tool = new ToolController(sim, this.input, LOCAL_VEHICLE);
@@ -510,6 +519,9 @@ export class Game {
       this.history.clear();
       this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
       applyCheckpoint(this.vehicle, this.checkpoint);
+      // What was taken after the camp is back where it was found.
+      this.finds.reset(this.checkpoint.taken);
+      this.findMarkers.show(this.finds.defs, this.finds.taken);
       this.exploration.lastCampsite = this.checkpoint.camp;
       this.run.restart(this.checkpoint);
       this.updateEnvironment(true);
@@ -596,6 +608,14 @@ export class Game {
       new THREE.Vector3(poi.x, t.heightAt(poi.x, poi.z) + 1.5, poi.z),
     );
     this.view.snap();
+  }
+
+  /** The find the HUD points out, if one is close (none once the episode is over). */
+  private findNearby(): { name: string; inReach: boolean } | null {
+    if (this.run.status !== 'driving') return null;
+    const p = this.vehicle.body.translation();
+    const n = this.finds.near(p.x, p.z);
+    return n && { name: n.find.name, inReach: n.inReach };
   }
 
   private toolOptions(): ToolOption[] {
@@ -833,9 +853,21 @@ export class Game {
       if (note) this.showHistory(note);
     }
     if (found.discovered.length > 0) this.audio.discovery();
+    const loaded = this.run.status === 'driving' ? this.finds.update(this.vehicle) : null;
+    if (loaded) {
+      this.findMarkers.show(this.finds.defs, this.finds.taken);
+      this.hud.toast(`${loaded.taken}: loaded`, 2600);
+      this.audio.discovery();
+    }
     if (found.campsite && found.campsite !== this.episode.goal && this.run.status === 'driving') {
       const camp = this.world.pois.find((q) => q.id === found.campsite);
-      this.checkpoint = checkpointAt(found.campsite, this.run, this.vehicle, this.exploration.discovered);
+      this.checkpoint = checkpointAt(
+        found.campsite,
+        this.run,
+        this.vehicle,
+        this.exploration.discovered,
+        this.finds.taken,
+      );
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();
@@ -1087,6 +1119,7 @@ export class Game {
         gates: this.gateCount.total ? this.gateCount : null,
         repair: this.sim.repairOption(LOCAL_VEHICLE),
         refuel: this.sim.refuelOption(LOCAL_VEHICLE),
+        find: this.findNearby(),
         episode: {
           title: `Episode ${this.episode.number} · ${this.episode.title}`,
           mission: this.episode.mission,

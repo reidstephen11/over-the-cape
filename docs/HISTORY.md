@@ -12,6 +12,12 @@ The history in the game is kept to what these sources say. Where they disagree, 
 - **Left out:** the year the track and line were built. No source found gives it. One source says the track fell out of use when the Bloomfield Track was cut nearer the coast; another says the line moved inland. The game uses only the second.
 - **Disputed:** the length (71 km, 77 km and about 50 km are all given). The game doesn't state it.
 
+### The old line camp, the linesman's hut and the poles (side trips)
+
+- **Claim:** none beyond the briefing's: the CREB cut the track to service the power line to Cooktown, and the line has since moved inland (sources above).
+- **Game choice:** the two huts, the crates with a jerry can and tyre plugs, and the leaning poles without wires are made up for the game. No source found describes line camps or huts on the CREB, so the notes describe what is in the game, not what was there.
+- **Left out:** when the line was built and when its poles came down. A search in October 2026 turned up forum posts on ExplorOz ([CREB Track](https://www.exploroz.com/forum/19143/creb-track), [Comment: CREB Track](https://www.exploroz.com/forum/89082/comment-creb-track)) saying the line was being built in the late 1960s and that most of the poles were pulled out in 2009, after the line was rerouted inland via Lakeland. The pages couldn't be opened to check them, and forum posts aren't a firm source, so the game states neither.
+
 ### Daintree Village
 
 - **Claim:** George Elphinstone Dalrymple named the Daintree River in December 1873 after the geologist Richard Daintree, who never came to the region. Dalrymple reported red cedar; cutters followed and floated logs down the river. By 1888 the cedar was nearly gone and the trade had collapsed. The village was the cutters' base.

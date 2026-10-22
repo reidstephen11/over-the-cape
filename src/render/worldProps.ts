@@ -307,7 +307,25 @@ function cattleGrid(b: MeshBuilder): void {
   }
 }
 
+/** An old powerline pole: a weathered timber pole with a crossarm and its insulators. */
+function powerPole(b: MeshBuilder): void {
+  const d = propDims.powerPole;
+  const grey = pal('barkPale').clone().lerp(pal('rock'), 0.45).multiplyScalar(0.85);
+  b.push().translate(0, d.h / 2, 0);
+  b.cylinder(d.r * 0.8, d.r, d.h, 7, grey);
+  b.pop();
+  b.push().translate(0, d.h - 0.45, 0);
+  b.box(d.arm, 0.12, 0.12, grey);
+  b.pop();
+  for (const x of [-0.9, 0, 0.9]) {
+    b.push().translate(x, d.h - (x === 0 ? 0.05 : 0.3), 0);
+    b.cylinder(0.05, 0.06, 0.18, 6, pal('rock'));
+    b.pop();
+  }
+}
+
 const builders: Record<PropDef['kind'], (b: MeshBuilder) => void> = {
+  powerPole,
   hut,
   waterTank,
   fireRing,
@@ -383,6 +401,8 @@ export class WorldProps {
     for (const p of world.map.props) {
       const base = propBase(p, world.terrain);
       b.push().translate(p.x, base, p.z).rotate(0, propYaw(p.headingDeg), 0);
+      // Leaning towards its front (-z).
+      if (p.lean) b.rotate((-p.lean * Math.PI) / 180, 0, 0);
       builders[p.kind](b);
       b.pop();
       if (p.kind === 'signpost' && p.text) this.addSignFace(p, base);
