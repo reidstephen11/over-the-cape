@@ -16,6 +16,7 @@ import {
   upperDaintreeRoad,
   wujalFallsTrack,
 } from './crebRoute';
+import { crebForkPois, crebForkProps, crebForkTracks, littleAnnanBars } from './crebForks';
 
 /**
  * Episode 1, the CREB Track: from Daintree Village across the Daintree River, through the
@@ -213,6 +214,8 @@ const tracks: TrackDef[] = [
     ...bush,
     ruts: 0.03,
   },
+  // The forks: other lines past the deep bog, the concrete and the Little Annan's ford.
+  ...crebForkTracks,
 ];
 
 /**
@@ -630,6 +633,7 @@ export const crebMap: MapDef = {
         { x: 300, z: -2478, water: 9.4, halfWidth: 6, depth: 0.7 },
         { x: 640, z: -2500, water: 9, halfWidth: 6, depth: 0.8 },
       ],
+      bars: littleAnnanBars,
     },
   ],
   tracks,
@@ -747,6 +751,7 @@ export const crebMap: MapDef = {
       reset: { x: 92, z: -2548, headingDeg: 20 },
       note: 'Built in 1875',
     },
+    ...crebForkPois,
   ],
   props: [
     { kind: 'signpost', x: -46, z: 2612, headingDeg: 180, text: 'CREB Track' },
@@ -764,6 +769,7 @@ export const crebMap: MapDef = {
     { kind: 'hut', x: 116, z: -2576, headingDeg: 190, flatten: 10 },
     { kind: 'waterTank', x: 128, z: -2568, headingDeg: 0 },
     { kind: 'signpost', x: 80, z: -2538, headingDeg: 270, text: 'Lions Den Hotel' },
+    ...crebForkProps,
   ],
   boulders: [
     // On the Daintree's bar: across the straight line and either side of the weaving one,

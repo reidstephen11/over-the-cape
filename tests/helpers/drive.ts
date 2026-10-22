@@ -8,6 +8,7 @@ import type { Vehicle } from '../../src/sim/vehicle/vehicle';
 import { trailPoint, trailProgress } from '../../src/sim/world/crawlTrail';
 import type { TrackInfo } from '../../src/sim/world/features';
 import type { World } from '../../src/sim/world/world';
+import type { CrebFork } from '../../src/data/episodes/crebForks';
 
 /** Scripted test drives along a world's tracks, shared by the obstacle tests (and free of Vitest, so dev scripts can use them). */
 export const DT = 1 / 60;
@@ -20,6 +21,32 @@ export function pathFor(track: TrackInfo, back = false) {
     return [p.x, p.z] as [number, number];
   });
   return back ? path.reverse() : path;
+}
+
+/**
+ * Both lines of a fork as paths: from `lead` metres before the fork on the main track to
+ * `tail` metres past where the lines meet again, along the main track ('main') or the
+ * other line ('alt').
+ */
+export function forkPaths(world: World, fork: CrebFork, lead = 40, tail = fork.tail ?? 30) {
+  const track = (id: string) => world.features.tracks.find((t) => t.def.id === id)!;
+  const main = track(fork.main);
+  const alt = track(fork.alt);
+  const from = trailProgress(main, alt.poly.xs[0], alt.poly.zs[0]).along;
+  const to = trailProgress(main, alt.poly.xs[alt.poly.count - 1], alt.poly.zs[alt.poly.count - 1]).along;
+  const along = (a: number, b: number) =>
+    Array.from({ length: Math.ceil((b - a) / 0.5) + 1 }, (_, i) => {
+      const p = trailPoint(main, Math.min(b, a + i * 0.5));
+      return [p.x, p.z] as [number, number];
+    });
+  const start = Math.max(0, from - lead);
+  const end = Math.min(main.poly.length, to + tail);
+  return {
+    main: along(start, end),
+    alt: [...along(start, from).slice(0, -1), ...pathFor(alt), ...along(to, end).slice(1)],
+    from,
+    to,
+  };
 }
 
 /** Nose-up pitch and right-side-down roll, in degrees. */
