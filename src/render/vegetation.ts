@@ -318,6 +318,29 @@ function buildRock(variant: number, detail: number): THREE.BufferGeometry {
   return b.build();
 }
 
+/**
+ * A termite mound, unit radius and half-height: a knobbly earth spire, broad at the foot
+ * and narrowing in lumps to a rounded top.
+ */
+function buildMound(variant: number): THREE.BufferGeometry {
+  const b = new MeshBuilder(700 + variant);
+  const rand = mulberry32(variant + 71);
+  const earth = pal('dirtTrack')
+    .clone()
+    .lerp(pal('mud'), 0.25 + rand() * 0.2);
+  for (const [y, r, squash] of [
+    [-0.55, 1, 0.5],
+    [0.05, 0.78, 0.55],
+    [0.55, 0.52, 0.6],
+    [0.85, 0.3, 0.7],
+  ]) {
+    b.push().translate((rand() - 0.5) * 0.15, y, (rand() - 0.5) * 0.15);
+    b.blob(r, earth.clone().multiplyScalar(0.92 + rand() * 0.14), 0.18, 1, squash);
+    b.pop();
+  }
+  return b.build();
+}
+
 /** Ring bolt and paint mark on top of a marked anchor boulder (unit radius). */
 function buildAnchorMark(): THREE.BufferGeometry {
   const b = new MeshBuilder(77);
@@ -474,12 +497,13 @@ export class Vegetation {
 
     // --- Rocks and logs ---
     const rockGeos = [0, 1, 2, 3].map((v) => buildRock(v, 0)).concat([4, 5, 6].map((v) => buildRock(v, 1)));
+    const moundGeos = [0, 1, 2].map((v) => buildMound(v));
     const mark = buildAnchorMark();
     const log = buildLog();
     const rocks = world.scatter.rocks;
     const logs = world.scatter.logs;
     const anchorCount = rocks.filter((r) => r.anchor).length;
-    const extras = [...rockGeos, mark, log];
+    const extras = [...rockGeos, ...moundGeos, mark, log];
     const rockMesh = new THREE.BatchedMesh(
       rocks.length + anchorCount + logs.length,
       geometrySize(extras),
@@ -489,11 +513,16 @@ export class Vegetation {
     rockMesh.castShadow = true;
     rockMesh.receiveShadow = true;
     const rockIds = rockGeos.map((g) => rockMesh.addGeometry(g));
+    const moundIds = moundGeos.map((g) => rockMesh.addGeometry(g));
     const markId = rockMesh.addGeometry(mark);
     const logId = rockMesh.addGeometry(log);
     for (const r of rocks) {
       const big = r.radius > 1.2;
-      const gi = big ? rockIds[4 + Math.floor(r.seed * 3)] : rockIds[Math.floor(r.seed * 4)];
+      const gi = r.mound
+        ? moundIds[Math.floor(r.seed * 3)]
+        : big
+          ? rockIds[4 + Math.floor(r.seed * 3)]
+          : rockIds[Math.floor(r.seed * 4)];
       const id = rockMesh.addInstance(gi);
       this.tmpQ.setFromEuler(this.tmpE.set(0, r.yaw, 0));
       this.tmpM.compose(

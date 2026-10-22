@@ -1,13 +1,14 @@
 import type { MapId } from './maps';
 import type { Weather } from './environment';
 import type { WeatherTimeline } from './weatherTimeline';
+import { coachEpisode } from './episodes/coach';
 import { crebEpisode } from './episodes/creb';
 
 /**
  * Episodes, south to north up Cape York. Each has its own map, a core mission, the
  * conditions the story sets and a fixed load of fuel and spares. They unlock in order.
  */
-export type EpisodeId = 'creb';
+export type EpisodeId = 'creb' | 'coach';
 
 /** Why an episode can end early. */
 export type FailReason = 'time' | 'fuel' | 'tyre' | 'engine' | 'swept';
@@ -63,12 +64,12 @@ export interface UpcomingEpisode {
 
 export const episodes: Record<EpisodeId, EpisodeDef> = {
   creb: crebEpisode,
+  coach: coachEpisode,
 };
 
-export const episodeOrder: readonly EpisodeId[] = ['creb'];
+export const episodeOrder: readonly EpisodeId[] = ['creb', 'coach'];
 
 export const upcomingEpisodes: readonly UpcomingEpisode[] = [
-  { number: 2, title: 'The Old Coach Road', route: 'Maytown to Laura through the Palmer River goldfields' },
   { number: 3, title: 'Port Stewart', route: 'Musgrave east through the swamps to the coast' },
   { number: 4, title: 'The Frenchmans Track', route: 'Across the Pascoe and Wenlock rivers' },
   { number: 5, title: 'Telegraph Track South', route: 'Bramwell Junction to Gunshot Creek' },

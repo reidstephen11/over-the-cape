@@ -293,6 +293,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       depth: def.points.map((p) => p.depth),
       bankSlope: def.points.map((p) => p.bankSlope ?? 0.55),
       gravel: def.points.map((p) => (p.bed === 'gravel' ? 1 : 0)),
+      sand: def.points.map((p) => (p.bed === 'sand' ? 1 : 0)),
       flow: def.points.map((p) => p.flow ?? def.flow ?? 0),
       reach: def.valley ?? CREEK_BANK_REACH,
     };
@@ -858,7 +859,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
             ? SurfaceId.Mud
             : kind === 'dirt'
               ? SurfaceId.Dirt
-              : SurfaceId.Grass;
+              : kind === 'sand'
+                ? SurfaceId.Sand
+                : SurfaceId.Grass;
     for (let iz = Math.floor(p.z - R + halfZ); iz <= Math.ceil(p.z + R + halfZ); iz++)
       for (let ix = Math.floor(p.x - R + halfX); ix <= Math.ceil(p.x + R + halfX); ix++) {
         if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
@@ -874,6 +877,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         else if (kind === 'gravel') tint[i] = GroundTint.Gravel;
         else if (kind === 'dirt') tint[i] = GroundTint.DirtTrack;
         else if (kind === 'mud') tint[i] = GroundTint.Mud;
+        else if (kind === 'sand') tint[i] = GroundTint.Sand;
       }
   }
 
@@ -900,14 +904,26 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
           ? SurfaceId.Rock
           : def.surface === 'clay'
             ? SurfaceId.Clay
-            : SurfaceId.Dirt;
+            : def.surface === 'sand'
+              ? SurfaceId.Sand
+              : SurfaceId.Dirt;
     surface[i] = sid;
+    // A dry creek bed the track runs through is soft sand, banks and all.
+    if (def.sand) {
+      const along = atParam(tracks[id].poly.s, trackParam[i]);
+      if (def.sand.some(([from, to]) => along >= from && along <= to)) {
+        surface[i] = SurfaceId.Sand;
+        tint[i] = GroundTint.Sand;
+        continue;
+      }
+    }
     if (def.surface === 'concrete') tint[i] = d > hw - 0.3 ? GroundTint.DirtEdge : GroundTint.Concrete;
     else if (def.surface === 'rock') {
       const x = (i % resX) - halfX;
       const z = Math.floor(i / resX) - halfZ;
       tint[i] = noise2.noise(x / 5, z / 5) > -0.15 ? GroundTint.Rock : GroundTint.Scree;
     } else if (def.surface === 'gravel') tint[i] = d > hw - 0.4 ? GroundTint.DirtEdge : GroundTint.Gravel;
+    else if (def.surface === 'sand') tint[i] = GroundTint.Sand;
     else tint[i] = d > hw - 0.4 ? GroundTint.DirtEdge : GroundTint.DirtTrack;
   }
   // Rocky steps on tracks show as rock.
@@ -956,13 +972,16 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const hw = creekHalfAt[i];
     creekDistance[i] = Math.min(255, Math.max(0, Math.round(d - hw)));
     const c = creekLines[creekOwner[i]];
-    const gravel = attrAt(c.gravel, atParam(c.poly.u, creekParam[i])) > 0.5;
+    const u = atParam(c.poly.u, creekParam[i]);
+    const gravel = attrAt(c.gravel, u) > 0.5;
+    // A sandy river's dry bed runs out either side of the water to its banks.
+    const sand = attrAt(c.sand, u) > 0.5;
     if (water[i] > NO_WATER) {
       surface[i] = SurfaceId.Water;
-      tint[i] = gravel ? GroundTint.Gravel : GroundTint.CreekBed;
-    } else if (d <= hw + 1.6) {
-      surface[i] = gravel ? SurfaceId.Gravel : SurfaceId.Mud;
-      tint[i] = gravel ? GroundTint.Gravel : GroundTint.Mud;
+      tint[i] = sand ? GroundTint.Sand : gravel ? GroundTint.Gravel : GroundTint.CreekBed;
+    } else if (d <= hw + 1.6 + (sand ? (c.def.sandBank ?? 0) : 0)) {
+      surface[i] = sand ? SurfaceId.Sand : gravel ? SurfaceId.Gravel : SurfaceId.Mud;
+      tint[i] = sand ? GroundTint.Sand : gravel ? GroundTint.Gravel : GroundTint.Mud;
     }
   }
 

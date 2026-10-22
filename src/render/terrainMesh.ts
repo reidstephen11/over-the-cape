@@ -38,6 +38,7 @@ function tintColors(): THREE.Color[] {
   // Wet black soil under thin grass: dark and sodden.
   out[GroundTint.BlackSoil] = pal('grassSage').clone().lerp(new THREE.Color('#2A241C'), 0.72);
   out[GroundTint.Pothole] = pal('mud').clone().lerp(new THREE.Color('#1C130D'), 0.55);
+  out[GroundTint.Sand] = pal('sand');
   return out;
 }
 

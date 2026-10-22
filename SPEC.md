@@ -9,13 +9,13 @@ A single-player 4WD adventure up Cape York for the browser, told in episodes lik
 | Players | Single player. Your vehicle only: no other vehicles and no people in the game. |
 | Story | Told through on-screen text: a briefing before each episode, history notes at places, a closing note. History is kept to what sources say (docs/HISTORY.md). No real TV shows or presenters are named. |
 | Episodes | Seven, south to north, one map each. They unlock in order; finished ones can be replayed. |
-| Maps | About 3 km square, with the real route's landmarks in their real order and obstacles at full size; the distances between are shortened. |
+| Maps | Long, narrow strips (the CREB 1.3 × 6 km, the Old Coach Road 1.3 × 7.2 km), with the real route's landmarks in their real order and obstacles at full size; the distances between are shortened. |
 | Stakes | An episode ends on an empty tank with no jerry cans, a missed deadline, being swept away by a river, a flat tyre with nothing left to fix it, or a wrecked engine. The damage setting decides which apply (§4). |
 | Restart | From the last camp reached. Camps save the run: position, clock, what's on board and which finds were taken. |
 | Supplies | Each episode starts with a load set by the story: fuel, 20 L jerry cans, spare wheels, tyre plugs. A vehicle can carry extras on top (from v0.14, the Troop Carrier's full sub-tank and second spare). Finds on the map, at the end of side tracks off the main line, can add to it, each once. Nothing carries over between episodes. |
 | Conditions | The story sets the time of day and weather; the clock runs and the sun moves. A finished episode can be replayed in conditions you choose, with the clock stopped and no deadline. |
 | Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; from v0.11 the Army Unimog UL1700L truck; and from v0.14 the 1990s LandCruiser 75 Series Troop Carrier. A modern 4WD comes later. |
-| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.14: the Troop Carrier. Then Episode 2, then trailers and towing (delivering another vehicle or fuel drums) for later episodes, each update bringing the mechanics it needs. |
+| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.14: the Troop Carrier. v0.17: Episode 2, the Old Coach Road. Then trailers and towing (delivering another vehicle or fuel drums) for later episodes, each update bringing the mechanics it needs. |
 | Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; everything generated in code. |
 
 ## 2. Episodes
@@ -23,7 +23,7 @@ A single-player 4WD adventure up Cape York for the browser, told in episodes lik
 | # | Episode | Route | Core mission (planned) |
 |---|---|---|---|
 | 1 | The CREB Track | Daintree Village → Daintree River → the range (Big Red, Roaring Meg, Bob's Hill, the concrete) → Wujal Wujal → Bloomfield Track → Lions Den Hotel | Reach the Lions Den before dark |
-| 2 | The Old Coach Road | Maytown to Laura through the Palmer River goldfields | Find the Maytown ruins and reach Laura |
+| 2 | The Old Coach Road | Palmer River → Maytown's ruins → North Palmer River → Conglomerate Range (three lines up, the big step, the descent) → Little Laura River → Laura | Through Maytown to Laura before dark |
 | 3 | Port Stewart | Musgrave east through swamps, soft sand and river crossings | Reach the coast |
 | 4 | The Frenchmans Track | The Pascoe and Wenlock rivers | Get across both (river current) |
 | 5 | Telegraph Track South | Bramwell Junction, Palm Creek, the Ducie, Gunshot Creek | Get past Gunshot, by the drop or the bypass |
@@ -60,7 +60,11 @@ Each episode defines (src/data/episodes.ts): its map, the mission line and goal 
 - Track pins that follow the ground between fixed heights (`pinMode: 'follow'`) and rounded grade changes (`pinSmooth`); concrete track surface.
 - Rough tracks (`rough`: bumps, swells, potholes, washouts and mud holes that fill with water after rain) and running water (`flow` on a creek or a creek point).
 - A red clay track surface (`clay`) that grips like dirt when dry and loses over half its grip when wet.
-- 3 km maps (3073 × 3073 samples at 1 m); about 10 s to generate in Node.
+- Soft sand (`SurfaceId.Sand`): a dry-season surface that drags and lets the wheels dig in, the same wet or dry. Laid as a creek's sand bed and dry banks (`bed: 'sand'`, `sandBank`), a track's surface, or stretches along a track (`sand`).
+- Boulders along any track (`stones`), beside it or across it, from the crawl trails' stone placer.
+- Termite mounds (`termiteMounds` per hectare in a map's vegetation): solid earth spires on open grassland.
+- Ruin props: a baker's oven, chimneys, headstones and stone kerbing.
+- Long maps of up to about 1.3 × 7.2 km, sampled every metre.
 
 ## 6. Interface
 
@@ -74,5 +78,6 @@ Each episode defines (src/data/episodes.ts): its map, the mission line and goal 
 
 - Unit tests (Vitest): the episode rules, fuel burn, tyre faults, saves, the moving sun, the river current and rough tracks, and the CREB map (connected legs at matching heights, creeks below their banks, camps level) with autopilot drives of its hard sections in the wet in both the short-wheelbase 4WD and the Land Rover. 4WD Simulator's maps are kept as test worlds for its physics tests.
 - Finds: the side tracks driven out and back in the wet in both vehicles; a find loads once, only when stopped, and checkpoints and saves keep which were taken.
-- `scripts/creb-drive.ts` drives the whole route and reports fuel used and arrival time, for tuning the load and the clock.
+- The Old Coach Road map in the same way, with sand at each river crossing, termite mounds clear of the road, Maytown's ruins, the range face's three lines steepest to gentlest, and the middle line driven on Realistic: stopped in high range and with the diffs open, climbed with both lockers.
+- `scripts/creb-drive.ts` and `scripts/coach-drive.ts` drive each whole route and report fuel used and arrival time, for tuning the load and the clock.
 - Browser tests (Playwright): the welcome and briefing flow, camps and restarts, each way of ending, finishing and replaying, plus driving, tools, interface, audio, night, vehicles, camera, damage, touch and the phone layout. They run on a software renderer that takes seconds per frame, so they run a fixed 24 physics steps per frame.

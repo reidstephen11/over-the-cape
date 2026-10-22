@@ -58,10 +58,14 @@ test('the Hilux is chosen on the welcome screen, drives off, and has its own cab
   );
   await expect(page.locator('.welcome-card')).toContainText('styleside');
   await shot(page, 'vehicle', 'welcome-hilux');
-  // Four vehicles still fit across a phone held upright, without scrolling sideways.
+  // Four vehicles still fit across a phone held upright, without scrolling sideways (the
+  // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux'])
-    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux']) {
+    const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
+    await button.scrollIntoViewIfNeeded();
+    await expect(button).toBeInViewport({ ratio: 0.9 });
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });
 
@@ -90,10 +94,14 @@ test('the Unimog is chosen on the welcome screen, drives off, and has its own ca
   );
   await expect(page.locator('.welcome-card')).toContainText('portal axles');
   await shot(page, 'vehicle', 'welcome-unimog');
-  // Five vehicles still fit across a phone held upright, without scrolling sideways.
+  // Five vehicles still fit across a phone held upright, without scrolling sideways (the
+  // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog'])
-    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog']) {
+    const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
+    await button.scrollIntoViewIfNeeded();
+    await expect(button).toBeInViewport({ ratio: 0.9 });
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });
 
@@ -124,10 +132,14 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   );
   await expect(page.locator('.welcome-card')).toContainText('sub-tank');
   await shot(page, 'vehicle', 'welcome-troopy');
-  // Six vehicles still fit across a phone held upright, without scrolling sideways.
+  // Six vehicles still fit across a phone held upright, without scrolling sideways (the
+  // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy'])
-    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy']) {
+    const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
+    await button.scrollIntoViewIfNeeded();
+    await expect(button).toBeInViewport({ ratio: 0.9 });
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });
 

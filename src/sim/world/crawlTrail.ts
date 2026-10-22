@@ -118,20 +118,31 @@ export function trailStones(
 ): StaticRock[] {
   const track = tracks.find((t) => t.def.id === trail.trackId);
   if (!track) throw new Error(`Missing crawl trail track ${trail.trackId}`);
-  return trail.sections.flatMap((section) =>
-    (section.stones ?? []).map((stone) => {
-      const p = trailPoint(track, stone.at, stone.lateral);
-      const h = terrain.heightAt(p.x, p.z);
-      const a = (p.headingDeg * Math.PI) / 180;
-      const ground = (s: number) => terrain.heightAt(p.x + Math.sin(a) * s, p.z - Math.cos(a) * s) - h;
-      return {
-        x: p.x,
-        y: h + (stone.base ?? 0),
-        z: p.z,
-        ...stoneMesh(stonePoints(stone, p.headingDeg, ground)),
-      };
-    }),
+  return placeStones(
+    track,
+    trail.sections.flatMap((section) => section.stones ?? []),
+    terrain,
   );
+}
+
+/** Stones set along a track (a crawl trail's, or a track's own rock steps and boulders). */
+export function placeStones(
+  track: TrackInfo,
+  stones: readonly TrailStoneDef[],
+  terrain: Terrain,
+): StaticRock[] {
+  return stones.map((stone) => {
+    const p = trailPoint(track, stone.at, stone.lateral);
+    const h = terrain.heightAt(p.x, p.z);
+    const a = (p.headingDeg * Math.PI) / 180;
+    const ground = (s: number) => terrain.heightAt(p.x + Math.sin(a) * s, p.z - Math.cos(a) * s) - h;
+    return {
+      x: p.x,
+      y: h + (stone.base ?? 0),
+      z: p.z,
+      ...stoneMesh(stonePoints(stone, p.headingDeg, ground)),
+    };
+  });
 }
 
 export function trailLogs(trail: CrawlTrailDef, tracks: readonly TrackInfo[], terrain: Terrain): StaticLog[] {
