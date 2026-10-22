@@ -21,9 +21,13 @@ test('M2: keyboard drives the car and the chase camera follows', async ({ page }
   const moved = await page.evaluate(() => window.__game!.vehicle());
   expect(Math.hypot(moved.x - start.x, moved.z - start.z)).toBeGreaterThan(3);
 
-  // Range toggle.
+  // Range toggle, below 20 km/h. S brakes, and once stopped it reverses, which on the
+  // slope by Daintree Village rolls back faster than that: let go as the car stops.
   await page.keyboard.down('KeyS');
-  await waitSim(page, 3);
+  await page.waitForFunction(() => Math.abs(window.__game!.vehicle().speed) < 2, null, {
+    timeout: 120_000,
+    polling: 100,
+  });
   await page.keyboard.up('KeyS');
   await page.keyboard.press('KeyL');
   await waitSim(page, 0.3);

@@ -585,3 +585,5 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 **Vehicle studio.** On the software renderer here, loading the 6 km map takes minutes for each picture. A dev-only page (`scripts/studio/`) shows one vehicle on plain ground, and `scripts/studio-shots.ts` photographs it from all round and from the driver's seat. It is not part of the build.
 
 **Tests.** New: `tests/hilux.test.ts` (its gearing, idle, acceleration, a full-lock turn, a 30° climb, a swap, the model and the save) and a test of the petrol four's sound. The Hilux joins the park brake, wet braking, deep water, headlight, engine start and CREB climb tests, and a browser test chooses it on the welcome screen, checks the four vehicle buttons fit on a phone, and drives it.
+
+**A browser test fixed.** The keyboard driving test held S for 3 s before changing to low range. Since v0.07 moved Daintree Village onto a slope, the car had stopped by then and was reversing downhill at about 20.5 km/h, over the 20 km/h limit for changing range, so the change was refused (it fails the same way on v0.08). It now lets go of S as the car stops.
