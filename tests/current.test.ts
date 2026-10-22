@@ -79,7 +79,7 @@ describe('running water', () => {
   });
 
   it('lifts the vehicle off its tyres in deep water, and a current then carries it away', async () => {
-    for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, troopyTuning]) {
+    for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning]) {
       const s = await makeScene({ tuning, ground: river(1.3, 0) });
       const v = s.vehicle;
       s.run(6, {});
@@ -99,6 +99,31 @@ describe('running water', () => {
       expect(r.vehicle.position.x - x0, tuning.name).toBeGreaterThan(3);
       r.physics.world.free();
     }
+  });
+});
+
+describe('the heavy Troop Carrier in running water', () => {
+  /** Seconds the current had it, at most, and how far it drifted, over 10 s parked in a river. */
+  async function drift(depth: number, flow: number) {
+    const s = await makeScene({ tuning: troopyTuning, ground: river(depth, flow) });
+    const x0 = s.vehicle.position.x;
+    let swept = 0;
+    for (let t = 0; t < 10 && swept < sweptTuning.seconds; t += 0.5) {
+      s.run(0.5, {});
+      swept = Math.max(swept, s.vehicle.swept);
+    }
+    const out = { swept, drift: s.vehicle.position.x - x0 };
+    s.physics.world.free();
+    return out;
+  }
+
+  it('holds its ground where the current carries the others away, but not in deeper, faster water', async () => {
+    const holds = await drift(1.3, 2);
+    expect(holds.swept).toBeLessThan(sweptTuning.seconds);
+    expect(holds.drift).toBeLessThan(5);
+    const goes = await drift(1.5, 2.5);
+    expect(goes.swept).toBeGreaterThanOrEqual(sweptTuning.seconds);
+    expect(goes.drift).toBeGreaterThan(3);
   });
 });
 

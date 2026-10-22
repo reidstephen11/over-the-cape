@@ -2,7 +2,7 @@ import type { DamageMode } from '../data/damage';
 import { sweptTuning } from '../data/surfaces';
 import type { EpisodeDef, FailReason } from '../data/episodes';
 import type { VehicleId } from '../data/vehicle';
-import { vehicleLoadout, vehicles } from '../data/vehicles';
+import { vehicleLoadout } from '../data/vehicles';
 import type { TyreFault } from './vehicle/condition';
 import type { Vehicle } from './vehicle/vehicle';
 import type { PoiDef } from './world/mapTypes';
@@ -20,11 +20,6 @@ export interface Checkpoint {
   jerryCans: number;
   spares: number;
   plugs: number;
-  /**
-   * The vehicle that was carrying this load. Its own extras (the Troop Carrier's sub-tank
-   * and second spare) go with it when you change vehicle. Older saves have none.
-   */
-  vehicle?: VehicleId;
   /** Tyres as they were (a torn sidewall stays torn through camp). */
   tyres: number[];
   tyreFault: TyreFault[];
@@ -127,7 +122,6 @@ export function checkpointAt(
     jerryCans: c.jerryCans,
     spares: c.spares,
     plugs: c.plugs,
-    vehicle: v.tuning.id,
     tyres: [...c.tyres],
     tyreFault: [...c.tyreFault],
     discovered: [...discovered],
@@ -153,7 +147,11 @@ export function applyCheckpoint(v: Vehicle, c: Checkpoint): void {
   k.suspension.fill(1);
 }
 
-/** The checkpoint an episode starts from, with the episode's load and the vehicle's own extras. */
+/**
+ * The checkpoint an episode starts from, with the episode's load and the vehicle's own
+ * extras. Only here: changing vehicle later carries the load across as it is (fuel that
+ * won't fit the new tank stays behind), so changing back and forth never adds anything.
+ */
 export function startCheckpoint(def: EpisodeDef, spawnCamp: string, vehicle: VehicleId): Checkpoint {
   const l = vehicleLoadout(def.loadout, vehicle);
   return {
@@ -164,25 +162,8 @@ export function startCheckpoint(def: EpisodeDef, spawnCamp: string, vehicle: Veh
     jerryCans: l.jerryCans,
     spares: l.spares,
     plugs: l.plugs,
-    vehicle,
     tyres: [1, 1, 1, 1],
     tyreFault: ['none', 'none', 'none', 'none'],
     discovered: [],
-  };
-}
-
-/**
- * A checkpoint's load moved into another vehicle: the old one keeps its own extras (a
- * second tank's fuel and spare), and the new one brings its own, full.
- */
-export function moveLoad(c: Checkpoint, to: VehicleId): Checkpoint {
-  const from = c.vehicle ? vehicles[c.vehicle].extraLoad : undefined;
-  const extra = vehicles[to].extraLoad;
-  if (c.vehicle === to || (!from && !extra)) return { ...c, vehicle: to };
-  return {
-    ...c,
-    vehicle: to,
-    fuel: Math.max(0, c.fuel - (from?.fuel ?? 0)) + (extra?.fuel ?? 0),
-    spares: Math.max(0, c.spares - (from?.spares ?? 0)) + (extra?.spares ?? 0),
   };
 }

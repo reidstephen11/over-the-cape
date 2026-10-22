@@ -9,7 +9,7 @@ import { vehicleTuning, type VehicleTuning } from '../src/data/vehicle';
 import { vehicleLoadout, vehicleOrder, vehicles } from '../src/data/vehicles';
 import { DIAL_START, DIAL_SWEEP } from '../src/render/vehicleInstruments';
 import { VehicleModel } from '../src/render/vehicleModel';
-import { applyCheckpoint, moveLoad, startCheckpoint } from '../src/sim/episode';
+import { applyCheckpoint, startCheckpoint } from '../src/sim/episode';
 import { loadSave, writeSave, type KeyValueStore } from '../src/sim/save/save';
 import { coupledRpm } from '../src/sim/vehicle/drivetrain';
 import { createCondition } from '../src/sim/vehicle/condition';
@@ -55,31 +55,10 @@ describe('Troop Carrier', () => {
     });
     for (const id of vehicleOrder.filter((v) => v !== 'troopy')) expect(vehicleLoadout(l, id)).toEqual(l);
     const start = startCheckpoint(crebEpisode, 'start', 'troopy');
-    expect([start.fuel, start.spares, start.vehicle]).toEqual([
-      l.fuel + TROOPY_SUB_TANK,
-      l.spares + 1,
-      'troopy',
-    ]);
+    expect([start.fuel, start.spares]).toEqual([l.fuel + TROOPY_SUB_TANK, l.spares + 1]);
   });
 
-  it('takes its sub-tank and second spare with it when you change vehicle at a camp', () => {
-    const atCamp = { ...startCheckpoint(crebEpisode, 'roaring-meg-camp', 'troopy'), fuel: 95, spares: 2 };
-    const inHilux = moveLoad(atCamp, 'hilux');
-    expect([inHilux.fuel, inHilux.spares, inHilux.vehicle]).toEqual([35, 1, 'hilux']);
-    // Back into the Troop Carrier: its own extras come back full, and nothing else is gained.
-    const back = moveLoad(inHilux, 'troopy');
-    expect([back.fuel, back.spares]).toEqual([95, 2]);
-    // Nearly dry, with no spares left: the other vehicle gets an empty tank, not less than none.
-    const dry = moveLoad({ ...atCamp, fuel: 20, spares: 0 }, 'perentie');
-    expect([dry.fuel, dry.spares]).toEqual([0, 0]);
-    // Between two vehicles without extras, or from an old save with no vehicle, nothing changes.
-    const plain = startCheckpoint(crebEpisode, 'start', 'shortie');
-    expect(moveLoad(plain, 'hilux')).toEqual({ ...plain, vehicle: 'hilux' });
-    const old = { ...plain, vehicle: undefined };
-    expect(moveLoad(old, 'troopy').fuel).toBe(plain.fuel + TROOPY_SUB_TANK);
-  });
-
-  it('fills both tanks from the checkpoint, where a smaller tank would overflow', async () => {
+  it('fills both tanks from the checkpoint; in a smaller vehicle the fuel that will not fit stays behind', async () => {
     const start = startCheckpoint(crebEpisode, 'start', 'troopy');
     const s = await makeScene({ tuning: t });
     applyCheckpoint(s.vehicle, start);
@@ -163,13 +142,10 @@ describe('Troop Carrier', () => {
     model.dispose();
   });
 
-  it('is remembered in the save, and so is whose load a checkpoint holds', () => {
+  it('is remembered in the save', () => {
     const data = new Map<string, string>();
     const s: KeyValueStore = { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v) };
-    const checkpoint = startCheckpoint(crebEpisode, 'start', 'troopy');
-    writeSave(saveData({ vehicle: 'troopy', episodes: { creb: { completed: false, checkpoint } } }), s);
-    const loaded = loadSave(s)!;
-    expect(loaded.vehicle).toBe('troopy');
-    expect(loaded.episodes.creb!.checkpoint!.vehicle).toBe('troopy');
+    writeSave(saveData({ vehicle: 'troopy' }), s);
+    expect(loadSave(s)!.vehicle).toBe('troopy');
   });
 });
