@@ -562,7 +562,13 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 
 **Tests.** New `tests/horizon.test.ts`: the named peaks keep their height; the sea is east of the whole strip and never west; the Daintree and the Bloomfield reach the sea; Black Mountain is black granite and Thornton Peak grey-topped with rainforest below; the mesh lies outside the map, never rises above the map's edge between its first-ring vertices, faces up, draws its farthest ring first and is drawn behind the world without depth. The old backdrop test went with the backdrop.
 
-## v0.09: an afternoon storm
+## v0.09: browser tests stop before changing range
+
+**What failed.** After v0.08, two browser tests failed when they switched to low range: the keyboard driving test and the phone controls test. The phone test already failed on v0.07. Range only changes below 20 km/h (`Vehicle.toggleRange`), and both tests switched while the car could still be moving faster than that. The keyboard test held S for 3 s to stop, but S brakes and then reverses, and it left the car reversing at about 20 km/h. The phone test let go of the throttle at about 26 km/h and tapped HAND on and off, which doesn't wait for the car to stop. How fast the car was going at the switch depended on how long the screenshots took while the throttle was held (the software renderer is slower on the 6 km map), so the result turned on timing.
+
+**Fix.** Both tests now stop the car on the park brake and wait until it is below 0.5 m/s before switching range. The game is unchanged.
+
+## v0.10: an afternoon storm
 
 **What the owner said.** The first level is "a bit rinse and repeat". Of five ideas the owner liked, this is the changing weather: a storm comes through in the afternoon, the clay gets slipperier and the creeks rise, so arriving late at a crossing is harder. (The other four, varied stretches, route choices, rewards for exploring and surprises, were worked on alongside this and are in their own sections.)
 
