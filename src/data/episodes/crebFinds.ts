@@ -3,7 +3,7 @@ import type { FindDef, FlatDef, PoiDef, PropDef, TrackDef } from '../../sim/worl
 
 /**
  * Side trips on the CREB that pay off: short tracks off the main line to what the old
- * powerline left behind, each with something to load (docs/DECISIONS.md, v0.09). The huts
+ * powerline left behind, each with something to load (docs/DECISIONS.md, v0.10). The huts
  * and what's in them are the game's own; the history is in the briefing (docs/HISTORY.md).
  *
  *   Old line camp  – a short level spur east off the ridge between Big Red and Roaring Meg,
