@@ -14,6 +14,7 @@ import { deckAt } from './world/bridges';
 import { StaticMeshBatcher } from './world/staticMesh';
 import type { FallenTreeDef } from './world/mapTypes';
 import { WaterCurrent } from './world/current';
+import { riseShare } from './world/flood';
 import { scatterTuning } from '../data/vegetation';
 import { winchTuning } from '../data/tools';
 import { VehicleTools, type RepairKind, type ToolEvent } from './tools/tools';
@@ -126,6 +127,12 @@ export class Simulation {
    * so it burns faster to match; 0 burns nothing (the tank never empties).
    */
   fuelScale = 0;
+  /**
+   * A storm raising the creeks (src/data/weatherTimeline.ts): metres above their own
+   * level, and their current as a multiple of its own, each creek by its share of the rise
+   * (`features.creekRise`). Puddles and mud holes stay as laid.
+   */
+  readonly creeks = { rise: 0, flowScale: 1 };
 
   constructor(
     readonly R: Rapier,
@@ -134,11 +141,22 @@ export class Simulation {
   ) {
     const terrain = world.terrain;
     const current = new WaterCurrent(world.features.creeks);
+    const creeks = this.creeks;
     this.ground = {
       surfaceAt: (x, z) => terrain.surfaceAt(x, z),
-      waterSurfaceAt: (x, z) => terrain.waterSurfaceAt(x, z),
+      waterSurfaceAt: (x, z) => {
+        const w = terrain.waterSurfaceAt(x, z);
+        return w === null || creeks.rise === 0 ? w : w + creeks.rise * riseShare(world, terrain.index(x, z));
+      },
       heightAt: (x, z) => terrain.heightAt(x, z),
-      waterFlowAt: (x, z, out) => current.at(x, z, out),
+      waterFlowAt: (x, z, out) => {
+        current.at(x, z, out);
+        if (creeks.flowScale === 1) return out;
+        const k = 1 + (creeks.flowScale - 1) * riseShare(world, terrain.index(x, z));
+        out.x *= k;
+        out.z *= k;
+        return out;
+      },
       holeAt: (x, z) => terrain.holeAt(x, z),
     };
     this.physics = new Physics(R, this.ground);
@@ -250,6 +268,18 @@ export class Simulation {
       this.physics.colliderSurface.set(stub.handle, SurfaceId.Wood);
     }
     this.dynamics.set(f.id, { id: f.id, kind: 'fallenTree', body, def: f });
+  }
+
+  /**
+   * Follow a change in the weather: how wet the ground is (the tyres' grip) and the rain,
+   * and how high and fast the creeks run. The creek level offset stays as the world was
+   * built with, since the puddles were laid for it.
+   */
+  setWeather(env: EnvironmentConfig, creekRise: number, flowScale: number): void {
+    this.env.wetness = env.wetness;
+    this.env.rain = env.rain;
+    this.creeks.rise = creekRise;
+    this.creeks.flowScale = flowScale;
   }
 
   /** Spawn pose on the ground (or a bridge deck) at (x, z) for wheels of this radius. */
