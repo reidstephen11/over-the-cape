@@ -96,6 +96,8 @@ export interface TerrainFeatures {
   trackDistance: Uint8Array;
   /** Distance (m, clamped to 255) from each sample to the nearest creek's water edge (0 = in water). */
   creekDistance: Uint8Array;
+  /** Each sample's share of a storm's creek rise (src/sim/world/flood.ts); only maps with a storm have it. */
+  creekRise?: Float32Array;
   /** Mud holes in rough tracks (they hold water after rain). */
   mudHoles: BogDef[];
 }

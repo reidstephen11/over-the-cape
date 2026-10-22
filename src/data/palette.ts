@@ -11,6 +11,8 @@ export const palette = {
   rock: '#9A948A',
   rockDark: '#6F6A63',
   mud: '#6B4A33',
+  /** Dry river sand. */
+  sand: '#D2BF97',
   waterDeep: '#3D686A',
   waterShallow: '#799A8F',
   /** The open sea beyond the coast. */

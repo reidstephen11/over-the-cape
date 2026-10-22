@@ -35,7 +35,7 @@ export class GameRenderer {
   readonly gates: GateMarkers;
   readonly particles: Particles;
   /** Falling rain, when it is raining. */
-  readonly rain: Rain | null;
+  rain: Rain | null;
   /** The vehicle's world matrix: it shelters the rain. */
   readonly shelter = new THREE.Matrix4();
   private quality: QualityPreset;
@@ -85,6 +85,7 @@ export class GameRenderer {
       env.waterLevelOffset,
       world.features.creekDistance,
       new WaterCurrent(world.features.creeks),
+      world.features.creekRise,
     );
     this.scene.add(this.water.group);
     this.vegetation = new Vegetation(world, quality);
@@ -96,6 +97,7 @@ export class GameRenderer {
     this.gates = new GateMarkers(world);
     this.scene.add(this.gates.group);
     this.particles = new Particles(world.terrain, quality, env.waterLevelOffset);
+    this.particles.riseShare = world.features.creekRise ?? null;
     this.particles.setWetness(env.wetness);
     groundUniforms.groundWetness.value = env.wetness;
     this.scene.add(this.particles.group);
@@ -150,6 +152,18 @@ export class GameRenderer {
     this.particles.setWetness(env.wetness);
     groundUniforms.groundWetness.value = env.wetness;
     applyFogEnvironment(this.scene, env, this.quality.drawDistance);
+    // A storm brings the rain in (and takes it away again).
+    if (env.rain > 0 && !this.rain) {
+      this.rain = new Rain(env.rain, this.quality.particles);
+      this.scene.add(this.rain.mesh);
+    }
+    this.rain?.setAmount(env.rain);
+  }
+
+  /** Creeks risen by a storm (m above their own level) and running faster. */
+  setCreeks(rise: number, flowScale: number): void {
+    this.water.setCreeks(rise, flowScale);
+    this.particles.creekRise = rise;
   }
 
   resize(): void {

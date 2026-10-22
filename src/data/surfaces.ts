@@ -9,6 +9,7 @@ export const SurfaceId = {
   Wood: 6,
   Clay: 7,
   BlackSoil: 8,
+  Sand: 9,
 } as const;
 export type SurfaceId = (typeof SurfaceId)[keyof typeof SurfaceId];
 
@@ -120,6 +121,19 @@ export const surfaces: Record<SurfaceId, SurfaceDef> = {
     spray: true,
     wetGripLoss: 0.45,
     dirtRate: 0.07,
+  },
+  // Dry river sand gives under the tyres: it drags hard and lets the wheels dig in.
+  // Momentum carries a vehicle across; stopped in it, it has to climb out of its own ruts.
+  [SurfaceId.Sand]: {
+    id: SurfaceId.Sand,
+    name: 'Soft sand',
+    grip: 0.55,
+    rollingResistance: 0.17,
+    sink: 0.14,
+    dust: true,
+    spray: false,
+    wetGripLoss: 0,
+    dirtRate: 0.008,
   },
   [SurfaceId.Wood]: {
     id: SurfaceId.Wood,

@@ -97,6 +97,9 @@ describe('exploration and saving', () => {
   it('opens the first episode, and each later one once the one before it is finished', () => {
     expect(unlocked(null, 'creb')).toBe(true);
     expect(unlocked(saveData(), 'creb')).toBe(true);
+    expect(unlocked(null, 'coach')).toBe(false);
+    expect(unlocked(saveData({ episodes: { creb: { completed: false } } }), 'coach')).toBe(false);
+    expect(unlocked(saveData({ episodes: { creb: { completed: true } } }), 'coach')).toBe(true);
   });
 
   it('never throws when storage is blocked or the save is junk', () => {
