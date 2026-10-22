@@ -145,7 +145,9 @@ export class Simulation {
       surfaceAt: (x, z) => terrain.surfaceAt(x, z),
       waterSurfaceAt: (x, z) => {
         const w = terrain.waterSurfaceAt(x, z);
-        return w === null || creeks.rise === 0 || !isCreekCell(world, terrain.index(x, z)) ? w : w + creeks.rise;
+        return w === null || creeks.rise === 0 || !isCreekCell(world, terrain.index(x, z))
+          ? w
+          : w + creeks.rise;
       },
       heightAt: (x, z) => terrain.heightAt(x, z),
       waterFlowAt: (x, z, out) => {

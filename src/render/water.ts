@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { NO_WATER, type Terrain } from '../sim/world/terrain';
+import { CREEK_MARGIN } from '../sim/world/flood';
 import type { WaterCurrent } from '../sim/world/current';
 import { pal } from './colors';
 import { patchFog } from './fog';
@@ -18,6 +19,11 @@ export class WaterMesh {
   /** Puddles are drawn without the creek's depth offset, so their edges follow the ground. */
   readonly puddleMaterial: THREE.MeshStandardMaterial;
   private readonly time = { value: 0 };
+  /** The creek water (puddles apart), raised as a whole when a storm floods the creeks. */
+  private readonly creeks = new THREE.Group();
+  /** The creeks' current as a multiple of their own, and how muddy floodwater turns them (0..1). */
+  private readonly flowScale = { value: 1 };
+  private readonly silt = { value: 0 };
 
   /**
    * creekDistance (metres to the creek, per cell) tells puddles from the creek; without it all
@@ -33,6 +39,8 @@ export class WaterMesh {
     this.material = this.createMaterial(true);
     this.puddleMaterial = this.createMaterial(false);
     this.group.name = 'water';
+    this.creeks.name = 'creeks';
+    this.group.add(this.creeks);
     const { resX: res, halfX, halfZ } = terrain;
     const W = terrain.water;
     const H = terrain.heights;
@@ -79,7 +87,7 @@ export class WaterMesh {
             tmp.copy(shallow).lerp(deep, Math.min(1, Math.max(0, (depth - 0.2) / 0.6)));
             if (steep > 0.35) tmp.lerp(foam, Math.min(0.85, (steep - 0.35) * 0.6));
             // Creek water lies on the creek line; puddles are kept well clear of it.
-            const isPuddle = creekDistance !== undefined && creekDistance[i00] > 2;
+            const isPuddle = creekDistance !== undefined && creekDistance[i00] > CREEK_MARGIN;
             if (isPuddle) tmp.lerp(muddy, 0.75);
             const out = isPuddle ? puddle : creek;
             const x0 = ix - halfX;
@@ -100,12 +108,27 @@ export class WaterMesh {
             vertex(p01, i01);
             vertex(p11, i11);
           }
-        this.addMesh(creek, this.material);
-        this.addMesh(puddle, this.puddleMaterial);
+        this.addMesh(creek, this.material, this.creeks);
+        this.addMesh(puddle, this.puddleMaterial, this.group);
       }
   }
 
-  private addMesh(m: { pos: number[]; col: number[]; flow: number[] }, material: THREE.Material): void {
+  /**
+   * Creeks risen by a storm (m above their own level) and running faster: the water rises,
+   * its ripples run faster and it turns muddier the higher it is.
+   */
+  setCreeks(rise: number, flowScale: number): void {
+    this.creeks.position.y = rise;
+    this.creeks.updateMatrixWorld(true);
+    this.flowScale.value = flowScale;
+    this.silt.value = Math.min(1, rise / 0.3);
+  }
+
+  private addMesh(
+    m: { pos: number[]; col: number[]; flow: number[] },
+    material: THREE.Material,
+    parent: THREE.Group,
+  ): void {
     if (m.pos.length === 0) return;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(m.pos, 3));
@@ -117,7 +140,7 @@ export class WaterMesh {
     mesh.renderOrder = 10;
     mesh.receiveShadow = true;
     mesh.matrixAutoUpdate = false;
-    this.group.add(mesh);
+    parent.add(mesh);
   }
   update(dt: number): void {
     this.time.value += dt;
@@ -137,12 +160,15 @@ export class WaterMesh {
     });
     material.onBeforeCompile = (shader) => {
       shader.uniforms.waterTime = this.time;
+      shader.uniforms.waterFlowScale = offset ? this.flowScale : { value: 1 };
+      shader.uniforms.waterSilt = offset ? this.silt : { value: 0 };
       shader.vertexShader =
-        `attribute vec2 waterFlow; varying vec3 vWaterPosition; varying vec2 vWaterFlow;\n${shader.vertexShader}`.replace(
+        `attribute vec2 waterFlow; uniform float waterFlowScale; varying vec3 vWaterPosition; varying vec2 vWaterFlow;\n${shader.vertexShader}`.replace(
           '#include <begin_vertex>',
-          '#include <begin_vertex>\nvWaterPosition = (modelMatrix * vec4(position, 1.0)).xyz;\nvWaterFlow = waterFlow;',
+          '#include <begin_vertex>\nvWaterPosition = (modelMatrix * vec4(position, 1.0)).xyz;\nvWaterFlow = waterFlow * waterFlowScale;',
         );
-      shader.fragmentShader = `uniform float waterTime; varying vec3 vWaterPosition; varying vec2 vWaterFlow;
+      shader.fragmentShader =
+        `uniform float waterTime; uniform float waterSilt; varying vec3 vWaterPosition; varying vec2 vWaterFlow;
         // Ripples carried downstream: two copies of the pattern slide with the current,
         // each restarting while the other is in full view, so they never stretch.
         vec2 waterWaves(vec2 p) {
@@ -156,10 +182,12 @@ export class WaterMesh {
           return smoothstep(0.7, 1.0, sin(q.x * 0.8 + sin(q.y * 1.7)) * sin(q.y * 3.4 + sin(q.x * 0.5)));
         }
         \n${shader.fragmentShader}`
-        .replace(
-          '#include <color_fragment>',
-          `
+          .replace(
+            '#include <color_fragment>',
+            `
           #include <color_fragment>
+          // Floodwater carries mud: the creek turns brown as it rises.
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.42, 0.33, 0.22), waterSilt * 0.55);
           float flowPhase = fract(waterTime * 0.4);
           float flowBlend = abs(1.0 - 2.0 * flowPhase);
           vec2 flowA = vWaterPosition.xz - vWaterFlow * flowPhase * 2.5;
@@ -169,25 +197,25 @@ export class WaterMesh {
           float flecks = mix(waterFlecks(flowA, flowDir), waterFlecks(flowB, flowDir), flowBlend);
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.78, 0.8, 0.76), flecks * min(1.0, flowSpeed * 0.35) * 0.3);
         `,
-        )
-        .replace(
-          '#include <normal_fragment_maps>',
-          `
+          )
+          .replace(
+            '#include <normal_fragment_maps>',
+            `
           #include <normal_fragment_maps>
           vec2 wave = mix(waterWaves(flowA), waterWaves(flowB), flowBlend) * (1.0 + flowSpeed * 0.5);
           normal = normalize(normal + mat3(viewMatrix) * vec3(wave.x, 0.0, wave.y));
         `,
-        )
-        .replace(
-          '#include <opaque_fragment>',
-          `
+          )
+          .replace(
+            '#include <opaque_fragment>',
+            `
           float fresnel = pow(1.0 - max(dot(normal, normalize(vViewPosition)), 0.0), 3.0);
           outgoingLight = mix(outgoingLight, vec3(0.39, 0.51, 0.52), fresnel * 0.35);
           diffuseColor.a = 0.68 + fresnel * 0.29;
           #include <opaque_fragment>
         `,
-        );
+          );
     };
-    return patchFog(material, offset ? 'flowing-water-v2' : 'puddle-water-v2');
+    return patchFog(material, offset ? 'flowing-water-v3' : 'puddle-water-v3');
   }
 }

@@ -2,7 +2,7 @@ import type { WeatherTimeline } from '../weatherTimeline';
 
 /**
  * The CREB's afternoon storm. It rained overnight; showers come in at 3 pm, when a run on
- * schedule is coming over Bob's Hill, and turn to heavy rain from 4:30 as it runs north
+ * schedule is coming over Bob's Hill, and build to heavy rain by 5 pm as it runs north
  * up the Bloomfield Track, easing at dusk. The clay greases up and the creeks rise and run
  * faster the longer it rains, so the Little Annan, the last crossing, is about 15 cm up at
  * 5 pm and over 20 cm up by 5:45.

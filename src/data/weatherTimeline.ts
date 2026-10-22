@@ -1,3 +1,5 @@
+import { environmentAt, type EnvironmentConfig, type Weather } from './environment';
+
 /**
  * Weather that changes during an episode: rain coming and going through the day, the
  * ground soaking it up and the creeks rising with it. An episode sets one in its
@@ -89,5 +91,20 @@ export function weatherAt(t: WeatherTimeline, hour: number): WeatherNow {
   };
 }
 
-/** Weather that never changes from the episode's own (no storm, or a replay). */
-export const steadyWeather: WeatherNow = { rain: 0, wetness: 0, creekRise: 0, flowScale: 1 };
+/**
+ * An episode's light and weather at a clock time: its own weather, with the storm (if it
+ * has one) passing over, and how high and fast the creeks run.
+ */
+export function episodeWeatherAt(
+  hour: number,
+  weather: Weather,
+  storm?: WeatherTimeline,
+): { env: EnvironmentConfig; creekRise: number; flowScale: number } {
+  if (!storm) return { env: environmentAt(hour, weather), creekRise: 0, flowScale: 1 };
+  const now = weatherAt(storm, hour);
+  return {
+    env: environmentAt(hour, weather, { rain: now.rain, wetness: now.wetness }),
+    creekRise: now.creekRise,
+    flowScale: now.flowScale,
+  };
+}

@@ -78,7 +78,7 @@ export class LoadingScreen {
       `Mission: ${def.mission}.`,
       replay
         ? `Conditions: ${timeLabels[replay.time].toLowerCase()}, ${weatherLabels[replay.weather].toLowerCase()} — no time limit.`
-        : `Conditions: ${weatherLabels[def.weather].toLowerCase()}, leaving at ${clockTime(def.startHour)}${def.deadline ? `; ${def.deadline.label.toLowerCase()}` : ''}.`,
+        : `Conditions: ${weatherLabels[def.weather].toLowerCase()}${def.storm ? `, ${def.storm.forecast}` : ''}, leaving at ${clockTime(def.startHour)}${def.deadline ? `; ${def.deadline.label.toLowerCase()}` : ''}.`,
       `On board: ${l.fuel} L of fuel, ${l.jerryCans} jerry can${l.jerryCans === 1 ? '' : 's'} (20 L), ${l.spares} spare wheel${l.spares === 1 ? '' : 's'}, ${l.plugs} tyre plugs.`,
       `${endings[damage]} Camps save your progress; you restart from the last one you reached.`,
       ...(resumeFrom ? [`Carrying on from ${resumeFrom}.`] : []),

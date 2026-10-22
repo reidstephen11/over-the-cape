@@ -29,7 +29,8 @@ export function spreadCreekBanks(world: World, maxRise: number): number {
         for (const j of [i - 1, i + 1, i - t.resX, i + t.resX])
           if (near[j] <= CREEK_MARGIN && t.water[j] > level) level = t.water[j];
         // Only dry bank above the water: never ground below it (beside a fall), which would flood now.
-        if (level > NO_WATER && t.heights[i] >= level && t.heights[i] < level + maxRise) next.push([i, level]);
+        if (level > NO_WATER && t.heights[i] >= level && t.heights[i] < level + maxRise)
+          next.push([i, level]);
       }
     for (const [i, level] of next) t.water[i] = level;
     added += next.length;

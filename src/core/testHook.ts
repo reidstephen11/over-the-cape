@@ -106,7 +106,7 @@ export interface GameHook {
   /** Set the clock (hours); the light follows. */
   setHour(hour: number): void;
   /** The weather, and how wet and rainy that makes it. */
-  conditions(): { weather: string; wetness: number; rain: number };
+  conditions(): { weather: string; wetness: number; rain: number; creekRise: number };
   /** Fuel and what's on board (each optional). */
   setSupplies(s: { fuel?: number; jerryCans?: number; spares?: number; plugs?: number }): void;
   /** The result card: open, its title, and the button to press. */
@@ -317,6 +317,7 @@ export function installHook(game: Game): void {
       weather: g.replay?.weather ?? g.episode.weather,
       wetness: g.sim.env.wetness,
       rain: g.sim.env.rain,
+      creekRise: g.sim.creeks.rise,
     }),
     setSupplies: (s) => {
       const c = g.vehicle.condition;

@@ -43,7 +43,7 @@ They run south to north and unlock in order: finish one to open the next. A fini
 
 ### Episode 1: The CREB Track
 
-**Mission: reach the Lions Den Hotel before dark.** June, the track has just reopened after the wet, and it rained overnight. You leave Daintree Village at 12:30 pm; it's dark at 6:15 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs.
+**Mission: reach the Lions Den Hotel before dark.** June, the track has just reopened after the wet, and it rained overnight. You leave Daintree Village at 12:30 pm; it's dark at 6:15 pm. Storms are forecast from 3 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs.
 
 The map is a long strip, 1.3 km wide and 6 km from south to north, with about 6.6 km of track up its length. The real trip is over 100 km, so the distances are shortened; the obstacles are full size.
 
@@ -57,6 +57,8 @@ The map is a long strip, 1.3 km wide and 6 km from south to north, with about 6.
 8. North on the gravel **Bloomfield Track** through **Rossville**, across the **Little Annan River**, to the **Lions Den Hotel**.
 
 After the wet the red clay tracks are slick, the gravel roads are bumpy and potholed, and the range tracks are washed out, with channels cut across them. The potholes and washouts deep enough to pinch a tyre at speed are dark, ringed with pale gravel. Mud holes lie in the dips on the flatter stretches, most of them full of brown water so you can't see how deep they are; some are long boggy stretches of 25–45 m. Where a hole sits in a hollow the land drains into, it is a **deep bog**, 0.7 m of sticky black mud under the water: few vehicles get out without the winch, and a tree stands near either end to winch from. Off the tracks most of the flatter ground is wet **black soil**, dark beside the firm verge: drive onto it and you crawl at walking pace, and on any slope you stop. Drive fast and the car bounces off the swells and slides on the clay. The creeks run fast and deep: Donovan's Creek and the Little Annan push hard, and the Daintree's deep middle stops a car dead.
+
+**The afternoon storm.** Showers come in at 3 pm (a note on screen tells you), build to heavy rain by 5 pm and ease at dusk. The sky darkens, the rain drums on the roof, and the clay gets greasier the longer it rains. The creeks rise and run faster: muddier, deeper and pushing harder. At 5 pm the Little Annan is about 15 cm up and anything gets across in low range; by 5:45 it is over 20 cm up, and the short-wheelbase 4WD crawling across is swept away: keep a steady 15 km/h through it, or get there earlier. Restarting from a camp brings back the weather and the creeks as they were when you got there. Replays in conditions you choose keep the weather you picked.
 
 The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns) except for open eucalypt woodland round the village, the paddocks and the drier hills by the Lions Den. A fallen tree lies across the track on the range: winch it aside or squeeze past.
 
@@ -166,11 +168,12 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - On the gravel roads about 30–40 km/h is a fair pace, and less on the clay. Faster, the swells bounce the car and the potholes and washouts (the dark ones ringed with pale gravel) pinch tyres.
 - Stay on the track: the dark ground off it is black soil, and bogs you. Cutting a corner onto it costs minutes.
 - The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range, and a tree stands near each end of every deep or long bog. Bogged in a deep one, hook up to the tree ahead (E), winch in (R) and drive gently with it.
+- Keep an eye on the clock once it rains: the creeks only get higher. In a risen creek, a steady pace in high range can get the short-wheelbase 4WD across where crawling lets the current take it.
 - Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
 ## Debug mode
 
-Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle state, flooding, sound levels) and a panel with a free-fly camera (also the **backtick** key), collider wireframes, a teleport button for every place on the map and live vehicle tuning sliders.
+Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle state, flooding, sound levels) and a panel with a free-fly camera (also the **backtick** key), collider wireframes, a button that moves the clock on 30 minutes (to try the storm and the dusk), a teleport button for every place on the map and live vehicle tuning sliders.
 
 ## What to test
 
@@ -184,6 +187,7 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **v0.07 holes you can see:** on the gravel roads, the potholes and washouts deep enough to pinch a tyre are dark, ringed with pale gravel. Can you spot them in time at 40 km/h?
 - [ ] **v0.07 flat tyres:** on Realistic, get a puncture (or a torn sidewall) and let it go flat: the tyre squashes flat at the bottom and bulges, the corner sits low, and the car pulls hard towards it, thumps at speed and slides in corners. Fix it with a plug or the spare and it drives straight again.
 - [ ] **v0.08 the horizon:** at the range lookout, look east: the Coral Sea beyond the forest, fading into the sky with no hard line. Look west: a long, flat-topped range on the horizon (the tablelands). From the Upper Daintree paddocks, look east: Thornton Peak stands over the trees. From the Lions Den, look north: Black Mountain, dark and rounded, through a gap in the hills. No sharp alpine peaks and no grey rock walls anywhere at the map's edges. Check on Low, Medium and High: the far land shows on all three. Any gaps or flicker where the map's edge meets the far land? Has the frame rate dropped?
+- [ ] **v0.09 the storm:** drive the CREB from the start. The briefing and the welcome screen mention storms from 3 pm. At 3 pm a note says rain is coming; the sky greys, rain falls and is heard (louder on the roof from the driver's seat), and from about 4:45 a note says the rain is heavy. Do the clay climbs and the corners get noticeably greasier? Do Donovan's Creek and the Little Annan look higher, browner and faster? Cross the Little Annan before 5 pm, then (with `?debug`, **Clock +30 min**) try it again later: is it clearly harder, but still fair? Restart from a camp: is the weather as it was when you got there? Replay with chosen conditions: does the weather stay as picked?
 - [ ] **History notes:** each named place shows its note as you arrive. Do they read well, and is there enough time to read them while driving?
 - [ ] **Camps:** reaching Roaring Meg camp shows "camp reached, progress saved". Pause → Restart from last camp puts you back there with the clock, fuel and spares as they were.
 - [ ] **Running out:** let the fuel run low and pour in the jerry can from the tool menu; then run dry with no cans and check the episode ends with a restart offered.

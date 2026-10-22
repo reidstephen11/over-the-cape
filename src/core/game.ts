@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { maps } from '../data/maps';
-import { environmentAt, environmentFor, type Conditions } from '../data/environment';
+import { environmentFor, type Conditions } from '../data/environment';
+import { episodeWeatherAt } from '../data/weatherTimeline';
 import { clockTime, episodeOrder, episodes, type EpisodeDef, type EpisodeId } from '../data/episodes';
 import { usePalette } from '../render/colors';
 import { qualityPresets } from '../data/quality';
@@ -10,6 +11,7 @@ import { vehicles } from '../data/vehicles';
 import { cameraTuning } from '../data/camera';
 import { buildWorldSteps, type World } from '../sim/world/world';
 import { addPuddles } from '../sim/world/puddles';
+import { spreadCreekBanks } from '../sim/world/flood';
 import { loadRapier } from '../sim/physics';
 import { Simulation } from '../sim/sim';
 import type { Vehicle } from '../sim/vehicle/vehicle';
@@ -101,6 +103,8 @@ export class Game {
   readonly result: ResultCard;
   /** The clock time the light was last set for, and whether it was dark enough for the lamps. */
   private envHour: number;
+  /** The clock time the storm's HUD notes were last checked at. */
+  private noteHour: number;
   private lampBeams: boolean;
   readonly toolsView: ToolsView;
   readonly tool: ToolController;
@@ -157,6 +161,7 @@ export class Game {
     this.progress = { ...setup.progress };
     this.run = new EpisodeRun(setup.def, setup.checkpoint, !setup.replay);
     this.envHour = this.run.hour;
+    this.noteHour = this.run.hour;
     this.lampBeams = sim.env.lampBeams;
     const tuning = vehicles[vehicleId].tuning;
     this.crawlRuns = new CrawlRuns(world.map.crawlTrails ?? [], world.features.tracks, crawlBests);
@@ -238,6 +243,10 @@ export class Game {
           teleport: (p) => this.teleportToPoi(p),
           toggleFreeCam: () => this.toggleFreeCam(),
           bird: (kind) => this.audio.bird(kind),
+          // Jump the clock to try the storm and the dusk (the light and weather follow).
+          addTime: (hours) => {
+            if (this.run.timed) this.run.hour += hours;
+          },
         })
       : null;
     window.addEventListener('keydown', (e) => {
@@ -366,7 +375,12 @@ export class Game {
       choice.resume && saved && mapDef.pois.some((p) => p.id === saved.camp && p.kind === 'campsite')
         ? saved
         : startCheckpoint(def, mapDef.spawnCampsite);
-    const env = choice.replay ? environmentFor(choice.replay) : environmentAt(checkpoint.hour, def.weather);
+    // Replays keep the conditions picked; the story's own run has its storm (if any).
+    const storm = choice.replay ? undefined : def.storm;
+    const weather = choice.replay
+      ? { env: environmentFor(choice.replay), creekRise: 0, flowScale: 1 }
+      : episodeWeatherAt(checkpoint.hour, def.weather, storm);
+    const env = weather.env;
     // The map's own colours (red clay, greener grass) before any mesh is built.
     usePalette(mapDef.palette);
     const rapier = loadRapier();
@@ -380,6 +394,8 @@ export class Game {
     const world = r.value;
     // Wet weather leaves puddles on the tracks (before physics and meshes read the ground).
     addPuddles(world, env);
+    // A storm can raise the creeks over their low banks.
+    if (storm) spreadCreekBanks(world, storm.creeks.maxRise);
     const exploration = new Exploration(world.pois, {
       discovered: checkpoint.discovered,
       lastCampsite: checkpoint.camp,
@@ -387,11 +403,13 @@ export class Game {
     progress(0.86, 'Starting physics');
     await nextFrame();
     const sim = new Simulation(await rapier, world, env);
+    sim.setWeather(env, weather.creekRise, weather.flowScale);
     progress(0.92, 'Building meshes');
     await nextFrame();
     // Sign lettering uses the web font; wait for it (but never block on a slow network).
     await Promise.race([document.fonts?.ready, new Promise((res) => setTimeout(res, 1500))]);
     const view = new GameRenderer(appEl, world, env, qualityPresets[settings.quality], sim.dynamics.values());
+    view.setCreeks(weather.creekRise, weather.flowScale);
     return new Game(
       world,
       sim,
@@ -512,6 +530,7 @@ export class Game {
       applyCheckpoint(this.vehicle, this.checkpoint);
       this.exploration.lastCampsite = this.checkpoint.camp;
       this.run.restart(this.checkpoint);
+      this.noteHour = this.run.hour;
       this.updateEnvironment(true);
       this.crawlRuns.cancel();
       this.chase.reset();
@@ -707,12 +726,23 @@ export class Game {
     if (reading) this.loop.paused = true;
   }
 
-  /** Set the light for the clock (every few game minutes, or now). Dusk turns the lamps on. */
+  /**
+   * Set the light and weather for the clock (every few game minutes, or now): the sky, the
+   * rain, the ground's grip and the creeks follow a storm. Dusk turns the lamps on.
+   */
   private updateEnvironment(force = false): void {
-    if (this.replay || (!force && Math.abs(this.run.hour - this.envHour) < 0.05)) return;
+    if (this.replay) return;
+    this.stormNotes();
+    if (!force && Math.abs(this.run.hour - this.envHour) < 0.05) return;
     this.envHour = this.run.hour;
-    const env = environmentAt(this.run.hour, this.episode.weather);
+    const { env, creekRise, flowScale } = episodeWeatherAt(
+      this.run.hour,
+      this.episode.weather,
+      this.episode.storm,
+    );
     this.view.setEnvironment(env);
+    this.view.setCreeks(creekRise, flowScale);
+    this.sim.setWeather(env, creekRise, flowScale);
     if (env.lampBeams === this.lampBeams) return;
     this.lampBeams = env.lampBeams;
     this.view.scene.remove(this.model.root);
@@ -723,6 +753,14 @@ export class Game {
       this.vehicle.lights = 'low';
       this.hud.toast('Dusk — headlights on', 2200);
     }
+  }
+
+  /** The storm's HUD notes, each once as the clock passes it (the first drops, the rain easing). */
+  private stormNotes(): void {
+    const from = this.noteHour;
+    this.noteHour = this.run.hour;
+    for (const n of this.episode.storm?.notes ?? [])
+      if (from < n.hour && n.hour <= this.run.hour) this.hud.toast(n.text, 6000);
   }
 
   /** How the run went, for the result card. */

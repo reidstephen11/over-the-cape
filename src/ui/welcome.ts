@@ -89,7 +89,7 @@ export class WelcomeScreen {
     const upcoming = upcomingEpisodes
       .map((u) => `<li><b>${u.number}. ${u.title}</b> — ${u.route}</li>`)
       .join('');
-    const story = `${weatherLabels[def.weather]}, from ${clockTime(def.startHour)}${def.deadline ? ` · ${def.deadline.label.toLowerCase()}` : ''}`;
+    const story = `${weatherLabels[def.weather]}${def.storm ? `, ${def.storm.forecast}` : ''}, from ${clockTime(def.startHour)}${def.deadline ? ` · ${def.deadline.label.toLowerCase()}` : ''}`;
     this.el.innerHTML = `
       <div class="welcome-card paper">
         <h1>Over the Cape</h1>
