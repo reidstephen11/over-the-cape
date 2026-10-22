@@ -71,7 +71,11 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'bloomfield-track': { rough: { ...roadRough, potholes: 4, longBogsKept: 1 } },
 };
 
-/** A washout across the ridge, too wide to drive across without the planks. */
+/**
+ * A washout across the ridge, too wide to drive across without the planks. Half a metre deep
+ * with sheer sides: deeper than the wheels' radius for every vehicle but the Unimog, whose big
+ * wheels climb out of it (and whose weight shoves a plank aside).
+ */
 export const crebWashout: GullyDef = {
   id: 'ridge-washout',
   x: -23.85,
@@ -79,7 +83,7 @@ export const crebWashout: GullyDef = {
   headingDeg: 55.2,
   length: 26,
   gap: 1.3,
-  depth: 1.5,
+  depth: 0.5,
 };
 
 /**
@@ -177,6 +181,8 @@ export const crawlStretches: Record<string, ReadonlyArray<readonly [number, numb
     [480, 520],
     [770, 810],
     [1360, 1400],
+    // The Little Annan's ford.
+    [2150, 2215],
   ],
 };
 

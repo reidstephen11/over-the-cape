@@ -4,6 +4,7 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { crebWashout } from '../src/data/episodes/crebStretches';
 import { perentieTuning } from '../src/data/perentie';
+import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
 import { trailProgress } from '../src/sim/world/crawlTrail';
 import { buildWorld } from '../src/sim/world/world';
@@ -45,7 +46,7 @@ describe('the CREB, stretch by stretch', () => {
     }
   }, 600_000);
 
-  it('cuts a washout across the ridge that stops a vehicle without the planks and not with them', async () => {
+  it('cuts a washout across the ridge that stops a vehicle without the planks and not with them, but not the Unimog', async () => {
     // Square across the track.
     const ridge = trackOf('creb-ridge');
     const at = trailProgress(ridge, crebWashout.x, crebWashout.z);
@@ -63,6 +64,11 @@ describe('the CREB, stretch by stretch', () => {
       expect(bridged.done, tuning.name).toBe(true);
       expect(bridged.tilt, tuning.name).toBeLessThan(30);
     }
+    // The Unimog's big wheels climb out of it.
+    const unimog = await stretch('creb-ridge', at.along - 20, at.along + 20, 'crawl', unimogTuning, {
+      limit: 90,
+    });
+    expect(unimog.done).toBe(true);
   }, 600_000);
 
   it('climbs the rock ledge out of Roaring Meg crawling with the lockers, not spinning up it in high range', async () => {
