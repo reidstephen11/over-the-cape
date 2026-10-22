@@ -4,6 +4,7 @@ import { emptyInput, type VehicleInput } from '../../src/sim/input/vehicleInput'
 import type { Simulation } from '../../src/sim/sim';
 import { trailPoint, trailProgress } from '../../src/sim/world/crawlTrail';
 import type { TrackInfo } from '../../src/sim/world/features';
+import type { World } from '../../src/sim/world/world';
 import type { SurprisePlan } from '../../src/sim/world/surprisePlan';
 import { DT, WinchRecovery } from './drive';
 
@@ -35,6 +36,30 @@ function sideOf(track: TrackInfo, x: number, z: number) {
   return { along: t.along, lateral };
 }
 
+/** Tracks the route drive crawls (scripts/creb-drive.ts). */
+export const CRAWLED = new Set(['big-red', 'creb-ridge', 'roaring-meg-climb', 'bobs-hill', 'concrete-descent']);
+
+/**
+ * Where to start the drive up to a spot: `approach` metres short of it, or just past a
+ * washout on the way (crossing one takes the planks, which these drives don't lay).
+ */
+export function approachStart(world: World, track: TrackInfo, at: number, approach: number): number {
+  let from = Math.max(0, at - approach);
+  for (const g of world.map.gullies) {
+    const t = trailProgress(track, g.x, g.z);
+    if (t.distance < 5 && t.along > from - 10 && t.along < at) from = Math.max(from, t.along + 15);
+  }
+  // Not in a ford: start on dry ground.
+  const { creekDistance } = world.features;
+  const t = world.terrain;
+  const wet = (s: number) => {
+    const p = trailPoint(track, s);
+    return creekDistance[Math.round(p.z + t.halfZ) * t.resX + Math.round(p.x + t.halfX)] < 4;
+  };
+  while (from < at - 10 && wet(from)) from += 2;
+  return from;
+}
+
 /**
  * Drive up to a run's surprise as a player would: along the track at a bush pace until it
  * starts, stop, wait for it to come down, then go on in low range with both lockers.
@@ -55,7 +80,7 @@ export async function getPast(
   fuel?: number,
 ): Promise<GetPastResult> {
   const track = sim.world.features.tracks.find((t) => t.def.id === plan.track)!;
-  const from = Math.max(0, plan.at - approach);
+  const from = approachStart(sim.world, track, plan.at, approach);
   const start = trailPoint(track, from);
   const v = sim.addVehicle('p', sim.poseAt(start.x, start.z, start.headingDeg, tuning.wheelRadius), tuning);
   if (fuel !== undefined) v.condition.fuel = fuel;
@@ -75,7 +100,14 @@ export async function getPast(
   };
   const end = Math.min(track.poly.length, plan.at + 30);
   const approachPath = pathAlong(from, end, () => 0);
-  let pilot = new Autopilot(approachPath, speed);
+  // On the range the route drive crawls, in low range with both lockers (creb-drive.ts).
+  const crawlIn = CRAWLED.has(plan.track);
+  let pilot = new Autopilot(approachPath, crawlIn ? 1.2 : speed);
+  if (crawlIn) {
+    v.toggleRange();
+    v.precisionCrawl = true;
+    pilot.lowRange = true;
+  }
 
   let mode: 'approach' | 'stopping' | 'toTree' | 'hook' | 'winch' | 'backUp' | 'past' = 'approach';
   let pulls = 0;
@@ -135,7 +167,12 @@ export async function getPast(
       at,
       end,
       // Over to the far side within 6 m, and back to the middle past the spot.
-      (s) => passSide * 1.1 * Math.max(0, Math.min(1, (s - at) / 6, (plan.at + 22 - s) / 8)),
+      // Clear of a tree's trunk; past rocks, a little less far over, as the far side of a
+      // cutting is the drop.
+      (s) =>
+        passSide *
+        (plan.kind === 'rockfall' ? 0.85 : 1.1) *
+        Math.max(0, Math.min(1, (s - at) / 6, (plan.at + 22 - s) / 8)),
     );
   };
   const hook = (prefer?: string) => {
@@ -179,8 +216,13 @@ export async function getPast(
       // Bogged in a mud hole on the way: lockers in, and winch out to a tree ahead.
       approachStuck = Math.abs(v.speed) < 0.3 ? approachStuck + DT : 0;
       for (const axle of ['front', 'rear'] as const) {
-        const want = approachStuck > 4 || winch.attached;
+        const want = crawlIn || approachStuck > 4 || winch.attached;
         if (v.differentials[axle] !== want && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
+      }
+      // Stuck in high range (out of a ford, say), drop to low range as a driver would.
+      if (approachStuck > 4 && v.drivetrain.range === 'high') {
+        v.toggleRange();
+        pilot.lowRange = true;
       }
       cmd.winchIn = recovery?.update(DT) ?? false;
     }

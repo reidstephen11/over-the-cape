@@ -18,7 +18,7 @@ import { Simulation } from '../src/sim/sim';
 import { addPuddles } from '../src/sim/world/puddles';
 import { planSurprises } from '../src/sim/world/surprisePlan';
 import { buildWorld } from '../src/sim/world/world';
-import { getPast } from '../tests/helpers/surprises';
+import { approachStart, CRAWLED, getPast } from '../tests/helpers/surprises';
 
 const [lo, hi] = (process.argv[2] ?? '1').split('-').map(Number);
 const id = process.argv[3] ?? 'shortie';
@@ -57,7 +57,7 @@ function plainDrive(trackId: string, at: number) {
   const sim = new Simulation(R, world, env);
   sim.fuelScale = crebEpisode.fuelScale;
   const track = world.features.tracks.find((t) => t.def.id === trackId)!;
-  const from = Math.max(0, at - 120);
+  const from = approachStart(world, track, at, 120);
   const start = trailPoint(track, from);
   const v = sim.addVehicle(
     'p',
@@ -72,7 +72,14 @@ function plainDrive(trackId: string, at: number) {
     const p = trailPoint(track, s);
     path.push([p.x, p.z]);
   }
-  const pilot = new Autopilot(path, 4.5);
+  // Crawling the range as the route drive does.
+  const crawl = CRAWLED.has(trackId);
+  const pilot = new Autopilot(path, crawl ? 1.2 : 4.5);
+  if (crawl) {
+    v.toggleRange();
+    v.precisionCrawl = true;
+    pilot.lowRange = true;
+  }
   const recovery = new WinchRecovery(sim, v, path);
   let time = 0;
   let stuck = 0;
@@ -81,8 +88,12 @@ function plainDrive(trackId: string, at: number) {
     const cmd = pilot.input(v, DT);
     cmd.winchIn = recovery.update(DT);
     for (const axle of ['front', 'rear'] as const) {
-      const want = stuck > 4;
+      const want = crawl || stuck > 4;
       if (v.differentials[axle] !== want && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
+    }
+    if (stuck > 4 && v.drivetrain.range === 'high') {
+      v.toggleRange();
+      pilot.lowRange = true;
     }
     inputs.set('p', cmd);
     sim.step(inputs, DT);
