@@ -13,6 +13,8 @@ export const palette = {
   mud: '#6B4A33',
   waterDeep: '#3D686A',
   waterShallow: '#799A8F',
+  /** The open sea beyond the coast. */
+  sea: '#2F6377',
   vehicleBody: '#D9C6A0',
   vehicleRoof: '#EDE8DC',
   vehicleTrim: '#3A3A38',

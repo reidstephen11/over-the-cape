@@ -60,6 +60,8 @@ After the wet the red clay tracks are slick, the gravel roads are bumpy and poth
 
 The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns) except for open eucalypt woodland round the village, the paddocks and the drier hills by the Lions Den. A fallen tree lies across the track on the range: winch it aside or squeeze past.
 
+Beyond the map's edge the real country carries on to the horizon, brought in closer and lower in step with the map. East, between the range and the Coral Sea, stand Thornton Peak, Mt Pieter Botte, Mt Sorrow behind Cape Tribulation, and Mt Finnigan's granite tops, and the Daintree and the Bloomfield run out to the sea. West, rainforest ranges rise to the flat-topped tablelands of the Great Dividing Range. North of the Lions Den the country dries out to open woodland round the black boulder heaps of Black Mountain. South are the Daintree's cane and cattle flats and the ranges towards Mossman. Far land fades into the sky with distance, as it does on a humid day.
+
 ## How an episode works
 
 - **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (eight game minutes a real minute on the CREB) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
@@ -181,6 +183,7 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **v0.07 deep and long bogs:** on the paddock road, the ridge before Roaring Meg camp, by the Bloomfield bridge and just before the Lions Den, a mud hole sits in a hollow: drive in and you should get stuck, and need to winch out to the tree near its far end. Some mud holes are now long boggy stretches. Too hard, too easy, too many?
 - [ ] **v0.07 holes you can see:** on the gravel roads, the potholes and washouts deep enough to pinch a tyre are dark, ringed with pale gravel. Can you spot them in time at 40 km/h?
 - [ ] **v0.07 flat tyres:** on Realistic, get a puncture (or a torn sidewall) and let it go flat: the tyre squashes flat at the bottom and bulges, the corner sits low, and the car pulls hard towards it, thumps at speed and slides in corners. Fix it with a plug or the spare and it drives straight again.
+- [ ] **v0.08 the horizon:** at the range lookout, look east: the Coral Sea beyond the forest, fading into the sky with no hard line. Look west: a long, flat-topped range on the horizon (the tablelands). From the Upper Daintree paddocks, look east: Thornton Peak stands over the trees. From the Lions Den, look north: Black Mountain, dark and rounded, through a gap in the hills. No sharp alpine peaks and no grey rock walls anywhere at the map's edges. Check on Low, Medium and High: the far land shows on all three. Any gaps or flicker where the map's edge meets the far land? Has the frame rate dropped?
 - [ ] **History notes:** each named place shows its note as you arrive. Do they read well, and is there enough time to read them while driving?
 - [ ] **Camps:** reaching Roaring Meg camp shows "camp reached, progress saved". Pause → Restart from last camp puts you back there with the clock, fuel and spares as they were.
 - [ ] **Running out:** let the fuel run low and pour in the jerry can from the tool menu; then run dry with no cans and check the episode ends with a restart offered.
@@ -194,7 +197,6 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **v0.05 rough roads:** the paddock road and the Bloomfield Track are bumpy and potholed (dark patches), the range tracks washed out (dark bands across them). At 30 km/h it's a rough ride; at 50 km/h and more the car bounces, and on Realistic a pothole or washout can puncture a tyre ("pinched in a hole at speed"). Does it feel harder but fair, and did the fuel last?
 - [ ] **v0.06 harder CREB:** in the default conditions (wet), try Big Red and Bob's Hill in high range, then in low range with the diffs open: neither should get up. Low range with both lockers should. The pinch on the ridge before Roaring Meg camp is the same. The clay tracks slide under braking and cornering. Mud holes, most of them full of brown water, lie in the dips. At the Daintree, stop on the bar and watch the car drift downstream; on the deep middle the car is lifted and stranded. The creek fords push hard, and Roaring Meg's far bank is slippery. Was it harder, and still fair? How long did it take, and how much fuel was left?
 - [ ] **v0.05 out of fuel:** run the tank dry on mud or gravel and hold the accelerator: the wheels stay still (in v0.04 they spun in place).
-- [ ] **Skyline (v0.03):** a few hundred metres up the road from Daintree Village, look east and west: grey sky and distant blue-green hills above the trees, with no dark green wall filling the sky. Near the start the south and west map edges rise as grassy hills, which is expected.
 - [ ] **v0.02 phone layout:** on a phone held upright, the fuel, then the mission panel sit under the status strip, and nothing covers anything else. Press 4WD: LOW, CRAWL, F LOCK and R LOCK open in a row above it; press LOW and the crawl gauges appear top right under the fuel, with the mission panel narrowed beside them. Tap 4WD again to close the row and check its letters show what's on. Stopped with the handbrake on, press GAS: "HAND Release the handbrake" shows just above the buttons on the right. View → Driver: the status strip stays a small box and View / ⟲ stay top right. Held sideways the mission panel shows just the clock, clear of the joystick.
 - [ ] **v0.02 history notes on a phone:** at the start, and on reaching each place (Daintree River crossing, Big Red...), the game stops and the note shows in the middle of the screen with the buttons hidden. Tap it and the game carries on. With a keyboard the notes still show top right while you drive.
 - [ ] **v0.02 changing vehicle:** drive away from Daintree Village, then Pause → Vehicle → Land Rover 110 Perentie. It restarts at the camp and drives off (in v0.01 it stayed stuck with the engine revving).
@@ -207,7 +209,8 @@ src/
   data/    tuning numbers and content: episodes (episodes.ts, episodes/ for each episode's map and story),
            palette, environment, vehicles, surfaces, tools, damage, camera, quality, audio
   sim/     headless simulation: world generation, physics, vehicle, tools, the episode run, saving
-  render/  Three.js: terrain, vegetation (eucalypts, rainforest, palms, ferns), water, sky, vehicle, particles
+  render/  Three.js: terrain, vegetation (eucalypts, rainforest, palms, ferns), water, sky, the far land and sea
+           round the map (horizon), vehicle, particles
   ui/      welcome screen, briefing, HUD, episode cards, compass, paper map, menus, tool menu
   audio/   Web Audio synthesis
   debug/   overlay, free camera, debug panel
