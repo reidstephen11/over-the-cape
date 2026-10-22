@@ -45,6 +45,14 @@ export const crebEpisode: EpisodeDef = {
       title: 'Bob’s Hill',
       text: 'About halfway along the CREB, and to many drivers the hardest part of it: steep, rutted and rocky. Spinning the wheels on rock can cut a tyre, so creep up in low range.',
     },
+    'line-camp': {
+      title: 'Old line camp',
+      text: 'A rough hut off the ridge, left from the days when this track served the power line to Cooktown. Someone has left a tin of tyre plugs on a crate by the door: pull up beside it to load them.',
+    },
+    'linesmans-hut': {
+      title: 'Linesman’s hut',
+      text: 'Old poles lean in the scrub down this flank, without their wires, and the track follows them to a hut. There’s a full jerry can on a crate by the door. The climb back up to the main track is greasy clay: low range.',
+    },
     'creb-lookout': {
       title: 'The range lookout',
       text: 'In 1983 the council began bulldozing a road through the rainforest from Cape Tribulation to Bloomfield. Protesters blockaded the work that December and again in 1984. The road was finished, but the fight drew the country’s attention, and in 1988 the rainforests of the Wet Tropics were inscribed on the World Heritage list, ending commercial logging in them.',

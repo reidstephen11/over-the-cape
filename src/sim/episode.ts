@@ -24,6 +24,8 @@ export interface Checkpoint {
   tyres: number[];
   tyreFault: TyreFault[];
   discovered: string[];
+  /** Finds off the main line already loaded (src/sim/finds.ts). */
+  taken: string[];
 }
 
 export type EpisodeStatus = 'driving' | 'complete' | 'failed';
@@ -112,6 +114,7 @@ export function checkpointAt(
   run: EpisodeRun,
   v: Vehicle,
   discovered: Iterable<string>,
+  taken: Iterable<string> = [],
 ): Checkpoint {
   const c = v.condition;
   return {
@@ -125,6 +128,7 @@ export function checkpointAt(
     tyres: [...c.tyres],
     tyreFault: [...c.tyreFault],
     discovered: [...discovered],
+    taken: [...taken],
   };
 }
 
@@ -165,5 +169,6 @@ export function startCheckpoint(def: EpisodeDef, spawnCamp: string, vehicle: Veh
     tyres: [1, 1, 1, 1],
     tyreFault: ['none', 'none', 'none', 'none'],
     discovered: [],
+    taken: [],
   };
 }
