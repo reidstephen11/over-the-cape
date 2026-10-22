@@ -205,8 +205,18 @@ export interface TrackRoughDef {
    * sticky black soil: few get out without the winch. None when absent.
    */
   sumpDepth?: number;
+  /** At most this many deep bogs on the track, the first ones along it (no limit when absent). */
+  sumps?: number;
   /** Share of the other mud holes (0..1) that are long boggy stretches of 25–45 m (where the track runs straight and flat). */
   longBogs?: number;
+  /**
+   * Share of the plain mud holes (0..1) left in (default 1). The deep bogs are always
+   * left, and which spots are tried stays the same, so a stretch can drop its scattered
+   * holes without moving its deep bogs.
+   */
+  plainBogs?: number;
+  /** At most this many long boggy stretches, the first ones along the track (no limit when absent). */
+  longBogsKept?: number;
 }
 
 /**
