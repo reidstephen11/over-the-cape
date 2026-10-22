@@ -113,6 +113,8 @@ export const surpriseTuning = {
   spacing: 140,
   /** Clear of creeks and bridges by this much (m from the water's edge). */
   creekClearance: 22,
+  /** No steeper than this (rise over run) from 30 m before an event to 15 m after. */
+  maxGrade: 0.15,
   /** Clear of camps by this much (m beyond their radius). */
   campClearance: 30,
   /** The dead tree: length range (m), radius (m) and mass (kg). */
@@ -242,7 +244,7 @@ function badSpot(world: World, x: number, z: number): boolean {
 }
 
 /**
- * Too near one of the route's own obstacles (a washout, a rock ledge, a sideling): each
+ * Too near one of the route's own obstacles (a washout, a rock ledge, a sideling, a steep pinch): each
  * stretch keeps its own challenge, and a surprise on top of one could leave no way past.
  */
 function nearObstacle(world: World, track: TrackInfo, at: number): boolean {
@@ -251,7 +253,27 @@ function nearObstacle(world: World, track: TrackInfo, at: number): boolean {
   if (track.def.rockySteps?.some((r) => Math.abs(r.at - at) < 50)) return true;
   const cant = track.def.cant;
   if (cant && cant.length > 0 && at > cant[0][0] - 40 && at < cant[cant.length - 1][0] + 40) return true;
+  // On a steep pinch (Big Red, Bob's Hill, the ridge's clay pinch) the climb is the
+  // challenge, stopping on it to winch is unfair, and fallen rocks would roll back down it.
+  for (let s = at - 30; s < at + 15; s += 5)
+    if (Math.abs(heightAlong(track, s + 5) - heightAlong(track, s)) / 5 > surpriseTuning.maxGrade)
+      return true;
   return false;
+}
+
+/** The track's graded height `s` metres along it. */
+function heightAlong(track: TrackInfo, s: number): number {
+  const { s: arc, count } = track.poly;
+  const c = Math.max(0, Math.min(track.poly.length, s));
+  let lo = 0;
+  let hi = count - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (arc[mid] <= c) lo = mid;
+    else hi = mid;
+  }
+  const f = arc[hi] > arc[lo] ? (c - arc[lo]) / (arc[hi] - arc[lo]) : 0;
+  return track.profile[lo] + (track.profile[hi] - track.profile[lo]) * f;
 }
 
 /** Track point and directions: along (tx, tz) and across (nx, nz), as `trailPoint` lays laterals. */
@@ -398,7 +420,8 @@ export function planSurprises(world: World, set: SurpriseSetDef, seed: number): 
   const rand = mulberry32((seed ^ 0x5eed) >>> 0);
   const out: SurprisePlan[] = [];
   const tracks = new Map(world.features.tracks.map((t) => [t.def.id, t]));
-  for (const kind of ['treefall', 'rockfall'] as const) {
+  // Rockfalls first: they need a bank, so there are fewer spots for them.
+  for (const kind of ['rockfall', 'treefall'] as const) {
     const want = kind === 'treefall' ? set.treefalls : set.rockfalls;
     const sites = set.sites.filter((s) => s.kind === kind);
     // Shuffle the stretches.

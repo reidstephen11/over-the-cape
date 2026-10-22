@@ -78,7 +78,7 @@ describe('Surprises on the CREB', () => {
     }
     // Every stretch comes up, at many different spots.
     for (const s of crebSurprises.sites) expect([...spots].some((k) => k.startsWith(`${s.id}@`))).toBe(true);
-    expect(spots.size).toBeGreaterThan(60);
+    expect(spots.size).toBeGreaterThan(45);
   });
 
   it('drops each tree across the whole track, clear of trees, mud holes and water', () => {

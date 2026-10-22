@@ -6,7 +6,8 @@ import { trailPoint, trailProgress } from '../../src/sim/world/crawlTrail';
 import type { TrackInfo } from '../../src/sim/world/features';
 import type { World } from '../../src/sim/world/world';
 import type { SurprisePlan } from '../../src/sim/world/surprisePlan';
-import { DT, WinchRecovery } from './drive';
+import { DT } from './drive';
+import type { Vehicle } from '../../src/sim/vehicle/vehicle';
 
 /** Hands the event loop back to Vitest so its worker messages don't time out on long drives. */
 const yieldToRunner = () => new Promise((resolve) => setImmediate(resolve));
@@ -34,6 +35,69 @@ function sideOf(track: TrackInfo, x: number, z: number) {
   const n = trailPoint(track, t.along, 1);
   const lateral = (x - c.x) * (n.x - c.x) + (z - c.z) * (n.z - c.z);
   return { along: t.along, lateral };
+}
+
+/**
+ * Bogged on the way: after 6 s stuck, hook the tree 5–28 m ahead that stands nearest the
+ * track's line, within 10 m of it and not up a bank (that pulls the car over) and winch in while driving,
+ * until nearly there or running free. `update` says whether to winch in this step.
+ */
+export class TrackRecovery {
+  uses = 0;
+  private stuck = 0;
+  private free = 0;
+  private target = 0;
+
+  constructor(
+    private readonly sim: Simulation,
+    private readonly v: Vehicle,
+    private readonly track: TrackInfo,
+  ) {}
+
+  update(dt: number): boolean {
+    const { sim, v, track } = this;
+    const winch = sim.toolsOf(v.id).winch;
+    const here = sideOf(track, v.position.x, v.position.z).along;
+    if (winch.attached) {
+      this.free = Math.abs(v.speed) > 1.6 ? this.free + dt : 0;
+      if (here >= this.target - 3 || winch.length < 3 || this.free > 1.5) {
+        sim.detachWinch(v.id);
+        this.stuck = 0;
+        return false;
+      }
+      return true;
+    }
+    this.stuck = Math.abs(v.speed) < 0.3 ? this.stuck + dt : 0;
+    if (this.stuck < 6) return false;
+    this.stuck = 0;
+    let best: { anchor: ReturnType<Simulation['findAnchors']>[number]; off: number; along: number } | null =
+      null;
+    for (const anchor of sim.findAnchors(v.id)) {
+      if (anchor.kind !== 'tree') continue;
+      const t = sideOf(track, anchor.point.x, anchor.point.z);
+      const off = Math.abs(t.lateral);
+      if (t.along < here + 5 || off > 10 || anchor.point.y > v.position.y + 1.0) continue;
+      if (!best || off < best.off) best = { anchor, off, along: t.along };
+    }
+    if (process.env.SURPRISE_DEBUG)
+      console.log(
+        'stuck at',
+        here.toFixed(1),
+        sim
+          .findAnchors(v.id)
+          .filter((a) => a.kind === 'tree')
+          .map((a) => {
+            const t = sideOf(track, a.point.x, a.point.z);
+            return `${t.along.toFixed(0)}/${t.lateral.toFixed(1)}/${(a.point.y - v.position.y).toFixed(1)}`;
+          })
+          .join(' '),
+      );
+    if (!best) return false;
+    sim.attachTo(v.id, best.anchor);
+    this.target = best.along;
+    this.uses++;
+    return true;
+  }
 }
 
 /** Tracks the route drive crawls (scripts/creb-drive.ts). */
@@ -91,7 +155,6 @@ export async function getPast(
   const v = sim.addVehicle('p', sim.poseAt(start.x, start.z, start.headingDeg, tuning.wheelRadius), tuning);
   if (fuel !== undefined) v.condition.fuel = fuel;
   const inputs = new Map<string, VehicleInput>([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
-  for (let i = 0; i < 90; i++) sim.step(inputs, DT);
   const pieces = [...sim.dynamics.values()].filter((o) => o.id.startsWith(`${plan.id}:`));
   const winch = sim.toolsOf('p').winch;
 
@@ -135,6 +198,8 @@ export async function getPast(
     startedShort = plan.at - trailProgress(track, p.x, p.z).along;
     startedSpeed = v.speed;
   });
+  // Settle on the handbrake (listening already: starting this close, it may start now).
+  for (let i = 0; i < 90; i++) sim.step(inputs, DT);
   const here = () => trailProgress(track, v.position.x, v.position.z).along;
   // Where the pieces lie now, for the log.
   const layout = () =>
@@ -155,7 +220,7 @@ export async function getPast(
       })
       .join('; ');
   // Bogged on the way (a mud hole, not the surprise), winch out to a tree ahead.
-  let recovery = new WinchRecovery(sim, v, approachPath) as WinchRecovery | null;
+  let recovery = new TrackRecovery(sim, v, track) as TrackRecovery | null;
   let approachStuck = 0;
   let recovered = 0;
   const crawl = (path: [number, number][]) => {
@@ -164,7 +229,7 @@ export async function getPast(
     const a = new Autopilot(path, 1.2);
     a.lowRange = true;
     recovered += recovery?.uses ?? 0;
-    recovery = new WinchRecovery(sim, v, path);
+    recovery = new TrackRecovery(sim, v, track);
     return a;
   };
   const passPath = () => {
@@ -172,13 +237,13 @@ export async function getPast(
     return pathAlong(
       at,
       end,
-      // Over to the far side within 6 m, and back to the middle past the spot.
+      // Over to the far side within 6 m (no sooner than 18 m short), and back to the middle past the spot.
       // Clear of a tree's trunk; past rocks, a little less far over, as the far side of a
       // cutting is the drop.
       (s) =>
         passSide *
         (plan.kind === 'rockfall' ? 0.85 : 1.1) *
-        Math.max(0, Math.min(1, (s - at) / 6, (plan.at + 22 - s) / 8)),
+        Math.max(0, Math.min(1, (s - Math.max(at, plan.at - 18)) / 6, (plan.at + 22 - s) / 8)),
     );
   };
   const hook = (prefer?: string) => {
@@ -281,7 +346,16 @@ export async function getPast(
       for (const axle of ['front', 'rear'] as const) if (!v.differentials[axle]) v.toggleDiff(axle);
       cmd.throttle = 1;
       cmd.brake = 0;
+      const before = recovery?.uses ?? 0;
       cmd.winchIn = recovery?.update(DT) ?? false;
+      if ((recovery?.uses ?? 0) > before) {
+        const w = sideOf(track, v.position.x, v.position.z);
+        const a = winch.anchor?.point;
+        const at = a ? sideOf(track, a.x, a.z) : null;
+        log(
+          `stuck at ${(w.along - plan.at).toFixed(1)} m, ${w.lateral.toFixed(1)} across: winching to ${winch.anchor?.label} at ${at ? `${(at.along - plan.at).toFixed(1)} m, ${at.lateral.toFixed(1)} across` : '?'}`,
+        );
+      }
       // Up against the tree before the stopping point: hook it from here.
       const trunk = pieces.find((o) => o.kind === 'fallenTree');
       stuck = Math.abs(v.speed) < 0.15 && !winch.attached ? stuck + DT : 0;
@@ -317,7 +391,22 @@ export async function getPast(
       // Winch in on the handbrake, holding the brake (it eases back against the pull), until it has come round or the cable is short.
       cmd = { ...emptyInput(), handbrake: true, brake: 1, winchIn: true };
       winchTime += DT;
-      if (winch.length <= 3 || winchTime > 45) {
+      // A driver stops once the crown has come over to the root's side, before the winch
+      // drags the whole tree along the track towards the car.
+      const trunk = pieces.find((o) => o.kind === 'fallenTree');
+      let over = false;
+      if (trunk?.def) {
+        const q = trunk.body.rotation();
+        const b = trunk.body.translation();
+        const h = trunk.def.length / 2;
+        const crown = sideOf(
+          track,
+          b.x + 2 * (q.x * q.y - q.w * q.z) * h,
+          b.z + 2 * (q.y * q.z + q.w * q.x) * h,
+        );
+        over = crown.lateral * -passSide > 0.3;
+      }
+      if (over || winch.length <= 3 || winchTime > 45) {
         sim.detachWinch('p');
         log(`winched ${winchTime.toFixed(0)} s, cable ${winch.length.toFixed(1)} m; ${layout()}`);
         stuck = 0;
