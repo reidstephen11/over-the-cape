@@ -36,7 +36,12 @@ const R = await loadRapier();
 
 for (const fork of crebForks.filter((f) => which === 'all' || f.id === which)) {
   const paths = forkPaths(world, fork);
-  const lines = baseline ? ([['main', paths.main]] as const) : ([['main', paths.main], ['alt', paths.alt]] as const);
+  const lines = baseline
+    ? ([['main', paths.main]] as const)
+    : ([
+        ['main', paths.main],
+        ['alt', paths.alt],
+      ] as const);
   for (const [line, path] of lines) {
     const sim = new Simulation(R, driven, env);
     sim.damage = 'realistic';

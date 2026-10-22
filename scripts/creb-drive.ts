@@ -1,25 +1,35 @@
 /**
  * Dev helper: drive the whole CREB Track episode route in one go with the autopilot and
- * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie] [clear|wet|rain] [bypass]
+ * report each leg. Usage: npx vite-node scripts/creb-drive.ts [shortie|camel|perentie] [clear|wet|rain] [bypass] [chicken] [shortcut] [shallow]
+ * (the last three take the other line at each fork; see src/data/episodes/crebForks.ts)
  */
 import { environmentFor, type Weather } from '../src/data/environment';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { crebEpisode } from '../src/data/episodes/creb';
+import { crebForks } from '../src/data/episodes/crebForks';
 import { clockTime } from '../src/data/episodes';
 import { isVehicleId, vehicles } from '../src/data/vehicles';
 import { Autopilot } from '../src/sim/input/autopilot';
 import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
 import { Simulation } from '../src/sim/sim';
-import { trailPoint } from '../src/sim/world/crawlTrail';
+import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { buildWorld, campsite } from '../src/sim/world/world';
 import { addPuddles } from '../src/sim/world/puddles';
-import { WinchRecovery } from '../tests/helpers/drive';
+import { pathFor, WinchRecovery } from '../tests/helpers/drive';
 
 const id = process.argv[2] ?? 'shortie';
 if (!isVehicleId(id)) throw new Error(`Unknown vehicle ${id}`);
 const weather = (process.argv[3] ?? 'wet') as Weather;
 const bypass = process.argv.includes('bypass');
+const forkArgs: Record<string, string> = {
+  chicken: 'chicken-track',
+  shortcut: 'steep-shortcut',
+  shallow: 'shallow-crossing',
+};
+const forks = crebForks.filter((f) =>
+  Object.entries(forkArgs).some(([a, id]) => id === f.id && process.argv.includes(a)),
+);
 const tuning = vehicles[id].tuning;
 const DT = 1 / 60;
 const deg = 180 / Math.PI;
@@ -74,6 +84,17 @@ for (const [trackId, mode] of legs) {
       if (Math.hypot(q[0] - bx, q[1] - bz) < Math.hypot(path[cut][0] - bx, path[cut][1] - bz)) cut = k;
     });
     path = path.slice(0, cut + 1);
+  }
+  // Taking the other line at a fork on this leg.
+  for (const fork of forks.filter((f) => f.main === trackId)) {
+    const alt = world.features.tracks.find((t) => t.def.id === fork.alt)!;
+    const from = trailProgress(track, alt.poly.xs[0], alt.poly.zs[0]).along;
+    const to = trailProgress(track, alt.poly.xs[alt.poly.count - 1], alt.poly.zs[alt.poly.count - 1]).along;
+    path = [
+      ...path.slice(0, Math.floor(from / 0.5)),
+      ...pathFor(alt),
+      ...path.slice(Math.ceil(to / 0.5) + 1),
+    ];
   }
   const pilot = new Autopilot(path, mode === 'road' ? 9 : mode === 'bush' ? 4.5 : 1.2);
   const crawl = mode === 'crawl';

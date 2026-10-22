@@ -115,7 +115,7 @@ export const littleAnnanBars: CreekBarDef[] = [
 export const crebForkProps: PropDef[] = [
   { kind: 'signpost', x: -40, z: 1040, headingDeg: 200, text: 'Chicken track' },
   { kind: 'signpost', x: 22, z: -393, headingDeg: 120, text: 'Steep shortcut' },
-  { kind: 'signpost', x: -46, z: -2402, headingDeg: 210, text: 'Shallow crossing' },
+  { kind: 'signpost', x: -34, z: -2400, headingDeg: 210, text: 'Shallow crossing' },
 ];
 
 /** Each fork is a place on the map, with a note on the choice. */
@@ -154,11 +154,13 @@ export interface CrebFork {
   id: string;
   main: string;
   alt: string;
+  /** Which is the short, risky line: the main route, or the other line (the steep shortcut). */
+  short: 'main' | 'alt';
   /** How far past the rejoin a test drive runs (m); short where a bog lies just beyond. */
   tail?: number;
 }
 export const crebForks: CrebFork[] = [
-  { id: 'chicken-track', main: 'creb-ridge', alt: 'chicken-track' },
-  { id: 'steep-shortcut', main: 'concrete-descent', alt: 'steep-shortcut' },
-  { id: 'shallow-crossing', main: 'bloomfield-track', alt: 'shallow-crossing', tail: 4 },
+  { id: 'chicken-track', main: 'creb-ridge', alt: 'chicken-track', short: 'main' },
+  { id: 'steep-shortcut', main: 'concrete-descent', alt: 'steep-shortcut', short: 'alt' },
+  { id: 'shallow-crossing', main: 'bloomfield-track', alt: 'shallow-crossing', short: 'main', tail: 4 },
 ];
