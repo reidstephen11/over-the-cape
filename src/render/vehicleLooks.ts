@@ -6,6 +6,8 @@ import { buildVehicleWheel } from './vehicleWheel';
 import { buildRackPlank } from './vehicleEquipment';
 import { buildPerentieBody, buildPerentiePlank, buildPerentieWheel } from './perentieBody';
 import { addCamelTrophyKit, camelLivery, camelRim } from './camelLivery';
+import { buildHiluxBody, buildHiluxPlank, buildHiluxWheel } from './hiluxBody';
+import { buildUnimogBody, buildUnimogPlank, buildUnimogWheel } from './unimogBody';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
 export interface VehicleLook {
@@ -60,6 +62,36 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
       head: [
         { x: -0.625, y: 0.39, z: -2.042 },
         { x: 0.625, y: 0.39, z: -2.042 },
+      ],
+    },
+  },
+  hilux: {
+    name: 'hilux-single-cab',
+    body: buildHiluxBody,
+    wheel: buildHiluxWheel,
+    plank: buildHiluxPlank,
+    // Single-stage enamel: some gloss, a little worn.
+    paint: { roughness: 0.42, metalness: 0.08, clearcoat: 0.45, clearcoatRoughness: 0.32 },
+    springs: 'leaf',
+    lamps: {
+      head: [
+        { x: -0.66, y: 0.42, z: -2.17 },
+        { x: 0.66, y: 0.42, z: -2.17 },
+      ],
+    },
+  },
+  unimog: {
+    name: 'unimog-ul1700l',
+    body: buildUnimogBody,
+    wheel: buildUnimogWheel,
+    plank: buildUnimogPlank,
+    // Army enamel, as on the Perentie.
+    paint: { roughness: 0.72, metalness: 0.05, clearcoat: 0, clearcoatRoughness: 1 },
+    springs: 'coil',
+    lamps: {
+      head: [
+        { x: -0.86, y: 0.62, z: -3.045 },
+        { x: 0.86, y: 0.62, z: -3.045 },
       ],
     },
   },

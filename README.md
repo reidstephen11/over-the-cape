@@ -1,6 +1,6 @@
 # Over the Cape
 
-A single-player 4WD adventure up Cape York, told in episodes, that runs in the browser. Each episode is a stage of the trip north, from the Daintree to the tip of Australia, with its own map, a core mission, the weather and time of day the story sets, and a fixed load of fuel, spare wheels and tyre plugs. Run out of fuel, get stranded with a flat and nothing to fix it with, wreck the engine or miss the deadline, and the episode ends; you restart from the last camp you reached. History notes at the places you pass tell what happened there.
+A single-player 4WD adventure up Cape York, told in episodes, that runs in the browser. Each episode is a stage of the trip north, from the Daintree to the tip of Australia, with its own map, a core mission, the weather and time of day the story sets, and a starting load of fuel, spare wheels and tyre plugs, which side trips off the main line can add to. Run out of fuel, get stranded with a flat and nothing to fix it with, wreck the engine or miss the deadline, and the episode ends; you restart from the last camp you reached. History notes at the places you pass tell what happened there.
 
 It is built on the code of [4WD Simulator](https://github.com/reidstephen11/4wd-simulator) and keeps its look and driving: Three.js, Rapier physics and TypeScript, with everything (terrain, trees, leaf textures and sound) generated in code and no downloaded asset files.
 
@@ -50,9 +50,9 @@ The map is a long strip, 1.3 km wide and 6 km from south to north, with about 6.
 1. **Daintree Village** (camp) to the **Daintree River crossing**: wide and over a metre deep in the middle. A gravel bar downstream keeps it about half that, but after the wet the bar is strewn with boulders and scoured into holes over a metre deep, right across the straight line over it: weave between them. The river is running fast after the rain: the current pushes the car downstream, and in the deep water it can carry it away. Crocodile country: you never leave the car.
 2. Through the **Upper Daintree paddocks** on a gravel road to the foot of the range.
 3. **Big Red**: about 130 m of red clay at around 20°, greasy after the rain and scored with deep cross-ruts. High range won't get up it, nor low range with the diffs open: low range with both lockers will. The **Big Red bypass** leaves the paddock road just before, and winds up the west side at no more than about 15°.
-4. Along the range through the rainforest, over a steep clay pinch that also needs low range and the lockers, to **Roaring Meg camp**, then the fast ford over **Roaring Meg Creek** and up its slippery bank, with a short track to **Roaring Meg Falls**. The falls are just downstream of the ford.
+4. Along the range through the rainforest (a signposted spur east leads to the **Old line camp**, with two tyre plugs), over a steep clay pinch that also needs low range and the lockers, to **Roaring Meg camp**, then the fast ford over **Roaring Meg Creek** and up its slippery bank, with a short track to **Roaring Meg Falls**. The falls are just downstream of the ford.
 5. **Bob's Hill**: a steep, rutted pinch at about 21°. Like Big Red it needs low range and both lockers.
-6. The **range lookout**, then **the concrete**: a long switchback descent with concreted pinches at about 20°.
+6. Along the range top, where a track signposted **Old line** follows a few leaning poles down the west flank to the **Linesman's hut** and a full jerry can; then the **range lookout**, then **the concrete**: a long switchback descent with concreted pinches at about 20°.
 7. **Donovan's Creek**, the **Bloomfield River** bridge at Wujal Wujal (camp), and a track west to **Wujal Wujal Falls**.
 8. North on the gravel **Bloomfield Track** through **Rossville**, across the **Little Annan River**, to the **Lions Den Hotel**.
 
@@ -65,7 +65,7 @@ Beyond the map's edge the real country carries on to the horizon, brought in clo
 ## How an episode works
 
 - **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (eight game minutes a real minute on the CREB) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
-- **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs.
+- **Camps save the run.** Reaching a camp saves where you are, the clock and what's on board. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs. It keeps what you'd found by then: restart from it and anything picked up after it is back where it was.
 - **History notes** appear in the top right as you reach a place. Click one to close it.
 - **The episode ends early** when, with the difficulty that allows it:
   - the tank is empty, you have no jerry cans left and the car has rolled to a stop (any difficulty);
@@ -80,10 +80,11 @@ Beyond the map's edge the real country carries on to the horizon, brought in clo
 
 ## Fuel, spares and plugs
 
-- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 54 L of petrol in the short-wheelbase 4WDs (more than the 50 L in the tank, so the jerry can goes in on the way) and 35 L of diesel in the Land Rover. Rough roads, mud and clay cost fuel, and so does every time you get stuck. The gauge is above the status strip, in litres.
+- **Fuel** burns with the work the engine does: little at idle, far more climbing in low range or spinning the wheels. The map shortens the real distance, so it burns faster to match: the autopilot's clean run of the CREB uses about 54 L of petrol in the short-wheelbase 4WDs (more than the 50 L in the tank, so the jerry can goes in on the way), 35 L of diesel in the Land Rover, 38 L of petrol in the Hilux and 64 L of diesel in the Unimog (the jerry can goes in, with little to spare). Rough roads, mud and clay cost fuel, and so does every time you get stuck. The gauge is above the status strip, in litres.
 - **Jerry cans** hold 20 L. Tool menu → **Pour in a jerry can**, stopped, about 12 s. If the engine ran dry it restarts on the starter afterwards.
 - **Tyres** can be hurt two ways with Realistic damage: a **puncture** leaks down over about 40 s and takes a **plug** from the kit (tool menu → Plug the tyre, about 10 s); a **torn sidewall** goes flat in a few seconds and needs a **spare** (tool menu → Fit a spare, about 8 s). A landing of about a metre onto rock punctures a tyre; about one and a half metres tears the sidewall. Spinning a wheel hard on rock for several seconds wears through the tread. Crawling in low range barely spins. Dropping into a pothole or washout at speed pinches the tyre (a puncture): a deep one from about 40 km/h, and the faster the likelier; from about 55 km/h it can bend that corner's suspension too. A tyre going down squashes flat at the bottom; flat, its corner sits low, it thumps once a turn at speed, it grips poorly in corners and drags, and a flat front tyre pulls the car hard towards its side.
-- The status strip's counts show jerry cans, spares and plugs left.
+- **Finds off the main line.** Two side tracks on the range lead to huts with something to load: two tyre plugs at the Old line camp (a short level spur off the ridge, signposted "Line camp") and a full 20 L jerry can at the Linesman's hut (about 110 m down the range top's west flank along the old poles, signposted "Old line", with a greasy climb back up). Drive up to the crate by the hut and stop: it goes on board and the counts go up. Each can be taken once. The trip costs daylight and a little fuel, a few minutes there and back; neither is needed on a clean run, but either can save a run that's gone wrong.
+- The status strip's counts show jerry cans, spares and plugs on board.
 
 ## Difficulty
 
@@ -99,13 +100,15 @@ The welcome screen's **Difficulty** is the damage setting (also in pause menu �
 
 Pick one on the welcome screen. Pause menu → Vehicle changes it mid-episode, but the run restarts from your last camp in the new one.
 
-| Vehicle                 | Based on                                                      | Engine and gearbox                                                | Tank |
-| ----------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------- | ---- |
-| Short-wheelbase 4WD     | 1970s Land Cruiser 40 Series                                  | 4.2 L petrol six, three-speed automatic                           | 70 L |
-| Camel Trophy 4WD        | The short-wheelbase 4WD in Camel Trophy dress, with a snorkel | Same                                                              | 70 L |
-| Land Rover 110 Perentie | The Australian Army's Land Rover 110                          | 3.9 L Isuzu four-cylinder diesel, LT95A four-speed with low range | 79 L |
+| Vehicle                 | Based on                                                      | Engine and gearbox                                                | Tank  |
+| ----------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------- | ----- |
+| Short-wheelbase 4WD     | 1970s Land Cruiser 40 Series                                  | 4.2 L petrol six, three-speed automatic                           | 70 L  |
+| Camel Trophy 4WD        | The short-wheelbase 4WD in Camel Trophy dress, with a snorkel | Same                                                              | 70 L  |
+| Land Rover 110 Perentie | The Australian Army's Land Rover 110                          | 3.9 L Isuzu four-cylinder diesel, LT95A four-speed with low range | 79 L  |
+| Hilux single cab        | 1979–83 Toyota Hilux 4WD with the styleside tub               | 2.0 L petrol four, four-speed manual with low range               | 65 L  |
+| Unimog UL1700L          | The Australian Army's Mercedes-Benz Unimog 4-tonne truck      | 5.7 L turbo-diesel six, four road gears and four field gears      | 160 L |
 
-The 1986 Camel Trophy started at Cooktown, and Army Perenties served across the north. The Camel Trophy 4WD drives like the short-wheelbase 4WD but breathes through its snorkel, so it wades much deeper water before it floods; the current can still take it. The heavier Land Rover holds its ground in a current a little longer. A modern 4WD is planned for a later update.
+The 1986 Camel Trophy started at Cooktown, and Army Perenties served across the north. The Camel Trophy 4WD drives like the short-wheelbase 4WD but breathes through its snorkel, so it wades much deeper water before it floods; the current can still take it. The heavier Land Rover holds its ground in a current a little longer. The red Hilux, the first Hilux with 4WD, is light and thrifty: its small petrol four uses about a third less fuel than the six, but it is slower and needs low range sooner, and its long wheelbase and tub hang out further behind the rear wheels. It carries its recovery boards on a ladder rack over the tub. The Army Unimog is the slow, heavy one: 6.4 t on 1.1 m tyres and portal axles, with the most ground clearance by far, a crawling low range, lockers that engage on the move up to 15 km/h, and a winch that pulls three times as hard as the Land Rover's. It tops out at about 68 km/h and takes much longer to get there, and it is thirsty. On a side slope it tips at about the Land Rover's angle. It wades water that would carry the others away, and breathes through a stack behind the cab. Its pintle hook is ready for trailers, which come in a later update. A modern 4WD is planned for a later update.
 
 ## Controls
 
@@ -133,7 +136,7 @@ The 1986 Camel Trophy started at Cooktown, and Army Perenties served across the 
 | Map                           | M (scroll to zoom, drag to move it)                   | View / Select                                        |
 | Pause                         | Esc                                                   | Start / Options                                      |
 
-The **tool menu** holds: Winch (or Detach winch), the front and rear diff locks, Place planks (or Recall planks), precision crawl, the headlights, the repair the car needs (Field repair, Plug the tyre or Fit a spare) and Pour in a jerry can. An option that can't be used now is greyed out; picking it says why ("Stop first", "No spares left"...).
+The **tool menu** holds: Winch (or Detach winch), the front and rear diff locks, Place planks (or Recall planks), precision crawl, the headlights, the repair the car needs (Field repair, Plug the tyre or Fit a spare) and Pour in a jerry can. Finds load by themselves when you stop beside them. An option that can't be used now is greyed out; picking it says why ("Stop first", "No spares left"...).
 
 Placing planks: choose **Place planks** in the tool menu, move them with W/S, turn them with A/D, place with E, cancel with Esc. Prompts switch between keyboard and gamepad glyphs depending on what you last touched.
 
@@ -177,6 +180,7 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
 - [ ] **Welcome screen:** Episode 1 is open, episodes 2–7 are listed as coming later. Pick a vehicle and a difficulty; Drive shows the briefing while the map builds, then Drive again starts at Daintree Village.
 - [ ] **The CREB Track, start to finish:** cross the Daintree on the gravel bar, climb Big Red (or take the bypass), reach Roaring Meg camp, climb Bob's Hill, take the concrete down, cross Donovan's Creek and the Bloomfield bridge, and drive the Bloomfield Track to the Lions Den before dark. How long did it take, how much fuel was left, and did the clock feel fair?
+- [ ] **v0.12 side trips:** on the ridge after Big Red, take the "Line camp" spur and stop by the crate at the hut: the plug count goes up by two. On the range top after Bob's Hill, follow the "Old line" sign and the poles down to the Linesman's hut and stop by the crate: one more jerry can. Drive back up to the main track. Was each trip worth the time? Reach Bloomfield camp, go back to the hut (or restart from Roaring Meg camp): after a restart from a camp reached before a find, it's back at its hut.
 - [ ] **v0.07 the long map:** open the map (M): it is a tall, narrow strip with the route up the middle and the rivers across it. Drive the route: about 6.6 km, 40% longer than before, with the clock running faster. Did you arrive before dark, and how close was it? Did you need the jerry can?
 - [ ] **v0.07 the Daintree crossing:** from the south bank, look at the bar: boulders stand out of the water and two patches of darker water mark the holes. Drive straight across the bar and hit them; weave between them in low range with both lockers and get across. Is it tricky but fair?
 - [ ] **v0.07 black soil:** drive off the track onto the dark ground beside it: the car slows to a crawl and stops on any slope. Does it keep you on the track? Is the firm verge beside the track clear enough?
@@ -184,6 +188,8 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 - [ ] **v0.07 holes you can see:** on the gravel roads, the potholes and washouts deep enough to pinch a tyre are dark, ringed with pale gravel. Can you spot them in time at 40 km/h?
 - [ ] **v0.07 flat tyres:** on Realistic, get a puncture (or a torn sidewall) and let it go flat: the tyre squashes flat at the bottom and bulges, the corner sits low, and the car pulls hard towards it, thumps at speed and slides in corners. Fix it with a plug or the spare and it drives straight again.
 - [ ] **v0.08 the horizon:** at the range lookout, look east: the Coral Sea beyond the forest, fading into the sky with no hard line. Look west: a long, flat-topped range on the horizon (the tablelands). From the Upper Daintree paddocks, look east: Thornton Peak stands over the trees. From the Lions Den, look north: Black Mountain, dark and rounded, through a gap in the hills. No sharp alpine peaks and no grey rock walls anywhere at the map's edges. Check on Low, Medium and High: the far land shows on all three. Any gaps or flicker where the map's edge meets the far land? Has the frame rate dropped?
+- [ ] **v0.10 the Hilux:** on the welcome screen pick **Hilux single cab** (the four vehicle buttons should fit, on a phone too). Walk round it (drag the view): red paint, round headlamps in a full-width grille, the styleside tub flush with the cab, vertical tail lamps, the bull bar and winch, and the two boards on the rack over the tub. Press C for the driver's seat: a bench seat, a two-spoke wheel, the dials working. Listen to the engine: a buzzier four-cylinder than the six. Drive the CREB: Big Red and Bob's Hill need low range and both lockers. Did you need the jerry can? How did it compare with the others?
+- [ ] **v0.11 the Unimog:** on the welcome screen pick **Unimog UL1700L** (the five vehicle buttons should fit, on a phone too). Walk round it: Army green, the short sloping bonnet and black grille, round headlamps low beside it behind guards, the square cab with its canvas roof, the spare wheel and air stack behind the cab, the canvas tilt over the tray, and the boards on the tilt roof. Press C for the driver's seat: high up behind a big upright screen, a big three-spoke wheel, the dials working. Listen: a deep, slow diesel six. Drive the CREB: does it feel slow but unstoppable? Bob's Hill should go in low range without the lockers; Big Red still needs them. Try the Daintree's deep middle. Did the fuel last (you'll likely need the jerry can)? Does the chase camera sit too close behind such a long truck?
 - [ ] **History notes:** each named place shows its note as you arrive. Do they read well, and is there enough time to read them while driving?
 - [ ] **Camps:** reaching Roaring Meg camp shows "camp reached, progress saved". Pause → Restart from last camp puts you back there with the clock, fuel and spares as they were.
 - [ ] **Running out:** let the fuel run low and pour in the jerry can from the tool menu; then run dry with no cans and check the episode ends with a restart offered.
@@ -216,7 +222,8 @@ src/
   debug/   overlay, free camera, debug panel
 scripts/   route-check (track grades, heights and creek levels), track-profile (one track's grade against the
            ground), creek-check (creeks standing above their banks), creb-drive (autopilot drive of the whole
-           route with fuel, winching and arrival time), map-preview (top-down PNG), and the labs from 4WD Simulator
+           route with fuel, winching and arrival time), map-preview (top-down PNG), studio (one vehicle on plain
+           ground; studio-shots photographs it), and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
 e2e/       Playwright browser tests
 docs/      DECISIONS.md (choices made along the way) and HISTORY.md (sources for the history in the game)

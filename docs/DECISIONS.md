@@ -561,3 +561,96 @@ The owner said the game wasn't hard enough: the roads should be rougher and hard
 **The border.** The CREB's border hills are now 80 m (were 170) and `forested`: rounded, with no sharp crests or scree, under forest like the rest of the range. A gap at the north edge opens the view from the Lions Den north to Black Mountain, where the road runs on to Cooktown. Every track stays at least 130 m clear of where the border hills start, so no track or camp moved.
 
 **Tests.** New `tests/horizon.test.ts`: the named peaks keep their height; the sea is east of the whole strip and never west; the Daintree and the Bloomfield reach the sea; Black Mountain is black granite and Thornton Peak grey-topped with rainforest below; the mesh lies outside the map, never rises above the map's edge between its first-ring vertices, faces up, draws its farthest ring first and is drawn behind the world without depth. The old backdrop test went with the backdrop.
+
+## v0.09: browser tests stop before changing range
+
+**What failed.** After v0.08, two browser tests failed when they switched to low range: the keyboard driving test and the phone controls test. The phone test already failed on v0.07. Range only changes below 20 km/h (`Vehicle.toggleRange`), and both tests switched while the car could still be moving faster than that. The keyboard test held S for 3 s to stop, but S brakes and then reverses, and it left the car reversing at about 20 km/h. The phone test let go of the throttle at about 26 km/h and tapped HAND on and off, which doesn't wait for the car to stop. How fast the car was going at the switch depended on how long the screenshots took while the throttle was held (the software renderer is slower on the 6 km map), so the result turned on timing.
+
+**Fix.** Both tests now stop the car on the park brake and wait until it is below 0.5 m/s before switching range. The game is unchanged.
+
+## v0.10: the Hilux
+
+**What the owner asked.** Another vehicle to choose from: an early Toyota Hilux single cab with the styleside tub. They also want Episode 2, and at some stage towing missions with a trailer (another vehicle, fuel drums). Asked the order, they chose the Hilux first, then Episode 2, then trailers and towing. Asked about the Hilux, they chose the 1979–83 model, the factory tub rather than a flat tray, and red paint.
+
+**Which Hilux.** The 1979–83 Hilux was the first with 4WD, from January 1979. The Australian 4WD versions (RN36 and RN46 in parts catalogues) all had the 2.0 L 18R petrol four, about 63–65 kW; the diesel came with the next model. What it copies: a 2.8 m wheelbase, 1.43 m front and 1.40 m rear track, about 1.69 m wide, 4.7 m long and 1.77 m tall, 7.00-16 tyres, leaf springs on both solid axles, a four-speed manual, the RF1A transfer case (1.0 and 2.28) and 4.375 axles. The ratios inside its four-speed weren't found; the game uses those of Toyota's other four-speed of the time (3.57, 2.06, 1.38, 1.0), which may differ a little. Sources give 1,410–1,460 kg empty; with two aboard, the bull bar, winch, rack and gear it weighs 1,650 kg.
+
+**The look.** A long flat bonnet between flat-topped wings; a full-width grille with round headlamps in square chrome bezels at its ends, park lamps and indicators in the panel below, and a chrome bumper; a raked windscreen; door glass with a vent window and round chrome door mirrors; a short cab with a small rear window; the tub's smooth sides flush with the cab, with a crease along the side above the wheel openings, vertical tail lamps in its rear corners, a drop-down tailgate and a chrome step bumper. Pale steel wheels with six studs and free-wheeling hubs. Inside: a vinyl bench seat, a padded dash with the instrument hood in front of the right-hand driver, a two-spoke steering wheel (the steering wheel now comes in a two-spoke kind), the umbrella-handle handbrake under the dash, and the gear and transfer levers on the floor. There are no maker's badges or tailgate lettering, and the plates read RN-036.
+
+**Added for the game.** As on the other vehicles: a black bull bar with a winch in a cradle behind it, and front and rear lockers. The recovery boards are 2.4 m long and the tub is about 2 m, so they ride on a ladder rack over the tub, which also guards the rear window. A jerry can and a toolbox stand in the tub.
+
+**How it drives,** measured headlessly:
+
+- It idles at about 700 rpm stopped in gear and reaches 60 km/h in 9.1 s (the short-wheelbase 4WD 6.6 s, the Land Rover 10.9 s).
+- High range won't take it up 20° from a standstill, where the six's does; low range climbs 30° and 35°.
+- With the centre of mass 0.71 m off the ground it never rolled, even in a full-lock turn at 70 km/h, while the other vehicles roll at 60. At 0.78 m, the same as the Land Rover's (the rack and its load sit high), it rolls at 60 km/h and not at 50.
+- On the CREB in the wet, Big Red, Bob's Hill and the ridge pinch stop it in high range and in low range with the diffs open. With both lockers it drives every hard section, and winches out of the ridge's deep bog.
+- The autopilot's clean run of the whole route takes 35.1 minutes of driving and arrives at 5:10 pm (the short-wheelbase 4WD at about 5:04), on 37.8 L of petrol. The short-wheelbase 4WD burns 54 L and the Land Rover 35 L of diesel. The small four is the thrifty choice: a clean run gets there without the jerry can.
+
+**Engine sound.** A new tuning for the synthesiser: four cylinders firing 1-3-4-2, a 750 rpm idle, revs to 5500, a shorter exhaust, a higher valve tick and a quicker starter (0.85 s).
+
+**Vehicle studio.** On the software renderer here, loading the 6 km map takes minutes for each picture. A dev-only page (`scripts/studio/`) shows one vehicle on plain ground, and `scripts/studio-shots.ts` photographs it from all round and from the driver's seat. It is not part of the build.
+
+**Tests.** New: `tests/hilux.test.ts` (its gearing, idle, acceleration, a full-lock turn, a 30° climb, a swap, the model and the save) and a test of the petrol four's sound. The Hilux joins the park brake, wet braking, deep water, headlight, engine start and CREB climb tests, and a browser test chooses it on the welcome screen, checks the four vehicle buttons fit on a phone, and drives it.
+
+## v0.11: the Unimog
+
+**What the owner asked.** A new vehicle, the Unimog: slower than the others but much more capable over all terrain and at towing. There are no trailers yet (they are planned after Episode 2), so asked how to handle towing, they chose the Unimog now with what towing needs (a strong winch, low gearing, a tow hitch) and trailers in their own update. Asked which Unimog, they chose the Australian Army's UL1700L.
+
+**Which Unimog.** The Army's Mercedes-Benz Unimog UL1700L 4-tonne truck from the early 1980s (the 435 series), which served alongside the Perentie. What it copies: a 3.85 m wheelbase, about 1.86 m track, 12.5R20 tyres (1.12 m across) on portal axles with hub reduction gears, coil springs, the 5.7 L OM352A turbo-diesel six (about 124 kW and 500 Nm, governed at 2800 rpm), an eight-speed gearbox in two groups of four (road and field gears), and pneumatic lockers front and rear that engage on the move. The exact gear and axle ratios weren't found: the game uses 4.8, 2.9, 1.7 and 1.0 for the road gears, 3.85 for the field group (the low range), and an axle ratio with the hub gears of 6.83, so top gear gives 82 km/h at 2750 rpm and first field gear creeps at 1.4 km/h at idle. It weighs about 6 t empty; with two aboard, the winch, fuel and gear and the tray empty it weighs 6.4 t. Loads come with the trailers.
+
+**The look.** Army green with flat paint like the Perentie: a short bonnet sloping down to a black slotted grille, round headlamps low beside it behind wire guards, flat-topped mudguards standing clear of the front wheels, a square cab with a big upright windscreen and a canvas roof, door mirrors on long arms, a two-rung step under each door, the spare wheel standing on the frame behind the cab beside the air intake stack, a dropside steel tray under a canvas tilt, and the ladder frame showing high above the axles. Inside: a flat steel dash with the dials in front of the right-hand driver, two seats either side of the gearbox hump with its row of levers, a big three-spoke wheel on a steep column, and a floor handbrake lever. The Army plates read 41-108 (the plate drawing is shared with the Perentie). The axles are drawn as the other vehicles' are, not as portal axles.
+
+**Added for the game.** A winch behind the front bumper, as on the other vehicles. Its pull is set by the vehicle's weight (1.5×), so it pulls three times as hard as the Land Rover's. The recovery boards ride on the tilt roof. Two jerry cans hang under the back of the tray, and the rear crossmember carries a pintle hook and trailer socket at the tow point.
+
+**How it drives,** measured headlessly:
+
+- It idles at about 620 rpm and reaches 40 km/h in 8.5 s and 60 km/h in 30 s (the Land Rover 4.9 s and 10.9 s). Top speed on flat dirt is about 68 km/h.
+- Its first road gear climbs 20°; low range climbs 30°, 35° and 40° (the others stop short of 40°).
+- It has about 0.6 m under its chassis and the most clearance of any of the vehicles, the longest wheel travel, and the biggest tyres, which grip a little better (longitudinal grip 1.08 against 0.95).
+- The centre of mass is about 1.0 m off the ground on its wide track, so it tips on a side slope at about the Land Rover's angle. At 1.15 m (a loaded tray) it rolled in a full-lock turn at 40 km/h and tipped off a lumpy side slope on the Bloomfield Track that the Land Rover crosses.
+- Big Red and Bob's Hill stop it in high range. In low range Bob's Hill goes with the diffs open, where the others need both lockers; Big Red still needs the lockers.
+- It stays put in 1.3 m of running water that carries the others away (6.4 t on narrow-ish body boxes floats only a quarter of its weight), and only stalls when the water reaches its intake at about 2.3 m.
+- Its brakes are sized so it stops from 60 km/h in about 14 m on dry dirt, about 17 m in the rain, like the others.
+- The autopilot's clean run of the whole route takes 35.8 minutes of driving and arrives at 5:16 pm, on 64.3 L of diesel: the jerry can goes in, with little to spare. Being three times the Land Rover's weight it does far more work, so the fuel's efficiency is set at 0.46 (a turbo direct-injection diesel; the Land Rover's 0.38). At 0.38 and 7.2 t it burned 85 L and couldn't finish.
+
+**Changing range on the move** now picks the gear that suits the new range (`Vehicle.toggleRange`). Before, the gearbox kept its gear: changing from low to high at 17 km/h left the Unimog in top gear at about 570 rpm, and it stalled on the next rise. The other vehicles' ranges are closer together, so it mattered less.
+
+**The test driver.** Two changes to how the autopilot drives, found driving the Unimog:
+
+- In `scripts/creb-drive.ts` it no longer changes back up to high range on a climb (a new `Autopilot.holdLowOnClimbs` option; the tests keep the old behaviour, which some of them check high range with). It changed up at the start of a pinch on the Bloomfield Track, lost its run-up, rolled back and slid off the wet cross-slope.
+- In `scripts/creb-drive.ts` it counts as stuck when it has made less than half a metre of progress in 4 s, not only when stopped, so it locks the diffs when rocking on the spot on a wet clay rise.
+
+The Land Rover's run (35.0 L, 5:01 pm) and the short-wheelbase 4WD's (54.2 L, 5:04 pm) are unchanged by both.
+
+**Engine sound.** A new tuning: six cylinders firing 1-5-3-6-2-4, a 650 rpm idle, the diesel knock, a long exhaust under the tray with a deep boom, a turbo whistle on overrun, louder gear whine from the hub gears, and a big slow starter (1.5 s).
+
+**Tests.** New: `tests/unimog.test.ts` (its gearing and creep, clearance against the others, idle, acceleration and top speed, a full-lock turn, a 30° climb, a swap, the model and the save), a test of the diesel six's sound, a running water test (it stands in 1.3 m that carries the others off, and floods past its intake) and CREB tests (stopped in high range and on Big Red with open diffs; climbs Bob's Hill with open diffs; drives Big Red and Bob's Hill with both lockers). It joins the park brake, wet braking and headlight tests, and a browser test chooses it on the welcome screen, checks the five vehicle buttons fit on a phone, and drives it.
+
+## v0.12: side trips that pay off
+
+**What the owner said.** The first level is a bit rinse and repeat. Of five ideas to make it more interesting along the way, this update is the one about rewards for exploring: today the tracks to Roaring Meg Falls and Wujal Wujal Falls give nothing back. (The other four, varied stretches, changing weather, route choices and surprises, are separate updates.)
+
+**Two finds.** Two new side tracks on the range lead to huts left from the powerline days, each with a crate by the door and something on it to load:
+
+| Find           | Where                                                                                                    | Side track                                        | What it gives         | What it costs (autopilot, out and back)                       |
+| -------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | --------------------- | ------------------------------------------------------------- |
+| Old line camp  | east off the ridge, about 200 m past Big Red's top, signposted "Line camp"                               | 80 m, nearly level                                | 2 tyre plugs          | about 1.5 min of driving and 0.3–0.7 L                        |
+| Linesman's hut | west off the range top after Bob's Hill, signposted "Old line", with four leaning poles beside the track | 110 m down the flank, 16 m lower, up to about 13° | a full 20 L jerry can | about 2–2.5 min and 0.7–2.4 L, the climb back the costly half |
+
+The autopilot drives slowly (1.5 m/s in high range); a player will be quicker, and slower turning round at the hut. At eight game minutes a real minute, the linesman's hut costs 15–20 minutes of daylight against the clean run's hour and ten minutes in hand. Neither find is needed on a clean run: the short-wheelbase 4WD needs 54 L of the 70 L it carries. They pay off when a run has gone wrong, after a lot of spinning in the bogs or a few punctures. A full can gives back more fuel than the trip burns, but the daylight is what's short on the CREB, so the trade is time for insurance. The jerry can is at the harder and longer trip, and it's halfway, where there's still most of the range to burn it on; the plugs are early and cheap, for the potholes on the Bloomfield Track at the end.
+
+**The falls tracks are left as they were.** Wujal Wujal Falls are a sacred women's place, and the game already chose (docs/HISTORY.md) that nothing rewards going there beyond looking from the track. Roaring Meg Falls' track is 55 m off the ford and is a view; a find there would be on the main line's doorstep. The new finds are on tracks of their own.
+
+**How a find is taken.** `MapDef.finds` lists them (`FindDef`: where, how close, what it gives). Stopped (under 0.6 m/s) within 7 m of one, it goes on board at once with a toast ("Two tyre plugs from the line camp: loaded") and the status strip's counts go up. Within 25 m the HUD prompts "Jerry can by the hut — pull up beside it", and in reach "Stop here to load the jerry can". Loading by stopping, rather than a tool-menu action, needs no new button on any device, and there's no getting out of the car in this game. Each find loads once (`src/sim/finds.ts`). The load is drawn on a timber crate by the track (`src/render/finds.ts`): a red jerry can or a tin with a yellow lid, gone once taken.
+
+**Camps keep them.** A checkpoint now has `taken`, the finds loaded before reaching the camp. Restarting from a camp puts back the fuel, cans, spares and plugs as before, and puts any find taken since back on its crate. Saves from before this version read as nothing taken. This changes SPEC's fixed load: the story sets the starting load, and finds on the map can add to it.
+
+**The tracks.** Clay like the range tracks, 3 m wide, with washouts and potholes but no mud holes, so the trip costs its distance and the climb rather than a winch job. Each side track's first point is pinned to the main track's height where they meet. The range top runs on fill 4 m above the ground for its first 150 m, so the old line leaves it further on, where the track is at ground level. The linesman's hut stands on a flat cut at 125.5 m at the end of the track, which gives room to turn round. The poles stand 6 m beside the track (placed on it at first, the autopilot drove into one).
+
+**New prop.** `powerPole`: a weathered pole with a crossarm and three insulators, and a `lean` on any prop. Only its bottom 3 m collides, upright, which is the part a vehicle can hit.
+
+**History.** The hut notes describe what is in the game, not what was there: no source found describes line camps or huts on the CREB. Forum posts say the line was built in the late 1960s and most poles were pulled out in 2009; they couldn't be checked, so the game doesn't state them (docs/HISTORY.md).
+
+**Balance.** The main line's obstacles are unchanged. Where the two side tracks join it, the ground beside the main track moves by up to 20 cm (the side tracks' grading blends in, as the falls tracks' does), which changes the autopilot's run slightly from the ridge on. The clean run is where it was: the short-wheelbase 4WD takes 34.3 minutes on 54.3 L of petrol, arriving at 5:04 pm, and the Land Rover 34.0 minutes on 35.2 L of diesel, arriving at 5:02 pm. (Before merging v0.11's autopilot changes, the short-wheelbase run on this branch tipped over in the deep bog short of the Little Annan, where main's got through; the ground there is the same on both, and with v0.11's autopilot both get through.) Nothing was retuned.
+
+**Tests.** New `tests/finds.test.ts`: both side tracks are driven out and back in the wet with both lockers in the short-wheelbase 4WD and the Land Rover; their ends are in reach of the finds and their starts at the main track's height; a find loads once, only when stopped, and a checkpoint before it puts it back; saves keep what was taken. New `e2e/finds.spec.ts`: loading the plugs shows in the supplies, a camp keeps them, and restarting from it puts back a jerry can taken after it. The test hook gains `finds()` and `restartFromCamp()`.

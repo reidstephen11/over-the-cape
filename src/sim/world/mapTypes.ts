@@ -327,7 +327,8 @@ export type PropKind =
   | 'oldUte'
   | 'mineEntrance'
   | 'cattleGrid'
-  | 'waterTank';
+  | 'waterTank'
+  | 'powerPole';
 
 export interface PropDef {
   kind: PropKind;
@@ -337,6 +338,26 @@ export interface PropDef {
   text?: string;
   /** Flatten the ground under the prop (radius in metres). */
   flatten?: number;
+  /** Lean from upright towards `headingDeg` (degrees; an old power pole). */
+  lean?: number;
+}
+
+/**
+ * Something to load off the main line (a jerry can, tyre plugs): stop within `radius` of
+ * it and it goes on board, once. Camps keep which were taken.
+ */
+export interface FindDef {
+  id: string;
+  /** What it is, as drawn and shown in the HUD prompt ("Jerry can"). */
+  name: string;
+  x: number;
+  z: number;
+  /** Stop within this distance to load it (m). */
+  radius: number;
+  /** What it adds to the load. */
+  gives: { jerryCans?: number; spares?: number; plugs?: number };
+  /** Shown when it is loaded. */
+  taken: string;
 }
 
 export interface BoulderDef {
@@ -587,6 +608,8 @@ export interface MapDef {
   gullies: readonly GullyDef[];
   pois: readonly PoiDef[];
   props: readonly PropDef[];
+  /** Things to load off the main line (none when absent). */
+  finds?: readonly FindDef[];
   boulders: readonly BoulderDef[];
   tors: readonly TorDef[];
   fallenTrees: readonly FallenTreeDef[];

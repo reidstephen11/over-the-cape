@@ -21,13 +21,17 @@ test('M2: keyboard drives the car and the chase camera follows', async ({ page }
   const moved = await page.evaluate(() => window.__game!.vehicle());
   expect(Math.hypot(moved.x - start.x, moved.z - start.z)).toBeGreaterThan(3);
 
-  // Range toggle.
-  await page.keyboard.down('KeyS');
-  await waitSim(page, 3);
-  await page.keyboard.up('KeyS');
+  // Range toggle. Range only changes below 20 km/h, so stop on the park brake first:
+  // holding S brakes and then reverses, and could leave the car above it.
+  await page.keyboard.press('Space');
+  await expect
+    .poll(async () => Math.abs((await page.evaluate(() => window.__game!.vehicle())).speed))
+    .toBeLessThan(0.5);
   await page.keyboard.press('KeyL');
   await waitSim(page, 0.3);
   expect((await page.evaluate(() => window.__game!.vehicle())).range).toBe('low');
+  await page.keyboard.press('Space');
+  await expect.poll(() => page.evaluate(() => window.__game!.parkBrake())).toBe(false);
 
   // Up Big Red's red clay in low range, and along the range through the rainforest.
   await page.evaluate(() => window.__game!.teleport(7, 1262, 330));
