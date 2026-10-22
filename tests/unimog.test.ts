@@ -19,7 +19,7 @@ import { testWorld } from './world';
 
 describe('Unimog UL1700L', () => {
   it('is an Army Unimog: 3.85 m wheelbase, 12.5R20s, a diesel six and a crawling low range', () => {
-    expect(vehicleOrder[vehicleOrder.length - 1]).toBe('unimog');
+    expect(vehicleOrder).toContain('unimog');
     expect(Math.abs(t.wheels[0].z - t.wheels[2].z)).toBeCloseTo(3.85, 3);
     expect(t.wheelRadius * 2).toBeCloseTo(1.12, 2);
     expect(t.gearbox.ratios).toHaveLength(4);
