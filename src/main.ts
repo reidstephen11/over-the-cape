@@ -3,6 +3,7 @@ import { Game } from './core/game';
 import { choiceFromSave } from './core/launch';
 import { episodes } from './data/episodes';
 import { maps } from './data/maps';
+import { vehicleLoadout } from './data/vehicles';
 import { loadSave } from './sim/save/save';
 import { LoadingScreen } from './ui/loading';
 import { WelcomeScreen, type WelcomeChoice } from './ui/welcome';
@@ -18,6 +19,7 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
   loading.setSubtitle(map.name);
   loading.briefing(
     def,
+    vehicleLoadout(def.loadout, choice.vehicle),
     choice.replay,
     checkpoint ? (map.pois.find((p) => p.id === checkpoint.camp)?.name ?? null) : null,
     choice.damage,

@@ -4,6 +4,7 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { troopyTuning } from '../src/data/troopy';
 import { unimogTuning } from '../src/data/unimog';
 import { SurfaceId, sweptTuning } from '../src/data/surfaces';
 import { vehicleTuning } from '../src/data/vehicle';
@@ -114,6 +115,31 @@ describe('running water', () => {
     deep.run(12, { throttle: 0.3 });
     expect(deep.vehicle.condition.flood.stalled).toBe(true);
     deep.physics.world.free();
+  });
+});
+
+describe('the heavy Troop Carrier in running water', () => {
+  /** Seconds the current had it, at most, and how far it drifted, over 10 s parked in a river. */
+  async function drift(depth: number, flow: number) {
+    const s = await makeScene({ tuning: troopyTuning, ground: river(depth, flow) });
+    const x0 = s.vehicle.position.x;
+    let swept = 0;
+    for (let t = 0; t < 10 && swept < sweptTuning.seconds; t += 0.5) {
+      s.run(0.5, {});
+      swept = Math.max(swept, s.vehicle.swept);
+    }
+    const out = { swept, drift: s.vehicle.position.x - x0 };
+    s.physics.world.free();
+    return out;
+  }
+
+  it('holds its ground where the current carries the others away, but not in deeper, faster water', async () => {
+    const holds = await drift(1.3, 2);
+    expect(holds.swept).toBeLessThan(sweptTuning.seconds);
+    expect(holds.drift).toBeLessThan(5);
+    const goes = await drift(1.5, 2.5);
+    expect(goes.swept).toBeGreaterThanOrEqual(sweptTuning.seconds);
+    expect(goes.drift).toBeGreaterThan(3);
   });
 });
 

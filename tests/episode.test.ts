@@ -35,7 +35,7 @@ describe('episodes', () => {
 
   it('keeps time while driving, and ends at the deadline unless replaying with the clock stopped', async () => {
     const s = await makeScene({});
-    const run = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start'), true);
+    const run = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start', 'shortie'), true);
     // An hour of real driving passes clockRate hours of the afternoon.
     run.tick(3600 / crebEpisode.clockRate);
     expect(run.hour).toBeCloseTo(crebEpisode.startHour + 1, 5);
@@ -46,10 +46,10 @@ describe('episodes', () => {
     // Once ended, nothing changes until it restarts from a camp.
     run.tick(100);
     expect(run.check(s.vehicle, 'mild', goal)).toBeNull();
-    run.restart({ ...startCheckpoint(crebEpisode, 'start'), hour: 15, elapsed: 600 });
+    run.restart({ ...startCheckpoint(crebEpisode, 'start', 'shortie'), hour: 15, elapsed: 600 });
     expect([run.status, run.hour, run.elapsed]).toEqual(['driving', 15, 600]);
 
-    const replay = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start'), false);
+    const replay = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start', 'shortie'), false);
     replay.tick(10_000);
     expect(replay.hour).toBe(crebEpisode.startHour);
     expect(replay.hoursLeft()).toBe(Infinity);
@@ -58,7 +58,7 @@ describe('episodes', () => {
 
   it('is complete on reaching the goal', async () => {
     const s = await makeScene({});
-    const run = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start'), true);
+    const run = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start', 'shortie'), true);
     const p = s.vehicle.body.translation();
     expect(run.check(s.vehicle, 'realistic', { ...goal, x: p.x + 5, z: p.z })).toBe('complete');
     expect(run.status).toBe('complete');
@@ -109,8 +109,8 @@ describe('episodes', () => {
   it('snapshots the load at a camp and puts it back on restarting', async () => {
     const s = await makeScene({});
     const v = s.vehicle;
-    const run = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start'), true);
-    applyCheckpoint(v, startCheckpoint(crebEpisode, 'start'));
+    const run = new EpisodeRun(crebEpisode, startCheckpoint(crebEpisode, 'start', 'shortie'), true);
+    applyCheckpoint(v, startCheckpoint(crebEpisode, 'start', 'shortie'));
     const l = crebEpisode.loadout;
     expect([v.condition.fuel, v.condition.jerryCans, v.condition.spares, v.condition.plugs]).toEqual([
       l.fuel,

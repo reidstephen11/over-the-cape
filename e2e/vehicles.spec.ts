@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitEngine, waitReady, waitSim } from './helpers';
+import {
+  collectErrors,
+  driveFromBriefing,
+  lowGraphics,
+  shot,
+  waitEngine,
+  waitReady,
+  waitSim,
+} from './helpers';
 
 test('changing to the Land Rover from the pause menu restarts from the last camp in it, and is remembered', async ({
   page,
@@ -99,5 +107,48 @@ test('the Unimog is chosen on the welcome screen, drives off, and has its own ca
   await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
   await waitSim(page, 1);
   await shot(page, 'vehicle', 'unimog-cockpit');
+  expect(errors).toEqual([]);
+});
+
+test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tank and second spare, and drives off', async ({
+  page,
+}) => {
+  test.setTimeout(900_000);
+  const errors = collectErrors(page);
+  await lowGraphics(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: /Troop Carrier/ }).click();
+  await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
+    'data-value',
+    'troopy',
+  );
+  await expect(page.locator('.welcome-card')).toContainText('sub-tank');
+  await shot(page, 'vehicle', 'welcome-troopy');
+  // Six vehicles still fit across a phone held upright, without scrolling sideways.
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy'])
+    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.setViewportSize({ width: 1280, height: 720 });
+
+  // The briefing lists the CREB's load with the sub-tank's 60 L and the second spare.
+  await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
+  await expect(page.locator('.briefing')).toContainText('110 L of fuel');
+  await expect(page.locator('.briefing')).toContainText('2 spare wheels');
+  await driveFromBriefing(page);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('troopy');
+  const load = await page.evaluate(() => window.__game!.health());
+  // A little has gone on starting and idling.
+  expect(load.fuel).toBeGreaterThan(109);
+  expect(load.fuel).toBeLessThanOrEqual(110);
+  expect(load.spares).toBe(2);
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await waitSim(page, 3);
+  expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
+  await page.evaluate(() => window.__game!.setInput(null));
+  await shot(page, 'vehicle', 'troopy-in-game');
+  await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
+  await waitSim(page, 1);
+  await shot(page, 'vehicle', 'troopy-cockpit');
   expect(errors).toEqual([]);
 });

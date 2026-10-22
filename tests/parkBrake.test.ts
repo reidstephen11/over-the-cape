@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { lateAfternoon } from '../src/data/environment';
 import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { troopyTuning } from '../src/data/troopy';
 import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
 import { VehicleModel } from '../src/render/vehicleModel';
@@ -37,7 +38,7 @@ describe('handbrake', () => {
     sim.physics.free();
   });
 
-  for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, unimogTuning])
+  for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, unimogTuning, troopyTuning])
     it(`holds the ${tuning.name}'s rear wheels so it barely creeps off with it on`, async () => {
       const distance = async (parkBrake: boolean) => {
         const s = await makeScene({ tuning });
@@ -56,7 +57,7 @@ describe('handbrake', () => {
     });
 
   it('pulls the cabin lever up (or the handle out) when it is on', async () => {
-    for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, unimogTuning]) {
+    for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning, unimogTuning, troopyTuning]) {
       const model = new VehicleModel(tuning);
       const s = await makeScene({ tuning });
       s.run(0.5, {});
