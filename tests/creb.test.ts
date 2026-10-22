@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { environmentAt } from '../src/data/environment';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
+import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
 import { vehicleTuning } from '../src/data/vehicle';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
@@ -342,7 +343,7 @@ describe('Episode 1: the CREB Track', () => {
 
   it('stops high range and open diffs on its wet clay climbs', async () => {
     for (const id of ['big-red', 'bobs-hill'])
-      for (const tuning of [vehicleTuning, perentieTuning])
+      for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning])
         for (const lockers of ['high', 'open'] as const) {
           const s = await scene(id, false, lockers, tuning);
           try {
@@ -378,13 +379,14 @@ describe('Episode 1: the CREB Track', () => {
       }
     }, 300_000);
 
-  for (const id of ['big-red', 'bobs-hill'])
-    it(`drives ${id} in the wet in the Land Rover Perentie`, async () => {
-      const s = await scene(id, false, 'both', perentieTuning);
-      try {
-        await driveLeg(s, s.track, false, 200);
-      } finally {
-        s.sim.physics.free();
-      }
-    }, 300_000);
+  for (const tuning of [perentieTuning, hiluxTuning])
+    for (const id of ['big-red', 'bobs-hill'])
+      it(`drives ${id} in the wet in the ${tuning.name}`, async () => {
+        const s = await scene(id, false, 'both', tuning);
+        try {
+          await driveLeg(s, s.track, false, 200);
+        } finally {
+          s.sim.physics.free();
+        }
+      }, 300_000);
 });

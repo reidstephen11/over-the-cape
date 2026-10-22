@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { environmentAt } from '../src/data/environment';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
+import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
 import { SurfaceId, sweptTuning } from '../src/data/surfaces';
 import { vehicleTuning } from '../src/data/vehicle';
@@ -77,7 +78,7 @@ describe('running water', () => {
   });
 
   it('lifts the vehicle off its tyres in deep water, and a current then carries it away', async () => {
-    for (const tuning of [vehicleTuning, perentieTuning]) {
+    for (const tuning of [vehicleTuning, perentieTuning, hiluxTuning]) {
       const s = await makeScene({ tuning, ground: river(1.3, 0) });
       const v = s.vehicle;
       s.run(6, {});
