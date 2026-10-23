@@ -12,8 +12,8 @@ import { mirrorHead } from './mirrors';
  * LandCruiser 79 single cab, built up: the 70 Series cab and front clip on a 4 inch lift,
  * the V8's bonnet scoop, wide black flares over 37 inch tyres, rock sliders, a steel bar
  * with a winch, driving lamps and a light bar, a snorkel up the right pillar, and behind
- * the cab an alloy tray with the spare on a carrier off the back and a black canopy
- * with gullwing doors and a roof rack (ground about 0.59 m below the origin when parked).
+ * the cab an alloy tray and a black canopy with gullwing doors, one spare on its rear
+ * door and a second flat on its roof rack (ground about 0.59 m below the origin when parked).
  */
 const { bar, flare, canopy, alloy, chrome } = lc79Colors;
 const black = new THREE.Color('#1E2120'),
@@ -53,9 +53,14 @@ const CLIP = {
 };
 /** The tray: deck height, headboard, tail and half width. */
 const TRAY = { deck: 0.64, front: 0.56, back: 2.98, half: 0.95 };
-/** The canopy on the tray, from the headboard to the tail. */
-const CAN = { front: TRAY.front + 0.06, back: 2.96, top: ROOF + 0.02, half: 0.93 };
+/**
+ * The canopy on the tray, from the headboard to short of the tail, so the spare on its
+ * rear door stays inside the tray.
+ */
+const CAN = { front: TRAY.front + 0.06, back: 2.58, top: ROOF + 0.02, half: 0.93 };
 const RACK = { y: CAN.top + 0.1 };
+/** Where the second spare lies on the roof rack (its centre along the rack). */
+const LC79_ROOF_SPARE_Z = (CAN.front + CAN.back) / 2;
 const LAMP_Y = 0.68;
 
 const clipTop = (z: number) => CLIP.noseTop + ((z - F) / (CLIP.back - F)) * (CLIP.backTop - CLIP.noseTop);
@@ -536,8 +541,8 @@ function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: numb
   b.rod(v(x, y - r - 0.01, z + 0.06), v(x, y - r - 0.07, z + 0.06), 0.012, black, M.Metal, Z.Front);
 }
 
-/** Where the spare hangs behind the tray (its centre). */
-export const LC79_SPARE = { y: 0.62, z: 3.28 };
+/** The spare on the canopy's rear door (its centre), inside the end of the tray. */
+export const LC79_SPARE = { y: 1.13, z: 2.8 };
 
 /** Driving lamp lens centres, for the high-beam glow. */
 export const LC79_DRIVING_LAMPS = [-0.21, 0.21].map((x) => ({ x, y: 0.86, z: -2.51 }));
@@ -642,7 +647,7 @@ function snorkel(b: VehicleBuilder): void {
 }
 
 /** The alloy tray: deck, side rails, headboard, mudguards, under-tray boxes and the tail. */
-function tray(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
+function tray(b: VehicleBuilder): void {
   const { deck, front, back, half } = TRAY;
   const len = back - front,
     mid = (front + back) / 2;
@@ -711,25 +716,27 @@ function tray(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.pop();
   for (const side of [-1, 1]) b.ring(side * 0.62, 0.04, back + 0.1, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
   plate(b, 0.68, 0.14, back + 0.084, 1);
-  // The spare hangs off the back on a carrier bolted to the tray's tail and the rear bar.
-  const sz = LC79_SPARE.z,
-    sy = LC79_SPARE.y;
-  for (const x of [-0.3, 0.3]) {
-    b.block(x, (deck - 0.05 + 0.19) / 2, back + 0.06, 0.05, deck - 0.24, 0.05, bar, M.Metal, Z.Rear, 0.006);
-    b.rod(v(x, sy - 0.25, back + 0.06), v(x * 0.4, sy - 0.08, sz - 0.12), 0.02, bar, M.Metal, Z.Rear);
-    b.rod(v(x, sy + 0.25, back + 0.06), v(x * 0.4, sy + 0.08, sz - 0.12), 0.02, bar, M.Metal, Z.Rear);
-  }
-  b.block(0, sy, sz - 0.13, 0.2, 0.2, 0.03, bar, M.Metal, Z.Rear, 0.01);
-  b.tag = Z.Rear;
-  b.push()
-    .translate(0, sy, sz)
-    .rotate(0, Math.PI / 2, 0);
+}
+
+/** A spare wheel standing with its face to the back, or lying flat. */
+function spare(
+  b: VehicleBuilder,
+  wheel: THREE.BufferGeometry,
+  x: number,
+  y: number,
+  z: number,
+  flat: boolean,
+): void {
+  b.tag = flat ? Z.Roof : Z.Rear;
+  b.push().translate(x, y, z);
+  if (flat) b.rotate(0, 0, Math.PI / 2);
+  else b.rotate(0, Math.PI / 2, 0);
   b.geometry(wheel.clone(), black);
   b.pop();
 }
 
 /** The canopy: black alloy box with gullwing doors each side, a rear door and a roof rack. */
-function canopyBox(b: VehicleBuilder): void {
+function canopyBox(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   const { front, back, top, half } = CAN;
   const base = TRAY.deck;
   const s = new THREE.Shape(
@@ -773,8 +780,17 @@ function canopyBox(b: VehicleBuilder): void {
   // Rear door: shut line, hinge and handle; a high stop lamp over it.
   b.block(0, (base + top) / 2, back + 0.002, half * 2 - 0.08, 0.006, 0.006, black, M.Rubber, Z.Rear);
   b.block(0, top - 0.07, back + 0.004, half * 2 - 0.1, 0.02, 0.012, black, M.Metal, Z.Rear);
-  b.block(0, base + 0.3, back + 0.008, 0.16, 0.04, 0.016, steel, M.Metal, Z.Rear, 0.008);
-  b.block(0, top - 0.02, back + 0.008, 0.3, 0.025, 0.012, red, M.Red, Z.Rear, 0.006);
+  b.block(0.6, base + 0.3, back + 0.008, 0.12, 0.04, 0.016, steel, M.Metal, Z.Rear, 0.008);
+  for (const side of [-1, 1])
+    b.block(side * 0.68, top - 0.05, back + 0.008, 0.16, 0.025, 0.012, red, M.Red, Z.Rear, 0.006);
+  // The spare on the rear door: a carrier frame bolted through the door, a hub plate and
+  // the wheel, its outer face just inside the end of the tray.
+  const sp = LC79_SPARE;
+  for (const y of [sp.y - 0.3, sp.y + 0.3])
+    b.block(0, y, back + 0.02, 0.7, 0.05, 0.04, bar, M.Metal, Z.Rear, 0.008);
+  for (const x of [-0.3, 0.3]) b.block(x, sp.y, back + 0.02, 0.05, 0.65, 0.04, bar, M.Metal, Z.Rear, 0.008);
+  b.block(0, sp.y, back + 0.05, 0.24, 0.24, 0.04, bar, M.Metal, Z.Rear, 0.01);
+  spare(b, wheel, 0, sp.y, sp.z, false);
   // Roof rack: two rails on low feet and cross bars, the platform for the recovery boards.
   for (const side of [-1, 1]) {
     b.block(
@@ -805,6 +821,15 @@ function canopyBox(b: VehicleBuilder): void {
       Z.Roof,
       0.006,
     );
+  // The second spare lies flat in the middle of the rack, between the boards, with a
+  // strap over it.
+  const sy = RACK.y + 0.015 + tuning.wheelWidth * 0.53,
+    sz = LC79_ROOF_SPARE_Z;
+  spare(b, wheel, 0, sy, sz, true);
+  const strapY = sy + tuning.wheelWidth * 0.53 + 0.006;
+  b.block(0, strapY, sz, 0.98, 0.008, 0.05, black, M.Rubber, Z.Roof);
+  for (const side of [-1, 1])
+    b.rod(v(side * 0.49, strapY, sz), v(side * 0.52, RACK.y, sz), 0.012, black, M.Rubber, Z.Roof);
 }
 
 function chassis(b: VehicleBuilder): void {
@@ -842,8 +867,8 @@ export function buildLc79Body(
   roof(b, paint);
   bullBar(b, tuning);
   snorkel(b);
-  tray(b, wheel);
-  canopyBox(b);
+  tray(b);
+  canopyBox(b, tuning, wheel);
   chassis(b);
   b.push().translate(0, DY, 0);
   addTroopyInterior(b, tuning.engine.redlineRpm, paint, true);
@@ -951,7 +976,9 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
 export function buildLc79Plank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   const board = new THREE.Color('#C7742E');
-  const x = index === 0 ? -0.42 : 0.42,
+  // Out by the rails, clear of the spare; the boards are longer than the rack, so their
+  // ends overhang a little at the front and over the spare at the back.
+  const x = index === 0 ? -0.68 : 0.68,
     y = RACK.y + 0.04,
     z = (CAN.front + CAN.back) / 2;
   const L = plankTuning.length,

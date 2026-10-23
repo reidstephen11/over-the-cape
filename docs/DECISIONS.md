@@ -989,3 +989,17 @@ The owner asked for a way to test driving in bad weather and to start anywhere o
 - **Start from any place** on the map (the same list as the debug teleports) and **change vehicle on the spot**, without going back to camp as the pause menu does.
 - **Nothing is saved.** Camps reached, finished episodes and settings changed in test mode don't touch the real save, so testing can't unlock or spoil a real run.
 - **Not done:** wind (the game has a wind sound but no wind in the weather, the trees or the physics). Puddles are laid when the map loads, from the weather picked on the welcome screen; the panel's rain doesn't add them later.
+
+## v0.29: two spares on every vehicle, and the LC79's spare inside the tray
+
+- **Towing.** Asked whether the game has towing: it doesn't. Recovery is the winch only (to trees, rocks, a bogged vehicle). Towing was not added in this update; the plan for it is in docs/NEXT.md (v0.27).
+- **LC79 spare.** The spare hung on a carrier behind the tray, past its end. It now sits on the canopy's rear door, and the canopy is 0.38 m shorter (it ends at 2.58 m instead of 2.96 m) so the spare's outer face stays inside the end of the tray. The canopy's high stop lamp moved to the two top corners, beside the wheel. The collision boxes follow: the canopy box is shorter and the spare's box moved inside the tray.
+- **Two spares each, in the count.** Every episode now loads two spares, and so does free driving. The Troop Carrier used to get its second spare as an extra on top of the episode's one; that extra is gone, so it still starts with two, like the rest.
+- **Two spares each, on the body.** Where the second goes, by vehicle:
+  - Short-wheelbase 4WD and Camel Trophy car: flat on the bonnet, as Camel Trophy cars and many old Land Rovers carried it.
+  - Land Rover Perentie: on the bonnet, the Land Rover 110 option asked about in v0.21; the first stays under the rear floor. The pick, shovel and axe that sat on the bonnet are now clamped across the tailgate.
+  - Hilux: flat on the tub floor between the wheel housings, under a ratchet strap.
+  - Unimog: on a carrier on the left dropside, behind the cab. Against the tailgate was tried first, but it would have stood behind the pintle hook, and the hook has to stay the rearmost part for a winch line or a trailer (a unit test checks this).
+  - GQ Patrol and LC79: flat on the roof rack, between the recovery boards, which moved out towards the rails (as on the Troop Carrier). The Patrol's jerry can moved to the middle of the rack. The LC79's boards are longer than its shorter rack, so they overhang a little at each end.
+  - Troop Carrier: unchanged (back door and roof rack).
+- **Checked from all sides** in the studio page: nine views of each vehicle and close-ups of every new part.

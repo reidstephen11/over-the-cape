@@ -639,6 +639,28 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.geometry(wheel.clone(), black);
   b.pop();
   for (const x of [-0.2, 0.2]) b.block(x, -0.04, 2.02, 0.05, 0.03, 0.8, black, M.Metal, Z.Trim);
+  // The second spare lies flat on the tub floor between the wheel housings, with a ratchet
+  // strap over it to the tie-down rails.
+  const sy = TUB_FLOOR + 0.03 + tuning.wheelWidth * 0.53,
+    sz = 1.75,
+    strapY = sy + tuning.wheelWidth * 0.53 + 0.006;
+  const orangeStrap = new THREE.Color('#C9762C');
+  b.tag = Z.Rear;
+  b.push()
+    .translate(0, sy, sz)
+    .rotate(0, 0, Math.PI / 2);
+  b.geometry(wheel.clone(), black);
+  b.pop();
+  b.block(0, strapY, sz, 0.76, 0.008, 0.05, orangeStrap, M.Fabric, Z.Rear);
+  for (const side of [-1, 1])
+    b.rod(
+      { x: side * 0.38, y: strapY, z: sz },
+      { x: side * 0.48, y: TUB_FLOOR + 0.03, z: sz },
+      0.01,
+      orangeStrap,
+      M.Fabric,
+      Z.Rear,
+    );
 
   // Steel bar in place of the bumper: a heavy beam with three hoops over the grille and
   // headlamps. It covers the factory bumper lamps, so the amber park and indicator lamps

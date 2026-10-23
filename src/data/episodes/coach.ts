@@ -23,7 +23,7 @@ export const coachEpisode: EpisodeDef = {
   // The map is about 8.6 km of the real trip's 70-odd km; fuel burns to match the real
   // distance. A clean run uses more than the tank holds, so the jerry can goes in on the way.
   fuelScale: 13,
-  loadout: { fuel: 50, jerryCans: 1, spares: 1, plugs: 3 },
+  loadout: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
   briefing: [
     'Gold was found on the Palmer River in 1873, and the rush was on. Maytown grew up as the centre of the field, and from about 1877 a road was cut north from it over the Conglomerate Range to Laura. From 1880 Cobb & Co ran coaches on it.',
     'It is the middle of the dry season. The rivers are down to shallow runs of water over wide beds of soft sand, and the old road is rock, dust and the washouts the last wet left behind. There is no fuel between here and Laura.',

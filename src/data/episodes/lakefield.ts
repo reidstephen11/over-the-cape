@@ -36,7 +36,7 @@ export const lakefieldEpisode: EpisodeDef = {
   // The map is about 6.8 km of the real trip's 200-odd km; fuel burns to match the real
   // distance. A clean run uses more than the tank holds, so the jerry can goes in on the way.
   fuelScale: 18,
-  loadout: { fuel: 50, jerryCans: 1, spares: 1, plugs: 3 },
+  loadout: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
   rescue: {
     id: 'stockman',
     name: 'Stockman’s Land Cruiser',

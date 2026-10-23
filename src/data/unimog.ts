@@ -55,11 +55,12 @@ export const unimogTuning: VehicleTuning = {
     // The dropside tray and the canvas tilt over it.
     { cx: 0, cy: 0.86, cz: 1.86, hx: 1.15, hy: 0.21, hz: 1.62 },
     { cx: 0, cy: 1.66, cz: 1.86, hx: 1.12, hy: 0.6, hz: 1.6 },
-    // Bumper with the winch behind it, the spare wheel behind the cab, and the rear
-    // crossmember with its pintle hook.
+    // Bumper with the winch behind it, the spare wheel behind the cab, the rear
+    // crossmember with its pintle hook, and the second spare on the left dropside.
     { cx: 0, cy: 0.38, cz: -3.08, hx: 1.1, hy: 0.15, hz: 0.12 },
     { cx: 0, cy: 1.05, cz: 0.12, hx: 0.58, hy: 0.58, hz: 0.17 },
     { cx: 0, cy: 0.2, cz: 3.42, hx: 0.95, hy: 0.1, hz: 0.08 },
+    { cx: -1.39, cy: 0.95, cz: 0.85, hx: 0.17, hy: 0.56, hz: 0.56 },
   ],
   bumpRadius: 0.4,
   bodyFriction: 0.45,

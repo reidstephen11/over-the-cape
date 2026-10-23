@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import { pal } from './colors';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
-import { HW, NOSE, TAIL } from './vehicleBody';
+import { BONNET_TOP, HW, NOSE, TAIL } from './vehicleBody';
 
 const trim = new THREE.Color('#343D37'),
   steel = new THREE.Color('#959B94'),
@@ -176,7 +176,7 @@ function roofGear(b: VehicleBuilder): void {
   b.rod({ x: 0.35, y: 1.977, z: 0.12 }, { x: 0.45, y: 1.977, z: 0.12 }, 0.008, steel, M.Metal, Z.Roof);
 }
 
-/** Spare wheel on the right-hand rear door and a jerry can on the left, clear of the lamps. */
+/** The first spare on the right-hand rear door and a jerry can on the left, clear of the lamps. */
 function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   const sx = 0.27,
     sy = 0.86,
@@ -219,6 +219,23 @@ function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.pop();
 }
 
+/** The second spare lying flat on a plate on the bonnet, held down by a centre clamp. */
+function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
+  const z = -1.2,
+    base = BONNET_TOP + 0.03,
+    top = base + tuning.wheelWidth;
+  b.block(0, BONNET_TOP + 0.015, z, 0.34, 0.03, 0.34, bar, M.Metal, Z.Front, 0.01);
+  b.tag = Z.Front;
+  b.push()
+    .translate(0, base + tuning.wheelWidth / 2, z)
+    .rotate(0, 0, Math.PI / 2);
+  b.geometry(wheel.clone(), black);
+  b.pop();
+  b.rod(v(0, base, z), v(0, top + 0.04, z), 0.014, steel, M.Metal, Z.Front);
+  b.block(0, top + 0.01, z, 0.24, 0.02, 0.06, bar, M.Metal, Z.Front, 0.006);
+  b.rod(v(-0.06, top + 0.04, z), v(0.06, top + 0.04, z), 0.01, steel, M.Metal, Z.Front);
+}
+
 export function addVehicleEquipment(
   b: VehicleBuilder,
   tuning: VehicleTuning,
@@ -231,6 +248,7 @@ export function addVehicleEquipment(
   chassis(b);
   roofGear(b);
   rearDoorGear(b, wheel);
+  bonnetSpare(b, tuning, wheel);
   // Flexible whip aerial on the guard.
   const ax = aerialSide * (HW - 0.06);
   b.block(ax, 0.8, -0.77, 0.06, 0.04, 0.06, black, M.Rubber, Z.Front);

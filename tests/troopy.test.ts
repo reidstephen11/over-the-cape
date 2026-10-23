@@ -46,16 +46,15 @@ describe('Troop Carrier', () => {
     expect(idleCreep).toBeLessThan(2.5);
   });
 
-  it('starts an episode with its sub-tank full and a second spare, on top of the episode load', () => {
+  it('starts an episode with its sub-tank full on top of the episode load, and two spares like every vehicle', () => {
     const l = crebEpisode.loadout;
     expect(vehicleLoadout(l, 'troopy')).toEqual({
       ...l,
       fuel: l.fuel + TROOPY_SUB_TANK,
-      spares: l.spares + 1,
     });
     for (const id of vehicleOrder.filter((v) => v !== 'troopy')) expect(vehicleLoadout(l, id)).toEqual(l);
     const start = startCheckpoint(crebEpisode, 'start', 'troopy');
-    expect([start.fuel, start.spares]).toEqual([l.fuel + TROOPY_SUB_TANK, l.spares + 1]);
+    expect([start.fuel, start.spares]).toEqual([l.fuel + TROOPY_SUB_TANK, 2]);
   });
 
   it('fills both tanks from the checkpoint; in a smaller vehicle the fuel that will not fit stays behind', async () => {

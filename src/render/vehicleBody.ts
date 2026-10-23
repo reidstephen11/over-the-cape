@@ -21,6 +21,8 @@ export const NOSE = -1.8;
 export const TAIL = 1.86;
 const ROOF = 1.64;
 const LAMP_Y = 0.5;
+/** Top face of the flat bonnet. */
+export const BONNET_TOP = 0.865;
 
 const steel = new THREE.Color('#93988F'),
   chrome = new THREE.Color('#C9CCC6'),
