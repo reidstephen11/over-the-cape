@@ -207,8 +207,39 @@ export interface EngineSynthTuning {
    * idle and light load (idle) and less so under full load (load).
    */
   knock?: { hz: Pair; q: number; idle: number; load: number; gain: number };
+  /**
+   * A V engine's two banks: which bank each cylinder (1..n) is on, and each bank's own
+   * head pipe and level. On a cross-plane V8 each bank fires unevenly (90°, 180° and 270°
+   * apart), so with the banks piped apart the exhaust burbles instead of droning.
+   */
+  banks?: {
+    of: readonly (0 | 1)[];
+    headPipe: readonly [PipeTuning, PipeTuning];
+    gain: Pair;
+  };
+  /**
+   * Long-duration camshaft: at idle the revs surge and sag at `lopeHz` by `lopeRpm`,
+   * firings swell and fade with it (`chop`), and some burn only partly (`weak` chance).
+   */
+  cam?: { lopeHz: number; lopeRpm: number; chop: number; weak: number };
+  /**
+   * Turbocharger: boost builds over `spoolSeconds` with throttle above `fromRpm`; the
+   * compressor whistles from hz[0] to hz[1] as it spins up and flutters when the throttle
+   * snaps shut on boost.
+   */
+  turbo?: {
+    fromRpm: number;
+    spoolSeconds: number;
+    hz: Pair;
+    gain: number;
+    hiss: number;
+    flutterHz: number;
+    flutterGain: number;
+  };
   outputGain: number;
 }
+
+type PipeTuning = { length: number; reflection: number; dampingHz: number };
 
 /**
  * Inline-six engine synthesiser (src/audio/engine/engineSynth.ts), modelled on the
@@ -566,6 +597,154 @@ export const td42SynthTuning: EngineSynthTuning = {
   outputGain: 1,
 };
 
+/**
+ * The LC79's 4.5 L 1VD-FTV twin-turbo diesel V8, tuned, on a 3 inch straight-through
+ * exhaust. Cross-plane crank: each bank fires 90°, 180° and 270° apart, so each bank's
+ * pipe burbles; the two turbos (one per bank) join in a Y-pipe and the far bank's gas
+ * travels further to get there. Common-rail injection keeps the knock softer than the
+ * old indirect-injection diesels'. The turbos whistle as they spool and whoosh when the
+ * throttle shuts on boost.
+ */
+export const v8DieselSynthTuning: EngineSynthTuning = {
+  idleRpm: 680,
+  limiterRpm: 4250,
+  firingOrder: [1, 8, 7, 3, 6, 5, 4, 2],
+  runners: {
+    delayMs: [0.3, 1.9, 0.15, 1.75, 0.15, 1.75, 0.3, 1.9],
+    strength: [0.97, 0.95, 1.02, 1.0, 1.03, 1.01, 0.98, 0.96],
+  },
+  pulse: { riseMs: [0.5, 0.25], decayMs: [2.1, 1.2], minRiseDeg: 2, minDecayDeg: 6, maxDecayDeg: 26 },
+  turbulence: { idle: 0.3, load: 0.65 },
+  pressure: { idle: 0.32, compression: 0.05 },
+  manifoldSeconds: 0.09,
+  jitter: { idle: 0.12, load: 0.035, timingDeg: 2.5, lopeRpm: 10 },
+  exhaust: {
+    soundSpeed: 500,
+    headPipe: { length: 1.4, reflection: -0.3, dampingHz: 1900 },
+    // Straight through: little muffling, so more of the pulse gets out, and a deep boom.
+    muffler: { cutoffHz: 1150, q: 0.6, boomHz: 60, boomQ: 1.1, boomDb: 5.5, leak: 0.42 },
+    tailPipe: { length: 2.9, reflection: -0.32, dampingHz: 3000 },
+    radiationHz: 30,
+    gain: 1.15,
+  },
+  block: { cutoffHz: 170, gain: 0.5 },
+  valves: { hz: [1600, 2800], q: 4, gain: 0.55 },
+  intake: {
+    openDeg: 380,
+    riseDeg: 30,
+    decayDeg: 34,
+    noiseHz: 500,
+    noiseGain: 0.9,
+    honkHz: 100,
+    honkQ: 3,
+    honkGain: 0.2,
+  },
+  fan: { hz: 560, gain: 0.12 },
+  // Lifting off cuts the fuel: compression pulses only, and the turbos spin down.
+  overrun: { fromRpm: 1300, misfire: 0.85, popChance: 0, popGain: 1, whistleHz: 3300, whistleGain: 0.06 },
+  starter: {
+    seconds: 1.1,
+    rpm: 170,
+    compressionDip: 0.4,
+    meshPerCrankTurn: 120,
+    toneHz: 800,
+    brushHz: 2300,
+    gain: 0.27,
+  },
+  catch: { seconds: 1.8, flareRpm: 1250, flareSeconds: 0.3, settleSeconds: 0.6 },
+  whine: { teeth: [39, 29], second: 0.55, harmonic: 0.12, shaftAm: 0.3, wobble: 0.15, gain: 0.012 },
+  knock: { hz: [1150, 2100], q: 2.5, idle: 0.6, load: 0.2, gain: 2.6 },
+  banks: {
+    of: [0, 1, 0, 1, 0, 1, 0, 1],
+    headPipe: [
+      { length: 1.2, reflection: -0.3, dampingHz: 1900 },
+      { length: 2.1, reflection: -0.3, dampingHz: 1700 },
+    ],
+    gain: [1, 0.82],
+  },
+  turbo: {
+    fromRpm: 1100,
+    spoolSeconds: 0.7,
+    hz: [2600, 7400],
+    gain: 0.035,
+    hiss: 0.5,
+    flutterHz: 15,
+    flutterGain: 0.09,
+  },
+  outputGain: 0.85,
+};
+
+/**
+ * A 6.2 L LS-style petrol V8 swapped into the LC79, with a long-duration cam, long-tube
+ * headers and true twin 3 inch pipes. Cross-plane crank and the banks piped apart give
+ * the classic burble; the cam makes the idle surge and chop, and lifting off at high
+ * revs crackles.
+ */
+export const v8PetrolSynthTuning: EngineSynthTuning = {
+  idleRpm: 860,
+  limiterRpm: 6100,
+  firingOrder: [1, 8, 7, 2, 6, 5, 4, 3],
+  runners: {
+    delayMs: [0.35, 1.45, 0.15, 1.25, 0.15, 1.25, 0.35, 1.45],
+    strength: [0.98, 0.96, 1.02, 1.0, 1.03, 1.01, 0.99, 0.97],
+  },
+  pulse: { riseMs: [0.4, 0.17], decayMs: [1.5, 0.8], minRiseDeg: 2, minDecayDeg: 5, maxDecayDeg: 24 },
+  turbulence: { idle: 0.3, load: 0.6 },
+  pressure: { idle: 0.3, compression: 0.04 },
+  manifoldSeconds: 0.05,
+  jitter: { idle: 0.2, load: 0.035, timingDeg: 4, lopeRpm: 18 },
+  exhaust: {
+    soundSpeed: 510,
+    headPipe: { length: 1.0, reflection: -0.4, dampingHz: 3200 },
+    muffler: { cutoffHz: 1300, q: 0.6, boomHz: 82, boomQ: 1.2, boomDb: 4.5, leak: 0.4 },
+    tailPipe: { length: 2.3, reflection: -0.32, dampingHz: 3600 },
+    radiationHz: 36,
+    gain: 1.1,
+  },
+  block: { cutoffHz: 160, gain: 0.4 },
+  valves: { hz: [2500, 4100], q: 8, gain: 1.4 },
+  intake: {
+    openDeg: 380,
+    riseDeg: 30,
+    decayDeg: 26,
+    noiseHz: 620,
+    noiseGain: 1.6,
+    honkHz: 118,
+    honkQ: 4,
+    honkGain: 0.55,
+  },
+  fan: { hz: 1000, gain: 0.18 },
+  overrun: {
+    fromRpm: 1800,
+    misfire: 0.22,
+    popChance: 0.07,
+    popGain: 1.5,
+    whistleHz: 2900,
+    whistleGain: 0.1,
+  },
+  starter: {
+    seconds: 0.8,
+    rpm: 200,
+    compressionDip: 0.32,
+    meshPerCrankTurn: 105,
+    toneHz: 950,
+    brushHz: 2700,
+    gain: 0.25,
+  },
+  catch: { seconds: 1.5, flareRpm: 1700, flareSeconds: 0.25, settleSeconds: 0.5 },
+  whine: { teeth: [39, 29], second: 0.55, harmonic: 0.12, shaftAm: 0.3, wobble: 0.15, gain: 0.02 },
+  banks: {
+    of: [0, 1, 0, 1, 0, 1, 0, 1],
+    headPipe: [
+      { length: 1.0, reflection: -0.4, dampingHz: 3200 },
+      { length: 1.6, reflection: -0.4, dampingHz: 2800 },
+    ],
+    gain: [1, 0.7],
+  },
+  cam: { lopeHz: 1.7, lopeRpm: 45, chop: 0.28, weak: 0.1 },
+  outputGain: 0.85,
+};
+
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
@@ -575,4 +754,5 @@ export const engineSynthTunings = {
   unimog: dieselSixSynthTuning,
   troopy: troopyDieselSynthTuning,
   patrol: td42SynthTuning,
+  lc79: v8DieselSynthTuning,
 } as const;

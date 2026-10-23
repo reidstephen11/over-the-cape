@@ -132,10 +132,10 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   );
   await expect(page.locator('.welcome-card')).toContainText('sub-tank');
   await shot(page, 'vehicle', 'welcome-troopy');
-  // Seven vehicles still fit across a phone held upright, without scrolling sideways (the
+  // All eight vehicles still fit across a phone held upright, without scrolling sideways (the
   // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy', 'patrol']) {
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy', 'patrol', 'lc79']) {
     const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
     await button.scrollIntoViewIfNeeded();
     await expect(button).toBeInViewport({ ratio: 0.9 });
@@ -188,5 +188,31 @@ test('the GQ Patrol is chosen on the welcome screen and drives off', async ({ pa
   await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
   await waitSim(page, 1);
   await shot(page, 'vehicle', 'patrol-cockpit');
+  expect(errors).toEqual([]);
+});
+
+test('the LC79 V8 is chosen on the welcome screen and drives off', async ({ page }) => {
+  test.setTimeout(900_000);
+  const errors = collectErrors(page);
+  await lowGraphics(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: /LC79 V8/ }).click();
+  await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
+    'data-value',
+    'lc79',
+  );
+  await expect(page.locator('.welcome-card')).toContainText('twin-turbo V8');
+  await shot(page, 'vehicle', 'welcome-lc79');
+  await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
+  await driveFromBriefing(page);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('lc79');
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await waitSim(page, 3);
+  expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
+  await page.evaluate(() => window.__game!.setInput(null));
+  await shot(page, 'vehicle', 'lc79-in-game');
+  await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
+  await waitSim(page, 1);
+  await shot(page, 'vehicle', 'lc79-cockpit');
   expect(errors).toEqual([]);
 });
