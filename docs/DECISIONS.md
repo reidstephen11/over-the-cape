@@ -973,3 +973,15 @@ A follow-up to the surprises (v0.18), checked on today's vehicles (v0.21 changed
 - **The drive script** (`scripts/surprise-drive.ts`) takes `rain` after the event id (or `all`), driving on the ground as the storm leaves it by about 5 pm: wet clay at 0.43 grip instead of 0.58.
 - **The test driver** (`tests/helpers/surprises.ts`) backing away from a tree it has winched round now stops if it drifts 1.6 m off the track's line. In the rain, reversing blind for 8 s slid the short-wheelbase 4WD off the range top's edge onto black soil, where it stuck.
 - **Results**, 12 runs (36 events): in the wet, the short-wheelbase 4WD and the Land Rover get past all of them. In the rain the Land Rover gets past all 36 and the short-wheelbase 4WD 34. The other two are rockfalls on the Roaring Meg climb, which it can't crawl up in full rain even with no rocks there. On the clock it reaches that climb around 2 pm, before the storm, so no change was made.
+
+## v0.28: test mode
+
+The owner asked for a way to test driving in bad weather and to start anywhere on the track. Add `?dev` to the address.
+
+- **A separate flag from `?debug`.** `?debug` is the developer's toolbox (overlay, colliders, tuning sliders); `?dev` is a plain-language panel for trying the game. Both can be used together: the test panel sits top right and the debug panel moves over beside it.
+- **Every episode open, conditions for any of them.** The welcome screen unlocks all episodes and offers the replay conditions (time of day, clear, after rain or raining) before an episode is finished.
+- **Weather by hand, in the game.** Buttons for clear, cloudy with wet ground, light rain and a heavy storm, then sliders for the rain, how wet the ground is (grip follows it) and how far the rivers are up. "Episode's own" goes back to the story's weather. The rivers can rise as far as the episode's storm takes them (0.5 m on the CREB, 1.4 m at Lakefield); an episode with no storm gets banks ready for 1.2 m. The banks are made ready at load in test mode whatever the weather, as a storm episode already does.
+- **Clock.** A slider sets the time from 6 am to 8 pm (the light follows), and a button stops the clock. Test mode has no time limit, so moving the clock past the deadline doesn't end the run.
+- **Start from any place** on the map (the same list as the debug teleports) and **change vehicle on the spot**, without going back to camp as the pause menu does.
+- **Nothing is saved.** Camps reached, finished episodes and settings changed in test mode don't touch the real save, so testing can't unlock or spoil a real run.
+- **Not done:** wind (the game has a wind sound but no wind in the weather, the trees or the physics). Puddles are laid when the map loads, from the weather picked on the welcome screen; the panel's rain doesn't add them later.

@@ -261,6 +261,38 @@ body {
   width: 100%;
 }
 
+/* Test mode (?dev): top right, above the camera box; the debug panel moves over beside it. */
+.dev-panel {
+  width: 250px;
+  max-height: calc(100vh - 150px);
+}
+
+body:has(.dev-panel) .debug-panel:not(.dev-panel) {
+  right: 268px;
+}
+
+.dev-panel h3 {
+  margin: 8px 0 2px;
+  font-size: 12px;
+  color: #e7c48f;
+}
+
+.dev-slider {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 4px;
+  align-items: center;
+}
+
+.dev-slider input {
+  width: 100%;
+}
+
+.dev-note {
+  margin: 4px 0;
+  opacity: 0.75;
+}
+
 /* ---------- HUD ---------- */
 .hud {
   position: fixed;

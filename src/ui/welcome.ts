@@ -1,6 +1,7 @@
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import type { LaunchChoice } from '../core/game';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
+import { isDevMode } from '../data/devWeather';
 import { timeLabels, timesOfDay, weatherLabels, weathers, type TimeOfDay } from '../data/environment';
 import { clockTime, episodeOrder, episodes, upcomingEpisodes, type EpisodeId } from '../data/episodes';
 import { maps } from '../data/maps';
@@ -33,6 +34,8 @@ export class WelcomeScreen {
   private padPrev: boolean[] = [];
   private raf = 0;
   private done = false;
+  /** Test mode (`?dev`): every episode open, and conditions to pick for any of them. */
+  private readonly dev = isDevMode();
 
   constructor(
     root: HTMLElement,
@@ -76,7 +79,7 @@ export class WelcomeScreen {
         const e = episodes[id];
         const p = this.save?.episodes[id];
         const status = p?.completed ? ' · finished' : p?.checkpoint ? ' · under way' : '';
-        const open = unlocked(this.save, id);
+        const open = this.dev || unlocked(this.save, id);
         return option(
           'episode',
           id,
@@ -113,7 +116,7 @@ export class WelcomeScreen {
             <div class="welcome-options seg">${damageModes.map((m) => option('damage', m, damageLabels[m])).join('')}</div>
             <p class="welcome-note damage-note"></p>
             ${
-              progress?.completed
+              progress?.completed || this.dev
                 ? `<h2>Conditions</h2>
             <div class="welcome-options seg">${option('time', 'story', 'Story', story)}${timesOfDay.map((t) => option('time', t, timeLabels[t])).join('')}</div>
             ${this.time === 'story' ? '' : `<div class="welcome-options seg">${weathers.map((w) => option('weather', w, weatherLabels[w])).join('')}</div>`}
@@ -123,6 +126,7 @@ export class WelcomeScreen {
           </section>
         </div>
         <button type="button" class="welcome-drive" data-group="drive" data-welcome-drive>Drive</button>
+        ${this.dev ? '<p class="welcome-note dev-note">Test mode: every episode is open, and nothing you do is saved.</p>' : ''}
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>
       </div>`;
     const groups: Group[] = ['episode', 'start', 'vehicle', 'damage', 'time', 'weather', 'drive'];
@@ -252,7 +256,9 @@ export class WelcomeScreen {
     this.el.classList.add('hidden');
     setTimeout(() => this.el.remove(), 400);
     const replay =
-      this.progress?.completed && this.time !== 'story' ? { time: this.time, weather: this.weather } : null;
+      (this.progress?.completed || this.dev) && this.time !== 'story'
+        ? { time: this.time, weather: this.weather }
+        : null;
     this.onDrive({ ...this.choice, replay }, audio);
   }
 }
