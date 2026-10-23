@@ -17,7 +17,7 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   await expect(on('vehicle')).toHaveAttribute('data-value', 'shortie');
   await expect(on('damage')).toHaveAttribute('data-value', 'mild');
   // The later episodes are listed, north up the Cape, but not yet playable.
-  await expect(page.locator('.welcome-upcoming li')).toHaveCount(5);
+  await expect(page.locator('.welcome-upcoming li')).toHaveCount(4);
   await expect(page.locator('.welcome-upcoming')).toContainText('The Tip');
   // Conditions are the story's until the episode is finished.
   await expect(page.locator('[data-group="time"]')).toHaveCount(0);
