@@ -55,6 +55,11 @@ export interface VehicleDef {
   /** One line for the vehicle menu. */
   blurb: string;
   cabin: CabinLayout;
+  /**
+   * How much further back and higher the outside camera views sit than for the short 4WD,
+   * so a big vehicle fits the screen (1 when left out).
+   */
+  cameraScale?: number;
   /** Carried on top of the episode's load: fuel in a second tank (L) and spare wheels. */
   extraLoad?: { fuel: number; spares: number };
 }
@@ -215,6 +220,8 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     tuning: unimogTuning,
     blurb:
       'Army Unimog UL1700L 4-tonne truck on portal axles, 5.7 L turbo-diesel six. Slow, but goes almost anywhere.',
+    // A tall, long truck: stand well back to see all of it.
+    cameraScale: 1.4,
     cabin: {
       // High above the front wheels behind a big upright screen, looking down over the bonnet.
       eye: { x: 0.5, y: 1.74, z: -0.6 },
@@ -249,6 +256,7 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     tuning: troopyTuning,
     blurb:
       '1990s LandCruiser 75 Series Troop Carrier, 4.2 L diesel six, five-speed. A sub-tank and a second spare.',
+    cameraScale: 1.12,
     // The full sub-tank, and a second spare wheel on the roof rack.
     extraLoad: { fuel: TROOPY_SUB_TANK, spares: 1 },
     cabin: seventyCabin,
@@ -289,6 +297,8 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     tuning: lc79Tuning,
     blurb:
       'LandCruiser 79 single cab, tuned 4.5 L twin-turbo V8 diesel, 4 inch lift on coils, 37 inch tyres, tray and canopy.',
+    // Lifted, on big tyres, with a tall canopy behind the cab.
+    cameraScale: 1.25,
     // The same 70 Series cab, lifted with the body.
     cabin: raised(seventyCabin, LC79_CAB_LIFT),
   },

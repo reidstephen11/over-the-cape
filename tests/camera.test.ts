@@ -192,6 +192,21 @@ describe('vehicle camera orbit', () => {
     expect(camera.position.x).toBeCloseTo(t.position.x);
     expect(camera.position.z).toBeGreaterThan(t.position.z);
   });
+
+  it('stands further back and higher for the big vehicles, at the same angle', () => {
+    const { camera, chase, settle } = fixture();
+    const small = camera.position.clone();
+    expect(vehicles.unimog.cameraScale).toBeGreaterThan(1.2);
+    expect(vehicles.lc79.cameraScale).toBeGreaterThan(1.1);
+    chase.scale = vehicles.unimog.cameraScale!;
+    chase.reset();
+    settle();
+    const big = camera.position.clone();
+    expect(big.z).toBeGreaterThan(small.z * 1.3);
+    expect(big.y).toBeGreaterThan(small.y * 1.2);
+    // Zoom stays in the player's units: the same steps go further out on the big vehicle.
+    expect(chase.distance).toBe(C.distance);
+  });
 });
 
 describe('field of view', () => {

@@ -26,6 +26,31 @@ export const GroundTint = {
 } as const;
 export type GroundTint = (typeof GroundTint)[keyof typeof GroundTint];
 
+/** What a track paints on the ground: its tints come from `GroundTint`. */
+export const TrackPaintKind = { None: 0, Dirt: 1, Gravel: 2, Concrete: 3, Faint: 4 } as const;
+
+/** The tint a track of this paint kind has away from its edges. */
+export function trackTint(kind: number): GroundTint {
+  return kind === TrackPaintKind.Faint
+    ? GroundTint.FaintTrack
+    : kind === TrackPaintKind.Gravel
+      ? GroundTint.Gravel
+      : kind === TrackPaintKind.Concrete
+        ? GroundTint.Concrete
+        : GroundTint.DirtTrack;
+}
+
+/**
+ * Track paint near the edge of each painted track, per 1 m sample, so the edge can be
+ * drawn smooth instead of in 1 m steps. `edge` is the distance from the track's edge in
+ * tenths of a metre (negative on the track). `paint` is the kind in its low 3 bits and,
+ * above them, the tint the ground has beside the track. 0 = no track paint here.
+ */
+export interface TrackPaint {
+  edge: Int8Array;
+  paint: Uint8Array;
+}
+
 /**
  * Terrain grid: 1 m samples, `resX` × `resZ`, centred on the origin. Sample (ix, iz)
  * sits at x = ix - halfX, z = iz - halfZ, at index iz * resX + ix. Each cell is split into
@@ -44,6 +69,8 @@ export class Terrain {
   undercut = new Map<number, number>();
   /** Depth of the pothole or washout at each 1 m sample well inside one (sample index → m). */
   holes = new Map<number, number>();
+  /** Smooth track edges for drawing (null: draw the tint grid as it is). */
+  trackPaint: TrackPaint | null = null;
   private readonly detailCells = new Map<number, DetailPatch>();
 
   /** `sizeX` × `sizeZ` cells of 1 m: the map's width (east–west) and length (north–south). */

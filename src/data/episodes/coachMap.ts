@@ -332,7 +332,7 @@ const props: PropDef[] = [
   { kind: 'stoneKerb', x: -26.4, z: 2933, headingDeg: 258 },
   { kind: 'stoneKerb', x: -33.6, z: 2934.6, headingDeg: 258 },
   { kind: 'hut', x: -112, z: 2930, headingDeg: 90, flatten: 8 },
-  { kind: 'signpost', x: -10, z: 2990, headingDeg: 190, text: 'Maytown' },
+  { kind: 'signpost', x: -6, z: 2990, headingDeg: 190, text: 'Maytown' },
   { kind: 'signpost', x: -8, z: 2836, headingDeg: 190, text: 'Laura' },
   ...cemetery,
   // The forks: a sign at each split, facing the driver coming north.

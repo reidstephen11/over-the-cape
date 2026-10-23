@@ -957,3 +957,11 @@ Shared pieces live in `src/render/bodyShapes.ts` (rounded outlines, extrusions, 
 ## v0.24: browser test fix
 
 - v0.23 took Port Stewart out of the "coming later" list when Lakefield became Episode 3, so the welcome screen now lists four later episodes, not five. The welcome screen's browser test still expected five and failed in the full run after v0.23 merged. The test now expects four. No game change.
+
+## v0.25: backlog fixes
+
+- **Camera size per vehicle.** The follow camera sat as close behind the Unimog and the LC79's canopy as behind the short 4WD, so they filled the screen. Each vehicle now has a `cameraScale` (Unimog 1.4, LC79 1.25, Troop Carrier 1.12, others 1). The outside views stand back by that much and look at a point that much higher, at the same angle. The zoom keys still step in the same units, so the player's zoom setting means the same thing in every vehicle.
+- **Signs off the tracks.** The Maytown sign in Episode 2 stood on Leslie Street, and in Episode 1 the "Roaring Meg Falls" and Wujal Wujal "Falls" signs stood in the mouths of their side tracks. All three now stand beside the road. A new unit test checks every signpost in every episode stands at least 1.2 m clear of every track's driving surface (the old check covered only the test map).
+- **Planks on the HUD.** The status strip showed the planks icon with just "2/2", which didn't say what it counted. It now reads "Planks 2/2", with the word in a smaller, softer type. A first step towards labelling every HUD icon (SPEC §6).
+- **Smooth track edges.** Track paint was set per 1 m terrain sample, so where a track ran at an angle to the grid its edges came out as a staircase. Terrain generation now also keeps, for samples near a dirt, clay, gravel, concrete or faint track, the distance to the track's edge and the ground tint beside it. The terrain mesh blends between the two from that distance, so the edge follows the real line of the track between samples. Rock and sand tracks, potholes, bogs, creek beds and anything else painted over a track keep the old blend. The physics surface is unchanged.
+- **Troop Carrier rear windows.** The flashing pixel logged before v0.21 was dropped: the vehicles were all rebuilt in v0.21, and a close render of the new Troop Carrier showed no gaps.

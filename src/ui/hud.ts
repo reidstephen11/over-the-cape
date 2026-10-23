@@ -141,7 +141,7 @@ export class Hud {
         <div class="status-park" title="Handbrake on: Space / X">P</div>
         <div class="status-item status-lights" title="Headlights: N / LB menu">${icons.headlight}</div>
         <div class="status-item status-damage" title="Damage"></div>
-        <div class="status-item status-planks" title="Planks">${icons.planks}<span>2/2</span></div>
+        <div class="status-item status-planks" title="Recovery planks on board">${icons.planks}<span class="status-label">Planks</span><span class="status-planks-count">2/2</span></div>
         <div class="status-item status-winch" title="Winch attached">${icons.winch}</div>
         <div class="status-item status-engine" title="Engine flooding">${icons.engine}</div>
       </div>
@@ -184,7 +184,7 @@ export class Hud {
         driveAction(button.dataset.drive as 'frontDiff' | 'rearDiff' | 'precision');
         button.blur();
       });
-    this.planksEl = this.el.querySelector('.status-planks span') as HTMLElement;
+    this.planksEl = this.el.querySelector('.status-planks-count') as HTMLElement;
     this.winchEl = this.el.querySelector('.status-winch') as HTMLElement;
     this.engineEl = this.el.querySelector('.status-engine') as HTMLElement;
     this.promptsEl = this.el.querySelector('.prompts') as HTMLElement;
