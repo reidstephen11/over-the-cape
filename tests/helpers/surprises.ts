@@ -379,7 +379,9 @@ export async function getPast(
       backTime += DT;
       cmd = { ...emptyInput(), brake: 1 };
       // Before driving past, back far enough to pull out round the crown.
-      if (backTime > (thenPass ? 8 : 5)) {
+      // ...but not off the edge (reversing on wet clay, the car slides).
+      const drift = Math.abs(sideOf(track, v.position.x, v.position.z).lateral);
+      if (backTime > (thenPass ? 8 : 5) || (backTime > 1 && drift > 1.6)) {
         cmd = { ...emptyInput(), handbrake: true };
         if (Math.abs(v.speed) < 0.1) {
           mode = thenPass ? 'past' : 'hook';
