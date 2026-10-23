@@ -112,6 +112,21 @@ export class EngineSynth {
   private readonly knockB: Biquad;
   /** Knock impulse from a firing this sample (diesel only). */
   private knock = 0;
+  /** V engines: which firing slots are on the second bank, and its own exhaust. */
+  private readonly secondBank: Uint8Array;
+  private readonly pulseDcB: DcBlock | null = null;
+  private readonly headPipeB: Pipe | null = null;
+  /** Big cam: where the idle surge is in its cycle, and how it swells the firings. */
+  private camPhase = 0;
+  private camRate = 1;
+  private camSwell = 0;
+  /** Turbo: boost (0..1), compressor phase, the dump after a lift-off, and their filters. */
+  private boost = 0;
+  private turboPhase = 0;
+  private flutterPhase = 0;
+  private readonly dump: OnePole;
+  private readonly turboHiss: Biquad;
+  private readonly dumpBand: Biquad;
 
   constructor(sampleRate: number, seed = 0x2f40, tuning: EngineSynthTuning = engineSynthTuning) {
     const sr = (this.sr = sampleRate);
@@ -136,13 +151,9 @@ export class EngineSynth {
 
     const X = T.exhaust;
     this.pulseDc = new DcBlock(sr, 15);
-    this.headPipe = new Pipe(
-      sr,
-      X.headPipe.length,
-      X.soundSpeed,
-      X.headPipe.reflection,
-      X.headPipe.dampingHz,
-    );
+    // A V engine's first bank has its own head pipe; the second bank's is below.
+    const head = T.banks?.headPipe[0] ?? X.headPipe;
+    this.headPipe = new Pipe(sr, head.length, X.soundSpeed, head.reflection, head.dampingHz);
     this.muffler = new Biquad(sr).lowpass(X.muffler.cutoffHz, X.muffler.q);
     this.boom = new Biquad(sr).peaking(X.muffler.boomHz, X.muffler.boomQ, X.muffler.boomDb);
     this.tailPipe = new Pipe(
@@ -167,6 +178,18 @@ export class EngineSynth {
     this.whineLevel = new OnePole(sr, 1).timeConstant(0.08);
     this.whineShaft = new OnePole(sr, 1).timeConstant(0.05);
     this.whineWobble = new OnePole(sr, 30);
+    this.secondBank = new Uint8Array(n);
+    if (T.banks) {
+      const B = T.banks;
+      for (let k = 0; k < n; k++) this.secondBank[k] = B.of[T.firingOrder[k] - 1];
+      const P = B.headPipe[1];
+      this.headPipeB = new Pipe(sr, P.length, X.soundSpeed, P.reflection, P.dampingHz);
+      this.pulseDcB = new DcBlock(sr, 15);
+    }
+    const U = T.turbo;
+    this.dump = new OnePole(sr, 1).timeConstant(0.04);
+    this.turboHiss = new Biquad(sr).bandpass(U ? U.hz[1] * 0.6 : 3000, 1.2);
+    this.dumpBand = new Biquad(sr).bandpass(1400, 0.9);
     const K = T.knock ?? { hz: [1500, 2900], q: 5 };
     this.knockA = new Biquad(sr).bandpass(K.hz[0], K.q);
     this.knockB = new Biquad(sr).bandpass(K.hz[1], K.q);
@@ -233,6 +256,16 @@ export class EngineSynth {
       // Idle lope: the rpm wanders a little from cycle to cycle.
       const idleness = clamp01(1 - (rpm - 700) / 900) * (1 - manifold);
       rpm += this.lope.process(this.lopeTarget) * idleness;
+      // A big cam surges the idle up and down, never quite in time.
+      if (T.cam) {
+        this.camPhase += T.cam.lopeHz * this.camRate * dt;
+        if (this.camPhase >= 1) {
+          this.camPhase -= 1;
+          this.camRate = 0.8 + 0.4 * n.unit();
+        }
+        this.camSwell = Math.sin(2 * Math.PI * this.camPhase) * idleness;
+        rpm += T.cam.lopeRpm * this.camSwell;
+      }
       this.rpmNow = rpm;
       const falling = this.falling.process(rpm < this.lastRpm - 0.02 ? 1 : 0);
       this.lastRpm = rpm;
@@ -246,6 +279,7 @@ export class EngineSynth {
 
       // Exhaust pulses and intake suction per cylinder.
       let pulses = 0;
+      let pulsesB = 0;
       let suction = 0;
       for (let k = 0; k < this.cylinders; k++) {
         let a = this.age[k] + dTheta;
@@ -254,16 +288,26 @@ export class EngineSynth {
           this.fire(k, degPerSec, combustion, pressure, idleness, overrun, inp.misfire, rpm);
         }
         this.age[k] = a;
-        pulses += this.amp[k] * pulse(a - this.offset[k], this.rise[k], this.decay[k]);
+        const pk = this.amp[k] * pulse(a - this.offset[k], this.rise[k], this.decay[k]);
+        if (this.secondBank[k]) pulsesB += pk;
+        else pulses += pk;
         suction += pulse(a - T.intake.openDeg, T.intake.riseDeg, T.intake.decayDeg);
       }
 
       // Gas rushing past the valves is turbulent: rougher under load.
       const rough = T.turbulence.idle + (T.turbulence.load - T.turbulence.idle) * manifold;
-      pulses *= 1 + rough * n.next();
-      // Exhaust system: head pipe, muffler (with its low boom), tailpipe, radiation.
-      const p = this.pulseDc.process(pulses);
-      const head = this.headPipe.process(p);
+      const flow = 1 + rough * n.next();
+      pulses *= flow;
+      pulsesB *= flow;
+      // Exhaust system: head pipe (one per bank on a V), muffler (with its low boom),
+      // tailpipe, radiation.
+      let p = this.pulseDc.process(pulses);
+      let head = this.headPipe.process(p);
+      if (this.headPipeB && this.pulseDcB && T.banks) {
+        const pB = this.pulseDcB.process(pulsesB);
+        head = head * T.banks.gain[0] + this.headPipeB.process(pB) * T.banks.gain[1];
+        p += pB;
+      }
       const muffled = this.boom.process(this.muffler.process(head)) + head * T.exhaust.muffler.leak;
       const exhaust = this.radiate.process(this.tailPipe.process(muffled));
       const body = this.block.process(p);
@@ -324,8 +368,29 @@ export class EngineSynth {
         this.knock = 0;
       }
 
+      // Turbo: spools up with throttle and revs, falls away quickly when the throttle shuts,
+      // and dumps its boost in a fluttering rush.
+      let turbo = 0;
+      if (T.turbo) {
+        const U = T.turbo;
+        const goal = manifold * clamp01((rpm - U.fromRpm) / 1500);
+        const tc = goal > this.boost ? U.spoolSeconds : 0.35;
+        this.boost += (goal - this.boost) * (1 - Math.exp(-dt / tc));
+        const spin = clamp01(0.75 * this.boost + 0.25 * revs);
+        this.turboPhase += (U.hz[0] + (U.hz[1] - U.hz[0]) * spin) * dt;
+        this.turboPhase -= Math.floor(this.turboPhase);
+        const tone = Math.sin(2 * Math.PI * this.turboPhase) + U.hiss * this.turboHiss.process(n.next());
+        const dump = this.dump.process(clamp01(1.4 * (this.boost - manifold)));
+        this.flutterPhase += U.flutterHz * (0.6 + 0.4 * dump) * dt;
+        this.flutterPhase -= Math.floor(this.flutterPhase);
+        const flutter = 0.35 + 0.65 * Math.max(0, Math.sin(2 * Math.PI * this.flutterPhase));
+        turbo =
+          tone * spin * spin * U.gain + this.dumpBand.process(n.next()) * dump * flutter * U.flutterGain;
+      }
+
       const mix =
         exhaust * T.exhaust.gain +
+        turbo +
         knock +
         body * T.block.gain +
         tick * T.valves.gain +
@@ -370,6 +435,11 @@ export class EngineSynth {
         this.knock =
           (K.idle * idleness + K.load * clamp01(pressure) * (1 - idleness)) * (0.75 + 0.5 * n.unit());
       }
+    }
+    // A big cam's overlap leaves some charges diluted: a weak, part burn at idle.
+    if (T.cam && combustion) {
+      a *= 1 + T.cam.chop * this.camSwell;
+      if (n.unit() < T.cam.weak * idleness) a *= 0.35 + 0.3 * n.unit();
     }
     const jitter = T.jitter.load + (T.jitter.idle - T.jitter.load) * idleness;
     this.amp[k] = Math.max(0, a * R.strength[cyl] * (1 + jitter * n.gauss()));

@@ -10,6 +10,7 @@ import { addCamelTrophyKit, camelLivery, camelRim } from './camelLivery';
 import { buildHiluxBody, buildHiluxPlank, buildHiluxWheel } from './hiluxBody';
 import { buildUnimogBody, buildUnimogPlank, buildUnimogWheel } from './unimogBody';
 import { buildTroopyBody, buildTroopyPlank, buildTroopyWheel } from './troopyBody';
+import { LC79_DRIVING_LAMPS, buildLc79Body, buildLc79Plank, buildLc79Wheel } from './lc79Body';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
 export interface VehicleLook {
@@ -129,6 +130,24 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
         { x: -0.19, y: 0.645, z: -2.417 },
         { x: 0.19, y: 0.645, z: -2.417 },
       ],
+    },
+  },
+  lc79: {
+    name: 'lc79-single-cab',
+    body: buildLc79Body,
+    wheel: buildLc79Wheel,
+    plank: buildLc79Plank,
+    // Factory paint with a fresh clear coat.
+    paint: { roughness: 0.38, metalness: 0.06, clearcoat: 0.6, clearcoatRoughness: 0.25 },
+    // Coils at both ends since the conversion.
+    springs: 'coil',
+    lamps: {
+      head: [
+        { x: -0.57, y: 0.69, z: -2.38 },
+        { x: 0.57, y: 0.69, z: -2.38 },
+      ],
+      // The driving lamps on the bar come on with high beam.
+      roof: LC79_DRIVING_LAMPS,
     },
   },
 };
