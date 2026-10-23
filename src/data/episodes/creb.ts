@@ -26,7 +26,7 @@ export const crebEpisode: EpisodeDef = {
   // The map is about 6.6 km of the real trip's 100-odd km; fuel burns to match the real
   // distance. A clean run uses more than the tank holds, so the jerry can goes in on the way.
   fuelScale: 10.4,
-  loadout: { fuel: 50, jerryCans: 1, spares: 1, plugs: 3 },
+  loadout: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
   // After the wet, dead trees come down and cuttings shed rocks: where, each run decides.
   surprises: crebSurprises,
   briefing: [

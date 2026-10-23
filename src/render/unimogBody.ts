@@ -11,9 +11,10 @@ import { unimogColors } from './unimogPaint';
  * Unimog UL1700L cargo truck in Australian Army green, with an Army plate (41-108): a
  * short sloping bonnet with a black slotted grille, round headlamps low beside it under
  * guards, flat-topped front mudguards standing clear of the wheels, a square cab with a
- * big upright screen and a canvas roof, the spare wheel standing behind the cab, the air
+ * big upright screen and a canvas roof, one spare standing behind the cab, the air
  * intake stack beside it, and a dropside steel tray under a canvas tilt. A winch sits
- * behind the front bumper and a pintle hook on the rear crossmember. Ground is about
+ * behind the front bumper, a pintle hook on the rear crossmember and the second spare on a
+ * carrier on the left dropside. Ground is about
  * 0.68 m below the origin when parked.
  */
 const { paint, canvas, bar } = unimogColors;
@@ -33,6 +34,8 @@ const CAB = { front: -1.65, back: -0.1, side: 1.1, floor: 0.68, waist: 1.32, roo
 const TRAY = { front: 0.3, back: 3.45, side: 1.15, floor: 0.72, top: 1.14 };
 const TILT_TOP = 2.26;
 const SPARE_Z = 0.12;
+/** The second spare on its carrier on the left dropside (its centre). */
+export const UNIMOG_SIDE_SPARE = { x: -1.39, y: 0.95, z: 0.85 };
 
 /** A flat four-cornered panel, seen from both sides. */
 function panel(
@@ -442,7 +445,7 @@ function tray(b: VehicleBuilder): void {
     );
 }
 
-function rear(b: VehicleBuilder, tuning: VehicleTuning): void {
+function rear(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   // Rear crossmember with the pintle hook and trailer socket, lamps and the plate.
   b.block(0, 0.2, 3.42, 1.9, 0.2, 0.14, black, M.Metal, Z.Rear, 0.01);
   const tow = tuning.towPoint;
@@ -465,6 +468,17 @@ function rear(b: VehicleBuilder, tuning: VehicleTuning): void {
   armyPlate(b, -0.55, 0.2, 3.497, 1, '41-108');
   // Jerry cans in holders under the back of the tray.
   for (const side of [-1, 1]) jerryCan(b, side * 0.95, 0.3, 2.9);
+  // The second spare hangs on the left dropside on a carrier, clear of the rear wheel and
+  // of the pintle hook: two rails bolted along the dropside and a hub plate.
+  const { x: sx, y: sy, z: sz } = UNIMOG_SIDE_SPARE;
+  const face = -(TRAY.side + 0.012);
+  for (const y of [sy - 0.25, sy + 0.25])
+    b.block(face - 0.025, y, sz, 0.05, 0.06, 0.8, black, M.Metal, Z.Sides);
+  b.block(face - 0.06, sy, sz, 0.04, 0.26, 0.26, black, M.Metal, Z.Sides, 0.01);
+  b.tag = Z.Sides;
+  b.push().translate(sx, sy, sz);
+  b.geometry(wheel.clone(), black);
+  b.pop();
 }
 
 /** Pressed-steel jerry can in a cage, its long side facing out. */
@@ -497,7 +511,7 @@ export function buildUnimogBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
   cab(b);
   behindCab(b, tuning, wheel);
   tray(b);
-  rear(b, tuning);
+  rear(b, tuning, wheel);
   addUnimogInterior(b, tuning.engine.redlineRpm);
   return b.build();
 }

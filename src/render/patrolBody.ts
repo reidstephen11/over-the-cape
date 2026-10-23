@@ -542,7 +542,7 @@ function sides(b: VehicleBuilder): void {
   b.block(SIDE + 0.002, 0.56, 2.05, 0.006, 0.16, 0.16, black, M.Rubber, Z.Rear, 0.02);
 }
 
-function roofAndRack(b: VehicleBuilder): void {
+function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   const half = SIDE - TUMBLE;
   const front = SCREEN_TOP.z - 0.03,
     rear = TAIL;
@@ -607,7 +607,20 @@ function roofAndRack(b: VehicleBuilder): void {
   b.pop();
   for (const x of [-0.35, 0.35])
     b.block(x, y + 0.12, 2.05, 0.04, 0.245, 0.245, black, M.Rubber, Z.Roof, 0.02);
-  b.block(0.55, y + 0.2, 1.55, 0.16, 0.36, 0.34, new THREE.Color('#2F5E37'), M.Paint, Z.Roof, 0.02);
+  b.block(0, y + 0.2, 1.3, 0.16, 0.36, 0.34, new THREE.Color('#2F5E37'), M.Paint, Z.Roof, 0.02);
+  // The second spare lies flat at the front of the rack, between the boards, strapped down.
+  const sy = y + 0.014 + tuning.wheelWidth * 0.53,
+    sz = 0.32,
+    strapY = sy + tuning.wheelWidth * 0.53 + 0.006;
+  b.tag = Z.Roof;
+  b.push()
+    .translate(0, sy, sz)
+    .rotate(0, 0, Math.PI / 2);
+  b.geometry(wheel.clone(), black);
+  b.pop();
+  b.block(0, strapY, sz, 0.8, 0.008, 0.05, black, M.Rubber, Z.Roof);
+  for (const side of [-1, 1])
+    b.rod(v(side * 0.4, strapY, sz), v(side * 0.43, y, sz), 0.012, black, M.Rubber, Z.Roof);
 }
 
 function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {
@@ -752,7 +765,7 @@ export function buildPatrolBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
   bullBar(b, tuning);
   windscreen(b);
   sides(b);
-  roofAndRack(b);
+  roofAndRack(b, tuning, wheel);
   snorkel(b, tuning);
   rearEnd(b, wheel);
   chassis(b);
@@ -854,7 +867,7 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
 export function buildPatrolPlank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   const wood = new THREE.Color('#A9824F');
-  const x = index === 0 ? -0.4 : 0.4,
+  const x = index === 0 ? -0.6 : 0.6,
     y = ROOF + 0.155,
     z = 0.75;
   const L = plankTuning.length,

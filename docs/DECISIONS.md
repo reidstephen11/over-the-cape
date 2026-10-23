@@ -973,3 +973,17 @@ A follow-up to the surprises (v0.18), checked on today's vehicles (v0.21 changed
 - **The drive script** (`scripts/surprise-drive.ts`) takes `rain` after the event id (or `all`), driving on the ground as the storm leaves it by about 5 pm: wet clay at 0.43 grip instead of 0.58.
 - **The test driver** (`tests/helpers/surprises.ts`) backing away from a tree it has winched round now stops if it drifts 1.6 m off the track's line. In the rain, reversing blind for 8 s slid the short-wheelbase 4WD off the range top's edge onto black soil, where it stuck.
 - **Results**, 12 runs (36 events): in the wet, the short-wheelbase 4WD and the Land Rover get past all of them. In the rain the Land Rover gets past all 36 and the short-wheelbase 4WD 34. The other two are rockfalls on the Roaring Meg climb, which it can't crawl up in full rain even with no rocks there. On the clock it reaches that climb around 2 pm, before the storm, so no change was made.
+
+## v0.27: two spares on every vehicle, and the LC79's spare inside the tray
+
+- **Towing.** Asked whether the game has towing: it doesn't. Recovery is the winch only (to trees, rocks, a bogged vehicle). Towing was not added in this update.
+- **LC79 spare.** The spare hung on a carrier behind the tray, past its end. It now sits on the canopy's rear door, and the canopy is 0.38 m shorter (it ends at 2.58 m instead of 2.96 m) so the spare's outer face stays inside the end of the tray. The canopy's high stop lamp moved to the two top corners, beside the wheel. The collision boxes follow: the canopy box is shorter and the spare's box moved inside the tray.
+- **Two spares each, in the count.** Every episode now loads two spares, and so does free driving. The Troop Carrier used to get its second spare as an extra on top of the episode's one; that extra is gone, so it still starts with two, like the rest.
+- **Two spares each, on the body.** Where the second goes, by vehicle:
+  - Short-wheelbase 4WD and Camel Trophy car: flat on the bonnet, as Camel Trophy cars and many old Land Rovers carried it.
+  - Land Rover Perentie: on the bonnet, the Land Rover 110 option asked about in v0.21; the first stays under the rear floor. The pick, shovel and axe that sat on the bonnet are now clamped across the tailgate.
+  - Hilux: flat on the tub floor between the wheel housings, under a ratchet strap.
+  - Unimog: on a carrier on the left dropside, behind the cab. Against the tailgate was tried first, but it would have stood behind the pintle hook, and the hook has to stay the rearmost part for a winch line or a trailer (a unit test checks this).
+  - GQ Patrol and LC79: flat on the roof rack, between the recovery boards, which moved out towards the rails (as on the Troop Carrier). The Patrol's jerry can moved to the middle of the rack. The LC79's boards are longer than its shorter rack, so they overhang a little at each end.
+  - Troop Carrier: unchanged (back door and roof rack).
+- **Checked from all sides** in the studio page: nine views of each vehicle and close-ups of every new part.

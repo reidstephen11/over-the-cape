@@ -13,8 +13,8 @@ import { extrudeZ, rounded, type Vtx } from './bodyShapes';
  * Army registration plate (48-001). Flat panels and flat-topped wings, a black slatted
  * grille between the headlamp panels, a heavy bull bar, vent flaps under an upright
  * windscreen, a canvas tilt over the cab and rear tub, a galvanised chassis and the
- * Perentie's spare wheel slung under the rear floor, with a pick, shovel and axe in
- * brackets on the bonnet (or, as an option, the spare on the bonnet instead). Ground is
+ * Perentie's spare wheel slung under the rear floor, a second spare on the bonnet, and a
+ * pick, shovel and axe in brackets across the tailgate. Ground is
  * about 0.52 m below the origin when parked.
  */
 const { paint, canvas, bar, galv } = perentieColors;
@@ -450,43 +450,41 @@ function rearBody(b: VehicleBuilder): void {
 
 /** Pressed-steel jerry can in a holder, standing against the body side. */
 /**
- * The Army's pioneer tools on the bonnet: a shovel on the left, a pick down the middle
- * and an axe on the right, each held clear of the paint by two clamps.
+ * The Army's pioneer tools across the tailgate, the bonnet being taken by the second spare:
+ * a shovel along the top, a pick below it and an axe at the bottom, each held clear of the
+ * paint by two clamps.
  */
-function bonnetTools(b: VehicleBuilder): void {
+function tailgateTools(b: VehicleBuilder): void {
   const wood = new THREE.Color('#8A6A44'),
     head = new THREE.Color('#41463F');
-  const clamp = (x: number, z: number) =>
-    b.block(x, crownAt(x) + 0.02, z, 0.07, 0.04, 0.035, black, M.Metal, Z.Front, 0.006);
-  const yAt = (x: number) => crownAt(x) + 0.04;
-  // Shovel: blade at the front, socket, handle and D grip towards the screen.
-  let x = -0.32,
-    y = yAt(x);
-  b.block(x, y - 0.012, -1.79, 0.22, 0.012, 0.27, head, M.Metal, Z.Front, 0.004);
-  b.rod({ x, y: y - 0.006, z: -1.67 }, { x, y, z: -1.57 }, 0.02, head, M.Metal, Z.Front);
-  b.rod({ x, y, z: -1.57 }, { x, y, z: -1.03 }, 0.016, wood, M.Fabric, Z.Front);
-  b.ring(x, y, -0.985, 0.045, 0.01, black, M.Metal, 'y', Z.Front);
-  clamp(x, -1.79);
-  clamp(x, -1.2);
-  // Pick: helve down the middle with the head across its back end.
-  x = 0;
-  y = yAt(x);
-  b.rod({ x, y, z: -1.78 }, { x, y, z: -0.96 }, 0.019, wood, M.Fabric, Z.Front);
-  b.rod({ x: -0.25, y, z: -1.0 }, { x: 0.25, y, z: -1.0 }, 0.016, head, M.Metal, Z.Front);
-  b.block(x, y, -1.0, 0.07, 0.05, 0.06, head, M.Metal, Z.Front, 0.01);
-  clamp(x, -1.65);
-  clamp(x, -1.25);
-  // Axe: head at the front, its blade turned out, and the helve back towards the screen.
-  x = 0.32;
-  y = yAt(x);
-  b.rod({ x, y, z: -1.75 }, { x, y, z: -1.03 }, 0.017, wood, M.Fabric, Z.Front);
-  b.block(x + 0.03, y, -1.76, 0.16, 0.03, 0.06, head, M.Metal, Z.Front, 0.006);
-  b.block(x + 0.12, y, -1.76, 0.03, 0.012, 0.11, head, M.Metal, Z.Front, 0.004);
-  clamp(x, -1.62);
-  clamp(x, -1.15);
+  const z = TAIL + 0.075;
+  const clamp = (x: number, y: number) =>
+    b.block(x, y, TAIL + 0.055, 0.035, 0.07, 0.05, black, M.Metal, Z.Rear, 0.006);
+  // Shovel: blade on the right, socket, handle and D grip towards the left.
+  let y = 0.655;
+  b.block(0.5, y, z, 0.27, 0.2, 0.012, head, M.Metal, Z.Rear, 0.004);
+  b.rod({ x: 0.37, y, z }, { x: 0.26, y, z }, 0.02, head, M.Metal, Z.Rear);
+  b.rod({ x: 0.26, y, z }, { x: -0.4, y, z }, 0.016, wood, M.Fabric, Z.Rear);
+  b.ring(-0.445, y, z, 0.045, 0.01, black, M.Metal, 'z', Z.Rear);
+  clamp(0.5, y);
+  clamp(-0.2, y);
+  // Pick: helve across the middle with the head upright at its left end.
+  y = 0.44;
+  b.rod({ x: -0.6, y, z }, { x: 0.3, y, z }, 0.019, wood, M.Fabric, Z.Rear);
+  b.rod({ x: -0.6, y: 0.3, z }, { x: -0.6, y: 0.58, z }, 0.016, head, M.Metal, Z.Rear);
+  b.block(-0.6, y, z, 0.06, 0.07, 0.05, head, M.Metal, Z.Rear, 0.01);
+  clamp(-0.4, y);
+  clamp(0.15, y);
+  // Axe: helve along the bottom, its head at the right end with the blade turned down.
+  y = 0.3;
+  b.rod({ x: -0.1, y, z }, { x: 0.52, y, z }, 0.017, wood, M.Fabric, Z.Rear);
+  b.block(0.54, y - 0.03, z, 0.06, 0.16, 0.03, head, M.Metal, Z.Rear, 0.006);
+  b.block(0.54, y - 0.12, z, 0.11, 0.03, 0.012, head, M.Metal, Z.Rear, 0.004);
+  clamp(0.0, y);
+  clamp(0.4, y);
 }
 
-/** The spare wheel lying flat on a mounting plate on the bonnet, held by a centre clamp. */
+/** The second spare lying flat on a mounting plate on the bonnet, held by a centre clamp. */
 function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   const z = -1.42,
     base = crownAt(0) + 0.04,
@@ -584,12 +582,7 @@ function tilt(b: VehicleBuilder): void {
   b.block(0, SCREEN_TOP + 0.02, SCUTTLE + 0.1, 1.68, 0.06, 0.12, canvas, M.Fabric, Z.Roof, 0.025);
 }
 
-function chassisAndRecovery(
-  b: VehicleBuilder,
-  tuning: VehicleTuning,
-  wheel: THREE.BufferGeometry,
-  spareOnBonnet: boolean,
-): void {
+function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   // Galvanised ladder frame, crossmembers, outriggers and the rear crossmember.
   for (const x of [-0.43, 0.43]) b.block(x, 0.03, 0.08, 0.1, 0.18, 4.04, galv, M.Paint, Z.Trim);
   for (const z of [-1.96, -0.62, 0.62]) b.block(0, 0.02, z, 0.86, 0.1, 0.1, galv, M.Paint, Z.Trim);
@@ -618,16 +611,13 @@ function chassisAndRecovery(
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.085, 0.085, 0.5, 12), steel.clone().multiplyScalar(0.6));
   b.pop();
-  // The Perentie's spare wheel, slung flat in a cradle under the rear floor (the cradle
-  // stays when the spare rides on the bonnet instead).
-  if (!spareOnBonnet) {
-    b.tag = Z.Rear;
-    b.push()
-      .translate(0, 0.03, 1.94)
-      .rotate(0, 0, Math.PI / 2);
-    b.geometry(wheel.clone(), black);
-    b.pop();
-  }
+  // The Perentie's own spare wheel, slung flat in a cradle under the rear floor.
+  b.tag = Z.Rear;
+  b.push()
+    .translate(0, 0.03, 1.94)
+    .rotate(0, 0, Math.PI / 2);
+  b.geometry(wheel.clone(), black);
+  b.pop();
   for (const x of [-0.2, 0.2]) b.block(x, -0.09, 1.94, 0.05, 0.03, 0.84, galv, M.Paint, Z.Trim);
   // Pintle hook and trailer socket for the No. 5 trailer, and the rear plate.
   b.block(0, -0.02, 2.43, 0.14, 0.12, 0.08, black, M.Metal, Z.Rear, 0.01);
@@ -676,20 +666,16 @@ function chassisAndRecovery(
   b.rod({ x: 0.8, y: WAIST + 0.1, z: 2.22 }, { x: 0.82, y: 2.45, z: 2.3 }, 0.005, black, M.Rubber, Z.Roof);
 }
 
-export function buildPerentieBody(
-  tuning: VehicleTuning,
-  wheel: THREE.BufferGeometry,
-  spareOnBonnet = false,
-): THREE.BufferGeometry {
+export function buildPerentieBody(tuning: VehicleTuning, wheel: THREE.BufferGeometry): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   frontEnd(b);
-  if (spareOnBonnet) bonnetSpare(b, tuning, wheel);
-  else bonnetTools(b);
+  bonnetSpare(b, tuning, wheel);
+  tailgateTools(b);
   windscreen(b);
   doors(b);
   rearBody(b);
   tilt(b);
-  chassisAndRecovery(b, tuning, wheel, spareOnBonnet);
+  chassisAndRecovery(b, tuning, wheel);
   addPerentieInterior(b, tuning.engine.redlineRpm);
   return b.build();
 }

@@ -63,7 +63,7 @@ export function createCondition(fuel = 70): VehicleCondition {
     tyreTarget: [1, 1, 1, 1],
     tyreFault: ['none', 'none', 'none', 'none'],
     abrasion: [0, 0, 0, 0],
-    spares: 1,
+    spares: 2,
     plugs: 0,
     fuel,
     jerryCans: 0,

@@ -5,7 +5,7 @@ import type { VehicleTuning } from './vehicle';
  * 1VD-FTV twin-turbo diesel V8 tuned to about 200 kW and 750 Nm, a 4 inch lift with the
  * rear leaf springs swapped for coils, 37×12.5R17 mud-terrain tyres on spacers, 4.3 axle
  * gears to turn them, a steel bar with a winch, a snorkel, an alloy tray with a canopy,
- * and the spare on a carrier off the back. 3.18 m wheelbase, 1.6 m track over the
+ * one spare on the canopy's rear door and a second on its roof rack. 3.18 m wheelbase, 1.6 m track over the
  * spacers, the five-speed manual with a 2.488 low range, and the 130 L long-range tank.
  * Same local frame as the other vehicles: x right, y up, z back, origin 0.12 m above the
  * parked hubs, so the ground is about 0.59 m below it.
@@ -56,12 +56,12 @@ export const lc79Tuning: VehicleTuning = {
     // The tray over the rear wheels and the canopy on it. The tray hangs out a long way
     // behind the rear axle, so it drags its tail over a sharp crest.
     { cx: 0, cy: 0.5, cz: 1.79, hx: 0.93, hy: 0.14, hz: 1.17 },
-    { cx: 0, cy: 1.1, cz: 1.94, hx: 0.9, hy: 0.46, hz: 0.98 },
-    // Bull bar with the winch, the rear bar with its tow hitch, and the spare hanging off
-    // the back.
+    { cx: 0, cy: 1.1, cz: 1.77, hx: 0.9, hy: 0.46, hz: 0.81 },
+    // The spare on the canopy's rear door, inside the end of the tray.
+    { cx: 0, cy: 1.13, cz: 2.8, hx: 0.47, hy: 0.47, hz: 0.17 },
+    // Bull bar with the winch, and the rear bar with its tow hitch.
     { cx: 0, cy: 0.38, cz: -2.53, hx: 0.94, hy: 0.32, hz: 0.1 },
     { cx: 0, cy: 0.12, cz: 2.98, hx: 0.84, hy: 0.07, hz: 0.07 },
-    { cx: 0, cy: 0.62, cz: 3.28, hx: 0.47, hy: 0.47, hz: 0.17 },
   ],
   bumpRadius: 0.27,
   bodyFriction: 0.45,

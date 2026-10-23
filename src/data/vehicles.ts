@@ -60,8 +60,8 @@ export interface VehicleDef {
    * so a big vehicle fits the screen (1 when left out).
    */
   cameraScale?: number;
-  /** Carried on top of the episode's load: fuel in a second tank (L) and spare wheels. */
-  extraLoad?: { fuel: number; spares: number };
+  /** Carried on top of the episode's load: fuel in a second tank (L). */
+  extraLoad?: { fuel: number };
 }
 
 /** The short-wheelbase 4WD's cab, shared by its Camel Trophy version. */
@@ -254,11 +254,10 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
   },
   troopy: {
     tuning: troopyTuning,
-    blurb:
-      '1990s LandCruiser 75 Series Troop Carrier, 4.2 L diesel six, five-speed. A sub-tank and a second spare.',
+    blurb: '1990s LandCruiser 75 Series Troop Carrier, 4.2 L diesel six, five-speed, with a sub-tank.',
     cameraScale: 1.12,
-    // The full sub-tank, and a second spare wheel on the roof rack.
-    extraLoad: { fuel: TROOPY_SUB_TANK, spares: 1 },
+    // The full sub-tank.
+    extraLoad: { fuel: TROOPY_SUB_TANK },
     cabin: seventyCabin,
   },
   patrol: {
@@ -307,7 +306,7 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
 /** What a vehicle carries at the start of an episode: the episode's load and its own extras. */
 export function vehicleLoadout(load: EpisodeLoadout, id: VehicleId): EpisodeLoadout {
   const extra = vehicles[id].extraLoad;
-  return extra ? { ...load, fuel: load.fuel + extra.fuel, spares: load.spares + extra.spares } : load;
+  return extra ? { ...load, fuel: load.fuel + extra.fuel } : load;
 }
 
 export const vehicleOrder: readonly VehicleId[] = [

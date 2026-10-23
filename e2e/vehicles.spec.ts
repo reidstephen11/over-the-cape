@@ -118,7 +118,7 @@ test('the Unimog is chosen on the welcome screen, drives off, and has its own ca
   expect(errors).toEqual([]);
 });
 
-test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tank and second spare, and drives off', async ({
+test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tank and two spares, and drives off', async ({
   page,
 }) => {
   test.setTimeout(900_000);
@@ -143,7 +143,7 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });
 
-  // The briefing lists the CREB's load with the sub-tank's 60 L and the second spare.
+  // The briefing lists the CREB's load with the sub-tank's 60 L and two spares.
   await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
   await expect(page.locator('.briefing')).toContainText('110 L of fuel');
   await expect(page.locator('.briefing')).toContainText('2 spare wheels');
