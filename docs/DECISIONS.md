@@ -974,6 +974,6 @@ A follow-up to the surprises (v0.18), checked on today's vehicles (v0.21 changed
 - **The test driver** (`tests/helpers/surprises.ts`) backing away from a tree it has winched round now stops if it drifts 1.6 m off the track's line. In the rain, reversing blind for 8 s slid the short-wheelbase 4WD off the range top's edge onto black soil, where it stuck.
 - **Results**, 12 runs (36 events): in the wet, the short-wheelbase 4WD and the Land Rover get past all of them. In the rain the Land Rover gets past all 36 and the short-wheelbase 4WD 34. The other two are rockfalls on the Roaring Meg climb, which it can't crawl up in full rain even with no rocks there. On the clock it reaches that climb around 2 pm, before the storm, so no change was made.
 
-## v0.26: browser test fix
+## v0.27: browser test fix
 
 - The Episode 2 browser test checked that the mission clock read exactly "10:00 am" just after the engine started. On the slow software renderer the game clock had already ticked on to 10:03 by then, so the test failed after v0.25 merged. The three episode-start clock checks (Episodes 1, 2 and 3) now accept any time in the first few minutes after the start. No game change.
