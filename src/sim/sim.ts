@@ -18,7 +18,7 @@ import { riseShare } from './world/flood';
 import { scatterTuning } from '../data/vegetation';
 import { winchTuning } from '../data/tools';
 import { VehicleTools, type RepairKind, type ToolEvent } from './tools/tools';
-import type { Anchor } from './tools/anchors';
+import { anchorPoint, type Anchor } from './tools/anchors';
 import { updateWear } from './vehicle/wear';
 import {
   limitDamage,
@@ -32,6 +32,7 @@ import { emptyInput } from './input/vehicleInput';
 import { headingOf, rotate, v3 } from './vehicle/math';
 import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } from './surprises';
 import type { SurprisePlan } from './world/surprisePlan';
+import { StuckVehicle, type StuckVehicleDef } from './stuckVehicle';
 
 /** Rotation that lays a +y capsule flat (90° about x) and then turns it `yaw` about y. */
 export function quatYawX(yaw: number): { x: number; y: number; z: number; w: number } {
@@ -68,6 +69,8 @@ export interface SimEvents extends Record<string, unknown> {
   returned: { id: string; campsite: string };
   /** A one-off event on the way started (a tree or rocks coming down ahead) or is down. */
   surprise: SurpriseEvent;
+  /** A bogged vehicle came free on the end of the winch line. */
+  rescued: { id: string };
 }
 
 /** Plain-data snapshot of the simulation (SPEC §11: sim state must be serialisable). */
@@ -112,6 +115,8 @@ export class Simulation {
   readonly tools = new Map<string, VehicleTools>();
   /** This run's one-off events on the way (none unless the game adds them). */
   surprises: Surprises | null = null;
+  /** Other people's vehicles bogged and waiting for a winch (an episode's rescue), by id. */
+  readonly stuck = new Map<string, StuckVehicle>();
   time = 0;
   /** How harsh mechanical damage is (the settings choice; off unless the game sets it). */
   damage: DamageMode = 'off';
@@ -259,6 +264,13 @@ export class Simulation {
     return s;
   }
 
+  /** Put a bogged vehicle in the world (before the renderer is built), or out of the bog already. */
+  addStuckVehicle(def: StuckVehicleDef, freed = false): StuckVehicle {
+    const s = new StuckVehicle(this.R, this.physics, (x, z) => this.world.terrain.heightAt(x, z), def, freed);
+    this.stuck.set(def.id, s);
+    return s;
+  }
+
   /**
    * Follow a change in the weather: how wet the ground is (the tyres' grip) and the rain,
    * and how high and fast the creeks run. The creek level offset stays as the world was
@@ -379,6 +391,9 @@ export class Simulation {
         const n = tools.planks.pickUp(v, this.physics);
         this.toolEvent(id, { type: 'planksPickedUp', count: n });
       } else if (input.winchAttach) this.quickAttach(id);
+      // Winching a bogged vehicle out, the brakes hold this one where it stands (unless driving).
+      if (tools.winch.anchor?.id.startsWith('stuck:') && input.throttle === 0 && !tools.repair)
+        input = { ...input, brake: 1 };
       tools.updateFreeRoll(v, input);
       const before = v.drivetrain.range;
       const frontBefore = v.differentials.front;
@@ -402,6 +417,15 @@ export class Simulation {
       if (v.floodEvent) this.events.emit('engine', { id, event: v.floodEvent });
       tools.winch.step(v, input.winchIn, input.winchOut, dt);
       v.externalLoad = tools.winch.tension;
+      const pulled = tools.winch.anchor?.id.startsWith('stuck:')
+        ? this.stuck.get(tools.winch.anchor.id.slice(6))
+        : undefined;
+      if (pulled?.pull(tools.winch.tension, tools.winch.mount, dt)) {
+        // Out: its driver unhooks the line.
+        tools.winch.detach();
+        this.toolEvent(id, { type: 'winchDetached' });
+        this.events.emit('rescued', { id: pulled.def.id });
+      }
       tools.jack.step(v, input.jack, dt, this.R, (x, z) => this.world.terrain.heightAt(x, z));
     }
     if (this.surprises)
@@ -510,6 +534,22 @@ export class Simulation {
           label: name,
         });
       }
+    }
+    for (const s of this.stuck.values()) {
+      const p = anchorPoint(
+        { kind: 'vehicle', id: '', point: v3(), radius: 0, body: s.body, local: s.hook, label: '' },
+        v3(),
+      );
+      if (!within(p.x, p.y, p.z)) continue;
+      out.push({
+        kind: 'vehicle',
+        id: `stuck:${s.def.id}`,
+        point: p,
+        radius: 0.05,
+        body: s.body,
+        local: { ...s.hook },
+        label: s.def.name,
+      });
     }
     for (const other of this.vehicles.values()) {
       if (other === v) continue;

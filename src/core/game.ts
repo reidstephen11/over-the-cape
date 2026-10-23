@@ -24,6 +24,7 @@ import { headingOf } from '../sim/vehicle/math';
 import { Exploration } from '../sim/exploration';
 import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
+import { StuckVehicleView } from '../render/stuckVehicleView';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
 import { planDuration, planSurprises } from '../sim/world/surprisePlan';
 import { surpriseMessage } from './surpriseMessages';
@@ -92,6 +93,10 @@ export class Game {
   readonly overlay: DebugOverlay | null;
   private readonly debugTools: DebugTools | null;
   model: VehicleModel;
+  /** Other people's bogged vehicles, as drawn. */
+  private readonly stuckViews: StuckVehicleView[] = [];
+  /** Seconds before the HUD can say again that the stockman is still bogged. */
+  private rescueNag = 0;
   /** Which vehicle the player drives (saved). */
   vehicleId: VehicleId;
   /** The episode being played, and this run of it: clock, mission and how it ends. */
@@ -189,6 +194,13 @@ export class Game {
     this.model = new VehicleModel(tuning, sim.env.lampBeams);
     view.scene.add(this.model.root);
     this.finds = new Finds(world.map.finds ?? [], this.checkpoint.taken);
+    const rescue = setup.def.rescue;
+    for (const s of sim.stuck.values()) {
+      const drawn = new StuckVehicleView(s, vehicles[rescue?.look ?? 'shortie'].tuning);
+      drawn.model.root.name = `stuck-${s.def.id}`;
+      this.stuckViews.push(drawn);
+      view.scene.add(drawn.model.root);
+    }
     this.findMarkers = new FindMarkers(world);
     this.findMarkers.show(this.finds.defs, this.finds.taken);
     view.scene.add(this.findMarkers.group);
@@ -270,6 +282,15 @@ export class Game {
       if (e.phase !== 'started') return;
       const plan = sim.surprises?.plans.find((p) => p.id === e.id);
       this.audio.surprise(e.kind, plan ? planDuration(plan) : 2);
+    });
+    sim.events.on('rescued', () => {
+      this.run.rescued = true;
+      const r = this.episode.rescue;
+      if (r) {
+        this.hud.toast(`${r.name}: out of the bog`, 2600);
+        this.showHistory(r.freed);
+      }
+      this.audio.discovery();
     });
     sim.events.on('rangeChanged', ({ range }) => {
       this.hud.toast(range === 'low' ? 'Low range' : 'High range', 1400);
@@ -427,6 +448,8 @@ export class Game {
     // This run's surprises, from its seed: the same ones again after a restart from camp.
     if (def.surprises && params.get('surprises') !== 'off')
       sim.addSurprises(planSurprises(world, def.surprises, checkpoint.seed), checkpoint.surprises);
+    // Someone bogged on the way, still waiting unless they were out by the camp.
+    if (def.rescue) sim.addStuckVehicle(def.rescue, checkpoint.rescued);
     progress(0.92, 'Building meshes');
     await nextFrame();
     // Sign lettering uses the web font; wait for it (but never block on a slow network).
@@ -552,6 +575,7 @@ export class Game {
       this.history.clear();
       this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
       this.sim.surprises?.reset(this.checkpoint.surprises);
+      for (const s of this.sim.stuck.values()) s.reset(this.checkpoint.rescued);
       applyCheckpoint(this.vehicle, this.checkpoint);
       // What was taken after the camp is back where it was found.
       this.finds.reset(this.checkpoint.taken);
@@ -905,6 +929,7 @@ export class Game {
       this.sim.repairAtCamp(LOCAL_VEHICLE);
     const found = this.exploration.check(p.x, p.z);
     for (const poi of found.discovered) {
+      this.run.reach(poi.id);
       this.hud.discovered(poi.name, poi.kind);
       const note = this.episode.notes[poi.id];
       if (note) this.showHistory(note);
@@ -931,6 +956,17 @@ export class Game {
     } else if (found.discovered.length > 0) this.save();
     const goal = this.world.pois.find((q) => q.id === this.episode.goal);
     const status = goal ? this.run.check(this.vehicle, this.sim.damage, goal) : null;
+    // At the goal with the stockman still bogged: the job isn't done.
+    this.rescueNag -= dt;
+    if (
+      goal &&
+      !this.run.rescued &&
+      this.rescueNag <= 0 &&
+      Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius
+    ) {
+      this.rescueNag = 8;
+      this.hud.toast('Not without the stockman: go back and winch him out', 3000);
+    }
     if (status === 'complete') this.onComplete();
     else if (status === 'failed') this.onFailed();
     const v = this.vehicle;
@@ -1106,6 +1142,7 @@ export class Game {
       this.anchorInReach = this.sim.findAnchors(LOCAL_VEHICLE).length > 0;
     }
     this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
+    for (const s of this.stuckViews) s.update();
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
     this.toolsView.update(v, tools, this.sim.probeGround, this.clock);
@@ -1180,9 +1217,9 @@ export class Game {
         find: this.findNearby(),
         episode: {
           title: `Episode ${this.episode.number} · ${this.episode.title}`,
-          mission: this.episode.mission,
+          mission: this.run.missionLine(),
           clock: this.run.timed ? clockTime(this.run.hour) : '',
-          deadline: this.run.timed ? (this.episode.deadline?.label ?? '') : '',
+          deadline: Number.isFinite(this.run.hoursLeft()) ? (this.episode.deadline?.label ?? '') : '',
           urgent: this.run.hoursLeft() < 0.5,
         },
         supplies: true,

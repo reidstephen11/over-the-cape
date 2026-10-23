@@ -119,3 +119,54 @@ The history in the game is kept to what these sources say. Where they disagree, 
 - **Claim:** The Laura to Maytown Coach Road was entered on the Queensland Heritage Register on 21 October 1992, its cuttings and drainage listed as its significant parts; stretches keep their original construction. The sandstone escarpments round Laura hold a large body of Aboriginal rock art characterised by Quinkans, spirit figures; Quinkan Country was entered on the National Heritage List on 10 November 2018.
 - **Sources:** [Wikipedia: Laura to Maytown Coach Road](https://en.wikipedia.org/wiki/Laura_to_Maytown_Coach_Road); [Wikipedia: Quinkan rock art](https://en.wikipedia.org/wiki/Quinkan_rock_art); [Ninti One: Aboriginal rock art of the Laura valleys](https://www.nintione.com.au/resources/nol/aboriginal-rock-art-of-the-laura-valleys-one-landscape-many-stories/).
 - **Left out:** the Cooktown–Laura railway, which wasn't checked against a source.
+
+## Episode 3: Lakefield
+
+The sources for this episode were found by web search in October 2026. The pages themselves couldn't be opened from the machine the game was built on, so each claim below rests on the passages of them that the searches quoted. Where those passages disagreed, the game leaves the detail out or words it so that both allow it.
+
+### The diary and the stockman (briefing, the bog, closing note)
+
+- **Game choice:** the diary entry, its date (Friday 28 November 1986), the man at the store, the stockman and his bogged Land Cruiser are all made up, as SPEC.md §2a allows. Nothing in the game says a real stockman was bogged there.
+- **Claim used in the diary:** the park shuts for the wet. Today it is closed every wet season, from 1 December, because heavy rain makes its roads impassable; the reopening depends on the season ([Queensland Parks: Wet season closure, Rinyirru (Lakefield) National Park](https://parks.des.qld.gov.au/park-alerts/23476); [Queensland Parks: Rinyirru wet season closure (PDF)](https://parks.desi.qld.gov.au/__data/assets/pdf_file/0023/163823/rinyirru-wet-closure.pdf)). The diary says only that it will shut "any day now", not that the 1986 dates were the same.
+
+### The park (briefing)
+
+- **Claim:** Lakefield National Park was gazetted in 1979 (on 25 October) over what had been two cattle stations, Laura and Lakefield, used for grazing for about a hundred years before. The Queensland Government bought the two stations in 1978.
+- **Sources:** [Queensland Parks: Rinyirru (Lakefield) Aggregation Management Statement 2013 (PDF)](https://parks.des.qld.gov.au/__data/assets/pdf_file/0027/165771/rinyirru.pdf); [Queensland Parks: Rinyirru (Lakefield) National Park, nature, culture and history](https://parks.qld.gov.au/parks/rinyirru-lakefield/about/culture); [Wikipedia: Rinyirru (Lakefield) National Park](<https://en.wikipedia.org/wiki/Rinyirru_(Lakefield)_National_Park>).
+- **Disputed:** one secondary site gives 1979 for the purchase. The game uses the parks service's 1978.
+
+### Old Laura homestead
+
+- **Claim:** Peter McDermott and Fergus O'Beirne made the earliest application for a run on the lower Laura River in October 1879. The main house is dated to 1902, a date that rests on a single narrative history. The station was sold in 1966 (the Lakefield Cattle Company bought Laura and Lakefield and moved to a new homestead about 24 km north), and the old homestead was left. The Queensland Government bought it in 1978, and restoration began in 1986.
+- **Sources:** [Queensland Heritage Register: Old Laura Homestead](https://apps.des.qld.gov.au/heritage-register/detail/?id=602210); [Wikipedia: Old Laura Homestead](https://en.wikipedia.org/wiki/Old_Laura_Homestead); the management statement above.
+- **Game choice:** the note says the house "is thought to date from about 1902" because the Register flags that date as thin. The buildings are drawn as two plain huts and a tank, not copied from the site.
+- **Left out:** that the station supplied beef to the Palmer goldfield (one secondary source only).
+
+### Lakefield
+
+- **Claim:** Lakefield was taken up as a grazing property around 1878. The old homestead, a timber and corrugated iron building, was the hub of the Lakefield cattle station in the early 1900s, and was abandoned in the early 1960s when a new homestead was built.
+- **Sources:** the management statement above; [Queensland Parks: Historic Lakefield Homestead day-use area](https://parks.qld.gov.au/parks/rinyirru-lakefield/attractions/historic-lakefield-homestead-day-use-area).
+
+### The black soil plains
+
+- **Claim:** none about the place's history. That black soil sets hard in the dry and turns to a bogging grease when wet is general four-wheel-driving advice, and the wet-season closure notices above say the rain makes the park's roads impassable.
+
+### Hann Crossing
+
+- **Claim:** Hann Crossing is on the North Kennedy River (the Hann River joins it downstream), and is reached by four-wheel drive.
+- **Sources:** [Queensland Parks: Hann Crossing camping area](https://parks.qld.gov.au/parks/rinyirru-lakefield/camping/hann-crossing); [Wikipedia: Hann River (Queensland)](<https://en.wikipedia.org/wiki/Hann_River_(Queensland)>).
+- **Game choice:** no source found describes the crossing's bed, so the bar across the river and its depth are made up for the game, as is how fast the river rises in the storm.
+- **Left out:** that the crossing is named after the explorer William Hann. Only a travel guide says so.
+
+### Musgrave (closing note)
+
+- **Claim:** Musgrave was one of the stations on the Cape York telegraph line, which ran from Laura to Thursday Island and was finished in 1887. It was named after Sir Anthony Musgrave, governor of Queensland from 1883 to 1888. The telegraph office closed on 22 June 1929 and the building was used afterwards as a cattle station's homestead. It is now a roadhouse, and was entered on the Queensland Heritage Register in 1992.
+- **Sources:** [State Library of Queensland: Queensland Places, Musgrave Telegraph Station](https://www.slq.qld.gov.au/blog/queensland-places-musgrave-telegraph-station); [Wikipedia: Musgrave Telegraph Station](https://en.wikipedia.org/wiki/Musgrave_Telegraph_Station); [Queensland Heritage Register: Musgrave Telegraph Station (former)](https://apps.des.qld.gov.au/heritage-register/explorer/detail/?id=600431); [Wikipedia: Cape York Telegraph Line](https://en.wikipedia.org/wiki/Cape_York_Telegraph_Line).
+- **Disputed:** when the station was built (1886 in the heritage sources, with the office opening on 23 December 1886; 1887 on roadhouse and tour pages). The note says "in the 1880s".
+- **Left out:** when the telegraph line itself closed (SPEC.md §2a: to be checked before the game states it).
+
+### Rinyirru (closing note)
+
+- **Claim:** the park was handed back to its Traditional Owners in 2011 and renamed Rinyirru (Lakefield) National Park; it is managed jointly by the Rinyirru (Lakefield) Aboriginal Corporation and the Queensland Government. Elders had objected that the 1979 declaration was made without consulting them.
+- **Sources:** [Australian Geographic: Biggest park in Cape York handed back (June 2011)](https://www.australiangeographic.com.au/news/2011/06/biggest-park-in-cape-york-handed-back/); [Queensland Parks: Historic Lakefield Homestead day-use area](https://parks.qld.gov.au/parks/rinyirru-lakefield/attractions/historic-lakefield-homestead-day-use-area).
+- **Left out:** the objection to the 1979 declaration. True, but more than a closing line can carry fairly.

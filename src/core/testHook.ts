@@ -106,7 +106,10 @@ export interface GameHook {
   vehicleId(): VehicleId;
   /** The episode being played. */
   episodeId(): EpisodeId;
-  /** The run: its status, why it ended, the clock and the camp it restarts from. */
+  /**
+   * The run: its status, why it ended, the clock, the camp it restarts from, whether its
+   * bogged vehicle is out and the HUD's mission line.
+   */
   episode(): {
     status: string;
     reason: string | null;
@@ -114,6 +117,8 @@ export interface GameHook {
     elapsed: number;
     camp: string;
     replay: { time: string; weather: string } | null;
+    rescued: boolean;
+    mission: string;
   };
   /** Set the clock (hours); the light follows. */
   /** Ids of the finds loaded so far this run. */
@@ -338,6 +343,8 @@ export function installHook(game: Game): void {
       elapsed: g.run.elapsed,
       camp: g.checkpoint.camp,
       replay: g.replay,
+      rescued: g.run.rescued,
+      mission: g.run.missionLine(),
     }),
     finds: () => [...g.finds.taken],
     restartFromCamp: () => g.restartFromCamp(),

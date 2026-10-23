@@ -30,6 +30,8 @@ export interface Checkpoint {
   seed: number;
   /** Surprises that had happened by the camp (they stay as they fell). */
   surprises: string[];
+  /** The episode's bogged vehicle had been winched out by the camp. */
+  rescued: boolean;
 }
 
 export type EpisodeStatus = 'driving' | 'complete' | 'failed';
@@ -47,16 +49,46 @@ export class EpisodeRun {
   elapsed: number;
   /** Where this run's surprises happen. */
   readonly seed: number;
+  /** The episode's bogged vehicle is out (true when there's none). */
+  rescued: boolean;
+  /** The place the deadline holds until has been reached (false when it has none). */
+  deadlineMet: boolean;
 
   constructor(
     readonly def: EpisodeDef,
-    start: { hour: number; elapsed: number; seed?: number },
+    start: {
+      hour: number;
+      elapsed: number;
+      seed?: number;
+      rescued?: boolean;
+      discovered?: readonly string[];
+    },
     /** The clock runs and the deadline applies (not when replaying with chosen conditions). */
     readonly timed: boolean,
   ) {
     this.hour = start.hour;
     this.elapsed = start.elapsed;
     this.seed = start.seed ?? 1;
+    this.rescued = !def.rescue || (start.rescued ?? false);
+    this.deadlineMet = this.metBy(start.discovered ?? []);
+  }
+
+  private metBy(discovered: readonly string[]): boolean {
+    const until = this.def.deadline?.until;
+    return until !== undefined && discovered.includes(until);
+  }
+
+  /** A place reached: the deadline stops holding if it was the one it holds until. */
+  reach(poiId: string): void {
+    if (this.metBy([poiId])) this.deadlineMet = true;
+  }
+
+  /** The HUD's mission line: the rescue first, then beating the deadline, then the last leg. */
+  missionLine(): string {
+    const d = this.def;
+    if (!this.rescued && d.rescue) return d.rescue.mission;
+    if (d.deadline?.until && !this.deadlineMet && d.deadline.mission) return d.deadline.mission;
+    return d.lastLeg ?? d.mission;
   }
 
   /** Advance the clock while driving (real seconds). */
@@ -69,14 +101,14 @@ export class EpisodeRun {
   /** Hours left before the deadline (Infinity without one). */
   hoursLeft(): number {
     const d = this.def.deadline;
-    return this.timed && d ? d.hour - this.hour : Infinity;
+    return this.timed && d && !this.deadlineMet ? d.hour - this.hour : Infinity;
   }
 
   /** Check the goal and the ways the episode can end. Returns the new status when it changes. */
   check(v: Vehicle, mode: DamageMode, goal: PoiDef): EpisodeStatus | null {
     if (this.status !== 'driving') return null;
     const p = v.body.translation();
-    if (Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius) {
+    if (this.rescued && Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius) {
       this.status = 'complete';
       return this.status;
     }
@@ -93,6 +125,8 @@ export class EpisodeRun {
     this.reason = null;
     this.hour = c.hour;
     this.elapsed = c.elapsed;
+    this.rescued = !this.def.rescue || c.rescued;
+    this.deadlineMet = this.metBy(c.discovered);
   }
 }
 
@@ -139,6 +173,7 @@ export function checkpointAt(
     taken: [...taken],
     seed: run.seed,
     surprises: [...surprises],
+    rescued: run.rescued && !!run.def.rescue,
   };
 }
 
@@ -192,5 +227,6 @@ export function startCheckpoint(
     taken: [],
     seed,
     surprises: [],
+    rescued: false,
   };
 }
