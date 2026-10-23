@@ -48,6 +48,7 @@ export class DebugTools {
       teleport: (poi: PoiDef) => void;
       toggleFreeCam: () => boolean;
       bird: (kind: 'kookaburra' | 'magpie') => void;
+      addTime: (hours: number) => void;
     },
   ) {
     this.panel = document.createElement('div');
@@ -55,6 +56,7 @@ export class DebugTools {
     this.panel.innerHTML = `<details open><summary>Debug</summary>
       <div class="debug-row"><button data-act="free">Free camera (backtick)</button><button data-act="coll">Colliders</button></div>
       <details><summary>Teleport</summary><div class="debug-teleports"></div></details>
+      <div class="debug-row"><button data-act="time">Clock +30 min</button></div>
       <details><summary>Sounds</summary><div class="debug-row"><button data-bird="kookaburra">Kookaburra</button><button data-bird="magpie">Magpie</button></div></details>
       <details><summary>Vehicle tuning</summary><div class="debug-sliders"></div></details>
     </details>`;
@@ -68,6 +70,7 @@ export class DebugTools {
     }
     for (const b of this.panel.querySelectorAll<HTMLButtonElement>('[data-bird]'))
       b.addEventListener('click', () => actions.bird(b.dataset.bird as 'kookaburra' | 'magpie'));
+    this.panel.querySelector('[data-act="time"]')?.addEventListener('click', () => actions.addTime(0.5));
     const freeBtn = this.panel.querySelector('[data-act="free"]') as HTMLButtonElement;
     freeBtn.addEventListener('click', () => freeBtn.classList.toggle('on', actions.toggleFreeCam()));
     const collBtn = this.panel.querySelector('[data-act="coll"]') as HTMLButtonElement;

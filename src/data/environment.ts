@@ -188,21 +188,20 @@ const clearSkies: Record<TimeOfDay, EnvironmentConfig> = {
   },
 };
 
-/** How far each weather turns the sky grey, and what it does to the ground and creek. */
-const weatherEffects: Record<
-  Weather,
-  {
-    grey: number;
-    /** How dark the cloud is (1 = bright overcast). */
-    dark: number;
-    sun: number;
-    shadowRadius: number;
-    fog: { start: number; end: number; maxAmount: number };
-    wetness: number;
-    rain: number;
-    waterLevelOffset: number;
-  }
-> = {
+/** How far a weather turns the sky grey, and what it does to the ground and creek. */
+interface WeatherEffect {
+  grey: number;
+  /** How dark the cloud is (1 = bright overcast). */
+  dark: number;
+  sun: number;
+  shadowRadius: number;
+  fog: { start: number; end: number; maxAmount: number };
+  wetness: number;
+  rain: number;
+  waterLevelOffset: number;
+}
+
+const weatherEffects: Record<Weather, WeatherEffect> = {
   clear: {
     grey: 0,
     dark: 1,
@@ -287,7 +286,18 @@ export const presetHours: ReadonlyArray<readonly [number, TimeOfDay]> = [
 /** The headlights light the ground from this hour (dusk coming on). */
 export const lampBeamsFromHour = 17.5;
 
-export function environmentAt(hour: number, weather: Weather): EnvironmentConfig {
+/**
+ * A storm passing over (src/data/weatherTimeline.ts): how hard it is raining (0..1),
+ * which turns the sky from the after-rain overcast to the raining one, and how wet the
+ * ground is. The creek level offset stays the after-rain one: the puddles were laid for
+ * it, and the storm raises the creeks on their own.
+ */
+export interface Storm {
+  rain: number;
+  wetness: number;
+}
+
+export function environmentAt(hour: number, weather: Weather, storm?: Storm): EnvironmentConfig {
   const h = Math.min(presetHours[presetHours.length - 1][0], Math.max(presetHours[0][0], hour));
   let i = 0;
   while (i < presetHours.length - 2 && h > presetHours[i + 1][0]) i++;
@@ -296,7 +306,30 @@ export function environmentAt(hour: number, weather: Weather): EnvironmentConfig
   const t = (h - h0) / (h1 - h0);
   const base = blendEnvironment(clearSkies[a], clearSkies[b], t);
   base.lampBeams = hour >= lampBeamsFromHour;
-  return withWeather(base, weather, hour >= presetHours[presetHours.length - 1][0] - 0.25);
+  const night = hour >= presetHours[presetHours.length - 1][0] - 0.25;
+  if (!storm) return withWeather(base, weather, night);
+  const w = weatherEffects.wet;
+  const r = weatherEffects.rain;
+  const k = Math.min(1, Math.max(0, storm.rain));
+  const n = (a: number, b: number) => a + (b - a) * k;
+  return withEffect(
+    base,
+    {
+      grey: n(w.grey, r.grey),
+      dark: n(w.dark, r.dark),
+      sun: n(w.sun, r.sun),
+      shadowRadius: n(w.shadowRadius, r.shadowRadius),
+      fog: {
+        start: n(w.fog.start, r.fog.start),
+        end: n(w.fog.end, r.fog.end),
+        maxAmount: n(w.fog.maxAmount, r.fog.maxAmount),
+      },
+      wetness: storm.wetness,
+      rain: k,
+      waterLevelOffset: w.waterLevelOffset,
+    },
+    night,
+  );
 }
 
 function blendEnvironment(a: EnvironmentConfig, b: EnvironmentConfig, t: number): EnvironmentConfig {
@@ -344,8 +377,10 @@ function blendEnvironment(a: EnvironmentConfig, b: EnvironmentConfig, t: number)
 }
 
 function withWeather(base: EnvironmentConfig, weather: Weather, night: boolean): EnvironmentConfig {
-  const w = weatherEffects[weather];
-  if (weather === 'clear') return base;
+  return weather === 'clear' ? base : withEffect(base, weatherEffects[weather], night);
+}
+
+function withEffect(base: EnvironmentConfig, w: WeatherEffect, night: boolean): EnvironmentConfig {
   // Grey overcast is darker the lower the sun is, and darkest at night under the moon.
   const light = night ? 0.13 : 0.55 + 0.45 * Math.min(1, Math.max(0, base.sun.elevationDeg) / 40);
   const g = w.grey;

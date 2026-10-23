@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
-test('night: dusk turns the headlights on, N cycles them, and they light the ground ahead', async ({
+test('night: the storm comes in, dusk turns the headlights on, N cycles them, and they light the ground ahead', async ({
   page,
 }) => {
   test.setTimeout(900_000);
@@ -12,8 +12,15 @@ test('night: dusk turns the headlights on, N cycles them, and they light the gro
   expect((await page.evaluate(() => window.__game!.vehicle())).lights).toBe('off');
   // The clock runs on into the evening: at dusk the lamps come on by themselves.
   await page.evaluate(() => window.__game!.setHour(17.7));
+  // By then the storm has come in, with a note on screen (shown for a few seconds).
+  await expect(page.locator('.toast', { hasText: 'Rain coming in' })).toHaveCount(1);
   await expect.poll(async () => (await page.evaluate(() => window.__game!.vehicle())).lights).toBe('low');
   await expect(page.locator('.status-lights')).toHaveClass(/shown/);
+  // Rain, soaked ground and risen creeks.
+  const storm = await page.evaluate(() => window.__game!.conditions());
+  expect(storm.rain).toBeGreaterThan(0.9);
+  expect(storm.wetness).toBeGreaterThan(0.95);
+  expect(storm.creekRise).toBeGreaterThan(0.2);
   // Past the deadline the episode ends.
   await page.evaluate(() => window.__game!.setHour(19.6));
   await expect.poll(() => page.evaluate(() => window.__game!.result().open)).toBe(true);
@@ -31,6 +38,8 @@ test('night: dusk turns the headlights on, N cycles them, and they light the gro
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.episode())).toMatchObject({ replay: { time: 'night' } });
   expect((await page.evaluate(() => window.__game!.vehicle())).lights).toBe('low');
+  // A replay keeps the weather chosen: no storm.
+  expect(await page.evaluate(() => window.__game!.conditions())).toMatchObject({ rain: 0, creekRise: 0 });
   await waitSim(page, 0.5);
 
   // The ground in front of the car, above it on the screen in the chase view.

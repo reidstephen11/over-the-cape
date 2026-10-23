@@ -1,4 +1,5 @@
 import type { EpisodeDef } from '../episodes';
+import { crebStorm } from './crebWeather';
 import { crebSurprises } from './crebSurprises';
 
 /**
@@ -16,6 +17,8 @@ export const crebEpisode: EpisodeDef = {
   // June: the track has just reopened after the wet, and it rained overnight.
   startHour: 12.5,
   weather: 'wet',
+  // A storm comes through in the afternoon (src/data/episodes/crebWeather.ts).
+  storm: crebStorm,
   deadline: { hour: 18.25, label: 'Dark at 6:15 pm' },
   // Game seconds per real second: the afternoon (5¾ hours) passes in 43 minutes of driving,
   // so a careful run that winches out of the bogs arrives in the last of the light.
@@ -29,6 +32,7 @@ export const crebEpisode: EpisodeDef = {
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
     'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. It rained overnight: the red clay on the climbs will be slippery.',
+    'Storms are forecast from about 3 pm. Once the rain sets in the clay gets greasier and the creeks rise and run faster the longer it rains. The last crossing, the Little Annan just short of the Lions Den, is the one to reach early.',
     'Cross the Daintree River, climb the range on the old powerline track, come down to the Bloomfield River at Wujal Wujal and follow the Bloomfield Track north to the Lions Den Hotel. Get there before dark.',
   ],
   notes: {
