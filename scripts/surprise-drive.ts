@@ -2,7 +2,8 @@
  * Dev helper: drive up to one of a run's surprises, watch it come down and get past it.
  * Reports the time and fuel it took from 120 m short to 12 m past, against the same stretch
  * driven without it at the route drive's bush pace.
- * Usage: npx vite-node scripts/surprise-drive.ts [seed or first-last] [shortie|camel|perentie] [event id]
+ * Usage: npx vite-node scripts/surprise-drive.ts [seed or first-last] [vehicle] [event id or all] [wet|rain]
+ * (rain: the ground as the storm leaves it by about 5 pm)
  */
 import { environmentFor } from '../src/data/environment';
 import { crebEpisode } from '../src/data/episodes/creb';
@@ -23,9 +24,10 @@ import { approachStart, CRAWLED, getPast } from '../tests/helpers/surprises';
 const [lo, hi] = (process.argv[2] ?? '1').split('-').map(Number);
 const id = process.argv[3] ?? 'shortie';
 if (!isVehicleId(id)) throw new Error(`Unknown vehicle ${id}`);
-const only = process.argv[4];
+const only = process.argv[4] && process.argv[4] !== 'all' ? process.argv[4] : undefined;
+const weather = process.argv[5] === 'rain' ? 'rain' : 'wet';
 const world = buildWorld(crebMap);
-const env = environmentFor({ time: 'afternoon', weather: 'wet' });
+const env = environmentFor({ time: 'afternoon', weather });
 addPuddles(world, env);
 const R = await loadRapier();
 for (let seed = lo; seed <= (hi ?? lo); seed++)
