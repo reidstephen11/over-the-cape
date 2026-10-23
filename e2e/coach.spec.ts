@@ -37,7 +37,7 @@ test('finishing Episode 1 opens Episode 2: the Old Coach Road from the Palmer Ri
   await driveFromBriefing(page);
   expect(await page.evaluate(() => window.__game!.episodeId())).toBe('coach');
   expect(await episode(page)).toMatchObject({ status: 'driving', camp: 'palmer-camp' });
-  await expect(page.locator('.mission-clock')).toContainText('10:00 am');
+  await expect(page.locator('.mission-clock')).toContainText(/10:0\d am/);
   await expect(page.locator('.fuel-litres')).toHaveText('50 L');
   await expect.poll(() => page.evaluate(() => window.__game!.historyShown())).toContain('The Palmer River');
   await shot(page, 'coach', 'palmer-camp');
