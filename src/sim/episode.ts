@@ -53,6 +53,10 @@ export class EpisodeRun {
   rescued: boolean;
   /** The place the deadline holds until has been reached (false when it has none). */
   deadlineMet: boolean;
+  /** Test mode: the clock stands still. */
+  clockStopped = false;
+  /** Test mode: the deadline never runs out. */
+  noTimeLimit = false;
 
   constructor(
     readonly def: EpisodeDef,
@@ -95,13 +99,13 @@ export class EpisodeRun {
   tick(dt: number): void {
     if (this.status !== 'driving') return;
     this.elapsed += dt;
-    if (this.timed) this.hour += (dt * this.def.clockRate) / 3600;
+    if (this.timed && !this.clockStopped) this.hour += (dt * this.def.clockRate) / 3600;
   }
 
   /** Hours left before the deadline (Infinity without one). */
   hoursLeft(): number {
     const d = this.def.deadline;
-    return this.timed && d && !this.deadlineMet ? d.hour - this.hour : Infinity;
+    return this.timed && d && !this.deadlineMet && !this.noTimeLimit ? d.hour - this.hour : Infinity;
   }
 
   /** Check the goal and the ways the episode can end. Returns the new status when it changes. */

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { maps } from '../data/maps';
-import { environmentFor, type Conditions } from '../data/environment';
+import { devEnvironment, devFlood, isDevMode, type DevWeather } from '../data/devWeather';
+import { environmentFor, presetHours, type Conditions } from '../data/environment';
 import { episodeWeatherAt } from '../data/weatherTimeline';
 import { clockTime, episodeOrder, episodes, type EpisodeDef, type EpisodeId } from '../data/episodes';
 import { usePalette } from '../render/colors';
@@ -48,6 +49,7 @@ import { HistoryCard, ResultCard, type ResultButton } from '../ui/episodeCards';
 import { FreeCamera } from '../debug/freeCamera';
 import { DebugOverlay } from '../debug/overlay';
 import { DebugTools } from '../debug/debugTools';
+import { DevPanel } from '../debug/devPanel';
 import { AudioSystem } from '../audio/audioSystem';
 import { buildAudioFrame } from '../audio/frame';
 import { GameLoop } from './loop';
@@ -92,6 +94,13 @@ export class Game {
   private readonly cameraDrag: CameraDrag;
   readonly overlay: DebugOverlay | null;
   private readonly debugTools: DebugTools | null;
+  /** Test mode (`?dev`): weather, clock, place and vehicle set by hand; nothing is saved. */
+  readonly dev: boolean;
+  private readonly devPanel: DevPanel | null;
+  /** The weather set by hand in test mode (null: the episode's own). */
+  private devWeather: DevWeather | null = null;
+  /** Test mode has set the clock or the weather, so a replay's fixed conditions give way. */
+  private devTookOver = false;
   model: VehicleModel;
   /** Other people's bogged vehicles, as drawn. */
   private readonly stuckViews: StuckVehicleView[] = [];
@@ -164,6 +173,7 @@ export class Game {
     audioContext?: AudioContext,
   ) {
     this.debug = new URLSearchParams(location.search).has('debug');
+    this.dev = isDevMode();
     this.settings = settings;
     this.exploration = exploration;
     this.vehicleId = vehicleId;
@@ -172,6 +182,12 @@ export class Game {
     this.checkpoint = setup.checkpoint;
     this.progress = { ...setup.progress };
     this.run = new EpisodeRun(setup.def, setup.checkpoint, !setup.replay);
+    // Test mode: no deadline, and a replay's clock starts at the hour its light shows.
+    if (this.dev) {
+      this.run.noTimeLimit = true;
+      const preset = presetHours.find(([, t]) => t === setup.replay?.time);
+      if (preset) this.run.hour = preset[0];
+    }
     this.envHour = this.run.hour;
     this.noteHour = this.run.hour;
     this.lampBeams = sim.env.lampBeams;
@@ -271,6 +287,30 @@ export class Game {
           addTime: (hours) => {
             if (this.run.timed) this.run.hour += hours;
           },
+        })
+      : null;
+    this.devPanel = this.dev
+      ? new DevPanel(uiRoot, world.pois, (setup.def.storm ?? devFlood).creeks.maxRise, {
+          hour: () => this.run.hour,
+          setHour: (hour) => {
+            this.run.hour = hour;
+            this.noteHour = hour;
+            this.devTookOver = true;
+            this.updateEnvironment(true);
+          },
+          stopClock: (stopped) => (this.run.clockStopped = stopped),
+          setWeather: (w) => {
+            this.devWeather = w;
+            this.devTookOver = true;
+            this.updateEnvironment(true);
+          },
+          teleport: (p) => this.teleportToPoi(p),
+          vehicle: (id) => {
+            if (id === this.vehicleId) return;
+            void this.fade.run(() => this.swapVehicle(id));
+            this.hud.toast(vehicles[id].tuning.name, 1800);
+          },
+          mainMenu: () => void this.toMainMenu(),
         })
       : null;
     window.addEventListener('keydown', (e) => {
@@ -436,8 +476,9 @@ export class Game {
     const world = r.value;
     // Wet weather leaves puddles on the tracks (before physics and meshes read the ground).
     addPuddles(world, env);
-    // A storm can raise the creeks over their low banks.
-    if (storm) prepareFlood(world, storm);
+    // A storm can raise the creeks over their low banks (in test mode, whatever the weather).
+    const flood = storm ?? (isDevMode() ? (def.storm ?? devFlood) : undefined);
+    if (flood) prepareFlood(world, flood);
     const exploration = new Exploration(world.pois, {
       discovered: checkpoint.discovered,
       lastCampsite: checkpoint.camp,
@@ -498,6 +539,8 @@ export class Game {
 
   /** Save, with the welcome screen to open on `episode` (this one unless given). */
   save(episode: EpisodeId = this.episode.id): boolean {
+    // Test mode leaves the real save alone.
+    if (this.dev) return true;
     const ok = writeSave({
       version: 1,
       settings: this.settings,
@@ -796,15 +839,13 @@ export class Game {
    * rain, the ground's grip and the creeks follow a storm. Dusk turns the lamps on.
    */
   private updateEnvironment(force = false): void {
-    if (this.replay) return;
-    this.stormNotes();
+    if (this.replay && !this.devTookOver) return;
+    if (!this.devWeather) this.stormNotes();
     if (!force && Math.abs(this.run.hour - this.envHour) < 0.05) return;
     this.envHour = this.run.hour;
-    const { env, creekRise, flowScale } = episodeWeatherAt(
-      this.run.hour,
-      this.episode.weather,
-      this.episode.storm,
-    );
+    const { env, creekRise, flowScale } = this.devWeather
+      ? devEnvironment(this.run.hour, this.devWeather, this.episode.storm ?? devFlood)
+      : episodeWeatherAt(this.run.hour, this.episode.weather, this.episode.storm);
     this.view.setEnvironment(env);
     this.view.setCreeks(creekRise, flowScale);
     this.sim.setWeather(env, creekRise, flowScale);
@@ -1090,6 +1131,7 @@ export class Game {
     this.input.poll();
     this.clock += frameDt;
     this.updateEnvironment();
+    this.devPanel?.update();
     const cameraWasEnabled = !this.freeCamOn && !this.loop.paused && !this.toolMenu.isOpen;
     const usedByTool = this.tool.update(frameDt);
     const cameraChord =

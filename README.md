@@ -225,6 +225,18 @@ On a touch screen the game shows on-screen controls, held sideways or upright. T
 - Keep an eye on the clock once it rains: the creeks only get higher. In a risen creek, a steady pace in high range can get the short-wheelbase 4WD across where crawling lets the current take it.
 - Got a flat? Stop and fix it: a flat tyre pulls the car off line and makes the corners treacherous.
 
+## Test mode
+
+Add `?dev` to the address: https://reidstephen11.github.io/over-the-cape/?dev. Every episode is open on the welcome screen, with a choice of time of day and weather for any of them. In the game a **Test mode** panel at the top right lets you (click its title to fold it away):
+
+- set the clock (the light follows) and stop it; there is no time limit;
+- set the weather: clear, cloudy with wet ground, light rain or a heavy storm, then fine-tune the rain, how wet the ground is and how high the rivers are;
+- start from any place on the map;
+- change vehicle where you are;
+- go back to the welcome screen to change episode.
+
+Nothing is saved in test mode, so your real progress is safe. Puddles on the track come from the weather picked on the welcome screen. There is no wind yet.
+
 ## Debug mode
 
 Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle state, flooding, sound levels) and a panel with a free-fly camera (also the **backtick** key), collider wireframes, a button that moves the clock on 30 minutes (to try the storm and the dusk), a teleport button for every place on the map and live vehicle tuning sliders.
@@ -236,6 +248,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
 - [ ] **Welcome screen:** Episode 1 is open; Episodes 2 and 3 are listed but shut until the one before is finished; episodes 4–7 are listed as coming later. Pick a vehicle and a difficulty; Drive shows the briefing while the map builds, then Drive again starts at Daintree Village.
 - [ ] **The CREB Track, start to finish:** cross the Daintree on the gravel bar, climb Big Red (or take the bypass), reach Roaring Meg camp, climb Bob's Hill, take the concrete down, cross Donovan's Creek and the Bloomfield bridge, and drive the Bloomfield Track to the Lions Den before dark. How long did it take, how much fuel was left, and did the clock feel fair?
+- [ ] **v0.28 test mode:** open https://reidstephen11.github.io/over-the-cape/?dev. Are all episodes open? Drive one: click **Heavy storm** in the Test mode panel. Does it rain, do the tracks get slippery and the rivers come up? Move the **Rivers up** slider and drive into a crossing. Drag the **Time** slider to dusk: do the headlights come on? Pick a place under **Start from** and a vehicle under **Vehicle**. Back on the normal address (no `?dev`), is your real progress as you left it?
 - [ ] **v0.27 handover notes:** the loading screen and pause menu show v0.27. Nothing else changed in the game. Read docs/NEXT.md: are the questions and the plan for trailers and towing what you want?
 - [ ] **v0.25 backlog fixes:** the loading screen and pause menu show v0.25. Pick the Unimog, then the LC79: the follow camera should sit far enough back to see the whole vehicle and the track ahead. In Episode 2, the Maytown sign on Leslie Street should stand beside the road, not on it; in Episode 1, so should the two "Falls" signs. The status strip reads "Planks 2/2" instead of just "2/2". Look at the dirt roads where they run at an angle: are the edges smooth, with no zig-zag?
 - [ ] **v0.24 test fix:** the loading screen and pause menu show v0.24. Nothing else changed: the welcome screen should still list episodes 4 to 7 as coming later.
