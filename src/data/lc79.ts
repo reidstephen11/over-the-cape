@@ -99,7 +99,7 @@ export const lc79Tuning: VehicleTuning = {
     fuel: { tankLitres: 130, efficiency: 0.4, energyMJPerLitre: 38.6 },
   },
   // The game changes gear itself; this coupling stands in for the clutch.
-  converter: { capacity: 72, stallRatio: 1.25, couplingPoint: 0.8 },
+  converter: { capacity: 82, stallRatio: 1.15, couplingPoint: 0.8 },
   gearbox: {
     ratios: [4.313, 2.33, 1.436, 1.0, 0.838],
     reverse: 4.22,
@@ -149,8 +149,8 @@ export const lc79Tuning: VehicleTuning = {
     padRate: 7,
   },
   // Snorkel head beside the right windscreen pillar, a little above the roof.
-  intakeHeight: 2.2,
-  intake: { x: 0.95, y: 2.2 - R - 0.12, z: -0.68 },
+  intakeHeight: 2.31,
+  intake: { x: 0.93, y: 2.31 - R - 0.12, z: -0.85 },
   winchMount: { x: 0, y: 0.2, z: -2.62 },
   towPoint: { x: 0, y: 0.06, z: 3.12 },
 };

@@ -7,6 +7,8 @@ import {
   petrolFourSynthTuning,
   troopyDieselSynthTuning,
   td42SynthTuning,
+  v8DieselSynthTuning,
+  type EngineSynthTuning,
 } from '../src/data/audio';
 
 const SR = 48000;
@@ -248,5 +250,59 @@ describe('engine synthesiser', () => {
     expect(clatter(render(1.5, { rpm: 700 }, td42()))).toBeGreaterThan(
       2 * clatter(render(1.5, { rpm: 700 })),
     );
+  });
+
+  it("the LC79's V8 burbles: each bank fires unevenly into its own pipe", () => {
+    const v8 = (T: EngineSynthTuning = v8DieselSynthTuning) => new EngineSynth(SR, 3, T);
+    for (const inp of [
+      { rpm: 680 },
+      { rpm: 2200, throttle: 1, load: 1 },
+      { rpm: 4300, throttle: 1, load: 1 },
+      { rpm: 3500, throttle: 0 },
+    ]) {
+      let peak = 0;
+      for (const v of render(1, inp, v8()))
+        peak = Number.isFinite(v) ? Math.max(peak, Math.abs(v)) : Infinity;
+      expect(peak).toBeLessThanOrEqual(1);
+    }
+    // Piped as one with even runners, a V8 only drones at its four firings per turn; with
+    // its banks apart, strong notes sit between the firing harmonics (2½ and 3½ per turn).
+    const even: EngineSynthTuning = {
+      ...v8DieselSynthTuning,
+      banks: undefined,
+      runners: { delayMs: Array(8).fill(0.3), strength: Array(8).fill(1) },
+    };
+    const rpm = 2000,
+      turn = rpm / 60;
+    const inp = { rpm, throttle: 0.4, load: 0.4 };
+    const burble = (x: Float32Array) => (power(x, turn * 2.5) + power(x, turn * 3.5)) / power(x, turn * 4);
+    const real = render(2, inp, v8());
+    expect(burble(real)).toBeGreaterThan(0.05);
+    expect(burble(real)).toBeGreaterThan(20 * burble(render(2, inp, v8(even))));
+  });
+
+  it("the LC79's turbos whistle under boost and are gone without them", () => {
+    // The loudest note between 5 and 7.6 kHz over the last 4096 samples (12 Hz wide bins).
+    const whistle = (x: Float32Array) => {
+      const tail = x.subarray(x.length - 4096);
+      let best = 0;
+      for (let f = 5000; f <= 7600; f += 5) {
+        const w = (2 * Math.PI * f) / SR,
+          c = 2 * Math.cos(w);
+        let s1 = 0,
+          s2 = 0;
+        for (const v of tail) {
+          const s0 = v + c * s1 - s2;
+          s2 = s1;
+          s1 = s0;
+        }
+        best = Math.max(best, s1 * s1 + s2 * s2 - c * s1 * s2);
+      }
+      return best;
+    };
+    const inp = { rpm: 3000, throttle: 1, load: 1 };
+    const boosted = render(2.5, inp, new EngineSynth(SR, 3, v8DieselSynthTuning));
+    const plain = render(2.5, inp, new EngineSynth(SR, 3, { ...v8DieselSynthTuning, turbo: undefined }));
+    expect(whistle(boosted)).toBeGreaterThan(4 * whistle(plain));
   });
 });
