@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { GroundTint, type Terrain } from '../sim/world/terrain';
+import { GroundTint, TrackPaintKind, trackTint, type Terrain } from '../sim/world/terrain';
 import { DETAIL_SUB, patchStride, patchTriangles, type DetailPatch } from '../sim/world/detail';
+import { smoothstep } from '../sim/world/noise';
 import { pal } from './colors';
 import { createGroundMaterial } from './groundMaterial';
 
@@ -19,6 +20,23 @@ const TINT_SAMPLES = [
   [0, -1, 0.1],
   [0, 1, 0.1],
 ] as const;
+/**
+ * Where track paint ends (m out from the track's edge) and how wide the blend into the
+ * ground beside it is; and the same for the darker edge band inside a graded track.
+ */
+const PAINT_EDGE = 0.8,
+  FAINT_EDGE = 0.3,
+  PAINT_BLEND = 0.45,
+  EDGE_BAND = 0.4,
+  CONCRETE_BAND = 0.3,
+  BAND_BLEND = 0.2;
+const isRock = (tint: number) =>
+  tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel;
+const isWet = (tint: number) =>
+  tint === GroundTint.Mud ||
+  tint === GroundTint.CreekBed ||
+  tint === GroundTint.BlackSoil ||
+  tint === GroundTint.Pothole;
 
 /** Linear colour per ground tint. */
 function tintColors(): THREE.Color[] {
@@ -122,30 +140,7 @@ export class TerrainMesh {
     const corners = new Float32Array(cw * (p.nz + 1) * 5);
     for (let cz = 0; cz <= p.nz; cz++)
       for (let cx = 0; cx <= p.nx; cx++) {
-        let r = 0,
-          g = 0,
-          b = 0,
-          rock = 0,
-          wet = 0;
-        for (const [ox, oz, weight] of TINT_SAMPLES) {
-          const sx = Math.max(0, Math.min(t.sizeX, p.ix0 + cx + ox));
-          const sz = Math.max(0, Math.min(t.sizeZ, p.iz0 + cz + oz));
-          const tint = t.tint[sz * t.resX + sx];
-          const base = this.colors[tint] ?? this.colors[0];
-          r += base.r * weight;
-          g += base.g * weight;
-          b += base.b * weight;
-          if (tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel)
-            rock += weight;
-          if (
-            tint === GroundTint.Mud ||
-            tint === GroundTint.CreekBed ||
-            tint === GroundTint.BlackSoil ||
-            tint === GroundTint.Pothole
-          )
-            wet += weight;
-        }
-        corners.set([r, g, b, rock, wet], (cz * cw + cx) * 5);
+        corners.set(this.sampleShade(p.ix0 + cx, p.iz0 + cz), (cz * cw + cx) * 5);
       }
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < w; i++) {
@@ -337,6 +332,57 @@ export class TerrainMesh {
     return counts;
   }
 
+  private readonly shade = [0, 0, 0, 0, 0];
+
+  /**
+   * Colour (r, g, b), rockiness and wetness at a 1 m sample. Near a track's edge they come
+   * from the distance to the edge, so the edge runs smooth between samples instead of in
+   * 1 m steps; elsewhere a narrow blend of the neighbouring tints softens the grid.
+   */
+  private sampleShade(ix: number, iz: number): number[] {
+    const t = this.terrain;
+    const out = this.shade;
+    out.fill(0);
+    const i = iz * t.resX + ix;
+    const p = t.trackPaint?.paint[i] ?? 0;
+    if (p) {
+      const kind = p & 7,
+        under = p >> 3;
+      const e = (t.trackPaint as NonNullable<Terrain['trackPaint']>).edge[i] / 10;
+      const faint = kind === TrackPaintKind.Faint;
+      const end = faint ? FAINT_EDGE : PAINT_EDGE;
+      if (e < end + PAINT_BLEND + 0.2) {
+        const centre = trackTint(kind);
+        const band = kind === TrackPaintKind.Concrete ? CONCRETE_BAND : EDGE_BAND;
+        const inner = faint ? 1 : smoothstep(-band + BAND_BLEND, -band - BAND_BLEND, e);
+        const cover = smoothstep(end + PAINT_BLEND, end - PAINT_BLEND, e);
+        for (const [tint, weight] of [
+          [under, 1 - cover],
+          [GroundTint.DirtEdge, cover * (1 - inner)],
+          [centre, cover * inner],
+        ] as const)
+          this.addTint(tint, weight);
+        return out;
+      }
+    }
+    for (const [ox, oz, weight] of TINT_SAMPLES) {
+      const x = Math.max(0, Math.min(t.sizeX, ix + ox));
+      const z = Math.max(0, Math.min(t.sizeZ, iz + oz));
+      this.addTint(t.tint[z * t.resX + x], weight);
+    }
+    return out;
+  }
+
+  private addTint(tint: number, weight: number): void {
+    const base = this.colors[tint] ?? this.colors[0];
+    const out = this.shade;
+    out[0] += base.r * weight;
+    out[1] += base.g * weight;
+    out[2] += base.b * weight;
+    if (isRock(tint)) out[3] += weight;
+    if (isWet(tint)) out[4] += weight;
+  }
+
   buildGeometry(ix0: number, iz0: number, size: number, step: number): THREE.BufferGeometry {
     const t = this.terrain;
     const cells = size / step;
@@ -345,7 +391,6 @@ export class TerrainMesh {
     const nrm = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     const ground = new Float32Array(count * 2);
-    const color = new THREE.Color();
     let v = 0;
     const vertex = (sx: number, sz: number, drop = 0) => {
       const ix = Math.max(0, Math.min(t.sizeX, sx));
@@ -356,29 +401,8 @@ export class TerrainMesh {
       const dz = t.sample(ix, iz - 1) - t.sample(ix, iz + 1);
       const length = Math.hypot(dx, 2, dz);
       nrm.set([dx / length, 2 / length, dz / length], v * 3);
-      color.setRGB(0, 0, 0);
-      let rock = 0,
-        wet = 0;
-      // A narrow blend softens the square edge of track and biome paint.
-      for (const [ox, oz, weight] of TINT_SAMPLES) {
-        const x = Math.max(0, Math.min(t.sizeX, ix + ox));
-        const z = Math.max(0, Math.min(t.sizeZ, iz + oz));
-        const tint = t.tint[z * t.resX + x];
-        const base = this.colors[tint] ?? this.colors[0];
-        color.r += base.r * weight;
-        color.g += base.g * weight;
-        color.b += base.b * weight;
-        if (tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel)
-          rock += weight;
-        if (
-          tint === GroundTint.Mud ||
-          tint === GroundTint.CreekBed ||
-          tint === GroundTint.BlackSoil ||
-          tint === GroundTint.Pothole
-        )
-          wet += weight;
-      }
-      col.set([color.r, color.g, color.b], v * 3);
+      const [r, g, b, rock, wet] = this.sampleShade(ix, iz);
+      col.set([r, g, b], v * 3);
       ground.set([rock, wet], v * 2);
       v++;
     };

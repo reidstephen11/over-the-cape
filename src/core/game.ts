@@ -216,6 +216,7 @@ export class Game {
       (x, z) => world.terrain.heightAt(x, z),
     );
     this.chase.seat = vehicles[vehicleId].cabin;
+    this.chase.scale = vehicles[vehicleId].cameraScale ?? 1;
     this.freeCam = new FreeCamera(view.camera, view.renderer.domElement);
 
     this.hud = new Hud(uiRoot, (action) => this.input.requestDriveAction(action));
@@ -626,6 +627,7 @@ export class Game {
     this.vehicleId = id;
     this.input.setSteering(def.tuning.steering);
     this.chase.seat = def.cabin;
+    this.chase.scale = def.cameraScale ?? 1;
     this.chase.reset();
     this.pause.setVehicle(id);
     this.audio.setVehicle(id);
