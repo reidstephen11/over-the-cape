@@ -4,14 +4,18 @@ import { plankTuning } from '../data/tools';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { addPerentieInterior } from './perentieInterior';
 import { perentieColors } from './perentiePaint';
+import { hoopBar } from './roobar';
+import { mirrorHead, stalk } from './mirrors';
+import { extrudeZ, rounded, type Vtx } from './bodyShapes';
 
 /**
  * Land Rover 110 "Perentie" General Service soft top in Australian Army green, with an
- * Army registration plate (48-001). Flat
- * panels and flat-topped wings, a black slatted grille between the headlamp panels, a
- * heavy bull bar, vent flaps under an upright windscreen, a canvas tilt over the cab
- * and rear tub, a galvanised chassis and the Perentie's spare wheel slung under the
- * rear floor. Ground is about 0.52 m below the origin when parked.
+ * Army registration plate (48-001). Flat panels and flat-topped wings, a black slatted
+ * grille between the headlamp panels, a heavy bull bar, vent flaps under an upright
+ * windscreen, a canvas tilt over the cab and rear tub, a galvanised chassis and the
+ * Perentie's spare wheel slung under the rear floor, with a pick, shovel and axe in
+ * brackets on the bonnet (or, as an option, the spare on the bonnet instead). Ground is
+ * about 0.52 m below the origin when parked.
  */
 const { paint, canvas, bar, galv } = perentieColors;
 const black = new THREE.Color('#1F2320'),
@@ -34,6 +38,9 @@ const B_PILLAR = 0.21;
 const TAIL = 2.3;
 const ROOF = 1.51;
 const SCREEN_TOP = 1.36;
+/** The bonnet: flush with the wing tops at its edges and crowned a little in the middle. */
+const BONNET = { half: 0.58, low: 0.56, edge: 0.61, crown: 0.645 };
+const crownAt = (x: number) => BONNET.crown - (BONNET.crown - BONNET.edge) * (x / BONNET.half) ** 2;
 
 /**
  * A side panel from `start` to `end` with a round wheel opening cut around `axle`; the
@@ -166,16 +173,28 @@ export function armyPlate(
 
 function frontEnd(b: VehicleBuilder): void {
   const F = FRONT_FACE;
-  // Bonnet between flat-topped wings, with its front lip, hinges and catches.
-  b.block(0, 0.6, -1.41, 1.16, 0.05, 1.2, paint, M.Paint, Z.Front, 0.02);
-  b.block(0, 0.575, F + 0.03, 1.16, 0.05, 0.05, paint, M.Paint, Z.Front, 0.012);
+  // Bonnet between flat-topped wings: crowned across, its front and back edges rolled
+  // round, with hinges at the back and catches on the front.
+  const { half, low, edge } = BONNET;
+  const outline: Vtx[] = [
+    [-half, low],
+    [half, low],
+    [half, edge, 0.015],
+  ];
+  for (let i = 1; i < 8; i++) {
+    const x = half - (2 * half * i) / 8;
+    outline.push([x, crownAt(x)]);
+  }
+  outline.push([-half, edge, 0.015]);
+  extrudeZ(b, new THREE.Shape(rounded(outline)), F + 0.005, SCUTTLE - 0.01, paint, M.Paint, Z.Front, 0.025);
   for (const side of [-1, 1]) {
-    b.block(side * 0.33, 0.632, -0.86, 0.12, 0.016, 0.06, steel, M.Metal, Z.Front);
-    b.block(side * 0.5, 0.6, F + 0.005, 0.05, 0.05, 0.02, black, M.Rubber, Z.Front);
+    b.block(side * 0.33, crownAt(0.33) + 0.004, -0.86, 0.12, 0.016, 0.06, steel, M.Metal, Z.Front);
+    b.block(side * 0.5, 0.59, F - 0.002, 0.05, 0.05, 0.02, black, M.Rubber, Z.Front);
     // Wing top, the outer wing around the wheel and the inner wing beside the engine.
     b.block(side * 0.727, 0.59, -1.41, 0.24, 0.04, 1.22, paint, M.Paint, Z.Front, 0.012);
     archPanel(b, side, F, SCUTTLE, -1.397, 0.585, Z.Front, 0.45);
-    // Headlamp panel: round lamp in a black bezel, side lamp and indicator beneath.
+    // Headlamp panel: round lamp in a black bezel, side lamp and indicator beneath, and
+    // the convoy lamp above it.
     b.block(side * 0.63, 0.33, F + 0.02, 0.42, 0.52, 0.04, paint, M.Paint, Z.Front, 0.01);
     b.slot = M.Rubber;
     b.tag = Z.Front;
@@ -191,6 +210,10 @@ function frontEnd(b: VehicleBuilder): void {
       .scale(1, 1, 0.3);
     b.geometry(new THREE.SphereGeometry(0.088, 24, 12), lens);
     b.pop();
+    // Army convoy lamp above the headlamp: a small hooded box with a narrow slit lens.
+    b.block(side * 0.625, 0.548, F - 0.018, 0.1, 0.05, 0.05, black, M.Rubber, Z.Front, 0.008);
+    b.block(side * 0.625, 0.578, F - 0.03, 0.11, 0.008, 0.07, black, M.Rubber, Z.Front, 0.003);
+    b.block(side * 0.625, 0.545, F - 0.044, 0.06, 0.012, 0.004, lens, M.Rubber, Z.Front);
     b.block(side * 0.625, 0.18, F - 0.005, 0.2, 0.075, 0.03, black, M.Rubber, Z.Front, 0.008);
     b.block(side * 0.675, 0.18, F - 0.024, 0.085, 0.052, 0.012, amber, M.Amber, Z.Front, 0.005);
     b.block(side * 0.575, 0.18, F - 0.024, 0.085, 0.052, 0.012, lens, M.Headlamp, Z.Front, 0.005);
@@ -317,25 +340,20 @@ function doors(b: VehicleBuilder): void {
       M.Glass,
       Z.Glass,
     );
-    // Door mirror on a two-piece arm from the front hinge.
-    b.rod(
-      { x: side * SIDE, y: 0.74, z: front + 0.05 },
-      { x: side * 1.0, y: 0.98, z: front + 0.02 },
-      0.011,
+    // Door mirror: an arm bolted to the upper hinge, cranked out and up, and a square black
+    // head on a ball joint.
+    b.block(side * (SIDE + 0.012), 0.74, front + 0.04, 0.025, 0.07, 0.08, black, M.Metal, Z.Sides, 0.008);
+    stalk(
+      b,
+      [
+        { x: side * (SIDE + 0.02), y: 0.74, z: front + 0.04 },
+        { x: side * (SIDE + 0.11), y: 0.76, z: front + 0.02 },
+        { x: side * (SIDE + 0.15), y: 0.96, z: front },
+      ],
+      0.012,
       black,
-      M.Rubber,
-      Z.Sides,
     );
-    b.rod(
-      { x: side * SIDE, y: 0.6, z: front + 0.05 },
-      { x: side * 0.97, y: 0.9, z: front + 0.03 },
-      0.008,
-      black,
-      M.Rubber,
-      Z.Sides,
-    );
-    b.block(side * 1.02, 1.04, front + 0.02, 0.05, 0.17, 0.13, black, M.Rubber, Z.Trim, 0.015);
-    b.block(side * 1.02, 1.04, front + 0.088, 0.04, 0.14, 0.006, steel, M.Metal, Z.Trim, 0.01);
+    mirrorHead(b, side, { x: side * (SIDE + 0.17), y: 1.04, z: front + 0.03 }, 0.17, 0.15, 0.06, black);
   }
 }
 
@@ -431,6 +449,60 @@ function rearBody(b: VehicleBuilder): void {
 }
 
 /** Pressed-steel jerry can in a holder, standing against the body side. */
+/**
+ * The Army's pioneer tools on the bonnet: a shovel on the left, a pick down the middle
+ * and an axe on the right, each held clear of the paint by two clamps.
+ */
+function bonnetTools(b: VehicleBuilder): void {
+  const wood = new THREE.Color('#8A6A44'),
+    head = new THREE.Color('#41463F');
+  const clamp = (x: number, z: number) =>
+    b.block(x, crownAt(x) + 0.02, z, 0.07, 0.04, 0.035, black, M.Metal, Z.Front, 0.006);
+  const yAt = (x: number) => crownAt(x) + 0.04;
+  // Shovel: blade at the front, socket, handle and D grip towards the screen.
+  let x = -0.32,
+    y = yAt(x);
+  b.block(x, y - 0.012, -1.79, 0.22, 0.012, 0.27, head, M.Metal, Z.Front, 0.004);
+  b.rod({ x, y: y - 0.006, z: -1.67 }, { x, y, z: -1.57 }, 0.02, head, M.Metal, Z.Front);
+  b.rod({ x, y, z: -1.57 }, { x, y, z: -1.03 }, 0.016, wood, M.Fabric, Z.Front);
+  b.ring(x, y, -0.985, 0.045, 0.01, black, M.Metal, 'y', Z.Front);
+  clamp(x, -1.79);
+  clamp(x, -1.2);
+  // Pick: helve down the middle with the head across its back end.
+  x = 0;
+  y = yAt(x);
+  b.rod({ x, y, z: -1.78 }, { x, y, z: -0.96 }, 0.019, wood, M.Fabric, Z.Front);
+  b.rod({ x: -0.25, y, z: -1.0 }, { x: 0.25, y, z: -1.0 }, 0.016, head, M.Metal, Z.Front);
+  b.block(x, y, -1.0, 0.07, 0.05, 0.06, head, M.Metal, Z.Front, 0.01);
+  clamp(x, -1.65);
+  clamp(x, -1.25);
+  // Axe: head at the front, its blade turned out, and the helve back towards the screen.
+  x = 0.32;
+  y = yAt(x);
+  b.rod({ x, y, z: -1.75 }, { x, y, z: -1.03 }, 0.017, wood, M.Fabric, Z.Front);
+  b.block(x + 0.03, y, -1.76, 0.16, 0.03, 0.06, head, M.Metal, Z.Front, 0.006);
+  b.block(x + 0.12, y, -1.76, 0.03, 0.012, 0.11, head, M.Metal, Z.Front, 0.004);
+  clamp(x, -1.62);
+  clamp(x, -1.15);
+}
+
+/** The spare wheel lying flat on a mounting plate on the bonnet, held by a centre clamp. */
+function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
+  const z = -1.42,
+    base = crownAt(0) + 0.04,
+    top = base + tuning.wheelWidth;
+  b.block(0, crownAt(0) + 0.02, z, 0.36, 0.04, 0.36, black, M.Metal, Z.Front, 0.01);
+  b.tag = Z.Front;
+  b.push()
+    .translate(0, base + tuning.wheelWidth / 2, z)
+    .rotate(0, 0, Math.PI / 2);
+  b.geometry(wheel.clone(), black);
+  b.pop();
+  b.rod({ x: 0, y: base, z }, { x: 0, y: top + 0.05, z }, 0.014, steel, M.Metal, Z.Front);
+  b.block(0, top + 0.012, z, 0.26, 0.02, 0.06, black, M.Metal, Z.Front, 0.006);
+  b.rod({ x: -0.07, y: top + 0.05, z }, { x: 0.07, y: top + 0.05, z }, 0.01, steel, M.Metal, Z.Front);
+}
+
 function jerryCan(b: VehicleBuilder, x: number, y: number, z: number): void {
   const can = new THREE.Color('#5B6640');
   const s = Math.sign(x);
@@ -512,7 +584,12 @@ function tilt(b: VehicleBuilder): void {
   b.block(0, SCREEN_TOP + 0.02, SCUTTLE + 0.1, 1.68, 0.06, 0.12, canvas, M.Fabric, Z.Roof, 0.025);
 }
 
-function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
+function chassisAndRecovery(
+  b: VehicleBuilder,
+  tuning: VehicleTuning,
+  wheel: THREE.BufferGeometry,
+  spareOnBonnet: boolean,
+): void {
   // Galvanised ladder frame, crossmembers, outriggers and the rear crossmember.
   for (const x of [-0.43, 0.43]) b.block(x, 0.03, 0.08, 0.1, 0.18, 4.04, galv, M.Paint, Z.Trim);
   for (const z of [-1.96, -0.62, 0.62]) b.block(0, 0.02, z, 0.86, 0.1, 0.1, galv, M.Paint, Z.Trim);
@@ -541,13 +618,16 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.085, 0.085, 0.5, 12), steel.clone().multiplyScalar(0.6));
   b.pop();
-  // The Perentie's spare wheel, slung flat in a cradle under the rear floor.
-  b.tag = Z.Rear;
-  b.push()
-    .translate(0, 0.03, 1.94)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  // The Perentie's spare wheel, slung flat in a cradle under the rear floor (the cradle
+  // stays when the spare rides on the bonnet instead).
+  if (!spareOnBonnet) {
+    b.tag = Z.Rear;
+    b.push()
+      .translate(0, 0.03, 1.94)
+      .rotate(0, 0, Math.PI / 2);
+    b.geometry(wheel.clone(), black);
+    b.pop();
+  }
   for (const x of [-0.2, 0.2]) b.block(x, -0.09, 1.94, 0.05, 0.03, 0.84, galv, M.Paint, Z.Trim);
   // Pintle hook and trailer socket for the No. 5 trailer, and the rear plate.
   b.block(0, -0.02, 2.43, 0.14, 0.12, 0.08, black, M.Metal, Z.Rear, 0.01);
@@ -559,50 +639,24 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.geometry(new THREE.CylinderGeometry(0.035, 0.035, 0.05, 12), black);
   b.pop();
 
-  // Channel front bumper with towing eyes, and the Army bull bar in front of it.
-  b.block(0, 0.06, -2.1, 1.72, 0.17, 0.1, bar, M.Metal, Z.Front, 0.01);
-  for (const side of [-1, 1]) b.ring(side * 0.55, -0.04, -2.13, 0.04, 0.012, bar, M.Metal, 'x', Z.Front);
-  const bz = -2.2;
-  b.block(0, 0.12, bz + 0.02, 1.62, 0.16, 0.05, bar, M.Metal, Z.Front, 0.01);
-  for (const x of [-0.82, -0.43, -0.12, 0.12, 0.43, 0.82])
-    b.rod({ x, y: 0.2, z: bz }, { x, y: 0.66, z: bz + 0.04 }, 0.026, bar, M.Metal, Z.Front);
-  b.rod(
-    { x: -0.84, y: 0.66, z: bz + 0.04 },
-    { x: 0.84, y: 0.66, z: bz + 0.04 },
-    0.028,
-    bar,
-    M.Metal,
-    Z.Front,
-  );
-  for (const side of [-1, 1]) {
-    // Lamp guard bars and the wing braces back to the body corners.
-    for (const y of [0.36, 0.5])
-      b.rod(
-        { x: side * 0.43, y, z: bz + 0.025 },
-        { x: side * 0.82, y, z: bz + 0.025 },
-        0.016,
-        bar,
-        M.Metal,
-        Z.Front,
-      );
-    b.rod(
-      { x: side * 0.84, y: 0.62, z: bz + 0.04 },
-      { x: side * 0.88, y: 0.3, z: FRONT_FACE + 0.05 },
-      0.024,
-      bar,
-      M.Metal,
-      Z.Front,
-    );
-    b.rod(
-      { x: side * 0.84, y: 0.22, z: bz + 0.02 },
-      { x: side * 0.88, y: 0.3, z: FRONT_FACE + 0.05 },
-      0.024,
-      bar,
-      M.Metal,
-      Z.Front,
-    );
-  }
-  armyPlate(b, -0.5, 0.12, bz - 0.01, -1);
+  // The Army brushguard: a heavy beam that serves as the bumper, with towing eyes under it,
+  // and three hoops over the grille and headlamps.
+  const face = -2.22;
+  hoopBar(b, {
+    face,
+    beamY: 0.06,
+    beamH: 0.17,
+    half: 0.88,
+    post: 0.4,
+    top: 0.67,
+    lamp: 0.6,
+    outer: 0.86,
+    tube: 0.03,
+    color: bar,
+  });
+  for (const side of [-1, 1])
+    b.ring(side * 0.55, -0.06, face + 0.06, 0.04, 0.012, bar, M.Metal, 'x', Z.Front);
+  armyPlate(b, -0.55, 0.06, face - 0.01, -1);
   // Winch drum tucked behind the bar, with a roller fairlead at the cable exit.
   b.rod({ x: -0.2, y: 0.14, z: -2.16 }, { x: 0.2, y: 0.14, z: -2.16 }, 0.065, black, M.Metal, Z.Front);
   const mount = tuning.winchMount;
@@ -622,14 +676,20 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.rod({ x: 0.8, y: WAIST + 0.1, z: 2.22 }, { x: 0.82, y: 2.45, z: 2.3 }, 0.005, black, M.Rubber, Z.Roof);
 }
 
-export function buildPerentieBody(tuning: VehicleTuning, wheel: THREE.BufferGeometry): THREE.BufferGeometry {
+export function buildPerentieBody(
+  tuning: VehicleTuning,
+  wheel: THREE.BufferGeometry,
+  spareOnBonnet = false,
+): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   frontEnd(b);
+  if (spareOnBonnet) bonnetSpare(b, tuning, wheel);
+  else bonnetTools(b);
   windscreen(b);
   doors(b);
   rearBody(b);
   tilt(b);
-  chassisAndRecovery(b, tuning, wheel);
+  chassisAndRecovery(b, tuning, wheel, spareOnBonnet);
   addPerentieInterior(b, tuning.engine.redlineRpm);
   return b.build();
 }

@@ -327,28 +327,28 @@ export function camel(b: VehicleBuilder, width: number, facing: 1 | -1 = 1): voi
   }
 }
 
-/** Door, bonnet and side decals, laid 2–3 mm proud of the panels they sit on. */
+/** Door, bonnet and side decals, laid 3 mm proud of the panels they sit on. */
 function decals(b: VehicleBuilder): void {
   b.slot = M.Paint;
   for (const side of [-1, 1] as const) {
     b.tag = Z.Sides;
-    // Local x runs the way the lettering reads from outside; the camel walks forwards.
+    // Local x runs the way the lettering reads from outside; the camel walks forwards. The
+    // door decal sits below the pressed crease along the side.
     b.push()
-      .translate(side * 0.8275, 0, -0.16)
+      .translate(side * 0.835, 0, 0)
       .rotate(0, (side * Math.PI) / 2, 0);
-    b.push().translate(0, 0.47, 0);
+    b.push().translate(0, 0.41, 0);
     camel(b, 0.32, side === 1 ? 1 : -1);
     b.pop();
-    b.push().translate(0, 0.405, 0);
+    b.push().translate(0, 0.345, 0);
     letter(b, 'CAMEL', 0.085);
     b.pop();
-    b.push().translate(0, 0.3, 0);
+    b.push().translate(0, 0.24, 0);
     letter(b, 'TROPHY', 0.052, 0.19, 0.42);
     b.pop();
-    // The event's name along the rear quarter, above the wheel arch; that panel sits
-    // 1.5 cm further in than the door.
+    // The event's name along the rear quarter, above the wheel arch.
     b.tag = Z.Rear;
-    b.push().translate(-side * 1.31, 0.72, -0.015);
+    b.push().translate(-side * 1.31, 0.72, 0);
     letter(b, 'AUSTRALIA', 0.06, 0.17, 0.3);
     b.pop();
     b.pop();
@@ -356,7 +356,7 @@ function decals(b: VehicleBuilder): void {
   // Bonnet: the camel and the name read from in front of the car.
   b.tag = Z.Front;
   b.push()
-    .translate(0, 0.9275, -1.22)
+    .translate(0, 0.868, -1.19)
     .rotate(Math.PI / 2, Math.PI, 0);
   b.push().translate(0, -0.04, 0);
   camel(b, 0.42, 1);
@@ -369,19 +369,19 @@ function decals(b: VehicleBuilder): void {
 
 /** Raised air intake: a riser from the left wing up the windscreen pillar to a ram head. */
 function snorkel(b: VehicleBuilder): void {
-  const base = new THREE.Vector3(-0.84, 0.79, -0.8),
-    bend = new THREE.Vector3(-0.875, 1.4, -0.66);
-  b.block(base.x, base.y + 0.02, base.z, 0.14, 0.04, 0.16, black, M.Rubber, Z.Front, 0.01);
+  const base = new THREE.Vector3(-0.76, 0.79, -0.78),
+    bend = new THREE.Vector3(-0.885, 1.4, -0.6);
+  b.block(base.x, base.y + 0.01, base.z, 0.12, 0.04, 0.16, black, M.Rubber, Z.Front, 0.01);
   b.rod(base, bend, 0.046, black, M.Rubber, Z.Front);
   b.rod(bend, { x: bend.x, y: 1.5, z: bend.z }, 0.046, black, M.Rubber, Z.Front);
   // Ram head facing forwards, with a slotted mouth.
-  b.block(-0.875, 1.53, -0.7, 0.11, 0.11, 0.15, black, M.Rubber, Z.Front, 0.03);
+  b.block(-0.885, 1.53, -0.64, 0.11, 0.11, 0.15, black, M.Rubber, Z.Front, 0.03);
   for (let i = 0; i < 4; i++)
-    b.block(-0.875, 1.497 + i * 0.022, -0.778, 0.085, 0.008, 0.006, steel, M.Metal, Z.Front);
-  // Brackets to the windscreen pillar, which leans back about 0.19 m per metre.
+    b.block(-0.885, 1.497 + i * 0.022, -0.718, 0.085, 0.008, 0.006, steel, M.Metal, Z.Front);
+  // Brackets to the front face of the windscreen pillar, which leans back 0.09 m per metre.
   for (const y of [1.1, 1.32]) {
     const on = base.clone().lerp(bend, (y - base.y) / (bend.y - base.y));
-    b.rod(on, { x: -0.76, y, z: -0.585 + (y - 1.205) * 0.19 }, 0.01, steel, M.Metal, Z.Front);
+    b.rod(on, { x: -0.8, y, z: -0.56 + (y - 1.19) * 0.09 }, 0.01, steel, M.Metal, Z.Front);
   }
 }
 
