@@ -3,6 +3,7 @@ import type { VehicleTuning } from '../data/vehicle';
 import { plankTuning } from '../data/tools';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { armyPlate } from './perentieBody';
+import { mirrorHead } from './mirrors';
 import { addUnimogInterior } from './unimogInterior';
 import { unimogColors } from './unimogPaint';
 
@@ -56,6 +57,11 @@ function chassis(b: VehicleBuilder): void {
   b.block(0, 0.42, -2.25, 0.66, 0.5, 1.0, black, M.Metal, Z.Trim, 0.03);
   b.block(0, 0.14, -2.05, 0.56, 0.18, 0.7, black, M.Metal, Z.Trim, 0.03);
   b.block(0, 0.08, -0.75, 0.5, 0.24, 0.86, black, M.Metal, Z.Trim, 0.04);
+  // Cab mounts up from the frame to the cab floor, and the tray's subframe on top of the rails.
+  for (const x of [-0.45, 0.45]) {
+    for (const z of [-1.5, -0.3]) b.block(x, 0.45, z, 0.14, 0.42, 0.16, black, M.Metal, Z.Trim, 0.01);
+    b.block(x, 0.41, 1.85, 0.1, 0.34, 3.1, black, M.Metal, Z.Trim);
+  }
   // Propshafts down to the axles' centre housings.
   const shaft = steel.clone().multiplyScalar(0.6);
   b.rod({ x: 0.04, y: 0.0, z: -1.15 }, { x: 0.08, y: -0.06, z: -1.8 }, 0.04, shaft);
@@ -63,6 +69,9 @@ function chassis(b: VehicleBuilder): void {
   // Fuel tank on the left, the battery box on the right, and the exhaust out to the right.
   b.block(-0.8, 0.3, -0.35, 0.34, 0.42, 0.9, black, M.Metal, Z.Sides, 0.04);
   b.block(0.8, 0.34, -0.55, 0.3, 0.32, 0.5, paint, M.Paint, Z.Sides, 0.02);
+  // Brackets out from the rails under the tank and the battery box.
+  for (const z of [-0.65, -0.05]) b.block(-0.6, 0.11, z, 0.32, 0.04, 0.06, black, M.Metal, Z.Trim);
+  for (const z of [-0.7, -0.4]) b.block(0.6, 0.2, z, 0.3, 0.04, 0.06, black, M.Metal, Z.Trim);
   b.rod({ x: 0.3, y: 0.1, z: -1.7 }, { x: 0.3, y: 0.02, z: 0.7 }, 0.04, steel);
   b.slot = M.Metal;
   b.tag = Z.Trim;
@@ -138,47 +147,63 @@ function frontEnd(b: VehicleBuilder, tuning: VehicleTuning): void {
   armyPlate(b, 0.33, 0.4, -3.19, -1, '41-108');
 
   for (const side of [-1, 1]) {
-    // Round headlamps low beside the grille on brackets, behind wire guards.
-    const lx = side * 0.86;
-    b.block(lx, 0.62, -2.88, 0.08, 0.1, 0.2, black, M.Metal, Z.Front);
+    // Round headlamps set in recesses at the ends of the front bumper, behind wire guards.
+    const lx = side * 0.86,
+      ly = 0.38,
+      lz = -3.18;
     b.slot = M.Rubber;
     b.tag = Z.Front;
     b.push()
-      .translate(lx, 0.62, -2.98)
+      .translate(lx, ly, lz - 0.003)
       .rotate(Math.PI / 2, 0, 0);
-    b.geometry(new THREE.CylinderGeometry(0.11, 0.1, 0.12, 24), black);
+    b.geometry(new THREE.CylinderGeometry(0.112, 0.112, 0.008, 28), black);
     b.pop();
-    b.ring(lx, 0.62, -3.045, 0.092, 0.012, steel, M.Metal, 'z', Z.Front);
+    b.ring(lx, ly, lz - 0.008, 0.094, 0.01, steel, M.Metal, 'z', Z.Front);
     b.slot = M.Headlamp;
-    b.push().translate(lx, 0.62, -3.045).scale(1, 1, 0.3);
-    b.geometry(new THREE.SphereGeometry(0.086, 24, 12), lens);
+    b.push()
+      .translate(lx, ly, lz - 0.006)
+      .scale(1, 1, 0.3);
+    b.geometry(new THREE.SphereGeometry(0.088, 24, 12), lens);
     b.pop();
     for (const dx of [-0.05, 0, 0.05])
       b.rod(
-        { x: lx + dx, y: 0.52, z: -3.08 },
-        { x: lx + dx, y: 0.72, z: -3.08 },
+        { x: lx + dx, y: ly - 0.11, z: lz - 0.05 },
+        { x: lx + dx, y: ly + 0.11, z: lz - 0.05 },
         0.005,
         black,
         M.Rubber,
         Z.Front,
       );
     b.rod(
-      { x: lx - 0.1, y: 0.62, z: -3.08 },
-      { x: lx + 0.1, y: 0.62, z: -3.08 },
+      { x: lx - 0.11, y: ly, z: lz - 0.05 },
+      { x: lx + 0.11, y: ly, z: lz - 0.05 },
       0.005,
       black,
       M.Rubber,
       Z.Front,
     );
-    // Indicator and side lamp on the mudguard's front edge.
-    b.block(side * 0.98, 0.78, -2.63, 0.12, 0.06, 0.04, black, M.Rubber, Z.Front, 0.008);
-    b.block(side * 1.02, 0.78, -2.655, 0.05, 0.04, 0.01, amber, M.Amber, Z.Front, 0.004);
-    b.block(side * 0.94, 0.78, -2.655, 0.05, 0.04, 0.01, lens, M.Headlamp, Z.Front, 0.004);
+    for (const dy of [-0.11, 0.11])
+      b.rod(
+        { x: lx, y: ly + dy, z: lz - 0.05 },
+        { x: lx, y: ly + dy, z: lz },
+        0.006,
+        black,
+        M.Rubber,
+        Z.Front,
+      );
+    // Indicator and side lamp standing on the mudguard's front edge.
+    b.block(side * 0.98, 0.75, -2.53, 0.12, 0.06, 0.04, black, M.Rubber, Z.Front, 0.008);
+    b.block(side * 1.02, 0.76, -2.555, 0.05, 0.04, 0.01, amber, M.Amber, Z.Front, 0.004);
+    b.block(side * 0.94, 0.76, -2.555, 0.05, 0.04, 0.01, lens, M.Headlamp, Z.Front, 0.004);
     mudguard(b, side, -AXLE_Z, 0.72, Z.Front, true);
   }
 }
 
-/** A flat-topped mudguard over a wheel, with sloping ends and a rubber flap behind it. */
+/**
+ * A flat-topped mudguard over a wheel: its ends slope down and away from the wheel, a lip
+ * turns down along the outer edge, two struts hold it to the body, and a rubber flap
+ * hangs behind it.
+ */
 function mudguard(
   b: VehicleBuilder,
   side: number,
@@ -189,17 +214,30 @@ function mudguard(
 ): void {
   const x = side * 0.98;
   b.block(x, top - 0.02, axle, 0.46, 0.04, 1.24, paint, M.Paint, zone, 0.01);
+  b.block(side * 1.205, top - 0.07, axle, 0.02, 0.1, 1.24, paint, M.Paint, zone, 0.006);
   for (const end of [-1, 1]) {
+    // Hinged on the top's end edge and leaning out, so the guard opens downwards round the tyre.
     b.push()
-      .translate(x, top - 0.16, axle + end * 0.7)
-      .rotate(end * 0.5, 0, 0);
+      .translate(x, top - 0.152, axle + end * 0.692)
+      .rotate(-end * 0.5, 0, 0);
     b.block(0, 0, 0, 0.46, 0.3, 0.035, paint, M.Paint, zone, 0.008);
+    b.block(side * 0.225, 0, -end * 0.05, 0.02, 0.3, 0.1, paint, M.Paint, zone, 0.006);
     b.pop();
+    // A front guard is held by struts to the bonnet side; a rear one is bolted under the tray.
+    if (front)
+      b.rod(
+        { x: side * 0.86, y: top - 0.04, z: axle + end * 0.35 },
+        { x: side * 0.63, y: top - 0.2, z: axle + end * 0.2 },
+        0.02,
+        black,
+        M.Metal,
+        Z.Trim,
+      );
   }
   // Inner edge so the guard reads as a deep channel from the side.
   b.block(side * 0.76, top - 0.08, axle, 0.02, 0.14, 1.2, paint.clone().multiplyScalar(0.8), M.Paint, Z.Trim);
-  const flapY = front ? 0.3 : 0.28;
-  b.block(x, flapY, axle + 0.84, 0.42, 0.44, 0.02, black, M.Rubber, Z.Trim);
+  const low = top - 0.28;
+  b.block(x, (low + 0.06) / 2, axle + 0.775, 0.42, low - 0.06, 0.02, black, M.Rubber, Z.Trim);
 }
 
 function cab(b: VehicleBuilder): void {
@@ -294,25 +332,17 @@ function cab(b: VehicleBuilder): void {
       for (const z of [-0.95, -0.55])
         b.rod({ x: side * 1.02, y, z }, { x: side * 0.98, y: floor, z }, 0.012, black, M.Metal, Z.Sides);
     }
-    // Door mirrors on long arms from the screen pillars.
-    b.rod(
-      { x: x, y: 1.55, z: front + 0.04 },
-      { x: x + side * 0.24, y: 1.72, z: front - 0.02 },
-      0.012,
-      black,
-      M.Rubber,
-      Z.Sides,
-    );
-    b.rod(
-      { x: x, y: 1.85, z: front + 0.04 },
-      { x: x + side * 0.24, y: 1.88, z: front - 0.02 },
-      0.012,
-      black,
-      M.Rubber,
-      Z.Sides,
-    );
-    b.block(x + side * 0.26, 1.8, front - 0.02, 0.05, 0.24, 0.16, black, M.Rubber, Z.Trim, 0.015);
-    b.block(x + side * 0.26, 1.8, front + 0.065, 0.04, 0.2, 0.006, steel, M.Metal, Z.Trim, 0.01);
+    // Mirrors on a tubular frame from the screen pillar: two arms out to an upright tube,
+    // a tall main mirror clamped to it and a small wide-angle one below.
+    const mx = x + side * 0.26,
+      mz = front - 0.02;
+    for (const y of [1.6, 1.9])
+      b.rod({ x, y: y - 0.04, z: front + 0.04 }, { x: mx, y, z: mz }, 0.014, black, M.Metal, Z.Sides);
+    b.rod({ x: mx, y: 1.44, z: mz }, { x: mx, y: 1.92, z: mz }, 0.014, black, M.Metal, Z.Sides);
+    for (const y of [1.5, 1.7, 1.86])
+      b.block(mx + side * 0.04, y, mz, 0.07, 0.03, 0.03, black, M.Metal, Z.Trim);
+    mirrorHead(b, side, { x: mx + side * 0.12, y: 1.78, z: mz }, 0.17, 0.3, 0.06, black, 0.2);
+    mirrorHead(b, side, { x: mx + side * 0.11, y: 1.5, z: mz }, 0.15, 0.12, 0.06, black, 0.35);
   }
   // HF whip aerial on the left rear corner of the cab.
   b.block(-0.98, roof + 0.07, back - 0.08, 0.08, 0.08, 0.08, black, M.Rubber, Z.Roof, 0.01);
@@ -335,10 +365,13 @@ function behindCab(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
   b.geometry(wheel.clone(), black);
   b.pop();
   b.block(0, 0.46, SPARE_Z, 1.0, 0.06, 0.3, black, M.Metal, Z.Trim);
+  for (const x of [-0.45, 0.45]) b.block(x, 0.34, SPARE_Z, 0.12, 0.2, 0.2, black, M.Metal, Z.Trim);
   for (const x of [-0.5, 0.5])
     b.rod({ x, y: 0.46, z: SPARE_Z }, { x: x * 0.4, y: 1.5, z: SPARE_Z }, 0.02, black);
   const { x, y, z } = tuning.intake;
-  b.rod({ x, y: 0.9, z }, { x, y: y + 0.05, z }, 0.075, paint, M.Paint, Z.Rear);
+  // The intake pipe comes up from under the cab's back corner.
+  b.rod({ x, y: 0.72, z }, { x, y: y + 0.05, z }, 0.075, paint, M.Paint, Z.Rear);
+  b.rod({ x, y: 0.72, z }, { x, y: 0.72, z: CAB.back - 0.1 }, 0.075, paint, M.Paint, Z.Rear);
   b.slot = M.Paint;
   b.tag = Z.Roof;
   b.push().translate(x, y + 0.1, z);
@@ -360,6 +393,7 @@ function tray(b: VehicleBuilder): void {
   for (const x of [-0.45, 0.45]) b.block(x, floor - 0.09, mid, 0.12, 0.12, len, black, M.Metal, Z.Trim);
   for (let z = front + 0.2; z < back; z += 0.5)
     b.block(0, floor - 0.06, z, 2 * S - 0.1, 0.06, 0.06, black, M.Metal, Z.Trim);
+  b.block(0, floor - 0.06, back - 0.06, 2 * S - 0.1, 0.06, 0.06, black, M.Metal, Z.Trim);
   const h = top - floor;
   for (const side of [-1, 1]) {
     b.block(side * (S - 0.02), (floor + top) / 2, mid, 0.04, h, len, paint, M.Paint, Z.Sides, 0.008);
@@ -425,9 +459,10 @@ function rear(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.block(side * 0.95, 0.45, 3.46, 0.22, 0.14, 0.05, black, M.Rubber, Z.Rear, 0.01);
     b.block(side * 0.95, 0.48, 3.49, 0.18, 0.05, 0.012, red, M.Red, Z.Rear, 0.004);
     b.block(side * 0.95, 0.42, 3.49, 0.18, 0.04, 0.012, amber, M.Amber, Z.Rear, 0.004);
-    b.block(side * 0.95, 0.52, 3.43, 0.04, 0.12, 0.04, black, M.Metal, Z.Rear);
+    // Bracket plate from the lamp up to the tray's rear bearer.
+    b.block(side * 0.95, 0.6, 3.42, 0.16, 0.2, 0.03, black, M.Metal, Z.Rear);
   }
-  armyPlate(b, -0.55, 0.45, 3.48, 1, '41-108');
+  armyPlate(b, -0.55, 0.2, 3.497, 1, '41-108');
   // Jerry cans in holders under the back of the tray.
   for (const side of [-1, 1]) jerryCan(b, side * 0.95, 0.3, 2.9);
 }
@@ -439,6 +474,20 @@ function jerryCan(b: VehicleBuilder, x: number, y: number, z: number): void {
   b.block(x, y + 0.26, z - 0.08, 0.03, 0.05, 0.12, can, M.Paint, Z.Rear, 0.01);
   b.block(x, y - 0.25, z, 0.22, 0.03, 0.4, black, M.Metal, Z.Rear);
   b.block(x + Math.sign(x) * 0.095, y + 0.05, z, 0.012, 0.04, 0.4, black, M.Rubber, Z.Rear);
+  // The holder's back plate up to the tray bearer above, and an arm in to the frame rail.
+  const s = Math.sign(x);
+  b.block(x - s * 0.1, (y - 0.26 + 0.62) / 2, z, 0.03, 0.62 - (y - 0.26), 0.4, black, M.Metal, Z.Rear);
+  b.block(
+    (x - s * 0.1 + s * 0.5) / 2,
+    0.14,
+    z,
+    Math.abs(x - s * 0.1) - 0.5,
+    0.06,
+    0.08,
+    black,
+    M.Metal,
+    Z.Trim,
+  );
 }
 
 export function buildUnimogBody(tuning: VehicleTuning, wheel: THREE.BufferGeometry): THREE.BufferGeometry {

@@ -39,6 +39,8 @@ export interface RockInstance {
   anchor: boolean;
   seed: number;
   solid: boolean;
+  /** A termite mound: an earth spire, drawn as one but colliding like a rock. */
+  mound?: boolean;
 }
 
 export interface LogInstance {
@@ -139,6 +141,8 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
     if (features.trackDistance[i] < clearance) return true;
     if (features.creekDistance[i] < S.creekClearance) return true;
     if (terrain.water[i] > -1e5) return true;
+    // Nothing grows in a river's dry sand bed.
+    if (terrain.surface[i] === SurfaceId.Sand) return true;
     return false;
   };
   const edgeDist = (x: number, z: number) => Math.min(halfX - Math.abs(x), halfZ - Math.abs(z));
@@ -371,6 +375,46 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
         Math.min(terrain.heightAt(x + ex, z + ez), terrain.heightAt(x - ex, z - ez), terrain.heightAt(x, z)) +
         radius * 0.7;
       logs.push({ x, y, z, yaw, length, radius });
+    }
+  }
+
+  // --- Termite mounds: earth spires on the open, gentler grassland ---
+  const mcell = 20;
+  const moundChance = ((veg.termiteMounds ?? 0) * mcell * mcell) / 10000;
+  if (moundChance > 0) {
+    const treeGrid = new SpatialGrid(8, trees);
+    for (let gz = -halfZ; gz < halfZ; gz += mcell) {
+      for (let gx = -halfX; gx < halfX; gx += mcell) {
+        const x = gx + rand() * mcell;
+        const z = gz + rand() * mcell;
+        const r1 = rand();
+        const r2 = rand();
+        const r3 = rand();
+        if (r1 > moundChance || terrain.slopeDegAt(x, z) > 14) continue;
+        if (terrain.surface[nearIdx(x, z)] !== SurfaceId.Grass) continue;
+        if (inClearing(x, z, -4) || blocked(x, z, 3) || nearProp(x, z, 8)) continue;
+        if (treeGrid.near(x, z, 1.6).length > 0) continue;
+        // Most come to the knee or the waist; a few stand taller than a person.
+        const height = 0.5 + r2 * r2 * 2.2 + (r3 < 0.08 ? 1.6 : 0);
+        const radius = 0.32 + height * 0.15;
+        let ground = terrain.heightAt(x, z);
+        for (let k = 0; k < 6; k++) {
+          const a = (k / 6) * Math.PI * 2;
+          ground = Math.min(ground, terrain.heightAt(x + Math.cos(a) * radius, z + Math.sin(a) * radius));
+        }
+        rocks.push({
+          x,
+          y: ground + height / 2 - 0.12,
+          z,
+          radius,
+          squash: height / (2 * radius),
+          yaw: rand() * Math.PI * 2,
+          anchor: false,
+          seed: rand(),
+          solid: Math.abs(x) < wallX + 2 && Math.abs(z) < wallZ + 2,
+          mound: true,
+        });
+      }
     }
   }
 

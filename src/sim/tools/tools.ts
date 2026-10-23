@@ -78,9 +78,15 @@ export class VehicleTools {
     return this.jack.state === 'righting';
   }
 
-  /** Hold brake off while the winch is doing the work. */
+  /**
+   * Hold brake off while the winch is doing the work. Pulling a bogged vehicle out, the
+   * brakes hold this one where it stands instead.
+   */
   updateFreeRoll(v: Vehicle, input: VehicleInput): void {
-    v.freeRoll = this.winch.attached && (input.winchIn || this.winch.tension > 0);
+    v.freeRoll =
+      this.winch.attached &&
+      !this.winch.anchor?.id.startsWith('stuck:') &&
+      (input.winchIn || this.winch.tension > 0);
   }
 }
 

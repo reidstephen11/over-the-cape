@@ -1,5 +1,7 @@
 import { camelTuning } from './camel';
 import { hiluxTuning } from './hilux';
+import { LC79_CAB_LIFT, lc79Tuning } from './lc79';
+import { patrolTuning } from './patrol';
 import { perentieTuning } from './perentie';
 import { TROOPY_SUB_TANK, troopyTuning } from './troopy';
 import { unimogTuning } from './unimog';
@@ -86,6 +88,53 @@ const shortieCabin: CabinLayout = {
     spokes: 3,
   },
 };
+
+/** The 70 Series cab, as in the Troop Carrier. */
+const seventyCabin: CabinLayout = {
+  // High up behind an upright screen, looking down the short, square bonnet.
+  eye: { x: 0.4, y: 1.32, z: 0.02 },
+  pitch: -0.17,
+  dialY: 1.04,
+  dialZ: -0.6,
+  dials: {
+    speed: { x: 0.47, radius: 0.058, max: 160, major: 20, minor: 10 },
+    rpm: { x: 0.31, radius: 0.058, max: 5000, major: 1000, minor: 500 },
+    oil: { x: 0.6, radius: 0.034, max: 1, major: 0.5, minor: 0.25 },
+  },
+  lamps: { xs: [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55], y: 0.955, z: -0.603 },
+  // The handbrake lever on the floor beside the driver's seat.
+  handbrake: {
+    kind: 'lever',
+    base: { x: 0.12, y: 0.42, z: -0.12 },
+    tip: { x: 0.12, y: 0.6, z: -0.3 },
+    travel: 0.55,
+  },
+  steeringWheel: {
+    centre: { x: 0.4, y: 1.0, z: -0.34 },
+    columnBase: { x: 0.4, y: 0.78, z: -0.66 },
+    radius: 0.2,
+    // Power steering, about 1¾ turns to full lock.
+    ratio: 21,
+    spokes: 4,
+  },
+};
+
+/** A cab layout raised by `dy` (a body lift): every point moves up with the body. */
+function raised(c: CabinLayout, dy: number): CabinLayout {
+  const up = (p: Point): Point => ({ ...p, y: p.y + dy });
+  return {
+    ...c,
+    eye: up(c.eye),
+    dialY: c.dialY + dy,
+    lamps: { ...c.lamps, y: c.lamps.y + dy },
+    handbrake: { ...c.handbrake, base: up(c.handbrake.base), tip: up(c.handbrake.tip) },
+    steeringWheel: {
+      ...c.steeringWheel,
+      centre: up(c.steeringWheel.centre),
+      columnBase: up(c.steeringWheel.columnBase),
+    },
+  };
+}
 
 export const vehicles: Record<VehicleId, VehicleDef> = {
   shortie: {
@@ -202,34 +251,46 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
       '1990s LandCruiser 75 Series Troop Carrier, 4.2 L diesel six, five-speed. A sub-tank and a second spare.',
     // The full sub-tank, and a second spare wheel on the roof rack.
     extraLoad: { fuel: TROOPY_SUB_TANK, spares: 1 },
+    cabin: seventyCabin,
+  },
+  patrol: {
+    tuning: patrolTuning,
+    blurb: 'GQ Patrol wagon, 4.2 L TD42 diesel, five-speed, coil springs, bull bar, snorkel and roof rack.',
     cabin: {
-      // High up behind an upright screen, looking down the short, square bonnet.
-      eye: { x: 0.4, y: 1.32, z: 0.02 },
-      pitch: -0.17,
-      dialY: 1.04,
-      dialZ: -0.6,
+      // A bucket seat behind a wide, flat bonnet; the screen leans back over the dash.
+      eye: { x: 0.42, y: 1.12, z: 0.02 },
+      pitch: -0.16,
+      dialY: 0.84,
+      dialZ: -0.47,
       dials: {
-        speed: { x: 0.47, radius: 0.058, max: 160, major: 20, minor: 10 },
-        rpm: { x: 0.31, radius: 0.058, max: 5000, major: 1000, minor: 500 },
-        oil: { x: 0.6, radius: 0.034, max: 1, major: 0.5, minor: 0.25 },
+        speed: { x: 0.5, radius: 0.058, max: 180, major: 20, minor: 10 },
+        rpm: { x: 0.34, radius: 0.058, max: 5000, major: 1000, minor: 500 },
+        oil: { x: 0.21, radius: 0.032, max: 1, major: 0.5, minor: 0.25 },
       },
-      lamps: { xs: [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55], y: 0.955, z: -0.603 },
-      // The handbrake lever on the floor beside the driver's seat.
+      lamps: { xs: [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55], y: 0.765, z: -0.462 },
+      // A T-handle under the dash, left of the column, as on Nissan's 4WDs of the time.
       handbrake: {
-        kind: 'lever',
-        base: { x: 0.12, y: 0.42, z: -0.12 },
-        tip: { x: 0.12, y: 0.6, z: -0.3 },
-        travel: 0.55,
+        kind: 'pull',
+        base: { x: 0.2, y: 0.6, z: -0.53 },
+        tip: { x: 0.2, y: 0.59, z: -0.39 },
+        travel: 0.1,
       },
       steeringWheel: {
-        centre: { x: 0.4, y: 1.0, z: -0.34 },
-        columnBase: { x: 0.4, y: 0.78, z: -0.66 },
-        radius: 0.2,
-        // Power steering, about 1¾ turns to full lock.
-        ratio: 21,
+        centre: { x: 0.42, y: 0.86, z: -0.24 },
+        columnBase: { x: 0.42, y: 0.6, z: -0.55 },
+        radius: 0.19,
+        // Power steering, about 1½ turns to full lock.
+        ratio: 17,
         spokes: 4,
       },
     },
+  },
+  lc79: {
+    tuning: lc79Tuning,
+    blurb:
+      'LandCruiser 79 single cab, tuned 4.5 L twin-turbo V8 diesel, 4 inch lift on coils, 37 inch tyres, tray and canopy.',
+    // The same 70 Series cab, lifted with the body.
+    cabin: raised(seventyCabin, LC79_CAB_LIFT),
   },
 };
 
@@ -246,6 +307,8 @@ export const vehicleOrder: readonly VehicleId[] = [
   'hilux',
   'unimog',
   'troopy',
+  'patrol',
+  'lc79',
 ];
 
 export function isVehicleId(x: unknown): x is VehicleId {

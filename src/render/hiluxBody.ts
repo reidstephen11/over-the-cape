@@ -4,6 +4,8 @@ import { plankTuning } from '../data/tools';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { addHiluxInterior } from './hiluxInterior';
 import { hiluxColors } from './hiluxPaint';
+import { hoopBar } from './roobar';
+import { roundHead, stalk } from './mirrors';
 
 /**
  * Early Toyota Hilux 4WD single cab (1979–83) with the factory styleside tub, in deep
@@ -185,7 +187,7 @@ function frontEnd(b: VehicleBuilder): void {
     archPanel(b, side, F, DOOR.front - 0.01, -1.4, 0.6, Z.Front, 0.47);
     // Round headlamp in a square chrome bezel at each end of the grille.
     const hx = side * 0.66;
-    b.block(hx, 0.42, F + 0.005, 0.24, 0.22, 0.03, chrome, M.Metal, Z.Front, 0.012);
+    b.block(hx, 0.42, F - 0.002, 0.24, 0.22, 0.03, chrome, M.Metal, Z.Front, 0.012);
     b.slot = M.Rubber;
     b.tag = Z.Front;
     b.push()
@@ -200,30 +202,22 @@ function frontEnd(b: VehicleBuilder): void {
       .scale(1, 1, 0.3);
     b.geometry(new THREE.SphereGeometry(0.086, 24, 12), lens);
     b.pop();
-    // Park lamp and indicator in the valance under the headlamp.
-    b.block(hx, 0.22, F - 0.0, 0.2, 0.06, 0.03, black, M.Rubber, Z.Front, 0.008);
-    b.block(hx + side * 0.045, 0.22, F - 0.018, 0.09, 0.044, 0.012, amber, M.Amber, Z.Front, 0.005);
-    b.block(hx - side * 0.05, 0.22, F - 0.018, 0.08, 0.044, 0.012, lens, M.Headlamp, Z.Front, 0.005);
     // Side indicator on the wing behind the bumper.
     b.block(side * (SIDE + 0.004), 0.32, -1.98, 0.012, 0.035, 0.08, amber, M.Amber, Z.Front, 0.006);
   }
-  // Full-width grille: a chrome surround, black mesh and five bright bars, plain badge.
+  // Full-width black grille taking in the headlamps: a chrome frame, five bright bars
+  // between the headlamps, and a small plain badge (Toyota's oval came only in 1989).
   b.block(0, 0.42, F + 0.02, 1.66, 0.3, 0.04, paint, M.Paint, Z.Front, 0.012);
-  b.block(0, 0.42, F + 0.004, 0.86, 0.22, 0.03, black, M.Rubber, Z.Front, 0.006);
-  for (const y of [0.31, 0.53]) b.block(0, y, F - 0.005, 1.1, 0.016, 0.02, chrome, M.Metal, Z.Front, 0.006);
+  b.block(0, 0.42, F + 0.004, 1.6, 0.26, 0.03, black, M.Rubber, Z.Front, 0.006);
+  for (const y of [0.29, 0.55]) b.block(0, y, F - 0.008, 1.62, 0.016, 0.02, chrome, M.Metal, Z.Front, 0.006);
+  for (const side of [-1, 1])
+    b.block(side * 0.802, 0.42, F - 0.008, 0.016, 0.276, 0.02, chrome, M.Metal, Z.Front, 0.006);
   for (let i = 0; i < 5; i++)
-    b.block(0, 0.346 + i * 0.037, F - 0.01, 0.84, 0.01, 0.012, chrome, M.Metal, Z.Front, 0.003);
-  b.slot = M.Metal;
-  b.tag = Z.Front;
-  b.push()
-    .translate(0, 0.42, F - 0.02)
-    .rotate(Math.PI / 2, 0, 0)
-    .scale(1.8, 1, 1);
-  b.geometry(new THREE.CylinderGeometry(0.03, 0.03, 0.012, 20), chrome);
-  b.pop();
-  // Valance under the grille, the chrome bumper and its brackets.
+    b.block(0, 0.346 + i * 0.037, F - 0.01, 1.06, 0.01, 0.012, chrome, M.Metal, Z.Front, 0.003);
+  b.block(0, 0.42, F - 0.02, 0.13, 0.055, 0.014, chrome, M.Metal, Z.Front, 0.01);
+  b.block(0, 0.42, F - 0.026, 0.11, 0.035, 0.006, black, M.Rubber, Z.Front, 0.004);
+  // Valance under the grille and the bumper brackets (the bull bar takes the bumper's place).
   b.block(0, 0.21, F + 0.03, 1.66, 0.16, 0.04, paint, M.Paint, Z.Front, 0.01);
-  b.block(0, 0.1, F - 0.035, 1.7, 0.11, 0.07, chrome, M.Metal, Z.Front, 0.025);
   for (const x of [-0.42, 0.42]) b.block(x, 0.04, F + 0.05, 0.06, 0.06, 0.14, black, M.Metal, Z.Trim);
   // Sump, steering box and the front crossmember below.
   b.block(0, -0.05, -1.72, 0.4, 0.15, 0.46, black, M.Metal, Z.Trim, 0.02);
@@ -396,28 +390,21 @@ function cab(b: VehicleBuilder): void {
       M.Metal,
       Z.Sides,
     );
-    // Round chrome door mirror on a stalk from the front of the door.
-    b.rod(
-      { x: side * SIDE, y: 0.62, z: DOOR.front + 0.14 },
-      { x: side * 0.97, y: 0.83, z: DOOR.front + 0.12 },
+    // Round chrome door mirror: a foot on the door's front corner, a cranked stalk, and the
+    // head on a ball joint.
+    const mz = DOOR.front + 0.13;
+    b.block(side * (SIDE + 0.008), WAIST - 0.03, mz + 0.01, 0.02, 0.05, 0.1, black, M.Rubber, Z.Sides, 0.01);
+    stalk(
+      b,
+      [
+        { x: side * (SIDE + 0.015), y: WAIST - 0.03, z: mz + 0.01 },
+        { x: side * (SIDE + 0.09), y: WAIST + 0.06, z: mz },
+        { x: side * (SIDE + 0.13), y: WAIST + 0.2, z: mz - 0.03 },
+      ],
       0.009,
       chrome,
-      M.Metal,
-      Z.Sides,
     );
-    b.slot = M.Metal;
-    b.tag = Z.Trim;
-    b.push()
-      .translate(side * 0.99, 0.87, DOOR.front + 0.12)
-      .rotate(Math.PI / 2, 0, 0);
-    b.geometry(new THREE.CylinderGeometry(0.068, 0.068, 0.03, 24), chrome);
-    b.pop();
-    b.slot = M.Glass;
-    b.push()
-      .translate(side * 0.99, 0.87, DOOR.front + 0.137)
-      .rotate(Math.PI / 2, 0, 0);
-    b.geometry(new THREE.CylinderGeometry(0.06, 0.06, 0.004, 24), glass.clone().multiplyScalar(1.15));
-    b.pop();
+    roundHead(b, side, { x: side * (SIDE + 0.15), y: WAIST + 0.24, z: mz - 0.005 }, 0.07, chrome);
     // The long feature crease down the side, above the wheel openings.
     b.block(
       side * (SIDE + 0.004),
@@ -653,40 +640,27 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.pop();
   for (const x of [-0.2, 0.2]) b.block(x, -0.04, 2.02, 0.05, 0.03, 0.8, black, M.Metal, Z.Trim);
 
-  // Black tubular bull bar ahead of the bumper, with lamp guards and braces to the chassis.
-  const bz = -2.28;
-  b.block(0, 0.08, bz, 1.6, 0.1, 0.05, bar, M.Metal, Z.Front, 0.012);
-  for (const x of [-0.82, -0.42, -0.12, 0.12, 0.42, 0.82])
-    b.rod({ x, y: 0.12, z: bz }, { x, y: 0.5, z: bz + 0.02 }, 0.024, bar, M.Metal, Z.Front);
-  b.rod({ x: -0.84, y: 0.5, z: bz + 0.02 }, { x: 0.84, y: 0.5, z: bz + 0.02 }, 0.026, bar, M.Metal, Z.Front);
+  // Steel bar in place of the bumper: a heavy beam with three hoops over the grille and
+  // headlamps. It covers the factory bumper lamps, so the amber park and indicator lamps
+  // sit in the beam's ends, as bar makers fitted them.
+  const face = -2.31;
+  hoopBar(b, {
+    face,
+    beamY: 0.1,
+    beamH: 0.18,
+    half: 0.86,
+    post: 0.42,
+    top: 0.64,
+    lamp: 0.58,
+    outer: 0.84,
+    tube: 0.03,
+    color: bar,
+  });
   for (const side of [-1, 1]) {
-    for (const y of [0.32, 0.43])
-      b.rod(
-        { x: side * 0.42, y, z: bz + 0.012 },
-        { x: side * 0.82, y, z: bz + 0.012 },
-        0.015,
-        bar,
-        M.Metal,
-        Z.Front,
-      );
-    b.rod(
-      { x: side * 0.82, y: 0.5, z: bz + 0.02 },
-      { x: side * 0.84, y: 0.3, z: FRONT_FACE + 0.06 },
-      0.022,
-      bar,
-      M.Metal,
-      Z.Front,
-    );
-    b.rod(
-      { x: side * 0.42, y: 0.1, z: bz },
-      { x: side * 0.42, y: 0.0, z: -1.98 },
-      0.03,
-      bar,
-      M.Metal,
-      Z.Trim,
-    );
+    b.block(side * 0.68, 0.1, face - 0.004, 0.15, 0.06, 0.012, black, M.Rubber, Z.Front, 0.006);
+    b.block(side * 0.68, 0.1, face - 0.012, 0.13, 0.044, 0.01, amber, M.Amber, Z.Front, 0.005);
   }
-  plate(b, -0.5, 0.08, bz - 0.03, -1);
+  plate(b, -0.38, 0.1, face - 0.012, -1);
   // Winch drum in its cradle behind the bar, its motor, and a roller fairlead at the cable exit.
   b.rod({ x: -0.18, y: 0.15, z: -2.23 }, { x: 0.18, y: 0.15, z: -2.23 }, 0.065, black, M.Metal, Z.Front);
   for (let i = 0; i < 12; i++)

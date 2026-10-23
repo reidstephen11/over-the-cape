@@ -2,12 +2,17 @@ import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import { pal } from './colors';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
+import { HW, NOSE, TAIL } from './vehicleBody';
 
 const trim = new THREE.Color('#343D37'),
-  steel = new THREE.Color('#959B94');
+  steel = new THREE.Color('#959B94'),
+  bar = new THREE.Color('#2E3430');
 const black = new THREE.Color('#232926'),
   canvas = new THREE.Color('#77735A');
 const red = new THREE.Color('#B84A32');
+
+type V = { x: number; y: number; z: number };
+const v = (x: number, y: number, z: number): V => ({ x, y, z });
 
 function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: number): void {
   b.push()
@@ -15,7 +20,6 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: numbe
     .rotate(0, facing < 0 ? Math.PI : 0, 0);
   b.block(0, 0, 0, 0.36, 0.12, 0.015, black, M.Rubber, Z.Trim, 0.009);
   b.block(0, 0, 0.01, 0.33, 0.095, 0.008, pal('vehicleRoof'), M.Paint, Z.Trim, 0.005);
-  // Small raised HC-40 characters, drawn as strokes rather than a downloaded decal.
   const line = (ax: number, ay: number, bx: number, by: number) =>
     b.rod({ x: ax, y: ay, z: 0.017 }, { x: bx, y: by, z: 0.017 }, 0.003, black, M.Rubber);
   for (const x0 of [-0.12, -0.08]) line(x0, -0.028, x0, 0.028);
@@ -30,61 +34,106 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: numbe
   for (const x0 of [0.11, 0.145]) line(x0, -0.028, x0, 0.028);
   line(0.11, -0.028, 0.145, -0.028);
   line(0.11, 0.028, 0.145, 0.028);
-  for (const bx of [-0.145, 0.145]) b.block(bx, 0.033, 0.02, 0.008, 0.008, 0.004, steel, M.Metal, Z.Trim);
   b.pop();
 }
 
-function recovery(b: VehicleBuilder, tuning: VehicleTuning): void {
-  b.block(0, 0.22, -1.98, 1.84, 0.16, 0.19, trim, M.Metal, Z.Front, 0.018);
-  b.block(0, 0.21, 1.94, 1.79, 0.15, 0.17, trim, M.Metal, Z.Rear, 0.014);
-  for (const side of [-1, 1])
-    for (const z of [-2.075, 2.04]) {
-      b.block(side * 0.6, 0.23, z, 0.09, 0.13, 0.04, steel, M.Metal, Z.Trim);
-      b.ring(side * 0.6, 0.18, z + Math.sign(z) * 0.035, 0.047, 0.012, red, M.Paint);
-      b.rod(
-        { x: side * 0.6 - 0.055, y: 0.21, z: z + Math.sign(z) * 0.035 },
-        { x: side * 0.6 + 0.055, y: 0.21, z: z + Math.sign(z) * 0.035 },
-        0.012,
-        steel,
-      );
-    }
-  // Winch drum with cable coils, motor, clutch and a roller fairlead at the actual cable exit.
-  b.block(0, 0.33, -1.98, 0.61, 0.08, 0.25, black, M.Rubber, Z.Front);
-  b.rod({ x: -0.18, y: 0.4, z: -1.98 }, { x: 0.18, y: 0.4, z: -1.98 }, 0.085, trim);
-  for (let i = 0; i < 15; i++)
-    b.ring(-0.16 + i * 0.023, 0.4, -1.98, 0.084, 0.006, steel, M.Metal, 'x', Z.Front);
-  for (const x of [-0.2, 0.2]) b.block(x, 0.4, -1.98, 0.035, 0.21, 0.21, black, M.Rubber, Z.Front, 0.015);
-  b.rod({ x: -0.4, y: 0.4, z: -1.98 }, { x: -0.22, y: 0.4, z: -1.98 }, 0.065, trim);
-  b.block(0, 0.52, -1.98, 0.22, 0.07, 0.16, black, M.Rubber, Z.Front, 0.014);
-  const mount = tuning.winchMount;
-  for (const y of [mount.y - 0.045, mount.y + 0.045])
-    b.rod(
-      { x: -0.16, y, z: mount.z - 0.015 },
-      { x: 0.16, y, z: mount.z - 0.015 },
-      0.018,
-      steel,
-      M.Metal,
-      Z.Front,
-    );
-  for (const x of [-0.17, 0.17])
-    b.rod(
-      { x, y: mount.y - 0.04, z: mount.z - 0.018 },
-      { x, y: mount.y + 0.04, z: mount.z - 0.018 },
-      0.018,
-      steel,
-      M.Metal,
-      Z.Front,
-    );
-  b.ring(0, mount.y - 0.025, mount.z - 0.04, 0.026, 0.008, red, M.Paint, 'z', Z.Front);
-  // A low tubular brush bar protects the grille without covering the headlamps.
-  for (const side of [-1, 1]) {
-    b.rod({ x: side * 0.38, y: 0.29, z: -2.09 }, { x: side * 0.38, y: 0.81, z: -2.09 }, 0.027, trim);
-    b.rod({ x: side * 0.38, y: 0.78, z: -2.09 }, { x: side * 0.82, y: 0.73, z: -2.055 }, 0.024, trim);
-    b.rod({ x: side * 0.82, y: 0.73, z: -2.055 }, { x: side * 0.85, y: 0.3, z: -2.055 }, 0.024, trim);
+/** A bent steel tube through the points, with a ball at each bend so the joints close. */
+function tubePath(b: VehicleBuilder, pts: V[], r: number, color: THREE.Color): void {
+  for (let i = 0; i + 1 < pts.length; i++) b.rod(pts[i], pts[i + 1], r, color, M.Metal, Z.Front);
+  b.slot = M.Metal;
+  b.tag = Z.Front;
+  for (const p of pts.slice(1, -1)) {
+    b.push().translate(p.x, p.y, p.z);
+    b.geometry(new THREE.SphereGeometry(r, 12, 8), color);
+    b.pop();
   }
-  b.rod({ x: -0.38, y: 0.81, z: -2.09 }, { x: 0.38, y: 0.81, z: -2.09 }, 0.027, trim);
-  plate(b, 0, 0.22, -2.09, -1);
-  plate(b, -0.46, 0.235, 2.045, 1);
+}
+
+/** Red bow shackle on a recovery point. */
+function shackle(b: VehicleBuilder, x: number, y: number, z: number, facing: number): void {
+  b.block(x, y + 0.03, z, 0.07, 0.1, 0.04, steel, M.Metal, Z.Trim);
+  b.ring(x, y - 0.03, z + facing * 0.03, 0.045, 0.011, red, M.Paint, 'x', Z.Trim);
+  b.rod(v(x - 0.05, y, z + facing * 0.03), v(x + 0.05, y, z + facing * 0.03), 0.011, steel);
+}
+
+/**
+ * A period steel bull bar fitted to the new nose: a deep pan carrying the winch, a centre
+ * hoop over the grille and side loops that wrap above the headlamps to the guards.
+ */
+function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
+  const face = tuning.winchMount.z; // the pan's front face carries the fairlead
+  const back = NOSE - 0.03;
+  const zc = (face + back) / 2,
+    depth = back - face;
+  // Pan, with its ends swept back to the guards.
+  b.block(0, 0.28, zc, 1.42, 0.25, depth, bar, M.Metal, Z.Front, 0.02);
+  for (const side of [-1, 1]) {
+    b.push()
+      .translate(side * 0.79, 0.28, zc + 0.02)
+      .rotate(0, -side * 0.35, 0);
+    b.block(0, 0, 0, 0.2, 0.25, depth, bar, M.Metal, Z.Front, 0.02);
+    b.pop();
+  }
+  // Mounting brackets back to the chassis rails.
+  for (const x of [-0.47, 0.47]) b.block(x, 0.2, back + 0.1, 0.08, 0.12, 0.24, bar, M.Metal, Z.Trim);
+  // Centre hoop over the grille, with a mid rail.
+  const zt = NOSE - 0.1;
+  for (const side of [-1, 1])
+    tubePath(b, [v(side * 0.36, 0.4, zc), v(side * 0.36, 0.8, zt), v(side * 0.3, 0.86, zt)], 0.03, bar);
+  b.rod(v(-0.3, 0.86, zt), v(0.3, 0.86, zt), 0.03, bar, M.Metal, Z.Front);
+  b.rod(v(-0.36, 0.6, (zc + zt) / 2), v(0.36, 0.6, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
+  // Side loops: up beside the lamps, over them and back in to the centre hoop.
+  for (const side of [-1, 1])
+    tubePath(
+      b,
+      [
+        v(side * 0.86, 0.4, zc + 0.05),
+        v(side * 0.86, 0.68, zt + 0.02),
+        v(side * 0.78, 0.75, zt),
+        v(side * 0.36, 0.78, zt),
+      ],
+      0.026,
+      bar,
+    );
+  // Gussets where the hoops meet the pan.
+  for (const x of [-0.86, -0.36, 0.36, 0.86]) b.block(x, 0.42, zc, 0.06, 0.04, 0.12, bar, M.Metal, Z.Front);
+  // Winch on a cradle behind the pan; only its top and the roller fairlead show.
+  b.rod(v(-0.2, 0.44, back - 0.05), v(0.2, 0.44, back - 0.05), 0.075, trim);
+  for (let i = 0; i < 13; i++)
+    b.ring(-0.15 + i * 0.025, 0.44, back - 0.05, 0.074, 0.005, steel, M.Metal, 'x', Z.Front);
+  for (const x of [-0.22, 0.22])
+    b.block(x, 0.44, back - 0.05, 0.03, 0.17, 0.17, black, M.Rubber, Z.Front, 0.012);
+  b.rod(v(-0.38, 0.44, back - 0.05), v(-0.24, 0.44, back - 0.05), 0.06, trim);
+  const m = tuning.winchMount;
+  b.block(m.x, m.y, face - 0.005, 0.38, 0.14, 0.02, steel, M.Metal, Z.Front, 0.006);
+  b.block(m.x, m.y, face - 0.012, 0.22, 0.06, 0.015, black, M.Rubber, Z.Front);
+  for (const y of [m.y - 0.035, m.y + 0.035])
+    b.rod(v(m.x - 0.11, y, face - 0.03), v(m.x + 0.11, y, face - 0.03), 0.016, steel, M.Metal, Z.Front);
+  for (const x of [m.x - 0.12, m.x + 0.12])
+    b.rod(v(x, m.y - 0.05, face - 0.03), v(x, m.y + 0.05, face - 0.03), 0.016, steel, M.Metal, Z.Front);
+  b.ring(m.x, m.y - 0.02, face - 0.05, 0.026, 0.008, red, M.Paint, 'z', Z.Front);
+  for (const side of [-1, 1]) shackle(b, side * 0.66, 0.2, face - 0.02, -1);
+  plate(b, -0.42, 0.3, face - 0.01, -1);
+}
+
+function rearBumper(b: VehicleBuilder, tuning: VehicleTuning): void {
+  const z = TAIL + 0.09;
+  b.block(0, 0.21, z, 1.7, 0.15, 0.15, bar, M.Metal, Z.Rear, 0.014);
+  for (const x of [-0.47, 0.47]) b.block(x, 0.17, TAIL + 0.02, 0.08, 0.1, 0.14, bar, M.Metal, Z.Trim);
+  for (const side of [-1, 1]) shackle(b, side * 0.62, 0.16, z + 0.075, 1);
+  // Towbar tongue and ball at the tow point.
+  const t = tuning.towPoint;
+  b.block(t.x, t.y + 0.02, t.z + 0.07, 0.1, 0.06, 0.18, bar, M.Metal, Z.Rear);
+  b.slot = M.Metal;
+  b.tag = Z.Rear;
+  b.push().translate(t.x, t.y + 0.1, t.z + 0.13);
+  b.geometry(new THREE.SphereGeometry(0.03, 12, 8), steel);
+  b.pop();
+  b.rod(v(t.x, t.y + 0.05, t.z + 0.13), v(t.x, t.y + 0.08, t.z + 0.13), 0.012, steel);
+  plate(b, 0.3, 0.215, z + 0.08, 1);
+}
+
+function chassis(b: VehicleBuilder): void {
   // Chassis, crossmembers, transmission pan and exhaust visible from side and underneath.
   for (const x of [-0.47, 0.47]) b.block(x, 0.02, 0.06, 0.1, 0.16, 3.18, trim, M.Metal, Z.Trim);
   for (const z of [-1.42, -0.45, 0.44, 1.5]) b.block(0, 0.02, z, 1.04, 0.09, 0.09, trim, M.Metal, Z.Trim);
@@ -127,51 +176,65 @@ function roofGear(b: VehicleBuilder): void {
   b.rod({ x: 0.35, y: 1.977, z: 0.12 }, { x: 0.45, y: 1.977, z: 0.12 }, 0.008, steel, M.Metal, Z.Roof);
 }
 
-export function addVehicleEquipment(
-  b: VehicleBuilder,
-  tuning: VehicleTuning,
-  wheel: THREE.BufferGeometry,
-  /** Which front wing carries the aerial: -1 left, +1 right. */
-  aerialSide: -1 | 1 = -1,
-): void {
-  recovery(b, tuning);
-  roofGear(b);
-  // Rear swing-away spare carrier and matching full-size wheel, with its rim facing back.
-  b.rod({ x: 0.7, y: 0.53, z: 1.92 }, { x: 0.2, y: 0.53, z: 2.02 }, 0.025, trim);
-  b.rod({ x: 0.7, y: 0.53, z: 1.92 }, { x: 0.7, y: 0.97, z: 1.92 }, 0.025, trim);
-  b.rod({ x: 0.7, y: 0.97, z: 1.92 }, { x: 0.2, y: 0.84, z: 2.02 }, 0.025, trim);
+/** Spare wheel on the right-hand rear door and a jerry can on the left, clear of the lamps. */
+function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
+  const sx = 0.27,
+    sy = 0.86,
+    sz = TAIL + 0.16;
+  // Wheel carrier: a plate on the door with three studs.
+  b.block(sx, sy, TAIL + 0.03, 0.26, 0.26, 0.04, bar, M.Metal, Z.Rear, 0.01);
+  b.rod(v(sx, sy, TAIL + 0.03), v(sx, sy, sz - 0.08), 0.045, bar, M.Metal, Z.Rear);
   b.tag = Z.Rear;
   b.push()
-    .translate(0.2, 0.86, 2.015)
+    .translate(sx, sy, sz)
     .rotate(0, -Math.PI / 2, 0);
   b.geometry(wheel.clone(), black);
   b.pop();
-  // Pressed-steel jerry can with X ribs, handle, cap and a retaining strap.
+  // Jerry can in a cradle on the left door, below the window.
   const olive = new THREE.Color('#667258');
-  b.block(-0.43, 0.73, 1.96, 0.25, 0.43, 0.19, olive, M.Paint, Z.Rear, 0.02);
-  b.block(-0.43, 0.52, 1.96, 0.29, 0.045, 0.23, trim, M.Metal, Z.Rear);
+  const cx = -0.27,
+    cy = 0.5,
+    cz = TAIL + 0.13;
+  b.block(cx, cy - 0.235, cz - 0.02, 0.3, 0.035, 0.24, bar, M.Metal, Z.Rear);
+  for (const x of [cx - 0.14, cx + 0.14])
+    b.block(x, cy - 0.1, TAIL + 0.03, 0.03, 0.3, 0.04, bar, M.Metal, Z.Rear);
+  b.block(cx, cy, cz, 0.25, 0.43, 0.19, olive, M.Paint, Z.Rear, 0.02);
   for (const side of [-1, 1])
     b.rod(
-      { x: -0.43 - 0.09, y: 0.56 + (side > 0 ? 0 : 0.3), z: 2.06 },
-      { x: -0.43 + 0.09, y: 0.56 + (side > 0 ? 0.3 : 0), z: 2.06 },
+      v(cx - 0.09, cy - 0.17 + (side > 0 ? 0 : 0.3), cz + 0.1),
+      v(cx + 0.09, cy - 0.17 + (side > 0 ? 0.3 : 0), cz + 0.1),
       0.009,
       olive,
       M.Paint,
       Z.Rear,
     );
-  b.block(-0.43, 0.71, 2.072, 0.035, 0.37, 0.017, black, M.Rubber, Z.Rear);
-  for (const x of [-0.49, -0.4])
-    b.rod({ x, y: 0.94, z: 1.96 }, { x, y: 1.01, z: 1.96 }, 0.012, olive, M.Paint, Z.Rear);
-  b.rod({ x: -0.49, y: 1.01, z: 1.96 }, { x: -0.4, y: 1.01, z: 1.96 }, 0.012, olive, M.Paint, Z.Rear);
+  b.block(cx, cy - 0.02, cz + 0.105, 0.035, 0.37, 0.017, black, M.Rubber, Z.Rear);
+  for (const x of [cx - 0.06, cx + 0.03])
+    b.rod(v(x, cy + 0.21, cz), v(x, cy + 0.28, cz), 0.012, olive, M.Paint, Z.Rear);
+  b.rod(v(cx - 0.06, cy + 0.28, cz), v(cx + 0.03, cy + 0.28, cz), 0.012, olive, M.Paint, Z.Rear);
   b.slot = M.Metal;
   b.tag = Z.Rear;
-  b.push().translate(-0.35, 0.95, 1.96);
+  b.push().translate(cx + 0.08, cy + 0.22, cz);
   b.geometry(new THREE.CylinderGeometry(0.025, 0.025, 0.018, 12), steel);
   b.pop();
-  // Flexible whip aerial on the front wing (not an intake/snorkel).
-  const ax = aerialSide * 0.78;
-  b.block(ax, 0.82, -0.77, 0.06, 0.06, 0.06, black, M.Rubber, Z.Front);
-  b.rod({ x: ax, y: 0.85, z: -0.77 }, { x: aerialSide * 0.8, y: 1.65, z: -0.73 }, 0.005, trim);
+}
+
+export function addVehicleEquipment(
+  b: VehicleBuilder,
+  tuning: VehicleTuning,
+  wheel: THREE.BufferGeometry,
+  /** Which front guard carries the aerial: -1 left, +1 right. */
+  aerialSide: -1 | 1 = -1,
+): void {
+  bullBar(b, tuning);
+  rearBumper(b, tuning);
+  chassis(b);
+  roofGear(b);
+  rearDoorGear(b, wheel);
+  // Flexible whip aerial on the guard.
+  const ax = aerialSide * (HW - 0.06);
+  b.block(ax, 0.8, -0.77, 0.06, 0.04, 0.06, black, M.Rubber, Z.Front);
+  b.rod({ x: ax, y: 0.82, z: -0.77 }, { x: ax + aerialSide * 0.02, y: 1.62, z: -0.73 }, 0.005, trim);
 }
 
 export function buildRackPlank(index: number): THREE.BufferGeometry {

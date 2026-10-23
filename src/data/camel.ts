@@ -12,5 +12,5 @@ export const camelTuning: VehicleTuning = {
   name: 'Camel Trophy 4WD',
   // Snorkel head beside the left windscreen pillar, about 2 m off the ground.
   intakeHeight: 2.0,
-  intake: { x: -0.875, y: 1.5, z: -0.7 },
+  intake: { x: -0.885, y: 1.5, z: -0.64 },
 };

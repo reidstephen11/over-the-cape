@@ -58,10 +58,14 @@ test('the Hilux is chosen on the welcome screen, drives off, and has its own cab
   );
   await expect(page.locator('.welcome-card')).toContainText('styleside');
   await shot(page, 'vehicle', 'welcome-hilux');
-  // Four vehicles still fit across a phone held upright, without scrolling sideways.
+  // Four vehicles still fit across a phone held upright, without scrolling sideways (the
+  // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux'])
-    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux']) {
+    const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
+    await button.scrollIntoViewIfNeeded();
+    await expect(button).toBeInViewport({ ratio: 0.9 });
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });
 
@@ -90,10 +94,14 @@ test('the Unimog is chosen on the welcome screen, drives off, and has its own ca
   );
   await expect(page.locator('.welcome-card')).toContainText('portal axles');
   await shot(page, 'vehicle', 'welcome-unimog');
-  // Five vehicles still fit across a phone held upright, without scrolling sideways.
+  // Five vehicles still fit across a phone held upright, without scrolling sideways (the
+  // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog'])
-    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog']) {
+    const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
+    await button.scrollIntoViewIfNeeded();
+    await expect(button).toBeInViewport({ ratio: 0.9 });
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });
 
@@ -124,10 +132,14 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   );
   await expect(page.locator('.welcome-card')).toContainText('sub-tank');
   await shot(page, 'vehicle', 'welcome-troopy');
-  // Six vehicles still fit across a phone held upright, without scrolling sideways.
+  // All eight vehicles still fit across a phone held upright, without scrolling sideways (the
+  // welcome screen scrolls down to them).
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy'])
-    await expect(page.locator(`[data-group="vehicle"][data-value="${id}"]`)).toBeInViewport();
+  for (const id of ['shortie', 'camel', 'perentie', 'hilux', 'unimog', 'troopy', 'patrol', 'lc79']) {
+    const button = page.locator(`[data-group="vehicle"][data-value="${id}"]`);
+    await button.scrollIntoViewIfNeeded();
+    await expect(button).toBeInViewport({ ratio: 0.9 });
+  }
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.setViewportSize({ width: 1280, height: 720 });
 
@@ -150,5 +162,57 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
   await waitSim(page, 1);
   await shot(page, 'vehicle', 'troopy-cockpit');
+  expect(errors).toEqual([]);
+});
+
+test('the GQ Patrol is chosen on the welcome screen and drives off', async ({ page }) => {
+  test.setTimeout(900_000);
+  const errors = collectErrors(page);
+  await lowGraphics(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: /GQ Patrol/ }).click();
+  await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
+    'data-value',
+    'patrol',
+  );
+  await expect(page.locator('.welcome-card')).toContainText('TD42');
+  await shot(page, 'vehicle', 'welcome-patrol');
+  await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
+  await driveFromBriefing(page);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('patrol');
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await waitSim(page, 3);
+  expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
+  await page.evaluate(() => window.__game!.setInput(null));
+  await shot(page, 'vehicle', 'patrol-in-game');
+  await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
+  await waitSim(page, 1);
+  await shot(page, 'vehicle', 'patrol-cockpit');
+  expect(errors).toEqual([]);
+});
+
+test('the LC79 V8 is chosen on the welcome screen and drives off', async ({ page }) => {
+  test.setTimeout(900_000);
+  const errors = collectErrors(page);
+  await lowGraphics(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: /LC79 V8/ }).click();
+  await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
+    'data-value',
+    'lc79',
+  );
+  await expect(page.locator('.welcome-card')).toContainText('twin-turbo V8');
+  await shot(page, 'vehicle', 'welcome-lc79');
+  await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
+  await driveFromBriefing(page);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('lc79');
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await waitSim(page, 3);
+  expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
+  await page.evaluate(() => window.__game!.setInput(null));
+  await shot(page, 'vehicle', 'lc79-in-game');
+  await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
+  await waitSim(page, 1);
+  await shot(page, 'vehicle', 'lc79-cockpit');
   expect(errors).toEqual([]);
 });

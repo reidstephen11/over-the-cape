@@ -21,6 +21,8 @@ export const GroundTint = {
   BlackSoil: 12,
   /** The dark wet inside of a pothole or washout deep enough to pinch a tyre. */
   Pothole: 13,
+  /** Dry river sand. */
+  Sand: 14,
 } as const;
 export type GroundTint = (typeof GroundTint)[keyof typeof GroundTint];
 

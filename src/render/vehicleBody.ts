@@ -1,17 +1,36 @@
 import * as THREE from 'three';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { VehicleTuning } from '../data/vehicle';
-import { pal } from './colors';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { addVehicleInterior } from './vehicleInterior';
+import { pal } from './colors';
 import { addVehicleEquipment } from './vehicleEquipment';
+import { extrudeZ } from './bodyShapes';
+import { roundHead, stalk } from './mirrors';
+
+// Axes as in the game: x across, y up from the body origin (the axles sit 0.12 m lower on
+// the lifted springs), z backwards, so the nose is at -z.
+export const HW = 0.832; // half the 1.665 m body width
+const AXLE = 1.15; // half the 2.3 m wheelbase
+const ARCH = 0.52;
+const ARCH_Y = 0.04;
+const SILL = 0.08;
+const BELT = 0.8;
+const GUARD_TOP = 0.78;
+export const NOSE = -1.8;
+export const TAIL = 1.86;
+const ROOF = 1.64;
+const LAMP_Y = 0.5;
 
 const steel = new THREE.Color('#93988F'),
-  rubber = new THREE.Color('#252B28');
-const red = new THREE.Color('#AE3029'),
-  amber = new THREE.Color('#EDA53E');
-const glass = new THREE.Color('#9CB9B5');
-// Lamp lenses keep their own colour whatever the paint.
-const lens = pal('vehicleRoof');
+  chrome = new THREE.Color('#C9CCC6'),
+  rubber = new THREE.Color('#252B28'),
+  dark = new THREE.Color('#1C201E'),
+  well = new THREE.Color('#2A2D2A'),
+  glass = new THREE.Color('#9CB9B5'),
+  red = new THREE.Color('#AE3029'),
+  amber = new THREE.Color('#EDA53E'),
+  lamp = new THREE.Color('#E3E4CD');
 
 /** Paint for the body panels and for the hardtop, window frames and grille surround. */
 export interface Livery {
@@ -21,262 +40,461 @@ export interface Livery {
 
 export const standardLivery: Livery = { body: pal('vehicleBody'), roof: pal('vehicleRoof') };
 
-/** The panels around the wheel opening, rather than a solid box through the tyres. */
-function quarter(
+type P =
+  | [number, number]
+  | { arc: [number, number, number, number, number] }
+  | { quad: [number, number, number, number] };
+
+/**
+ * A side profile (z, y), extruded across the car from x0 to x1. Edges are rounded by `bevel`
+ * without growing the outline; curved panels get smooth shading and sharp folds stay sharp.
+ * Faces of the wheel arches (`arches`: z, y, r) are painted as the dark inner wheel well.
+ */
+function sideProfile(
   b: VehicleBuilder,
-  side: number,
-  start: number,
-  end: number,
-  axle: number,
-  top: number,
+  pts: P[],
+  x0: number,
+  x1: number,
+  color: THREE.Color,
   zone: number,
-  livery: Livery,
+  bevel: number,
+  arches: [number, number, number][] = [],
 ): void {
-  const outer = side * 0.81,
-    inner = side * 0.74;
-  const steps = 28,
-    radius = 0.54;
-  const body = livery.body;
-  const low = (z: number) =>
-    Math.max(0.12, Math.sqrt(Math.max(0, radius * radius - (z - axle) ** 2)) + 0.025);
-  b.slot = M.Paint;
-  b.tag = zone;
-  for (let i = 0; i < steps; i++) {
-    const za = start + ((end - start) * i) / steps,
-      zb = start + ((end - start) * (i + 1)) / steps;
-    const ya = low(za),
-      yb = low(zb);
-    const a = { x: outer, y: ya, z: za },
-      c = { x: outer, y: top, z: zb };
-    const bb = { x: outer, y: yb, z: zb },
-      d = { x: outer, y: top, z: za };
-    if (side < 0) b.quad(a, bb, c, d, body);
-    else b.quad(d, c, bb, a, body);
-    const ai = { ...a, x: inner },
-      bi = { ...bb, x: inner },
-      ci = { ...c, x: inner },
-      di = { ...d, x: inner };
-    if (side > 0) b.quad(ai, bi, ci, di, body);
-    else b.quad(di, ci, bi, ai, body);
-    if (side > 0) b.quad(a, ai, bi, bb, body);
-    else b.quad(bb, bi, ai, a, body);
-    // The top edge is a visible folded lip, including when looking into a wheel well.
-    if (side > 0) b.quad(d, c, ci, di, body);
-    else b.quad(di, ci, c, d, body);
+  const s = new THREE.Shape();
+  let first = true;
+  for (const p of pts) {
+    if (Array.isArray(p)) {
+      if (first) s.moveTo(-p[0], p[1]);
+      else s.lineTo(-p[0], p[1]);
+    } else if ('arc' in p) {
+      const [z, y, r, a0, a1] = p.arc;
+      s.absarc(-z, y, r, a0, a1, false);
+    } else {
+      const [cz, cy, z, y] = p.quad;
+      s.quadraticCurveTo(-cz, cy, -z, y);
+    }
+    first = false;
   }
-  b.slot = M.Rubber;
+  const size = bevel * 0.8;
+  const raw = new THREE.ExtrudeGeometry(s, {
+    depth: Math.max(0.001, x1 - x0 - 2 * bevel),
+    bevelEnabled: bevel > 0,
+    bevelThickness: bevel,
+    bevelSize: size,
+    bevelOffset: -size,
+    bevelSegments: 4,
+    curveSegments: 28,
+  });
+  const g = toCreasedNormals(raw, Math.PI / 5);
+  // Paint the arch walls dark: faces near an arch circle that face its centre.
+  const pos = g.getAttribute('position'),
+    nrm = g.getAttribute('normal');
+  const colors = new Float32Array(pos.count * 3),
+    slots = new Float32Array(pos.count);
+  const c = new THREE.Vector3(),
+    n = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i += 3) {
+    c.set(0, 0, 0);
+    n.set(0, 0, 0);
+    for (let k = 0; k < 3; k++) {
+      c.x += pos.getX(i + k) / 3;
+      c.y += pos.getY(i + k) / 3;
+      n.x += nrm.getX(i + k);
+      n.y += nrm.getY(i + k);
+      n.z += nrm.getZ(i + k);
+    }
+    n.normalize();
+    let inWell = false;
+    for (const [az, ay, ar] of arches) {
+      const dx = -az - c.x,
+        dy = ay - c.y,
+        d = Math.hypot(dx, dy);
+      if (d < ar + 0.01 && d > ar - 0.08 && (n.x * dx + n.y * dy) / d > 0.55) inWell = true;
+    }
+    const col = inWell ? well : color;
+    for (let k = 0; k < 3; k++) {
+      colors.set([col.r, col.g, col.b], (i + k) * 3);
+      slots[i + k] = inWell ? M.Rubber : M.Paint;
+    }
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  g.setAttribute('materialSlot', new THREE.BufferAttribute(slots, 1));
+  g.rotateY(Math.PI / 2);
   b.tag = zone;
-  b.push()
-    .translate(side * 0.827, 0.025, axle)
-    .rotate(0, Math.PI / 2, 0);
-  b.geometry(new THREE.TorusGeometry(radius + 0.012, 0.022, 5, 32, Math.PI), rubber);
-  b.pop();
-  // A painted lip stands proud of the recessed black wheel opening.
-  b.slot = M.Paint;
-  b.push()
-    .translate(side * 0.847, 0.025, axle)
-    .rotate(0, Math.PI / 2, 0);
-  b.geometry(new THREE.TorusGeometry(radius + 0.045, 0.022, 5, 32, Math.PI), body);
+  b.push().translate(x0 + bevel, 0, 0);
+  b.geometry(g, color);
   b.pop();
 }
 
-function windscreen(b: VehicleBuilder, livery: Livery): void {
-  const cream = livery.roof;
-  b.push().translate(0, 1.205, -0.585).rotate(0.19, 0, 0);
-  for (const y of [-0.29, 0.29]) b.block(0, y, 0, 1.52, 0.065, 0.062, cream, M.Paint, Z.Front, 0.012);
-  for (const x of [-0.73, 0.73]) b.block(x, 0, 0, 0.065, 0.58, 0.062, cream, M.Paint, Z.Front, 0.012);
-  for (const x of [-0.36, 0.36]) {
-    b.block(x, 0, -0.005, 0.675, 0.505, 0.012, glass, M.Glass, Z.Glass, 0.012);
-    b.block(x, 0.255, -0.018, 0.69, 0.013, 0.012, rubber, M.Rubber, Z.Front);
-    b.block(x, -0.255, -0.018, 0.69, 0.013, 0.012, rubber, M.Rubber, Z.Front);
-  }
-  b.block(0, 0, -0.013, 0.025, 0.53, 0.025, cream, M.Paint, Z.Front);
-  for (const x of [-0.38, 0.38]) {
-    b.rod({ x, y: -0.26, z: -0.05 }, { x: x + 0.1, y: -0.01, z: -0.05 }, 0.008, rubber, M.Rubber, Z.Front);
-    b.rod(
-      { x: x - 0.05, y: -0.01, z: -0.052 },
-      { x: x + 0.27, y: -0.01, z: -0.052 },
-      0.009,
-      rubber,
-      M.Rubber,
-      Z.Front,
-    );
-  }
+/** A plan-view outline (x, -z), extruded upwards from y0 to y1 with rounded edges. */
+function planProfile(
+  b: VehicleBuilder,
+  shape: THREE.Shape,
+  y0: number,
+  y1: number,
+  color: THREE.Color,
+  zone: number,
+  bevel: number,
+): void {
+  const size = bevel * 0.8;
+  const raw = new THREE.ExtrudeGeometry(shape, {
+    depth: Math.max(0.001, y1 - y0 - 2 * bevel),
+    bevelEnabled: true,
+    bevelThickness: bevel,
+    bevelSize: size,
+    bevelOffset: -size,
+    bevelSegments: 4,
+    curveSegments: 20,
+  });
+  const g = toCreasedNormals(raw, Math.PI / 5);
+  g.rotateX(-Math.PI / 2);
+  b.slot = M.Paint;
+  b.tag = zone;
+  b.push().translate(0, y0 + bevel, 0);
+  b.geometry(g, color);
   b.pop();
+}
+
+/** Plan outline: the body's width, square-ish at the front and rounded at the back. */
+function plan(front: number, rear: number, half: number, rFront: number, rRear: number): THREE.Shape {
+  const s = new THREE.Shape();
+  s.moveTo(-half + rFront, -front);
+  s.lineTo(half - rFront, -front);
+  s.quadraticCurveTo(half, -front, half, -front - rFront);
+  s.lineTo(half, -rear + rRear);
+  s.absarc(half - rRear, -rear + rRear, rRear, 0, -Math.PI / 2, true);
+  s.lineTo(-half + rRear, -rear);
+  s.absarc(-half + rRear, -rear + rRear, rRear, -Math.PI / 2, -Math.PI, true);
+  s.lineTo(-half, -front - rFront);
+  s.quadraticCurveTo(-half, -front, -half + rFront, -front);
+  return s;
+}
+
+/** Part of an upright cylinder round a rear corner, from y0 to y1. */
+function corner(
+  b: VehicleBuilder,
+  side: number,
+  r: number,
+  y0: number,
+  y1: number,
+  color: THREE.Color,
+  slot: number,
+  zone: number,
+): void {
+  const g = new THREE.CylinderGeometry(r, r, y1 - y0, 18, 1, true, side > 0 ? 0 : -Math.PI / 2, Math.PI / 2);
+  b.slot = slot as typeof b.slot;
+  b.tag = zone;
+  b.push().translate(side * (HW - r), (y0 + y1) / 2, TAIL - r);
+  b.geometry(g, color);
+  b.pop();
+}
+
+/** Round lamp: chrome bezel, dark seat and a domed lens, facing forwards from (x, y, z). */
+function headlamp(b: VehicleBuilder, x: number, y: number, z: number): void {
+  b.ring(x, y, z - 0.012, 0.094, 0.016, chrome, M.Metal, 'z', Z.Front);
+  b.slot = M.Rubber;
+  b.tag = Z.Front;
+  b.push()
+    .translate(x, y, z - 0.006)
+    .rotate(Math.PI / 2, 0, 0);
+  b.geometry(new THREE.CylinderGeometry(0.096, 0.096, 0.012, 28), rubber);
+  b.pop();
+  b.slot = M.Headlamp;
+  b.push()
+    .translate(x, y, z - 0.014)
+    .scale(1, 1, 0.3);
+  b.geometry(new THREE.SphereGeometry(0.084, 24, 12), lamp);
+  b.pop();
+  for (let i = -3; i <= 3; i++) {
+    const w = Math.sqrt(0.078 ** 2 - (i * 0.02) ** 2) * 2;
+    b.block(x, y + i * 0.02, z - 0.04, w, 0.003, 0.003, lamp, M.Headlamp, Z.Front);
+  }
 }
 
 function front(b: VehicleBuilder, livery: Livery): void {
   const body = livery.body,
     cream = livery.roof;
-  // Narrow, rounded bonnet above wide separate wings: the characteristic 40 Series nose.
-  b.block(0, 0.85, -1.235, 1.25, 0.15, 1.2, body, M.Paint, Z.Front, 0.045);
-  b.block(0, 0.65, -1.23, 1.16, 0.3, 1.18, body, M.Paint, Z.Front);
-  b.block(0, 0.76, -0.6, 1.52, 0.23, 0.23, body, M.Paint, Z.Front, 0.025);
+  const a = Math.asin((0.16 - ARCH_Y) / ARCH);
   for (const side of [-1, 1]) {
-    b.block(side * 0.735, 0.76, -1.225, 0.28, 0.075, 1.23, body, M.Paint, Z.Front, 0.018);
-    b.block(side * 0.627, 0.84, -1.18, 0.012, 0.015, 1.08, rubber, M.Rubber, Z.Front);
-    // Bonnet hinge, catch, ventilation slots and wing-top indicator.
-    b.block(side * 0.46, 0.939, -0.73, 0.09, 0.018, 0.13, steel, M.Metal, Z.Front);
-    b.block(side * 0.635, 0.7, -1.48, 0.028, 0.105, 0.04, rubber, M.Rubber, Z.Front);
-    b.rod(
-      { x: side * 0.65, y: 0.69, z: -1.48 },
-      { x: side * 0.65, y: 0.78, z: -1.48 },
-      0.008,
-      steel,
-      M.Metal,
+    // Front guards: flat tops rolling over into an upright nose that carries the lamp,
+    // tucking under into the wheel arch.
+    const x0 = side > 0 ? 0.52 : -0.845,
+      x1 = side > 0 ? 0.845 : -0.52;
+    sideProfile(
+      b,
+      [
+        [-0.6, 0.1],
+        [-0.6, GUARD_TOP],
+        [NOSE + 0.15, GUARD_TOP],
+        { quad: [NOSE, GUARD_TOP, NOSE, GUARD_TOP - 0.15] },
+        [NOSE, 0.27],
+        { quad: [NOSE, 0.16, NOSE + 0.11, 0.16] },
+        [-AXLE - ARCH * Math.cos(a), 0.16],
+        { arc: [-AXLE, ARCH_Y, ARCH, a, Math.PI - a] },
+        [-0.6, 0.16],
+      ],
+      x0,
+      x1,
+      body,
       Z.Front,
+      0.05,
+      [[-AXLE, ARCH_Y, ARCH]],
     );
-    for (let i = 0; i < 7; i++)
-      b.block(side * 0.59, 0.93, -0.92 - i * 0.065, 0.055, 0.008, 0.022, rubber, M.Rubber, Z.Front);
-    b.block(side * 0.75, 0.81, -1.61, 0.14, 0.07, 0.13, rubber, M.Rubber, Z.Front, 0.012);
-    b.block(side * 0.75, 0.847, -1.62, 0.11, 0.022, 0.1, amber, M.Amber, Z.Front, 0.01);
+    // Inner wheelhouse beside the engine, so the arch doesn't show daylight.
+    b.block(side * 0.5, 0.36, -AXLE, 0.02, 0.62, 1.04, well, M.Rubber, Z.Trim);
+    const lx = side * 0.683;
+    headlamp(b, lx, LAMP_Y, NOSE);
+    // Square chrome bezel round the lamp, as fitted from 1979.
+    const bezel = new THREE.Shape();
+    const h = 0.118,
+      r = 0.03;
+    bezel.moveTo(-h + r, -h);
+    bezel.lineTo(h - r, -h);
+    bezel.quadraticCurveTo(h, -h, h, -h + r);
+    bezel.lineTo(h, h - r);
+    bezel.quadraticCurveTo(h, h, h - r, h);
+    bezel.lineTo(-h + r, h);
+    bezel.quadraticCurveTo(-h, h, -h, h - r);
+    bezel.lineTo(-h, -h + r);
+    bezel.quadraticCurveTo(-h, -h, -h + r, -h);
+    const hole = new THREE.Path();
+    hole.absarc(0, 0, 0.1, 0, Math.PI * 2, true);
+    bezel.holes.push(hole);
+    b.push().translate(lx, LAMP_Y, 0);
+    extrudeZ(b, bezel, NOSE - 0.03, NOSE + 0.004, chrome, M.Metal, Z.Front, 0.008);
+    b.pop();
+    // Side lamp over an indicator, under the headlamp.
+    b.block(lx, 0.315, NOSE - 0.008, 0.15, 0.085, 0.02, rubber, M.Rubber, Z.Front, 0.01);
+    b.block(lx - side * 0.035, 0.315, NOSE - 0.02, 0.06, 0.055, 0.012, lamp, M.Headlamp, Z.Front, 0.006);
+    b.block(lx + side * 0.035, 0.315, NOSE - 0.02, 0.06, 0.055, 0.012, amber, M.Amber, Z.Front, 0.006);
   }
-  // Cream radiator surround, inset grille, fine horizontal slats and round lamps.
-  b.block(0, 0.58, -1.85, 1.46, 0.49, 0.1, cream, M.Paint, Z.Front, 0.065);
-  b.block(0, 0.59, -1.906, 0.73, 0.31, 0.016, rubber, M.Rubber, Z.Front, 0.028);
+  // Flat bonnet between the guards, standing a little above them, with its front lip.
+  b.block(0, 0.825, -1.19, 1.06, 0.08, 1.15, body, M.Paint, Z.Front, 0.035);
+  b.block(0, 0.8, -1.755, 1.04, 0.05, 0.03, body, M.Paint, Z.Front, 0.012);
+  for (const side of [-1, 1]) b.block(side * 0.44, 0.868, -0.7, 0.07, 0.012, 0.12, steel, M.Metal, Z.Front);
+  // Dark engine bay behind the grille and under the bonnet.
+  b.block(0, 0.47, -1.19, 1.0, 0.62, 1.08, dark, M.Rubber, Z.Trim);
+  // Pressed grille panel between the guards: a cream frame round a fine mesh, a plain top
+  // bar and a small generic badge (no maker's artwork).
+  b.block(0, 0.49, NOSE + 0.03, 1.035, 0.58, 0.04, cream, M.Paint, Z.Front, 0.014);
+  b.block(0, 0.46, NOSE + 0.005, 0.86, 0.4, 0.02, dark, M.Rubber, Z.Front);
   for (let i = 0; i < 7; i++)
-    b.block(
-      0,
-      0.46 + i * 0.043,
-      -1.92,
-      0.68,
-      0.016,
-      0.015,
-      steel.clone().multiplyScalar(0.55),
-      M.Metal,
-      Z.Front,
-    );
-  b.block(0, 0.6, -1.934, 0.15, 0.08, 0.008, cream, M.Paint, Z.Front, 0.008);
-  // A small generic twin-bar badge keeps the handmade model free of copied artwork.
-  for (const x of [-0.032, 0.032]) b.block(x, 0.6, -1.94, 0.014, 0.05, 0.006, rubber, M.Rubber, Z.Front);
-  for (const x of [-0.535, 0.535]) {
-    b.slot = M.Rubber;
-    b.tag = Z.Front;
-    b.push()
-      .translate(x, 0.605, -1.925)
-      .rotate(Math.PI / 2, 0, 0);
-    b.geometry(new THREE.CylinderGeometry(0.155, 0.155, 0.025, 32), rubber);
-    b.pop();
-    b.ring(x, 0.605, -1.948, 0.136, 0.015, steel, M.Metal, 'z', Z.Front);
-    b.slot = M.Headlamp;
-    b.push().translate(x, 0.605, -1.948).scale(1, 1, 0.23);
-    b.geometry(new THREE.SphereGeometry(0.123, 24, 12), new THREE.Color('#E3E4CD'));
-    b.pop();
-    for (let i = -3; i <= 3; i++) {
-      const width = Math.sqrt(0.116 ** 2 - (i * 0.027) ** 2) * 2;
-      b.block(x, 0.605 + i * 0.027, -1.978, width, 0.004, 0.003, lens, M.Headlamp, Z.Front);
-    }
+    b.block(0, 0.285 + i * 0.058, NOSE, 0.86, 0.011, 0.012, cream, M.Paint, Z.Front);
+  for (let i = 0; i < 15; i++)
+    b.block(-0.406 + i * 0.058, 0.46, NOSE, 0.011, 0.4, 0.012, cream, M.Paint, Z.Front);
+  for (const x of [-0.03, 0.03])
+    b.block(x, 0.71, NOSE - 0.002, 0.014, 0.05, 0.008, rubber, M.Rubber, Z.Front);
+  // Cowl in front of the screen, and a louvred vent on each side panel behind the guard.
+  b.block(0, 0.83, -0.565, 1.66, 0.1, 0.12, body, M.Paint, Z.Front, 0.02);
+  for (const side of [-1, 1]) {
+    b.block(side * (HW - 0.005), 0.66, -0.552, 0.012, 0.15, 0.085, dark, M.Rubber, Z.Sides, 0.004);
+    for (let i = 0; i < 4; i++)
+      b.block(side * (HW + 0.002), 0.605 + i * 0.036, -0.552, 0.012, 0.01, 0.085, body, M.Paint, Z.Sides);
   }
 }
 
-function sidesAndRear(b: VehicleBuilder, livery: Livery): void {
+function windscreen(b: VehicleBuilder, livery: Livery): void {
+  const body = livery.body;
+  // One flat pane in a body-colour frame, almost upright, with wipers parked at the bottom.
+  b.push().translate(0, 1.19, -0.53).rotate(0.09, 0, 0);
+  for (const y of [-0.3, 0.3]) b.block(0, y, 0, 1.64, 0.07, 0.06, body, M.Paint, Z.Front, 0.015);
+  for (const x of [-0.79, 0.79]) b.block(x, 0, 0, 0.07, 0.66, 0.06, body, M.Paint, Z.Front, 0.015);
+  b.block(0, 0, 0, 1.52, 0.54, 0.012, glass, M.Glass, Z.Glass);
+  for (const x of [-0.42, 0.24])
+    b.rod(
+      { x, y: -0.255, z: -0.035 },
+      { x: x + 0.34, y: -0.235, z: -0.035 },
+      0.007,
+      rubber,
+      M.Rubber,
+      Z.Front,
+    );
+  for (const x of [-0.42, 0.24]) b.block(x, -0.26, -0.03, 0.03, 0.03, 0.03, rubber, M.Rubber, Z.Front);
+  b.pop();
+  for (const side of [-1, 1]) {
+    // Round mirrors on cranked stalks from brackets at the screen's lower corners.
+    b.block(side * 0.84, 0.9, -0.51, 0.06, 0.05, 0.05, steel, M.Metal, Z.Trim, 0.01);
+    stalk(
+      b,
+      [
+        { x: side * 0.86, y: 0.9, z: -0.51 },
+        { x: side * 0.94, y: 0.99, z: -0.53 },
+        { x: side * 0.97, y: 1.12, z: -0.58 },
+      ],
+      0.01,
+      steel,
+    );
+    roundHead(b, side, { x: side * 0.99, y: 1.16, z: -0.555 }, 0.07, steel);
+  }
+}
+
+function sides(b: VehicleBuilder, livery: Livery): void {
   const body = livery.body,
     cream = livery.roof;
-  b.block(0, 0.13, 0.1, 1.16, 0.12, 3.36, rubber, M.Rubber, Z.Trim);
+  const a = Math.asin((SILL - ARCH_Y) / ARCH);
   for (const side of [-1, 1]) {
-    quarter(b, side, -1.83, -0.6, -1.15, 0.745, Z.Front, livery);
-    quarter(b, side, 0.51, 1.82, 1.15, 0.8, Z.Rear, livery);
-    b.block(side * 0.79, 0.47, -0.045, 0.07, 0.68, 1.08, body, M.Paint, Z.Sides, 0.014);
-    // Recessed door perimeter, exposed hinges, pull handle and lock barrel.
-    for (const z of [-0.57, 0.485])
-      b.block(side * 0.831, 0.475, z, 0.008, 0.6, 0.011, rubber, M.Rubber, Z.Sides);
-    b.block(side * 0.831, 0.18, -0.045, 0.008, 0.012, 1.04, rubber, M.Rubber, Z.Sides);
-    b.block(side * 0.835, 0.76, 0.31, 0.018, 0.075, 0.2, rubber, M.Rubber, Z.Sides, 0.008);
-    b.rod(
-      { x: side * 0.858, y: 0.772, z: 0.24 },
-      { x: side * 0.858, y: 0.772, z: 0.38 },
-      0.013,
-      steel,
-      M.Metal,
+    const x0 = side > 0 ? HW - 0.06 : -HW,
+      x1 = side > 0 ? HW : -HW + 0.06;
+    // Tub side and door below the belt, cut round the rear wheel.
+    sideProfile(
+      b,
+      [
+        [-0.6, SILL],
+        [AXLE - ARCH * Math.cos(a), SILL],
+        { arc: [AXLE, ARCH_Y, ARCH, a, Math.PI - a] },
+        [TAIL - 0.1, SILL],
+        [TAIL - 0.1, BELT],
+        [-0.6, BELT],
+      ],
+      x0,
+      x1,
+      body,
       Z.Sides,
+      0.02,
+      [[AXLE, ARCH_Y, ARCH]],
     );
-    b.slot = M.Metal;
-    b.tag = Z.Sides;
+    // A painted lip round the rear arch and a dark inner wheelhouse.
+    b.slot = M.Paint;
+    b.tag = Z.Rear;
     b.push()
-      .translate(side * 0.85, 0.71, 0.35)
-      .rotate(0, 0, Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.015, 0.015, 0.012, 12), steel);
+      .translate(side * (HW + 0.008), ARCH_Y, AXLE)
+      .rotate(0, Math.PI / 2, 0);
+    b.geometry(new THREE.TorusGeometry(ARCH + 0.012, 0.02, 6, 36, Math.PI - 2 * a).rotateZ(a), body);
     b.pop();
-    for (const y of [0.34, 0.67]) {
-      b.block(side * 0.837, y, -0.54, 0.026, 0.065, 0.13, body, M.Paint, Z.Sides, 0.006);
+    b.block(side * 0.585, 0.33, AXLE, 0.02, 0.58, 1.04, well, M.Rubber, Z.Trim);
+    b.block(side * 0.7, 0.6, AXLE, 0.25, 0.02, 1.04, well, M.Rubber, Z.Trim);
+    // Pressed crease along the side, below the belt.
+    b.block(side * (HW + 0.004), 0.66, 0.6, 0.012, 0.022, 2.4, body, M.Paint, Z.Sides, 0.006);
+    // Door: shut lines, exposed hinges and a pull handle.
+    for (const z of [-0.5, 0.5])
+      b.block(side * (HW + 0.002), 0.79, z, 0.006, 1.42, 0.01, rubber, M.Rubber, Z.Sides);
+    b.block(side * (HW + 0.002), 0.11, 0, 0.006, 0.01, 1.0, rubber, M.Rubber, Z.Sides);
+    for (const y of [0.3, 0.66]) {
+      b.block(side * (HW + 0.012), y, -0.48, 0.02, 0.07, 0.09, body, M.Paint, Z.Sides, 0.006);
       b.rod(
-        { x: side * 0.86, y: y - 0.04, z: -0.56 },
-        { x: side * 0.86, y: y + 0.04, z: -0.56 },
-        0.013,
+        { x: side * (HW + 0.025), y: y - 0.04, z: -0.52 },
+        { x: side * (HW + 0.025), y: y + 0.04, z: -0.52 },
+        0.012,
         steel,
-        M.Metal,
-        Z.Sides,
       );
-      for (const z of [-0.5, -0.57]) b.block(side * 0.854, y, z, 0.01, 0.012, 0.012, steel, M.Metal, Z.Sides);
     }
-    // Continuous painted waist closes the body below the removable hardtop.
-    b.block(side * 0.79, 0.855, 0.61, 0.075, 0.13, 2.43, body, M.Paint, Z.Sides, 0.006);
-    // Cream window surround, quarter-light divider, sliding rear window and rain gutter.
-    for (const y of [0.91, 1.49])
-      b.block(side * 0.775, y, 0.61, 0.065, 0.08, 2.43, cream, M.Paint, Z.Sides, 0.012);
-    for (const z of [-0.55, 0.51, 1.78])
-      b.block(side * 0.775, 1.2, z, 0.065, 0.57, 0.07, cream, M.Paint, Z.Sides, 0.01);
-    b.block(side * 0.79, 1.205, 0.085, 0.012, 0.49, 0.75, glass, M.Glass, Z.Glass, 0.014);
-    b.block(side * 0.79, 1.205, -0.405, 0.012, 0.49, 0.17, glass, M.Glass, Z.Glass, 0.01);
-    b.block(side * 0.798, 1.205, -0.302, 0.015, 0.51, 0.018, rubber, M.Rubber, Z.Sides);
-    b.block(side * 0.785, 1.205, 1.145, 0.012, 0.45, 1.11, glass, M.Glass, Z.Glass, 0.025);
-    b.block(side * 0.795, 1.205, 1.16, 0.02, 0.45, 0.018, rubber, M.Rubber, Z.Sides);
-    b.block(side * 0.82, 1.54, 0.62, 0.025, 0.02, 2.46, steel, M.Metal, Z.Roof);
-    // Ribbed running board and two braced mirror arms.
-    b.block(side * 0.865, 0.08, -0.03, 0.18, 0.055, 0.95, rubber, M.Rubber, Z.Trim);
-    for (let i = 0; i < 7; i++)
-      b.block(side * 0.865, 0.111, -0.41 + i * 0.125, 0.17, 0.008, 0.015, steel, M.Metal, Z.Trim);
-    b.rod(
-      { x: side * 0.82, y: 0.93, z: -0.52 },
-      { x: side * 1.0, y: 1.15, z: -0.61 },
-      0.013,
-      steel,
-      M.Metal,
-      Z.Sides,
-    );
-    b.rod(
-      { x: side * 0.82, y: 1.07, z: -0.5 },
-      { x: side * 1.0, y: 1.15, z: -0.61 },
-      0.009,
-      steel,
-      M.Metal,
-      Z.Sides,
-    );
-    b.block(side * 1.015, 1.23, -0.61, 0.05, 0.21, 0.14, rubber, M.Rubber, Z.Trim, 0.02);
-    b.block(side * 1.046, 1.23, -0.602, 0.008, 0.17, 0.105, steel, M.Metal, Z.Trim, 0.012);
-    // Rear hardtop corners and a split tail door with framed glass.
-    b.block(side * 0.385, 0.48, 1.805, 0.75, 0.64, 0.055, body, M.Paint, Z.Rear, 0.012);
-    b.block(side * 0.385, 0.895, 1.805, 0.75, 0.18, 0.06, cream, M.Paint, Z.Rear);
-    b.block(side * 0.385, 1.49, 1.805, 0.75, 0.06, 0.065, cream, M.Paint, Z.Rear);
-    for (const x of [side * 0.745, side * 0.025])
-      b.block(x, 1.21, 1.805, 0.045, 0.53, 0.065, cream, M.Paint, Z.Rear);
-    b.block(side * 0.385, 1.215, 1.807, 0.655, 0.455, 0.013, glass, M.Glass, Z.Glass, 0.025);
-    for (const y of [0.38, 0.74, 1.39])
-      b.block(side * 0.72, y, 1.852, 0.12, 0.045, 0.03, steel, M.Metal, Z.Rear, 0.005);
-    b.block(side * 0.66, 0.4, 1.858, 0.18, 0.32, 0.06, rubber, M.Rubber, Z.Rear, 0.015);
-    b.block(side * 0.66, 0.47, 1.896, 0.13, 0.07, 0.022, amber, M.Amber, Z.Rear, 0.007);
-    b.block(side * 0.66, 0.38, 1.896, 0.13, 0.1, 0.022, red, M.Red, Z.Rear, 0.007);
-    b.block(side * 0.66, 0.29, 1.896, 0.13, 0.04, 0.022, lens, M.Lamp, Z.Rear, 0.005);
-    for (let i = 0; i < 4; i++)
+    b.block(side * (HW + 0.012), 0.72, 0.38, 0.018, 0.04, 0.14, steel, M.Metal, Z.Sides, 0.008);
+    // Door window frame in body colour, with a quarter-light at the front.
+    const fx = side * (HW - 0.03);
+    b.block(fx, 0.83, 0, 0.05, 0.06, 1.0, body, M.Paint, Z.Sides, 0.01);
+    b.block(fx, 1.47, 0.01, 0.05, 0.06, 0.98, body, M.Paint, Z.Sides, 0.01);
+    b.block(fx, 1.15, -0.475, 0.05, 0.66, 0.05, body, M.Paint, Z.Sides, 0.01);
+    b.block(fx, 1.15, 0.475, 0.05, 0.66, 0.05, body, M.Paint, Z.Sides, 0.01);
+    b.block(fx, 1.15, -0.25, 0.04, 0.6, 0.025, body, M.Paint, Z.Sides, 0.008);
+    b.block(side * (HW - 0.035), 1.15, 0, 0.012, 0.58, 0.92, glass, M.Glass, Z.Glass);
+    // Hardtop side behind the door: a sliding window, then the curved corner window.
+    const hx = side * (HW - 0.03);
+    b.block(hx, 0.84, 1.0, 0.05, 0.08, 1.0, cream, M.Paint, Z.Sides, 0.01);
+    b.block(hx, 1.5, 1.0, 0.05, 0.1, 1.0, cream, M.Paint, Z.Sides, 0.01);
+    b.block(hx, 1.17, 0.55, 0.05, 0.66, 0.1, cream, M.Paint, Z.Sides, 0.01);
+    b.block(hx, 1.17, 1.44, 0.05, 0.66, 0.12, cream, M.Paint, Z.Sides, 0.01);
+    b.block(side * (HW - 0.035), 1.17, 0.99, 0.012, 0.58, 0.78, glass, M.Glass, Z.Glass);
+    b.block(side * (HW - 0.025), 1.17, 0.99, 0.016, 0.58, 0.02, cream, M.Paint, Z.Sides);
+  }
+}
+
+function rear(b: VehicleBuilder, livery: Livery): void {
+  const body = livery.body,
+    cream = livery.roof;
+  const R = 0.3;
+  // The tub's back panel across the full width between its rounded corners.
+  b.block(0, (SILL + BELT) / 2, TAIL - 0.03, 2 * (HW - 0.1) + 0.01, BELT - SILL, 0.06, body, M.Paint, Z.Rear);
+  for (const side of [-1, 1]) {
+    corner(b, side, 0.1, SILL, BELT, body, M.Paint, Z.Rear);
+    // Hardtop corner: cream bands above and below a curved window.
+    const band = (y0: number, y1: number, r: number, color: THREE.Color, slot: number) => {
+      const g = new THREE.CylinderGeometry(
+        r,
+        r,
+        y1 - y0,
+        18,
+        1,
+        true,
+        side > 0 ? 0 : -Math.PI / 2,
+        Math.PI / 2,
+      );
+      b.slot = slot as typeof b.slot;
+      b.tag = Z.Rear;
+      b.push().translate(side * (HW - R), (y0 + y1) / 2, TAIL - R);
+      b.geometry(g, color);
+      b.pop();
+    };
+    band(BELT, 0.88, R, cream, M.Paint);
+    band(0.88, 1.46, R - 0.005, glass, M.Glass);
+    band(1.46, 1.56, R, cream, M.Paint);
+    // The tub's top ledge round its tighter corner, under the hardtop's rounder one.
+    const ledge = new THREE.Shape();
+    const sx = side;
+    ledge.moveTo(sx * (HW - R), -(TAIL - R));
+    ledge.lineTo(sx * HW, -(TAIL - R));
+    ledge.lineTo(sx * HW, -(TAIL - 0.1));
+    ledge.absarc(sx * (HW - 0.1), -(TAIL - 0.1), 0.1, side > 0 ? 0 : Math.PI, -Math.PI / 2, side > 0);
+    ledge.lineTo(sx * (HW - R), -TAIL);
+    const lg = new THREE.ExtrudeGeometry(ledge, { depth: 0.012, bevelEnabled: false, curveSegments: 8 });
+    lg.rotateX(-Math.PI / 2);
+    b.slot = M.Paint;
+    b.tag = Z.Rear;
+    b.push().translate(0, BELT - 0.006, 0);
+    b.geometry(lg, body);
+    b.pop();
+    // Corner glass meets the side pillar and the rear door frame.
+    b.block(side * (HW - 0.03), 1.17, TAIL - R - 0.02, 0.05, 0.62, 0.05, cream, M.Paint, Z.Rear, 0.01);
+    b.block(side * (HW - R + 0.02), 1.17, TAIL - 0.03, 0.05, 0.62, 0.05, cream, M.Paint, Z.Rear, 0.01);
+    // Rear barn door: cream frame and glass above the belt.
+    const dx = side * 0.27;
+    b.block(dx, 0.84, TAIL - 0.02, 0.52, 0.08, 0.05, cream, M.Paint, Z.Rear, 0.01);
+    b.block(dx, 1.51, TAIL - 0.02, 0.52, 0.1, 0.05, cream, M.Paint, Z.Rear, 0.01);
+    b.block(side * 0.02, 1.17, TAIL - 0.02, 0.04, 0.62, 0.05, cream, M.Paint, Z.Rear, 0.01);
+    b.block(side * 0.52, 1.17, TAIL - 0.02, 0.04, 0.62, 0.05, cream, M.Paint, Z.Rear, 0.01);
+    b.block(dx, 1.17, TAIL - 0.025, 0.46, 0.58, 0.012, glass, M.Glass, Z.Glass);
+    // Door shut lines and exposed hinges on the outer edges.
+    b.block(side * 0.54, 0.79, TAIL + 0.002, 0.01, 1.42, 0.006, rubber, M.Rubber, Z.Rear);
+    for (const y of [0.64, 1.25]) {
+      b.block(side * 0.57, y, TAIL + 0.01, 0.07, 0.07, 0.02, body, M.Paint, Z.Rear, 0.006);
+      b.rod(
+        { x: side * 0.58, y: y - 0.045, z: TAIL + 0.025 },
+        { x: side * 0.58, y: y + 0.045, z: TAIL + 0.025 },
+        0.012,
+        steel,
+      );
+    }
+    // Small upright combination lamps on the corner panels, clear of the doors.
+    const tx = side * 0.655;
+    b.block(tx, 0.42, TAIL + 0.012, 0.11, 0.25, 0.025, rubber, M.Rubber, Z.Rear, 0.01);
+    b.block(tx, 0.5, TAIL + 0.026, 0.085, 0.07, 0.012, red, M.Red, Z.Rear, 0.006);
+    b.block(tx, 0.425, TAIL + 0.026, 0.085, 0.065, 0.012, amber, M.Amber, Z.Rear, 0.006);
+    b.block(tx, 0.345, TAIL + 0.026, 0.085, 0.055, 0.012, lamp, M.Lamp, Z.Rear, 0.006);
+    for (let i = 0; i < 3; i++)
       b.block(
-        side * 0.66,
-        0.345 + i * 0.023,
-        1.91,
-        0.125,
+        tx,
+        0.48 + i * 0.02,
+        TAIL + 0.034,
+        0.08,
         0.003,
         0.003,
         red.clone().multiplyScalar(0.5),
         M.Red,
         Z.Rear,
       );
-    b.block(side * 0.81, 0.05, 1.53, 0.13, 0.27, 0.025, rubber, M.Rubber, Z.Trim);
   }
-  b.block(0, 1.605, 0.625, 1.64, 0.18, 2.5, cream, M.Paint, Z.Roof, 0.065);
-  for (const x of [-0.53, -0.27, 0.27, 0.53])
-    b.block(x, 1.697, 0.61, 0.024, 0.008, 2.22, cream, M.Paint, Z.Roof);
-  b.block(0, 0.82, 1.846, 0.014, 1.29, 0.012, rubber, M.Rubber, Z.Rear);
-  b.block(-0.08, 0.83, 1.872, 0.09, 0.025, 0.035, steel, M.Metal, Z.Rear);
-  windscreen(b, livery);
+  // Centre split and handle between the two doors.
+  b.block(0, 0.79, TAIL + 0.002, 0.008, 1.42, 0.006, rubber, M.Rubber, Z.Rear);
+  b.block(-0.09, 0.7, TAIL + 0.012, 0.11, 0.025, 0.025, steel, M.Metal, Z.Rear);
+}
+
+function roof(b: VehicleBuilder, livery: Livery): void {
+  const cream = livery.roof;
+  // Hardtop roof: rounded rear corners over the curved windows, drip rails, raised ribs.
+  planProfile(b, plan(-0.53, TAIL, HW, 0.05, 0.3), 1.53, ROOF, cream, Z.Roof, 0.03);
+  for (const side of [-1, 1])
+    b.block(side * (HW + 0.008), 1.535, 0.6, 0.016, 0.018, 2.2, cream, M.Paint, Z.Roof, 0.006);
+  for (const x of [-0.5, -0.25, 0.25, 0.5])
+    b.block(x, ROOF + 0.005, 0.66, 0.035, 0.014, 2.25, cream, M.Paint, Z.Roof, 0.006);
 }
 
 /** The short-wheelbase body in a livery; `extras` adds what that livery carries on top. */
@@ -287,8 +505,12 @@ export function buildVehicleBody(
   extras?: { aerialSide: -1 | 1; add(b: VehicleBuilder): void },
 ): THREE.BufferGeometry {
   const b = new VehicleBuilder();
+  b.block(0, 0.11, 0.55, 1.5, 0.06, 2.5, rubber, M.Rubber, Z.Trim);
   front(b, livery);
-  sidesAndRear(b, livery);
+  windscreen(b, livery);
+  sides(b, livery);
+  rear(b, livery);
+  roof(b, livery);
   addVehicleInterior(b, tuning.engine.redlineRpm);
   addVehicleEquipment(b, tuning, wheel, extras?.aerialSide);
   extras?.add(b);

@@ -4,11 +4,13 @@ import type { VehicleId, VehicleTuning } from '../data/vehicle';
 import { buildVehicleBody } from './vehicleBody';
 import { buildVehicleWheel } from './vehicleWheel';
 import { buildRackPlank } from './vehicleEquipment';
+import { buildPatrolBody, buildPatrolPlank, buildPatrolWheel } from './patrolBody';
 import { buildPerentieBody, buildPerentiePlank, buildPerentieWheel } from './perentieBody';
 import { addCamelTrophyKit, camelLivery, camelRim } from './camelLivery';
 import { buildHiluxBody, buildHiluxPlank, buildHiluxWheel } from './hiluxBody';
 import { buildUnimogBody, buildUnimogPlank, buildUnimogWheel } from './unimogBody';
 import { buildTroopyBody, buildTroopyPlank, buildTroopyWheel } from './troopyBody';
+import { LC79_DRIVING_LAMPS, buildLc79Body, buildLc79Plank, buildLc79Wheel } from './lc79Body';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
 export interface VehicleLook {
@@ -23,8 +25,8 @@ export interface VehicleLook {
 }
 
 const fortySeriesHeadlamps: Vec3[] = [
-  { x: -0.535, y: 0.605, z: -1.948 },
-  { x: 0.535, y: 0.605, z: -1.948 },
+  { x: -0.683, y: 0.5, z: -1.814 },
+  { x: 0.683, y: 0.5, z: -1.814 },
 ];
 
 export const vehicleLooks: Record<VehicleId, VehicleLook> = {
@@ -91,8 +93,8 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'coil',
     lamps: {
       head: [
-        { x: -0.86, y: 0.62, z: -3.045 },
-        { x: 0.86, y: 0.62, z: -3.045 },
+        { x: -0.86, y: 0.38, z: -3.186 },
+        { x: 0.86, y: 0.38, z: -3.186 },
       ],
     },
   },
@@ -106,9 +108,46 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'leaf',
     lamps: {
       head: [
-        { x: -0.63, y: 0.56, z: -2.22 },
-        { x: 0.63, y: 0.56, z: -2.22 },
+        { x: -0.6, y: 0.56, z: -2.224 },
+        { x: 0.6, y: 0.56, z: -2.224 },
       ],
+    },
+  },
+  patrol: {
+    name: 'gq-patrol',
+    body: buildPatrolBody,
+    wheel: buildPatrolWheel,
+    plank: buildPatrolPlank,
+    paint: { roughness: 0.36, metalness: 0.08, clearcoat: 0.6, clearcoatRoughness: 0.28 },
+    springs: 'coil',
+    lamps: {
+      head: [
+        { x: -0.645, y: 0.48, z: -2.3 },
+        { x: 0.645, y: 0.48, z: -2.3 },
+      ],
+      // The two driving lamps under the bull bar's top rail come on with high beam.
+      roof: [
+        { x: -0.19, y: 0.645, z: -2.417 },
+        { x: 0.19, y: 0.645, z: -2.417 },
+      ],
+    },
+  },
+  lc79: {
+    name: 'lc79-single-cab',
+    body: buildLc79Body,
+    wheel: buildLc79Wheel,
+    plank: buildLc79Plank,
+    // Factory paint with a fresh clear coat.
+    paint: { roughness: 0.38, metalness: 0.06, clearcoat: 0.6, clearcoatRoughness: 0.25 },
+    // Coils at both ends since the conversion.
+    springs: 'coil',
+    lamps: {
+      head: [
+        { x: -0.58, y: 0.68, z: -2.39 },
+        { x: 0.58, y: 0.68, z: -2.39 },
+      ],
+      // The driving lamps on the bar come on with high beam.
+      roof: LC79_DRIVING_LAMPS,
     },
   },
 };

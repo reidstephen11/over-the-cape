@@ -9,11 +9,17 @@ import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
  * instrument binnacle in front of the right-hand driver, a four-spoke wheel, the gear and
  * transfer levers on the tunnel, pendant pedals, painted steel doors with vinyl trims, and
  * behind the seats the long load space with a bench along each side (the handbrake lever
- * moves: see vehicleInstruments.ts).
+ * moves: see vehicleInstruments.ts). The LC79 shares the cab: it passes its own paint and
+ * leaves out the load space (`cabOnly`).
  */
-export function addTroopyInterior(b: VehicleBuilder, redlineRpm: number): void {
+export function addTroopyInterior(
+  b: VehicleBuilder,
+  redlineRpm: number,
+  paint = troopyColors.paint,
+  cabOnly = false,
+): void {
   const cabin = vehicles.troopy.cabin;
-  const { paint, vinyl, chrome } = troopyColors;
+  const { vinyl, chrome } = troopyColors;
   const dark = new THREE.Color('#2A2C2B'),
     mat = new THREE.Color('#1D1F1E'),
     metal = new THREE.Color('#8A8E86'),
@@ -84,6 +90,14 @@ export function addTroopyInterior(b: VehicleBuilder, redlineRpm: number): void {
     );
     b.rod({ x: x - side * 0.05, y: 0.58, z: -0.58 }, { x: x - side * 0.05, y: 0.51, z: -0.54 }, 0.006, metal);
   }
+  // Sun visors under the front of the roof.
+  for (const x of [-0.42, 0.42]) b.block(x, 1.48, -0.68, 0.38, 0.012, 0.12, trim, M.Fabric, Z.Trim, 0.005);
+  if (cabOnly) {
+    // The single cab's back wall close behind the seats, and a short headlining.
+    b.block(0, 0.85, 0.42, 1.6, 1.3, 0.02, paint.clone().multiplyScalar(0.7), M.Paint, Z.Trim);
+    b.block(0, 1.49, -0.15, 1.6, 0.008, 1.1, new THREE.Color('#C4BDAA'), M.Fabric, Z.Trim);
+    return;
+  }
   // Behind the seats: the steel floor and a long bench along each side.
   b.block(0, floor, 1.4, 1.6, 0.03, 2.3, mat, M.Rubber, Z.Trim);
   for (const side of [-1, 1]) {
@@ -92,7 +106,6 @@ export function addTroopyInterior(b: VehicleBuilder, redlineRpm: number): void {
     b.block(x, floor + 0.17, 1.6, 0.26, 0.34, 1.5, dark, M.Metal, Z.Trim);
     b.block(side * 0.79, floor + 0.72, 1.6, 0.06, 0.5, 1.6, vinyl, M.Fabric, Z.Trim, 0.03);
   }
-  // Sun visors under the front of the roof, and the headlining.
-  for (const x of [-0.42, 0.42]) b.block(x, 1.48, -0.68, 0.38, 0.012, 0.12, trim, M.Fabric, Z.Trim, 0.005);
+  // The headlining.
   b.block(0, 1.49, 0.9, 1.6, 0.008, 3.3, new THREE.Color('#C4BDAA'), M.Fabric, Z.Trim);
 }

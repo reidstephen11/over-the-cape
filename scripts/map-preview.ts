@@ -38,6 +38,7 @@ const tintCols: Record<number, number[]> = {
   [GroundTint.Concrete]: hex('#C4BFB4'),
   [GroundTint.BlackSoil]: hex('#4A4A36'),
   [GroundTint.Pothole]: hex('#3A2418'),
+  [GroundTint.Sand]: hex(palette.sand),
 };
 const W = Math.floor(terrain.sizeX / scale);
 const L = Math.floor(terrain.sizeZ / scale);

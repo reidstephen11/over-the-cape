@@ -9,15 +9,16 @@ test('Surprises: a dead tree comes down across the track ahead, and the message 
   await lowGraphics(page);
   await page.goto('/?seed=1');
   await waitReady(page);
-  const plans = await page.evaluate(() => window.__game!.surprises(90));
+  const plans = await page.evaluate(() => window.__game!.surprises(72));
   expect(plans.map((p) => p.kind).sort()).toEqual(['rockfall', 'treefall', 'treefall']);
   const tree = plans.find((p) => p.kind === 'treefall')!;
   expect(tree.phase).toBe('waiting');
 
-  // Driven along its track towards it, it starts once the car is close enough.
+  // Driven along its track towards it, it starts once the car is close enough. The car starts
+  // just beyond the furthest a tree can start (70 m), since the rough stretch before it is slow.
   await page.evaluate((a) => window.__game!.teleport(a.x, a.z, a.headingDeg), tree.approach);
   await page.evaluate(() => window.__game!.setParkBrake(false));
-  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await page.evaluate(() => window.__game!.setInput({ throttle: 1 }));
   await page.waitForFunction(
     (id) => window.__game!.surprises().find((p) => p.id === id)!.phase !== 'waiting',
     tree.id,
@@ -42,7 +43,7 @@ test('Surprises: a dead tree comes down across the track ahead, and the message 
     [tree, v] as const,
   );
   await page.waitForTimeout(1000);
-  await shot(page, 'v0.17', 'tree-down-across-the-track');
+  await shot(page, 'v0.11', 'tree-down-across-the-track');
   await page.evaluate(() => window.__game!.useChaseCamera());
   expect(errors).toEqual([]);
 });
