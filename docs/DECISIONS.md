@@ -974,9 +974,13 @@ A follow-up to the surprises (v0.18), checked on today's vehicles (v0.21 changed
 - **The test driver** (`tests/helpers/surprises.ts`) backing away from a tree it has winched round now stops if it drifts 1.6 m off the track's line. In the rain, reversing blind for 8 s slid the short-wheelbase 4WD off the range top's edge onto black soil, where it stuck.
 - **Results**, 12 runs (36 events): in the wet, the short-wheelbase 4WD and the Land Rover get past all of them. In the rain the Land Rover gets past all 36 and the short-wheelbase 4WD 34. The other two are rockfalls on the Roaring Meg climb, which it can't crawl up in full rain even with no rocks there. On the clock it reaches that climb around 2 pm, before the storm, so no change was made.
 
-## v0.27: two spares on every vehicle, and the LC79's spare inside the tray
+## v0.27: handover notes for trailers and towing
 
-- **Towing.** Asked whether the game has towing: it doesn't. Recovery is the winch only (to trees, rocks, a bogged vehicle). Towing was not added in this update.
+No change to the game. The owner asked for towing missions with a trailer (another vehicle or fuel drums to deliver) when the Hilux and Episode 2 were planned, and chose to build them after those two. Both have shipped and towing hasn't started, so the owner confirmed it as the next job. `docs/NEXT.md` holds the notes for whoever builds it: what was asked, what the game has now (tow points, drawn hitches, the Unimog's empty tray), the questions to ask the owner first, and a build plan in steps. CLAUDE.md points to it until the first towing mission ships.
+
+## v0.28: two spares on every vehicle, and the LC79's spare inside the tray
+
+- **Towing.** Asked whether the game has towing: it doesn't. Recovery is the winch only (to trees, rocks, a bogged vehicle). Towing was not added in this update; the plan for it is in docs/NEXT.md (v0.27).
 - **LC79 spare.** The spare hung on a carrier behind the tray, past its end. It now sits on the canopy's rear door, and the canopy is 0.38 m shorter (it ends at 2.58 m instead of 2.96 m) so the spare's outer face stays inside the end of the tray. The canopy's high stop lamp moved to the two top corners, beside the wheel. The collision boxes follow: the canopy box is shorter and the spare's box moved inside the tray.
 - **Two spares each, in the count.** Every episode now loads two spares, and so does free driving. The Troop Carrier used to get its second spare as an extra on top of the episode's one; that extra is gone, so it still starts with two, like the rest.
 - **Two spares each, on the body.** Where the second goes, by vehicle:

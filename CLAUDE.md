@@ -1,5 +1,7 @@
 # Working on this repo
 
+**Next job:** trailers and towing missions. Read `docs/NEXT.md` before starting.
+
 ## Shipping every update
 
 The owner wants every finished update merged into `main` and published, without being asked each time. GitHub Actions deploys `main` to GitHub Pages.
