@@ -965,3 +965,11 @@ Shared pieces live in `src/render/bodyShapes.ts` (rounded outlines, extrusions, 
 - **Planks on the HUD.** The status strip showed the planks icon with just "2/2", which didn't say what it counted. It now reads "Planks 2/2", with the word in a smaller, softer type. A first step towards labelling every HUD icon (SPEC §6).
 - **Smooth track edges.** Track paint was set per 1 m terrain sample, so where a track ran at an angle to the grid its edges came out as a staircase. Terrain generation now also keeps, for samples near a dirt, clay, gravel, concrete or faint track, the distance to the track's edge and the ground tint beside it. The terrain mesh blends between the two from that distance, so the edge follows the real line of the track between samples. Rock and sand tracks, potholes, bogs, creek beds and anything else painted over a track keep the old blend. The physics surface is unchanged.
 - **Troop Carrier rear windows.** The flashing pixel logged before v0.21 was dropped: the vehicles were all rebuilt in v0.21, and a close render of the new Troop Carrier showed no gaps.
+
+## v0.26: surprises in the storm's rain
+
+A follow-up to the surprises (v0.18), checked on today's vehicles (v0.21 changed them) and with the storm (v0.16): no change to the game.
+
+- **The drive script** (`scripts/surprise-drive.ts`) takes `rain` after the event id (or `all`), driving on the ground as the storm leaves it by about 5 pm: wet clay at 0.43 grip instead of 0.58.
+- **The test driver** (`tests/helpers/surprises.ts`) backing away from a tree it has winched round now stops if it drifts 1.6 m off the track's line. In the rain, reversing blind for 8 s slid the short-wheelbase 4WD off the range top's edge onto black soil, where it stuck.
+- **Results**, 12 runs (36 events): in the wet, the short-wheelbase 4WD and the Land Rover get past all of them. In the rain the Land Rover gets past all 36 and the short-wheelbase 4WD 34. The other two are rockfalls on the Roaring Meg climb, which it can't crawl up in full rain even with no rocks there. On the clock it reaches that climb around 2 pm, before the storm, so no change was made.
