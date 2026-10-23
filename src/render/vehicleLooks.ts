@@ -143,8 +143,8 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'coil',
     lamps: {
       head: [
-        { x: -0.57, y: 0.69, z: -2.38 },
-        { x: 0.57, y: 0.69, z: -2.38 },
+        { x: -0.58, y: 0.68, z: -2.39 },
+        { x: 0.58, y: 0.68, z: -2.39 },
       ],
       // The driving lamps on the bar come on with high beam.
       roof: LC79_DRIVING_LAMPS,

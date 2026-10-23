@@ -12,7 +12,7 @@ import { mirrorHead } from './mirrors';
  * LandCruiser 79 single cab, built up: the 70 Series cab and front clip on a 4 inch lift,
  * the V8's bonnet scoop, wide black flares over 37 inch tyres, rock sliders, a steel bar
  * with a winch, driving lamps and a light bar, a snorkel up the right pillar, and behind
- * the cab an alloy tray with the spare standing behind the headboard and a black canopy
+ * the cab an alloy tray with the spare on a carrier off the back and a black canopy
  * with gullwing doors and a roof rack (ground about 0.59 m below the origin when parked).
  */
 const { bar, flare, canopy, alloy, chrome } = lc79Colors;
@@ -53,8 +53,8 @@ const CLIP = {
 };
 /** The tray: deck height, headboard, tail and half width. */
 const TRAY = { deck: 0.64, front: 0.56, back: 2.98, half: 0.95 };
-/** The canopy on the tray, behind the spare. */
-const CAN = { front: 1.0, back: 2.96, top: ROOF + 0.02, half: 0.93 };
+/** The canopy on the tray, from the headboard to the tail. */
+const CAN = { front: TRAY.front + 0.06, back: 2.96, top: ROOF + 0.02, half: 0.93 };
 const RACK = { y: CAN.top + 0.1 };
 const LAMP_Y = 0.68;
 
@@ -251,33 +251,34 @@ function cabSides(b: VehicleBuilder, paint: THREE.Color): void {
   frontPane(b, inset(win, 0.018), CAB_BACK - 0.014, 1, glass, M.Glass, Z.Glass);
 }
 
-/** Flat lens and housing for the 79's squared headlamps: rounded rectangles facing forward. */
-function headlamp(b: VehicleBuilder, side: number, x: number, y: number): void {
-  b.block(x, y, F - 0.004, 0.32, 0.2, 0.024, black, M.Rubber, Z.Front, 0.035);
-  // Two reflector bowls behind a clear lens, and the indicator in the outer bottom corner.
-  for (const dx of [-0.065, 0.065]) {
-    b.ring(x + side * dx, y + 0.012, F - 0.018, 0.048, 0.008, chrome, M.Metal, 'z', Z.Front);
-    b.slot = M.Headlamp;
-    b.tag = Z.Front;
-    b.push()
-      .translate(x + side * dx, y + 0.012, F - 0.016)
-      .scale(1, 1, 0.25);
-    b.geometry(new THREE.SphereGeometry(0.042, 20, 8), lens);
-    b.pop();
-  }
-  b.block(
-    x,
-    y + 0.012,
-    F - 0.019,
-    0.29,
-    0.13,
-    0.006,
-    lens.clone().multiplyScalar(0.96),
-    M.Headlamp,
-    Z.Front,
-    0.03,
-  );
-  b.block(x + side * 0.08, y - 0.07, F - 0.018, 0.12, 0.04, 0.008, amber, M.Amber, Z.Front, 0.012);
+/**
+ * A round LED headlamp as on the 2024-on 70 Series, set into the grille: a black bezel,
+ * a clear lens with the projector behind it and the daytime-running ring round its edge.
+ */
+function headlamp(b: VehicleBuilder, x: number, y: number): void {
+  const r = 0.1;
+  b.ring(x, y, F - 0.022, r + 0.012, 0.014, black, M.Rubber, 'z', Z.Front);
+  b.slot = M.Rubber;
+  b.tag = Z.Front;
+  b.push()
+    .translate(x, y, F - 0.012)
+    .rotate(Math.PI / 2, 0, 0);
+  b.geometry(new THREE.CylinderGeometry(r + 0.005, r + 0.005, 0.02, 32), trim);
+  b.pop();
+  b.ring(x, y, F - 0.026, r - 0.012, 0.007, lens, M.Headlamp, 'z', Z.Front);
+  b.slot = M.Headlamp;
+  b.push()
+    .translate(x, y + 0.01, F - 0.024)
+    .scale(1, 1, 0.3);
+  b.geometry(new THREE.SphereGeometry(0.038, 20, 8), lens);
+  b.pop();
+  b.ring(x, y + 0.01, F - 0.027, 0.042, 0.005, chrome, M.Metal, 'z', Z.Front);
+  b.slot = M.Headlamp;
+  b.push()
+    .translate(x, y, F - 0.03)
+    .scale(1, 1, 0.12);
+  b.geometry(new THREE.SphereGeometry(r - 0.004, 28, 8), lens.clone().multiplyScalar(0.9));
+  b.pop();
 }
 
 function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
@@ -339,25 +340,30 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
   for (let i = 0; i < 10; i++)
     b.block(-0.45 + i * 0.1, COWL.y + 0.006, COWL.z - 0.04, 0.06, 0.004, 0.05, black, M.Rubber, Z.Front);
 
-  // Front panel: a tall black grille with horizontal bars and a centre badge between the
-  // squared headlamps.
-  const gy = LAMP_Y - 0.01;
-  b.block(0, gy, F - 0.002, 0.74, 0.3, 0.02, black, M.Rubber, Z.Front, 0.02);
-  for (let i = 0; i < 4; i++)
-    b.block(
-      0,
-      gy - 0.1 + i * 0.066,
-      F - 0.016,
-      0.68,
-      0.03,
-      0.014,
-      trim.clone().multiplyScalar(1.5),
-      M.Rubber,
-      Z.Front,
-      0.006,
-    );
-  b.ring(0, gy + 0.01, F - 0.03, 0.05, 0.008, chrome, M.Metal, 'z', Z.Front);
-  for (const side of [-1, 1]) headlamp(b, side, side * 0.57, LAMP_Y);
+  // Front panel as on the 2024-on 70 Series: one wide black mesh grille across the face
+  // with the round LED headlamps set into its ends, a centre badge, and the indicators in
+  // its lower outer corners.
+  const gy = LAMP_Y,
+    gw = 1.44,
+    gh = 0.3;
+  b.block(0, gy, F - 0.004, gw + 0.04, gh + 0.04, 0.02, trim, M.Rubber, Z.Front, 0.03);
+  b.block(0, gy, F - 0.008, gw, gh, 0.02, black, M.Rubber, Z.Front, 0.025);
+  const mesh = trim.clone().multiplyScalar(1.6);
+  for (let row = 0; row < 8; row++)
+    for (let col = 0; col < 34; col++) {
+      const x = -gw / 2 + 0.03 + col * 0.04 + (row % 2) * 0.02,
+        y = gy - gh / 2 + 0.03 + row * 0.034;
+      if (Math.abs(x) > gw / 2 - 0.03) continue;
+      if (Math.hypot(Math.abs(x) - 0.58, y - gy) < 0.13) continue;
+      if (Math.hypot(x, y - gy) < 0.07) continue;
+      b.block(x, y, F - 0.02, 0.026, 0.022, 0.006, mesh, M.Rubber, Z.Front);
+    }
+  b.ring(0, gy, F - 0.024, 0.05, 0.008, chrome, M.Metal, 'z', Z.Front);
+  b.block(0, gy, F - 0.02, 0.07, 0.035, 0.006, chrome, M.Metal, Z.Front, 0.008);
+  for (const side of [-1, 1]) {
+    headlamp(b, side * 0.58, gy);
+    b.block(side * 0.62, gy - gh / 2 + 0.03, F - 0.022, 0.1, 0.03, 0.008, amber, M.Amber, Z.Front, 0.008);
+  }
   // Sump guard, steering box and the front diff's breather.
   b.block(0, -0.02, -1.78, 0.6, 0.03, 0.7, bar, M.Metal, Z.Trim, 0.01);
   b.block(0.38, 0.06, -2.05, 0.14, 0.16, 0.16, black, M.Metal, Z.Trim, 0.02);
@@ -530,6 +536,9 @@ function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: numb
   b.rod(v(x, y - r - 0.01, z + 0.06), v(x, y - r - 0.07, z + 0.06), 0.012, black, M.Metal, Z.Front);
 }
 
+/** Where the spare hangs behind the tray (its centre). */
+export const LC79_SPARE = { y: 0.62, z: 3.28 };
+
 /** Driving lamp lens centres, for the high-beam glow. */
 export const LC79_DRIVING_LAMPS = [-0.21, 0.21].map((x) => ({ x, y: 0.86, z: -2.51 }));
 
@@ -656,53 +665,18 @@ function tray(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
     );
   for (const x of [-0.43, 0.43])
     b.block(x, (deck - 0.16 + 0.09) / 2, mid, 0.08, deck - 0.25, len - 0.1, black, M.Metal, Z.Trim);
-  // Headboard behind the cab: a frame with a mesh guard up to the roof.
-  const hz = front + 0.02;
-  for (const x of [-half + 0.03, half - 0.03])
-    b.block(x, (deck + ROOF) / 2, hz, 0.05, ROOF - deck, 0.05, alloy, M.Metal, Z.Rear, 0.008);
-  b.block(0, ROOF - 0.02, hz, half * 2 - 0.04, 0.05, 0.05, alloy, M.Metal, Z.Rear, 0.008);
-  b.block(0, deck + 0.2, hz, half * 2 - 0.04, 0.4, 0.02, alloy, M.Metal, Z.Rear, 0.004);
-  for (let i = 1; i < 12; i++)
-    b.block(
-      -half + (i * half * 2) / 12,
-      (deck + 0.4 + ROOF) / 2,
-      hz,
-      0.012,
-      ROOF - deck - 0.42,
-      0.012,
-      alloy,
-      M.Metal,
-      Z.Rear,
-    );
-  // The spare standing behind the headboard, strapped to it.
-  const sz = front + 0.24;
-  b.tag = Z.Rear;
-  b.push()
-    .translate(0, deck + 0.475, sz)
-    .rotate(0, Math.PI / 2, 0);
-  b.geometry(wheel.clone(), black);
-  b.pop();
-  b.block(0, deck + 0.475, sz - 0.17, 0.08, 0.3, 0.02, black, M.Metal, Z.Rear);
-  // Black mudguards over the rear wheels with rubber flaps behind.
+  // Headboard behind the cab, the canopy's front wall above it.
+  b.block(0, deck + 0.2, front + 0.02, half * 2 - 0.04, 0.4, 0.04, alloy, M.Metal, Z.Rear, 0.006);
+  // Box mudguards under the deck over the rear wheels: a flat top, a short front face,
+  // and a back face with a rubber flap hanging below it.
   for (const side of [-1, 1]) {
-    const x = side * 0.8;
-    for (let i = 0; i < 9; i++) {
-      const a0 = Math.PI * (i / 9),
-        a1 = Math.PI * ((i + 1) / 9);
-      const r = 0.55;
-      const za = AXLE - Math.cos(a0) * r,
-        zb = AXLE - Math.cos(a1) * r;
-      const ya = -0.12 + Math.sin(a0) * r,
-        yb = -0.12 + Math.sin(a1) * r;
-      if (Math.max(ya, yb) > deck - 0.18) continue;
-      b.push()
-        .translate(x, (ya + yb) / 2, (za + zb) / 2)
-        .rotate(Math.atan2(yb - ya, zb - za), 0, 0);
-      b.box(0.36, 0.01, Math.hypot(zb - za, yb - ya) + 0.01, flare);
-      b.pop();
-    }
-    b.block(x, deck - 0.2, AXLE, 0.36, 0.02, 0.9, flare, M.Rubber, Z.Trim);
-    b.block(x, 0.0, AXLE + 0.6, 0.36, 0.38, 0.012, flare, M.Rubber, Z.Trim);
+    const x = side * 0.8,
+      top = deck - 0.17,
+      half = 0.58;
+    b.block(x, top, AXLE, 0.38, 0.02, half * 2, flare, M.Rubber, Z.Trim, 0.006);
+    b.block(x, top - 0.09, AXLE - half, 0.38, 0.18, 0.02, flare, M.Rubber, Z.Trim, 0.006);
+    b.block(x, top - 0.16, AXLE + half, 0.38, 0.32, 0.02, flare, M.Rubber, Z.Trim, 0.006);
+    b.block(x, top - 0.52, AXLE + half + 0.005, 0.38, 0.4, 0.012, rubber, M.Rubber, Z.Trim);
     // Under-tray toolbox ahead of the wheel, and a water tank behind it.
     b.block(
       side * 0.72,
@@ -736,7 +710,22 @@ function tray(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.geometry(new THREE.SphereGeometry(0.03, 12, 8), steel);
   b.pop();
   for (const side of [-1, 1]) b.ring(side * 0.62, 0.04, back + 0.1, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
-  plate(b, -0.42, deck - 0.11, back + 0.012, 1);
+  plate(b, 0.68, 0.14, back + 0.084, 1);
+  // The spare hangs off the back on a carrier bolted to the tray's tail and the rear bar.
+  const sz = LC79_SPARE.z,
+    sy = LC79_SPARE.y;
+  for (const x of [-0.3, 0.3]) {
+    b.block(x, (deck - 0.05 + 0.19) / 2, back + 0.06, 0.05, deck - 0.24, 0.05, bar, M.Metal, Z.Rear, 0.006);
+    b.rod(v(x, sy - 0.25, back + 0.06), v(x * 0.4, sy - 0.08, sz - 0.12), 0.02, bar, M.Metal, Z.Rear);
+    b.rod(v(x, sy + 0.25, back + 0.06), v(x * 0.4, sy + 0.08, sz - 0.12), 0.02, bar, M.Metal, Z.Rear);
+  }
+  b.block(0, sy, sz - 0.13, 0.2, 0.2, 0.03, bar, M.Metal, Z.Rear, 0.01);
+  b.tag = Z.Rear;
+  b.push()
+    .translate(0, sy, sz)
+    .rotate(0, Math.PI / 2, 0);
+  b.geometry(wheel.clone(), black);
+  b.pop();
 }
 
 /** The canopy: black alloy box with gullwing doors each side, a rear door and a roof rack. */
@@ -964,7 +953,7 @@ export function buildLc79Plank(index: number): THREE.BufferGeometry {
   const board = new THREE.Color('#C7742E');
   const x = index === 0 ? -0.42 : 0.42,
     y = RACK.y + 0.04,
-    z = (CAN.front + CAN.back) / 2 - 0.08;
+    z = (CAN.front + CAN.back) / 2;
   const L = plankTuning.length,
     W = plankTuning.width;
   b.block(x, y, z, W, 0.05, L, board, M.Fabric, Z.Roof);
