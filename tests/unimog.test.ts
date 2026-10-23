@@ -113,10 +113,11 @@ describe('Unimog UL1700L', () => {
       const ray = new Raycaster(new Vector3(side * 0.75, -0.12, wheel.z), new Vector3(side, 0, 0), 0, 0.5);
       expect(ray.intersectObject(shell)).toHaveLength(0);
     }
-    // The body is about 6.7 m long and 2.3 m wide, the tilt about 2.9 m off the ground.
+    // The body is about 6.7 m long and 2.3 m wide (about 3.1 m across the mirrors), the tilt
+    // about 2.9 m off the ground.
     const box = new Box3().setFromBufferAttribute(model.body.geometry.getAttribute('position') as never);
     expect(box.max.z - box.min.z).toBeGreaterThan(6.5);
-    expect(box.max.x - box.min.x).toBeLessThan(2.9);
+    expect(box.max.x - box.min.x).toBeLessThan(3.2);
     expect(model.suspension.group.children.filter((c) => c.name.startsWith('coil-')).length).toBeGreaterThan(
       0,
     );

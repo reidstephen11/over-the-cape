@@ -899,3 +899,23 @@ Agreed with the owner in an interview, and written into SPEC.md. Nothing in the 
 - **Other vehicles and people are allowed**, replacing the earlier rule that there were none. Kept simple: stuck vehicles to winch or tow and a person at camp shown through on-screen text; no traffic.
 - **A quieter HUD** with labelled icons; supplies show only when they change or in the tool menu.
 - **The GQ Patrol** (v0.19) is added to the spec's vehicle list.
+
+## v0.21: more realistic vehicles
+
+**What the owner asked.** Make the vehicles look more like the real ones while keeping the game's style (SPEC.md §5a), starting with the 40 Series. Each body was rebuilt as a mock-up page the owner could turn round and compare with the game's, changed after each round of feedback, and moved into the game once all six were approved.
+
+**What changed.**
+
+- **Short-wheelbase 4WD (40 Series):** guards with flat tops rolling over into an upright nose, round headlamps in square chrome bezels, a pressed grille panel, a flat bonnet standing a little above the guards, a near-upright windscreen, doors with shut lines, hinges and handles, a hardtop with sliding windows and curved rear corner windows, and round mirrors on cranked stalks. The roof rack and its load are unchanged.
+- **Camel Trophy 4WD:** the same new body. The door decals sit lower, below the pressed crease along the side, and the snorkel follows the new windscreen pillar. Its air intake moved with the ram head (`src/data/camel.ts`) and is still about 2 m off the ground, so it wades as before.
+- **GQ Patrol:** a front clip with rounded shoulders and corners, the bonnet raised and sloping gently to the nose, square wheel openings under flat-topped flares, round headlamps in square surrounds, door mirrors on black sails, and a wide bar with the two driving lamps hung under its top rail (they had sat up high on the bar).
+- **Troop Carrier:** a squarer front with rounded corners, round headlamps in square black surrounds either side of a slatted grille, indicators wrapped round the corners, and mirrors on sails.
+- **Hilux:** the bull bar rebuilt as a three-hoop brushguard, and new mirrors.
+- **Unimog:** the front mudguards turned the right way up and standing clear of the wheels; the parts at the back (lamp brackets, number plate, jerry cans and spare) fixed to a subframe and crossmember instead of floating; headlamps low in the bumper behind wire guards; tall mirrors on a tubular frame.
+- **Perentie:** a crowned bonnet carrying the Army's pick, shovel and axe, as on the real Army 110 (its spare is slung under the rear floor); a three-hoop brushguard; new mirrors. A spare on the bonnet, a Land Rover 110 option, is built in (`buildPerentieBody`'s third argument) but can't be picked in the game yet.
+
+Shared pieces live in `src/render/bodyShapes.ts` (rounded outlines, extrusions, window panes, round sealed-beam headlamps), `roobar.ts` (the three-hoop brushguard) and `mirrors.ts`. The headlight beams and the Patrol's high-beam driving lamps start from the new lens positions (`vehicleLooks.ts`).
+
+**How it was checked.** Before each mock-up went to the owner, and again in the game before this release, every vehicle was drawn from nine angles and close up, looking for parts that float or cut through each other.
+
+**Tests.** Nothing drives differently. The Unimog's size test now allows for its wider mirrors (about 3.1 m across them); the other vehicle tests (open wheel wells, dirt and dents, lamps, the Camel Trophy snorkel at its air intake) pass unchanged.

@@ -24,8 +24,8 @@ export interface VehicleLook {
 }
 
 const fortySeriesHeadlamps: Vec3[] = [
-  { x: -0.535, y: 0.605, z: -1.948 },
-  { x: 0.535, y: 0.605, z: -1.948 },
+  { x: -0.683, y: 0.5, z: -1.814 },
+  { x: 0.683, y: 0.5, z: -1.814 },
 ];
 
 export const vehicleLooks: Record<VehicleId, VehicleLook> = {
@@ -92,8 +92,8 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'coil',
     lamps: {
       head: [
-        { x: -0.86, y: 0.62, z: -3.045 },
-        { x: 0.86, y: 0.62, z: -3.045 },
+        { x: -0.86, y: 0.38, z: -3.186 },
+        { x: 0.86, y: 0.38, z: -3.186 },
       ],
     },
   },
@@ -107,8 +107,8 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'leaf',
     lamps: {
       head: [
-        { x: -0.63, y: 0.56, z: -2.22 },
-        { x: 0.63, y: 0.56, z: -2.22 },
+        { x: -0.6, y: 0.56, z: -2.224 },
+        { x: 0.6, y: 0.56, z: -2.224 },
       ],
     },
   },
@@ -121,13 +121,13 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'coil',
     lamps: {
       head: [
-        { x: -0.645, y: 0.43, z: -2.29 },
-        { x: 0.645, y: 0.43, z: -2.29 },
+        { x: -0.645, y: 0.48, z: -2.3 },
+        { x: 0.645, y: 0.48, z: -2.3 },
       ],
-      // The two driving lamps on the bull bar come on with high beam.
+      // The two driving lamps under the bull bar's top rail come on with high beam.
       roof: [
-        { x: -0.28, y: 0.86, z: -2.43 },
-        { x: 0.28, y: 0.86, z: -2.43 },
+        { x: -0.19, y: 0.645, z: -2.417 },
+        { x: 0.19, y: 0.645, z: -2.417 },
       ],
     },
   },
