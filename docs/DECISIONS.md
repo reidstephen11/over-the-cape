@@ -973,3 +973,7 @@ A follow-up to the surprises (v0.18), checked on today's vehicles (v0.21 changed
 - **The drive script** (`scripts/surprise-drive.ts`) takes `rain` after the event id (or `all`), driving on the ground as the storm leaves it by about 5 pm: wet clay at 0.43 grip instead of 0.58.
 - **The test driver** (`tests/helpers/surprises.ts`) backing away from a tree it has winched round now stops if it drifts 1.6 m off the track's line. In the rain, reversing blind for 8 s slid the short-wheelbase 4WD off the range top's edge onto black soil, where it stuck.
 - **Results**, 12 runs (36 events): in the wet, the short-wheelbase 4WD and the Land Rover get past all of them. In the rain the Land Rover gets past all 36 and the short-wheelbase 4WD 34. The other two are rockfalls on the Roaring Meg climb, which it can't crawl up in full rain even with no rocks there. On the clock it reaches that climb around 2 pm, before the storm, so no change was made.
+
+## v0.27: handover notes for trailers and towing
+
+No change to the game. The owner asked for towing missions with a trailer (another vehicle or fuel drums to deliver) when the Hilux and Episode 2 were planned, and chose to build them after those two. Both have shipped and towing hasn't started, so the owner confirmed it as the next job. `docs/NEXT.md` holds the notes for whoever builds it: what was asked, what the game has now (tow points, drawn hitches, the Unimog's empty tray), the questions to ask the owner first, and a build plan in steps. CLAUDE.md points to it until the first towing mission ships.
