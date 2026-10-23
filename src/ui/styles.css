@@ -550,6 +550,12 @@ body {
   height: 26px;
 }
 
+/* A short word beside an icon, so it says what it counts. */
+.status-label {
+  font-size: 0.8em;
+  color: var(--ink-soft);
+}
+
 .status-winch,
 .status-engine,
 .status-lights,

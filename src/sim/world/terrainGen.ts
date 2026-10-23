@@ -2,7 +2,7 @@ import { SurfaceId } from '../../data/surfaces';
 import type { FlatDef, MapDef, ScarpDef, HillDef, TrackDef } from './mapTypes';
 import { Noise2D, clamp, smoothstep } from './noise';
 import { attrAt, densify, locate, type DensePolyline } from './polyline';
-import { GroundTint, NO_WATER, Terrain } from './terrain';
+import { GroundTint, NO_WATER, Terrain, TrackPaintKind, trackTint } from './terrain';
 import type { CreekInfo, GullyInfo, StaticBox, TerrainFeatures, TrackInfo } from './features';
 import { buildDetailPatch, type DetailPatch } from './detail';
 import { onBridge } from './bridges';
@@ -882,6 +882,8 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   }
 
   const trackDistance = new Uint8Array(n).fill(255);
+  const paintEdge = new Int8Array(n);
+  const paint = new Uint8Array(n);
   for (let i = 0; i < n; i++) {
     const id = trackOwner[i];
     if (id < 0) continue;
@@ -889,6 +891,19 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const hw = def.width / 2;
     const d = trackDist[i];
     trackDistance[i] = Math.min(255, Math.max(0, Math.round(d - hw)));
+    const kind = def.faint
+      ? TrackPaintKind.Faint
+      : def.surface === 'gravel'
+        ? TrackPaintKind.Gravel
+        : def.surface === 'concrete'
+          ? TrackPaintKind.Concrete
+          : def.surface === 'rock' || def.surface === 'sand'
+            ? TrackPaintKind.None
+            : TrackPaintKind.Dirt;
+    if (kind && d - hw < 2) {
+      paintEdge[i] = Math.max(-127, Math.round((d - hw) * 10));
+      paint[i] = kind | (tint[i] << 3);
+    }
     if (d > hw + 0.6) continue;
     if (def.faint) {
       if (d <= hw) {
@@ -914,6 +929,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       if (def.sand.some(([from, to]) => along >= from && along <= to)) {
         surface[i] = SurfaceId.Sand;
         tint[i] = GroundTint.Sand;
+        paint[i] = 0;
         continue;
       }
     }
@@ -987,8 +1003,17 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 
   yield { progress: 0.8, label: 'Terrain ready' };
 
+  // Keep smooth edges only where nothing painted over the track or the ground beside it.
+  for (let i = 0; i < n; i++) {
+    const p = paint[i];
+    if (!p) continue;
+    const t = tint[i];
+    if (t !== p >> 3 && t !== GroundTint.DirtEdge && t !== trackTint(p & 7)) paint[i] = 0;
+  }
+
   const terrain = new Terrain(map.width, map.length, heights, surface, tint, water);
   terrain.holes = holes;
+  terrain.trackPaint = { edge: paintEdge, paint };
   // Fine ruts and drainage humps over the finished 1 m ground.
   const patches: DetailPatch[] = [];
   for (const t of tracks) {
