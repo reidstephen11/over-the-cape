@@ -67,14 +67,20 @@ export function addPatrolInterior(b: VehicleBuilder, redlineRpm: number): void {
     b.pop();
   }
   // Rear bench and backrest, and the cargo floor behind with a fridge and a toolbox.
-  b.block(0, 0.42, 0.78, 1.5, 0.12, 0.5, cloth, M.Fabric, Z.Trim, 0.045);
-  b.block(0, 0.3, 0.78, 1.4, 0.16, 0.44, dark, M.Metal, Z.Trim);
-  b.push().translate(0, 0.76, 1.05).rotate(-0.15, 0, 0);
+  b.block(0, 0.55, 0.78, 1.5, 0.12, 0.5, cloth, M.Fabric, Z.Trim, 0.045);
+  b.block(0, 0.41, 0.78, 1.4, 0.16, 0.44, dark, M.Metal, Z.Trim);
+  b.push().translate(0, 0.88, 1.05).rotate(-0.15, 0, 0);
   b.block(0, 0, 0, 1.5, 0.6, 0.12, cloth, M.Fabric, Z.Trim, 0.045);
   b.pop();
-  b.block(0, 0.22, 1.85, 1.6, 0.03, 1.15, dark, M.Fabric, Z.Trim);
-  b.block(-0.35, 0.44, 1.8, 0.62, 0.42, 0.42, new THREE.Color('#4C5155'), M.Paint, Z.Trim, 0.03);
-  b.block(0.4, 0.38, 1.9, 0.5, 0.3, 0.35, new THREE.Color('#7A1F1C'), M.Paint, Z.Trim, 0.02);
+  b.block(0, 0.22, 1.85, 1.16, 0.03, 1.15, dark, M.Fabric, Z.Trim);
+  b.block(0, 0.22, 2.245, 1.6, 0.03, 0.36, dark, M.Fabric, Z.Trim);
+  for (const side of [-1, 1]) {
+    b.block(side * 0.715, 0.56, 1.485, 0.27, 0.035, 1.2, dark, M.Fabric, Z.Trim, 0.012);
+    b.block(side * 0.59, 0.39, 1.485, 0.025, 0.34, 1.2, dark, M.Fabric, Z.Trim);
+    for (const z of [0.895, 2.075]) b.block(side * 0.715, 0.39, z, 0.27, 0.34, 0.02, dark, M.Fabric, Z.Trim);
+  }
+  b.block(-0.2, 0.44, 1.8, 0.56, 0.42, 0.42, new THREE.Color('#4C5155'), M.Paint, Z.Trim, 0.03);
+  b.block(0.32, 0.38, 1.9, 0.42, 0.3, 0.35, new THREE.Color('#7A1F1C'), M.Paint, Z.Trim, 0.02);
   // Door trims with pulls and window winders, and the headlining.
   for (const side of [-1, 1]) {
     b.block(side * 0.81, 0.5, -0.24, 0.02, 0.48, 1.02, dash, M.Rubber, Z.Trim, 0.01);
