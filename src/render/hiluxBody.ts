@@ -16,6 +16,7 @@ import { roundHead, stalk } from './mirrors';
  * bumper. Added for the game: a black bull bar with a winch behind it, and a ladder rack
  * over the tub that carries the two recovery boards. The tailgate is left plain, with no
  * maker's lettering. Ground is about 0.5 m below the origin when parked.
+ * Photographs and dimensions: reference/vehicles/hilux-1979-83/SOURCES.md.
  */
 const { paint, chrome, bar } = hiluxColors;
 const black = new THREE.Color('#1E2120'),

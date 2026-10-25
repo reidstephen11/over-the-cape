@@ -27,6 +27,7 @@ import { mirrorHead } from './mirrors';
  * with rounded edges, a glasshouse with its pillars and window rubbers, door mirrors on
  * black sails, and a wide ARB-style bar with driving lamps under its top rail (x across,
  * y up, z back; the ground 0.51 m below the origin when parked).
+ * Photographs and dimensions: reference/vehicles/nissan-gq-patrol/SOURCES.md.
  */
 const { paint, lower, flare, bar, trim } = patrolColors;
 const black = new THREE.Color('#1B1E1F'),

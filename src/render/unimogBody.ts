@@ -27,6 +27,7 @@ import {
  * behind the front bumper, a pintle hook on the rear crossmember and the second spare on a
  * carrier on the left dropside. Ground is about
  * 0.68 m below the origin when parked.
+ * Photographs and dimensions: reference/vehicles/unimog-ul1700l/SOURCES.md.
  */
 const { paint, bar } = unimogColors;
 const black = new THREE.Color('#1F2320'),

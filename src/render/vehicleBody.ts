@@ -10,6 +10,8 @@ import { roundHead, stalk } from './mirrors';
 
 // Axes as in the game: x across, y up from the body origin (the axles sit 0.12 m lower on
 // the lifted springs), z backwards, so the nose is at -z.
+// Photographs and dimensions: reference/vehicles/landcruiser-fj40/SOURCES.md
+// (the Camel Trophy dress: reference/vehicles/camel-trophy/SOURCES.md).
 export const HW = 0.832; // half the 1.665 m body width
 const AXLE = 1.15; // half the 2.3 m wheelbase
 const ARCH = 0.52;

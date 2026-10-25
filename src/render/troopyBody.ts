@@ -24,7 +24,7 @@ import { mirrorHead } from './mirrors';
  * from the door to the tail with its window openings; round wheel openings with black
  * flare lips, rounded rear corners and roof edges, round headlamps in square surrounds,
  * door mirrors on black sails and an ARB-style bar (ground about 0.52 m below the origin
- * when parked).
+ * when parked). Photographs and dimensions: reference/vehicles/landcruiser-hzj75-troopy/SOURCES.md.
  */
 const { paint, bar, bumper, chrome } = troopyColors;
 const black = new THREE.Color('#1E2120'),
