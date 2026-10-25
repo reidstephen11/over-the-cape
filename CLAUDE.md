@@ -2,6 +2,10 @@
 
 **Next job:** trailers and towing missions. Read `docs/NEXT.md` before starting.
 
+## Modelling a vehicle
+
+Read `reference/vehicles/README.md` before changing a body, then that vehicle's `SOURCES.md`. Open the photographs and compare the model with them before the change and again after it, using the studio page. Match the silhouette to the published dimensions at 1 unit = 1 metre. Do not reshape a body from memory. The photographs are reference only: the game still draws every vehicle in code, and these files are not textures.
+
 ## Shipping every update
 
 The owner wants every finished update merged into `main` and published, without being asked each time. GitHub Actions deploys `main` to GitHub Pages.

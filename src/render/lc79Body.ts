@@ -14,6 +14,7 @@ import { mirrorHead } from './mirrors';
  * with a winch, driving lamps and a light bar, a snorkel up the right pillar, and behind
  * the cab an alloy tray and a black canopy with gullwing doors, one spare on its rear
  * door and a second flat on its roof rack (ground about 0.59 m below the origin when parked).
+ * Photographs and dimensions: reference/vehicles/landcruiser-79-2024/SOURCES.md.
  */
 const { bar, flare, canopy, alloy, chrome } = lc79Colors;
 const black = new THREE.Color('#1E2120'),
