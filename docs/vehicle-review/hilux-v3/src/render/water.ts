@@ -1,0 +1,236 @@
+import * as THREE from 'three';
+import { NO_WATER, type Terrain } from '../sim/world/terrain';
+import { CREEK_MARGIN } from '../sim/world/flood';
+import type { WaterCurrent } from '../sim/world/current';
+import { pal } from './colors';
+import { patchFog } from './fog';
+
+const TILE = 128;
+
+/**
+ * Creek water surface built from the terrain's water grid: reflective, animated and translucent,
+ * coloured from shallow to deep, with pale foam where the surface is steep (the Falls). Ripples
+ * and flecks of foam run downstream with the current. Puddles on the tracks are tinted a muddy
+ * brown.
+ */
+export class WaterMesh {
+  readonly group = new THREE.Group();
+  readonly material: THREE.MeshStandardMaterial;
+  /** Puddles are drawn without the creek's depth offset, so their edges follow the ground. */
+  readonly puddleMaterial: THREE.MeshStandardMaterial;
+  private readonly time = { value: 0 };
+  /** A storm's creek rise (m) and current (a multiple of their own), each creek by its share. */
+  private readonly rise = { value: 0 };
+  private readonly flowScale = { value: 1 };
+
+  /**
+   * creekDistance (metres to the creek, per cell) tells puddles from the creek; without it all
+   * water is creek. `current` gives the creek water's velocity at each vertex, and `riseShare`
+   * each sample's share of a storm's creek rise (features.creekRise).
+   */
+  constructor(
+    terrain: Terrain,
+    _seed: number,
+    levelOffset = 0,
+    creekDistance?: Uint8Array,
+    current?: WaterCurrent,
+    riseShare?: Float32Array,
+  ) {
+    this.material = this.createMaterial(true);
+    this.puddleMaterial = this.createMaterial(false);
+    this.group.name = 'water';
+    const { resX: res, halfX, halfZ } = terrain;
+    const W = terrain.water;
+    const H = terrain.heights;
+    const shallow = pal('waterShallow');
+    const deep = pal('waterDeep');
+    const foam = pal('barkPale');
+    const muddy = new THREE.Color('#6B5A44');
+    const tmp = new THREE.Color();
+    const tilesX = terrain.sizeX / TILE;
+    const tilesZ = terrain.sizeZ / TILE;
+    // The current at each water vertex, looked up once (vertex index → [x, z]).
+    const flows = new Map<number, readonly [number, number]>();
+    const still = [0, 0] as const;
+    const at = { x: 0, z: 0 };
+    const flowAt = (i: number): readonly [number, number] => {
+      if (!current) return still;
+      let f = flows.get(i);
+      if (!f) {
+        current.at((i % res) - halfX, Math.floor(i / res) - halfZ, at);
+        flows.set(i, (f = [at.x, at.z]));
+      }
+      return f;
+    };
+    for (let tz = 0; tz < tilesZ; tz++)
+      for (let tx = 0; tx < tilesX; tx++) {
+        // Creek cells and puddle cells go into separate meshes with their own material.
+        const creek = {
+          pos: [] as number[],
+          col: [] as number[],
+          flow: [] as number[],
+          rise: [] as number[],
+        };
+        const puddle = {
+          pos: [] as number[],
+          col: [] as number[],
+          flow: [] as number[],
+          rise: [] as number[],
+        };
+        for (let iz = tz * TILE; iz < (tz + 1) * TILE; iz++)
+          for (let ix = tx * TILE; ix < (tx + 1) * TILE; ix++) {
+            const i00 = iz * res + ix;
+            const i10 = i00 + 1;
+            const i01 = i00 + res;
+            const i11 = i01 + 1;
+            const w = [W[i00], W[i10], W[i01], W[i11]];
+            let maxW = NO_WATER;
+            for (const x of w) if (x > maxW) maxW = x;
+            if (maxW <= NO_WATER) continue;
+            for (let k = 0; k < 4; k++) if (w[k] <= NO_WATER) w[k] = maxW;
+            const [w00, w10, w01, w11] = w.map((x) => x + levelOffset);
+            const bed = (H[i00] + H[i10] + H[i01] + H[i11]) / 4;
+            const depth = (w00 + w10 + w01 + w11) / 4 - bed;
+            const steep = Math.max(Math.abs(w10 - w00), Math.abs(w01 - w00), Math.abs(w11 - w00));
+            tmp.copy(shallow).lerp(deep, Math.min(1, Math.max(0, (depth - 0.2) / 0.6)));
+            if (steep > 0.35) tmp.lerp(foam, Math.min(0.85, (steep - 0.35) * 0.6));
+            // Creek water lies on the creek line; puddles are kept well clear of it.
+            const isPuddle = creekDistance !== undefined && creekDistance[i00] > CREEK_MARGIN;
+            if (isPuddle) tmp.lerp(muddy, 0.75);
+            const out = isPuddle ? puddle : creek;
+            const x0 = ix - halfX;
+            const z0 = iz - halfZ;
+            const vertex = (p: number[], i: number) => {
+              out.pos.push(...p);
+              out.col.push(tmp.r, tmp.g, tmp.b);
+              out.flow.push(...(isPuddle ? still : flowAt(i)));
+              out.rise.push(isPuddle ? 0 : (riseShare?.[i] ?? 0));
+            };
+            const p00 = [x0, w00, z0];
+            const p10 = [x0 + 1, w10, z0];
+            const p01 = [x0, w01, z0 + 1];
+            const p11 = [x0 + 1, w11, z0 + 1];
+            vertex(p00, i00);
+            vertex(p11, i11);
+            vertex(p10, i10);
+            vertex(p00, i00);
+            vertex(p01, i01);
+            vertex(p11, i11);
+          }
+        this.addMesh(creek, this.material);
+        this.addMesh(puddle, this.puddleMaterial);
+      }
+  }
+
+  /**
+   * Creeks risen by a storm (m above their own level) and running faster: each creek's water
+   * rises by its share, its ripples run faster and it turns muddier the higher it is.
+   */
+  setCreeks(rise: number, flowScale: number): void {
+    this.rise.value = rise;
+    this.flowScale.value = flowScale;
+  }
+
+  private addMesh(
+    m: { pos: number[]; col: number[]; flow: number[]; rise: number[] },
+    material: THREE.Material,
+  ): void {
+    if (m.pos.length === 0) return;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(m.pos, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(m.col, 3));
+    geo.setAttribute('waterFlow', new THREE.Float32BufferAttribute(m.flow, 2));
+    geo.setAttribute('waterRiseShare', new THREE.Float32BufferAttribute(m.rise, 1));
+    geo.computeVertexNormals();
+    geo.computeBoundingSphere();
+    // Room for the water to rise in a storm.
+    geo.boundingSphere!.radius += 0.5;
+    const mesh = new THREE.Mesh(geo, material);
+    mesh.renderOrder = 10;
+    mesh.receiveShadow = true;
+    mesh.matrixAutoUpdate = false;
+    this.group.add(mesh);
+  }
+  update(dt: number): void {
+    this.time.value += dt;
+  }
+
+  private createMaterial(offset: boolean): THREE.MeshStandardMaterial {
+    const material = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.82,
+      depthWrite: false,
+      roughness: 0.22,
+      metalness: 0.12,
+      polygonOffset: offset,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -2,
+    });
+    material.onBeforeCompile = (shader) => {
+      shader.uniforms.waterTime = this.time;
+      shader.uniforms.waterRise = this.rise;
+      shader.uniforms.waterFlowScale = this.flowScale;
+      shader.vertexShader =
+        `attribute vec2 waterFlow; attribute float waterRiseShare; uniform float waterRise; uniform float waterFlowScale;
+        varying vec3 vWaterPosition; varying vec2 vWaterFlow; varying float vWaterSilt;\n${shader.vertexShader}`.replace(
+          '#include <begin_vertex>',
+          `#include <begin_vertex>
+          // A storm raises each creek by its share, runs it faster and muddies it.
+          transformed.y += waterRise * waterRiseShare;
+          vWaterPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;
+          vWaterFlow = waterFlow * (1.0 + (waterFlowScale - 1.0) * waterRiseShare);
+          vWaterSilt = min(1.0, waterRise * waterRiseShare / 0.3);`,
+        );
+      shader.fragmentShader =
+        `uniform float waterTime; varying vec3 vWaterPosition; varying vec2 vWaterFlow; varying float vWaterSilt;
+        // Ripples carried downstream: two copies of the pattern slide with the current,
+        // each restarting while the other is in full view, so they never stretch.
+        vec2 waterWaves(vec2 p) {
+          return vec2(
+            cos(p.x * 3.1 + p.y * 1.8 + waterTime * 1.3) * 0.045 + cos(p.x * 8.0 - p.y * 3.0 - waterTime * 2.1) * 0.018,
+            sin(p.y * 4.2 - p.x * 1.2 + waterTime * 1.6) * 0.04);
+        }
+        // Flecks of foam drawn out into streaks along the current (dir: its direction).
+        float waterFlecks(vec2 p, vec2 dir) {
+          vec2 q = vec2(dot(p, dir), dot(p, vec2(-dir.y, dir.x)));
+          return smoothstep(0.7, 1.0, sin(q.x * 0.8 + sin(q.y * 1.7)) * sin(q.y * 3.4 + sin(q.x * 0.5)));
+        }
+        \n${shader.fragmentShader}`
+          .replace(
+            '#include <color_fragment>',
+            `
+          #include <color_fragment>
+          // Floodwater carries mud: the creek turns brown as it rises.
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.42, 0.33, 0.22), vWaterSilt * 0.55);
+          float flowPhase = fract(waterTime * 0.4);
+          float flowBlend = abs(1.0 - 2.0 * flowPhase);
+          vec2 flowA = vWaterPosition.xz - vWaterFlow * flowPhase * 2.5;
+          vec2 flowB = vWaterPosition.xz - vWaterFlow * fract(flowPhase + 0.5) * 2.5 + vec2(0.37, 0.71);
+          float flowSpeed = length(vWaterFlow);
+          vec2 flowDir = flowSpeed > 0.01 ? vWaterFlow / flowSpeed : vec2(1.0, 0.0);
+          float flecks = mix(waterFlecks(flowA, flowDir), waterFlecks(flowB, flowDir), flowBlend);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.78, 0.8, 0.76), flecks * min(1.0, flowSpeed * 0.35) * 0.3);
+        `,
+          )
+          .replace(
+            '#include <normal_fragment_maps>',
+            `
+          #include <normal_fragment_maps>
+          vec2 wave = mix(waterWaves(flowA), waterWaves(flowB), flowBlend) * (1.0 + flowSpeed * 0.5);
+          normal = normalize(normal + mat3(viewMatrix) * vec3(wave.x, 0.0, wave.y));
+        `,
+          )
+          .replace(
+            '#include <opaque_fragment>',
+            `
+          float fresnel = pow(1.0 - max(dot(normal, normalize(vViewPosition)), 0.0), 3.0);
+          outgoingLight = mix(outgoingLight, vec3(0.39, 0.51, 0.52), fresnel * 0.35);
+          diffuseColor.a = 0.68 + fresnel * 0.29;
+          #include <opaque_fragment>
+        `,
+          );
+    };
+    return patchFog(material, offset ? 'flowing-water-v3' : 'puddle-water-v3');
+  }
+}

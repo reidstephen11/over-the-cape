@@ -1,0 +1,30 @@
+{
+  "standaloneHTTP": "passed",
+  "ninetyLayout": {
+    "leftHandDrive": true,
+    "proposedCoils": true,
+    "baselineLeaves": true,
+    "wheelbase": 2.36,
+    "track": 1.486
+  },
+  "standaloneFileURL": "not tested: file navigation blocked by managed-browser policy",
+  "originalProposalSwitch": "passed",
+  "hideBarPreservesHeadlamps": "passed",
+  "barRestoreExactIndices": "passed",
+  "roofHideAndExactRestore": "passed",
+  "bonnetSpareAndRoofHideRestore": "passed",
+  "cameraButtons": 6,
+  "steeringAndCompression": "passed, including suspension position",
+  "exportButton": "passed",
+  "exportInvariantUnderReviewToggles": "byte-identical GLB",
+  "resetStance": "passed",
+  "glbReload": "passed",
+  "sourceTriangles": 162011,
+  "exportTriangles": 162011,
+  "bounds": [
+    2.1479798555374146,
+    2.6896535110473634,
+    4.332695960998535
+  ],
+  "browserErrors": []
+}

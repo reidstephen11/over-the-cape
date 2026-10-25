@@ -1,0 +1,8 @@
+{
+  "cleanInstall": "npm ci --ignore-scripts passed in a separate copied directory",
+  "typecheck": "passed in both copies",
+  "productionBuild": "passed in both copies",
+  "independentBuildBundleIdentical": true,
+  "bundleSHA256": "b4a968761ec17e2177df8f333a741841789da98301a9a37223c89fdd3878e56a",
+  "independentCopy": "/workspace/vehicle-review/sooty80-portable-check"
+}

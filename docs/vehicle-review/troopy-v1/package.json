@@ -1,0 +1,28 @@
+{
+  "name": "troopy-review",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5230",
+    "build": "tsc --noEmit && vite build",
+    "audit": "vite-node audit.ts && vite-node all-solid-check.ts && vite-node mesh-clearance.ts --full && vite-node spare-clearance.ts",
+    "inspect": "node inspect.mjs",
+    "baseline": "vite-node baseline-check.ts",
+    "verify": "node verify-v1.mjs"
+  },
+  "dependencies": {
+    "three": "0.186.1",
+    "@dimforge/rapier3d-compat": "0.21.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "22.20.5",
+    "@types/three": "0.186.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vite-node": "3.2.4",
+    "prettier": "3.9.10",
+    "three-mesh-bvh": "0.9.16"
+  }
+}

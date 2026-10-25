@@ -1,0 +1,27 @@
+{
+  "source": "https://github.com/reidstephen11/over-the-cape",
+  "proposal": "1986 Australia Camel Trophy Land Rover Ninety; user-requested rebuild from the game FJ40 tribute",
+  "checkouts": [
+    {
+      "path": "/workspace/4wd-simulator",
+      "commit": "54a240aebb1af7c2561753a408f3526f461e23a8",
+      "status": "clean"
+    },
+    {
+      "path": "/workspace/vehicle-review/over-the-cape-source",
+      "commit": "da09ef5d7ec518382953e4a333b101ec06b21004",
+      "status": "clean"
+    }
+  ],
+  "hiluxReview": "all original manifest checksums preserved",
+  "patrolReview": "all original manifest checksums preserved",
+  "lc79Review": "all original manifest checksums preserved",
+  "perentieReview": "all original manifest checksums preserved",
+  "unimogReview": "all original manifest checksums preserved",
+  "troopyReview": "all original manifest checksums preserved",
+  "fj40Review": "all original manifest checksums preserved",
+  "cleanInstallAndBuild": "passed in a separate copy",
+  "gameIntegration": "none; pending user approval",
+  "modelSHA256": "81f0aba2386836bf768578eb6271cdb543db4f68e6857633e9ab24bd7a48d3c1",
+  "viewerSHA256": "e4cd85040a6b6c742e36de689a82717b9ea86cb727b14a62f5dc33ea8facc3b5"
+}

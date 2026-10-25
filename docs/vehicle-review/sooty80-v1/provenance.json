@@ -1,0 +1,28 @@
+{
+  "source": "https://github.com/reidstephen11/over-the-cape",
+  "proposal": "Sooty MkII-inspired modified Toyota 80 Series; new isolated model study",
+  "checkouts": [
+    {
+      "path": "/workspace/4wd-simulator",
+      "commit": "54a240aebb1af7c2561753a408f3526f461e23a8",
+      "status": "clean"
+    },
+    {
+      "path": "/workspace/vehicle-review/over-the-cape-source",
+      "commit": "da09ef5d7ec518382953e4a333b101ec06b21004",
+      "status": "clean"
+    }
+  ],
+  "hiluxReview": "all original manifest checksums preserved",
+  "patrolReview": "all original manifest checksums preserved",
+  "lc79Review": "all original manifest checksums preserved",
+  "perentieReview": "all original manifest checksums preserved",
+  "unimogReview": "all original manifest checksums preserved",
+  "troopyReview": "all original manifest checksums preserved",
+  "fj40Review": "all original manifest checksums preserved",
+  "camelReview": "all original manifest checksums preserved",
+  "cleanInstallAndBuild": "passed in a separate copy",
+  "gameIntegration": "none; pending user approval",
+  "modelSHA256": "ad4bb8d03a2bcd4f6d702d90e41f364afd5bf6ce9b54a2606cb81613542c7223",
+  "viewerSHA256": "75accf07366b4bc57a69defd2ea2c6d72e9b93b197daebce235003f2e1c31a15"
+}

@@ -1,0 +1,23 @@
+{
+  "source": "https://github.com/reidstephen11/over-the-cape",
+  "checkouts": [
+    {
+      "path": "/workspace/4wd-simulator",
+      "commit": "54a240aebb1af7c2561753a408f3526f461e23a8",
+      "status": "clean"
+    },
+    {
+      "path": "/workspace/vehicle-review/over-the-cape-source",
+      "commit": "da09ef5d7ec518382953e4a333b101ec06b21004",
+      "status": "clean"
+    }
+  ],
+  "hiluxReview": "all original manifest checksums preserved",
+  "patrolReview": "all original manifest checksums preserved",
+  "lc79Review": "all original manifest checksums preserved",
+  "perentieReview": "all original manifest checksums preserved",
+  "cleanInstallAndBuild": "passed in a separate copy",
+  "gameIntegration": "none; pending user approval",
+  "modelSHA256": "3d2720e07237a2b650d2b1e9c4839ead7bea8ba3ca8cbea00a9cc5f42a2551a8",
+  "viewerSHA256": "7ddfc577a097d2cd7a36fa0fe1d2045f0c2fbccfe98a6931a27ad6ee1295aa26"
+}

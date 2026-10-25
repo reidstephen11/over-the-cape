@@ -1,0 +1,29 @@
+{
+  "views": [
+    "front-left",
+    "front-right",
+    "left",
+    "right",
+    "rear-left",
+    "rear-right",
+    "front",
+    "rear",
+    "top",
+    "underbody",
+    "bar-left",
+    "bar-right",
+    "grille-uncovered",
+    "bonnet-uncovered",
+    "roof-uncovered",
+    "roof-gear",
+    "rack-feet",
+    "rear-lamps",
+    "barn-doors",
+    "cover-removed",
+    "cab-interior",
+    "front-lock-left",
+    "front-lock-right",
+    "rear-bump"
+  ],
+  "browserErrors": []
+}

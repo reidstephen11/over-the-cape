@@ -1,0 +1,8 @@
+{
+  "cleanInstall": "npm ci --ignore-scripts passed in a separate copied directory",
+  "typecheck": "passed in both copies",
+  "productionBuild": "passed in both copies",
+  "independentBuildBundleIdentical": true,
+  "bundleSHA256": "f44e3b43ea567e240d392c0880aed39b8d62c67168c0ea9a69dc02d855e91125",
+  "independentCopy": "/workspace/vehicle-review/fj40-portable-check"
+}

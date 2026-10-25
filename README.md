@@ -1,5 +1,9 @@
 # Over the Cape
 
+## Vehicle model review
+
+The nine separate vehicle proposals, including the Sooty MkII-inspired 80 Series, are available in [docs/vehicle-review](docs/vehicle-review/README.md). The index links their editable model source, standalone viewers, GLB exports, inspection images and verification reports. These are review studies; the game does not load them.
+
 A single-player 4WD adventure up Cape York, told in episodes, that runs in the browser. Each episode is a stage of the trip north, from the Daintree to the tip of Australia, with its own map, a core mission, the weather and time of day the story sets, and a starting load of fuel, spare wheels and tyre plugs, which side trips off the main line can add to. Run out of fuel, get stranded with a flat and nothing to fix it with, wreck the engine or miss the deadline, and the episode ends; you restart from the last camp you reached. History notes at the places you pass tell what happened there.
 
 The story follows a grandparent's 1986 trip up the Cape through their diary, and the vehicles are being rebuilt with more accurate body shapes: see [SPEC.md](SPEC.md) for the game's direction.

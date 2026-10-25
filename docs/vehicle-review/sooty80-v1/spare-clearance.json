@@ -1,0 +1,10 @@
+{
+  "method": "Both spare wheels versus body triangle surfaces; each own carrier excluded as intended support",
+  "spares": [
+    {
+      "name": "rear door",
+      "intersections": []
+    }
+  ],
+  "intersections": []
+}

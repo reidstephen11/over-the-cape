@@ -1,0 +1,21 @@
+{
+  "standaloneHTTP": "passed",
+  "standaloneFileURL": "blocked by managed-browser policy; HTTP path tested",
+  "originalProposalSwitch": "passed",
+  "hideBarPreservesHeadlamps": "passed",
+  "barRestoreExactIndices": "passed",
+  "cameraButtons": 6,
+  "steeringAndCompression": "passed, including suspension position",
+  "exportButton": "passed",
+  "exportInvariantUnderReviewToggles": "byte-identical GLB",
+  "resetStance": "passed",
+  "glbReload": "passed",
+  "sourceTriangles": 87187,
+  "exportTriangles": 87187,
+  "bounds": [
+    2.1222708225250244,
+    2.1188305866718293,
+    4.942399978637695
+  ],
+  "browserErrors": []
+}

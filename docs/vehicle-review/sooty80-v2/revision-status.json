@@ -1,0 +1,19 @@
+{
+  "state": "awaiting actual reference photo access",
+  "geometryChanges": false,
+  "previousDraft": "all v1 manifest checksums verified unchanged",
+  "gameIntegration": "none",
+  "referenceGallery": "https://raptorcoatings.com/au/product/sooty-mkii/",
+  "imageHost": "raptorcoatings.com",
+  "networkObservation": "enforced restricted policy; photo host absent from allowed hosts; prior download returned HTTP 403",
+  "requiredBeforeModelRevision": "Download and visually inspect actual MkII photographs, record differences, then change geometry and render matching views",
+  "comparisonChecklist": [
+    "Overall side silhouette, wheelbase and overhangs",
+    "Bonnet crown, rolled wing shoulders and front corner curvature",
+    "Windscreen rake, roof crown and cabin taper",
+    "Grille, headlamps, indicators and rear lamp shape",
+    "Bullbar, scrub rails, sliders and their actual joins",
+    "Wheel spoke pattern, tyre profile, stance and rear carrier",
+    "Snorkel route/head, platform height, awning and roof load"
+  ]
+}

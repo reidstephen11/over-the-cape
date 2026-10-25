@@ -1,0 +1,7 @@
+{
+  "method": "Triangle-surface intersections using two BVHs",
+  "bodyTriangles": 101183,
+  "wheelTriangles": 5808,
+  "states": 2856,
+  "intersections": []
+}

@@ -1,0 +1,23 @@
+{
+  "standaloneHTTP": "passed",
+  "standaloneFileURL": "not tested: file navigation blocked by managed-browser policy",
+  "originalProposalSwitch": "passed",
+  "hideBarPreservesHeadlamps": "passed",
+  "barRestoreExactIndices": "passed",
+  "roofHideAndExactRestore": "passed",
+  "spareCoverAndRoofHideRestore": "passed",
+  "cameraButtons": 6,
+  "steeringAndCompression": "passed, including suspension position",
+  "exportButton": "passed",
+  "exportInvariantUnderReviewToggles": "byte-identical GLB",
+  "resetStance": "passed",
+  "glbReload": "passed",
+  "sourceTriangles": 95613,
+  "exportTriangles": 95613,
+  "bounds": [
+    2.1322708129882812,
+    2.5533816766738893,
+    4.372999906539917
+  ],
+  "browserErrors": []
+}

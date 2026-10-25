@@ -1,0 +1,52 @@
+/** Colour tokens (SPEC §4). All world colours derive from these. */
+export const palette = {
+  dirtTrack: '#A87450',
+  dirtDark: '#79533B',
+  grassDry: '#B6A367',
+  grassSage: '#8C9A6B',
+  foliage: '#7E8F6A',
+  foliageDark: '#48634F',
+  barkPale: '#D8D0C0',
+  barkOchre: '#C58B5C',
+  rock: '#9A948A',
+  rockDark: '#6F6A63',
+  mud: '#6B4A33',
+  /** Dry river sand. */
+  sand: '#D2BF97',
+  waterDeep: '#3D686A',
+  waterShallow: '#799A8F',
+  /** The open sea beyond the coast. */
+  sea: '#2F6377',
+  vehicleBody: '#D9C6A0',
+  vehicleRoof: '#EDE8DC',
+  vehicleTrim: '#3A3A38',
+  /** Tropical rainforest: glossy broad-leaf canopy, its shadowed underside, palms and ferns. */
+  rainforest: '#4C7341',
+  rainforestDark: '#2D4A30',
+  palmLeaf: '#5C8442',
+  fernLeaf: '#6B9446',
+  barkGrey: '#9C9688',
+};
+
+export type PaletteToken = keyof typeof palette;
+/** A map can repaint any token (a tropical map's greener grass and redder clay). */
+export type PaletteOverrides = Partial<Record<PaletteToken, string>>;
+
+/** Per-vertex / per-instance variation (SPEC §4: ±4% brightness, small hue shift). */
+export const colourVariation = {
+  brightness: 0.04,
+  hue: 0.012,
+};
+
+/** UI paper-and-ink tones (SPEC §9). */
+export const uiPalette = {
+  paper: '#F3EBDA',
+  paperDark: '#E4D6BA',
+  ink: '#3B2A1E',
+  inkSoft: '#6B5442',
+  accent: '#B5653A',
+  water: '#5E8E98',
+} as const;
+
+/** Gate flags on a gate trail, as on an RC crawler course: red left of the way through, blue right. */
+export const gateColours = { left: '#C8412E', right: '#2F64A8' } as const;

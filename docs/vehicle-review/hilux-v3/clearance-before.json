@@ -1,0 +1,4879 @@
+{
+  "boxCount": 287,
+  "wheelStates": 1536,
+  "uniqueWheelSamples": 2766,
+  "hits": [
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.07594741031527519,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.06594741031527519,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.055947410315275184,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.09000000000000004,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.08000000000000003,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.07000000000000003,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.06000000000000003,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.0940525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0009474103152752045
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.0840525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.0740525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.0640525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.0540525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": -31,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7157425213151563,
+        0.36787500023841857,
+        -1.423202265982945
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45038852003657565,
+        -0.05830827623605728,
+        -1.6782935642094878
+      ],
+      "penetration": 0.014611479963424337
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45038852003657565,
+        -0.04830827623605728,
+        -1.6782935642094878
+      ],
+      "penetration": 0.014611479963424337
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45269703350220897,
+        -0.08566344659775495,
+        -1.685787473156197
+      ],
+      "penetration": 0.009336553402245054
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45269703350220897,
+        -0.07566344659775495,
+        -1.685787473156197
+      ],
+      "penetration": 0.012302966497791015
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45269703350220897,
+        -0.06566344659775494,
+        -1.685787473156197
+      ],
+      "penetration": 0.012302966497791015
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.0893425640463829,
+        -1.654537740706676
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.0793425640463829,
+        -1.654537740706676
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.06934256404638289,
+        -1.654537740706676
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.0593425640463829,
+        -1.654537740706676
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.0493425640463829,
+        -1.654537740706676
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.039342564046382894,
+        -1.654537740706676
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7161473436017638,
+        0.36787500023841857,
+        -1.4231857733816726
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -30,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.0293425640463829,
+        -1.654537740706676
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4552857140381128,
+        -0.05830827623605728,
+        -1.6828692858480063
+      ],
+      "penetration": 0.009714285961887184
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4552857140381128,
+        -0.04830827623605728,
+        -1.6828692858480063
+      ],
+      "penetration": 0.009714285961887184
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4577246626507057,
+        -0.08566344659775495,
+        -1.6903217643208173
+      ],
+      "penetration": 0.007275337349294267
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4577246626507057,
+        -0.07566344659775495,
+        -1.6903217643208173
+      ],
+      "penetration": 0.007275337349294267
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4577246626507057,
+        -0.06566344659775494,
+        -1.6903217643208173
+      ],
+      "penetration": 0.007275337349294267
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45316810547981073,
+        -0.09292542904615402,
+        -1.6866895528141546
+      ],
+      "penetration": 0.002074570953845986
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45316810547981073,
+        -0.08292542904615402,
+        -1.6866895528141546
+      ],
+      "penetration": 0.011831894520189248
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45316810547981073,
+        -0.07292542904615401,
+        -1.6866895528141546
+      ],
+      "penetration": 0.011831894520189248
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45316810547981073,
+        -0.06292542904615402,
+        -1.6866895528141546
+      ],
+      "penetration": 0.011831894520189248
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45316810547981073,
+        -0.05292542904615402,
+        -1.6866895528141546
+      ],
+      "penetration": 0.011831894520189248
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46078059706616004,
+        -0.09028059661388396,
+        -1.6848087126983602
+      ],
+      "penetration": 0.004219402933839947
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7165518163963956,
+        0.36787500023841857,
+        -1.4231622181692227
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -29,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46078059706616004,
+        -0.08028059661388397,
+        -1.6848087126983602
+      ],
+      "penetration": 0.004219402933839947
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4602620195270627,
+        -0.05830827623605728,
+        -1.6873588427618393
+      ],
+      "penetration": 0.004737980472937289
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4602620195270627,
+        -0.04830827623605728,
+        -1.6873588427618393
+      ],
+      "penetration": 0.004737980472937289
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46283066035924125,
+        -0.08566344659775495,
+        -1.6947676206636153
+      ],
+      "penetration": 0.00216933964075873
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46283066035924125,
+        -0.07566344659775495,
+        -1.6947676206636153
+      ],
+      "penetration": 0.00216933964075873
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46283066035924125,
+        -0.06566344659775494,
+        -1.6947676206636153
+      ],
+      "penetration": 0.00216933964075873
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.09292542904615402,
+        -1.6912154852480594
+      ],
+      "penetration": 0.002074570953845986
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.08292542904615402,
+        -1.6912154852480594
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.07292542904615401,
+        -1.6912154852480594
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.06292542904615402,
+        -1.6912154852480594
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.05292542904615402,
+        -1.6912154852480594
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.04292542904615401,
+        -1.6912154852480594
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7169558164927204,
+        0.36787500023841857,
+        -1.4231316075207407
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -28,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.03292542904615402,
+        -1.6912154852480594
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.09292542904615402,
+        -1.6956527106240897
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.08292542904615402,
+        -1.6956527106240897
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.07292542904615401,
+        -1.6956527106240897
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.06292542904615402,
+        -1.6956527106240897
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.05292542904615402,
+        -1.6956527106240897
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.04292542904615401,
+        -1.6956527106240897
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7173592208283951,
+        0.36787500023841857,
+        -1.4230939507605274
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -27,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.03292542904615402,
+        -1.6956527106240897
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": -26,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7177619065225511,
+        0.36787500023841857,
+        -1.423049259359196
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -25,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7181637509132252,
+        0.36787500023841857,
+        -1.4229975469301805
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -24,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7185646315947232,
+        0.36787500023841857,
+        -1.422938829225588
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -23,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.718964426454906,
+        0.36787500023841857,
+        -1.4228731241314
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -22,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7193630137123864,
+        0.36787500023841857,
+        -1.4228004516620245
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -21,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7197602719536246,
+        0.36787500023841857,
+        -1.4227208339542
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -20,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7201560801699118,
+        0.36787500023841857,
+        -1.4226342952602513
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -19,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7205503177942313,
+        0.36787500023841857,
+        -1.422540861940703
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -18,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7209428647379835,
+        0.36787500023841857,
+        -1.4224405624562493
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -17,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7213336014275668,
+        0.36787500023841857,
+        -1.4223334273590849
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -16,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7217224088408001,
+        0.36787500023841857,
+        -1.422219489283598
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -15,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7221091685431792,
+        0.36787500023841857,
+        -1.4220987829364302
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -14,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7224937627239519,
+        0.36787500023841857,
+        -1.4219713450859044
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -13,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7228760742320052,
+        0.36787500023841857,
+        -1.4218372145508242
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -12,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7232559866115502,
+        0.36787500023841857,
+        -1.42169643218865
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -11,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7236333841375958,
+        0.36787500023841857,
+        -1.4215490408830533
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -10,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7240081518511996,
+        0.36787500023841857,
+        -1.421395085530853
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -9,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7243801755944855,
+        0.36787500023841857,
+        -1.4212346130283415
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -8,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7247493420454176,
+        0.36787500023841857,
+        -1.421067672256997
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -7,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7251155387523187,
+        0.36787500023841857,
+        -1.420894314068596
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -6,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7254786541681245,
+        0.36787500023841857,
+        -1.4207145912697219
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -5,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7258385776843616,
+        0.36787500023841857,
+        -1.4205285586056804
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -4,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7261951996648404,
+        0.36787500023841857,
+        -1.420336272743823
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -3,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7265484114790508,
+        0.36787500023841857,
+        -1.4201377922562857
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -2,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7268981055352529,
+        0.36787500023841857,
+        -1.419933177602148
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": -1,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7272441753132494,
+        0.36787500023841857,
+        -1.4197224911090158
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7275865153968334,
+        0.36787500023841857,
+        -1.4195057969540357
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 1,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7279250215058992,
+        0.36787500023841857,
+        -1.4192831611443464
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 2,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7282595905282069,
+        0.36787500023841857,
+        -1.4190546514969724
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 3,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7285901205507912,
+        0.36787500023841857,
+        -1.418820337618166
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 4,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7289165108910052,
+        0.36787500023841857,
+        -1.4185802908822043
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 5,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7292386621271896,
+        0.36787500023841857,
+        -1.4183345844096487
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 6,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7295564761289569,
+        0.36787500023841857,
+        -1.4180832930450706
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 7,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7298698560870837,
+        0.36787500023841857,
+        -1.4178264933342541
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 8,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7301787065429988,
+        0.36787500023841857,
+        -1.4175642635008792
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 9,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7304829334178615,
+        0.36787500023841857,
+        -1.417296683422693
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 10,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7307824440412185,
+        0.36787500023841857,
+        -1.4170238346071793
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 11,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7310771471792327,
+        0.36787500023841857,
+        -1.4167458001667308
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 12,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7313669530624731,
+        0.36787500023841857,
+        -1.4164626647933314
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 13,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7316517734132606,
+        0.36787500023841857,
+        -1.4161745147327585
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 14,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.731931521472557,
+        0.36787500023841857,
+        -1.4158814377583118
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 15,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7322061120263935,
+        0.36787500023841857,
+        -1.4155835231440772
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 16,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7324754614318275,
+        0.36787500023841857,
+        -1.4152808616377317
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 17,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7327394876424207,
+        0.36787500023841857,
+        -1.4149735454329024
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 18,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7329981102332318,
+        0.36787500023841857,
+        -1.4146616681410824
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 19,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7332512504253142,
+        0.36787500023841857,
+        -1.4143453247631157
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 20,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7334988311097133,
+        0.36787500023841857,
+        -1.41402461166026
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 21,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7337407768709541,
+        0.36787500023841857,
+        -1.413699626524833
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 22,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.733977014010014,
+        0.36787500023841857,
+        -1.413370468350455
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 23,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.734207470566772,
+        0.36787500023841857,
+        -1.4130372374018954
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 24,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7344320763419284,
+        0.36787500023841857,
+        -1.4127000351845282
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 25,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7346507629183884,
+        0.36787500023841857,
+        -1.412358964413416
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 26,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7348634636821022,
+        0.36787500023841857,
+        -1.4120141289820194
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.08707457095384598,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.07707457095384597,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.06707457095384597,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.057074570953845966,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.04707457095384597,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.037074570953845976,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.027074570953845967,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.01707457095384597,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        -0.007074570953845977,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        0.002925429046154032,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7350701138423568,
+        0.36787500023841857,
+        -1.4116656339305516
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 27,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4633329274985705,
+        0.012925429046154027,
+        -1.10434728937591
+      ],
+      "penetration": 0.001667072501429459
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.08707457095384598,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.07707457095384597,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.06707457095384597,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.057074570953845966,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.04707457095384597,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.037074570953845976,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.027074570953845967,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.01707457095384597,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        -0.007074570953845977,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        0.002925429046154032,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7352706504515113,
+        0.36787500023841857,
+        -1.4113135854139807
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 28,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.4582114063425931,
+        0.012925429046154027,
+        -1.1087845147519404
+      ],
+      "penetration": 0.0067885936574068745
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46023211288855653,
+        -0.013606998026370998,
+        -1.1260542538948137
+      ],
+      "penetration": 0.00476788711144345
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46023211288855653,
+        -0.0036069980263710028,
+        -1.1260542538948137
+      ],
+      "penetration": 0.00476788711144345
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46023211288855653,
+        0.006393001973629006,
+        -1.1260542538948137
+      ],
+      "penetration": 0.00476788711144345
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46023211288855653,
+        0.016393001973629,
+        -1.1260542538948137
+      ],
+      "penetration": 0.00476788711144345
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46023211288855653,
+        0.02639300197362901,
+        -1.1260542538948137
+      ],
+      "penetration": 0.00476788711144345
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46023211288855653,
+        0.036393001973629005,
+        -1.1260542538948137
+      ],
+      "penetration": 0.00476788711144345
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46023211288855653,
+        0.046393001973629,
+        -1.1260542538948137
+      ],
+      "penetration": 0.00476788711144345
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46078059706616004,
+        0.020280596613883983,
+        -1.1151912873016396
+      ],
+      "penetration": 0.004219402933839947
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46078059706616004,
+        0.03028059661388398,
+        -1.1151912873016396
+      ],
+      "penetration": 0.004219402933839947
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46078059706616004,
+        0.04028059661388397,
+        -1.1151912873016396
+      ],
+      "penetration": 0.004219402933839947
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46078059706616004,
+        0.05028059661388398,
+        -1.1151912873016396
+      ],
+      "penetration": 0.004219402933839947
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7354650124241722,
+        0.36787500023841857,
+        -1.4109580906696957
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 29,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.45316810547981073,
+        0.012925429046154027,
+        -1.1133104471858453
+      ],
+      "penetration": 0.011831894520189248
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.455489902768967,
+        -0.013606998026370998,
+        -1.1305422898718684
+      ],
+      "penetration": 0.00951009723103298
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.455489902768967,
+        -0.0036069980263710028,
+        -1.1305422898718684
+      ],
+      "penetration": 0.00951009723103298
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.455489902768967,
+        0.006393001973629006,
+        -1.1305422898718684
+      ],
+      "penetration": 0.00951009723103298
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.455489902768967,
+        0.016393001973629,
+        -1.1305422898718684
+      ],
+      "penetration": 0.00951009723103298
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.455489902768967,
+        0.02639300197362901,
+        -1.1305422898718684
+      ],
+      "penetration": 0.00951009723103298
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.455489902768967,
+        0.036393001973629005,
+        -1.1305422898718684
+      ],
+      "penetration": 0.00951009723103298
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.455489902768967,
+        0.046393001973629,
+        -1.1305422898718684
+      ],
+      "penetration": 0.008606998026370993
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.030657435953617085,
+        -1.145462259293324
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.02065743595361709,
+        -1.145462259293324
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.010657435953617095,
+        -1.145462259293324
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        -0.000657435953617086,
+        -1.145462259293324
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7356531405557996,
+        0.36787500023841857,
+        -1.4105992579848392
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 0,
+      "steer": 30,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46410395113074526,
+        0.009342564046382909,
+        -1.145462259293324
+      ],
+      "penetration": 0.0008960488692547203
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.07594741031527519,
+        -1.1611310314564285
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.06594741031527519,
+        -1.1611310314564285
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.462859478558079,
+        -0.055947410315275184,
+        -1.1611310314564285
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.08999999999999991,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.0799999999999999,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.06999999999999991,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.05999999999999991,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.0499999999999999,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.039999999999999904,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.029999999999999912,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.019999999999999903,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        -0.46137237399765657,
+        -0.009999999999999907,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 0,
+      "steer": 31,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7358349775407422,
+        0.36787500023841857,
+        -1.4102371966633234
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.07594741031527519,
+        -1.1611310314564285
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.06594741031527519,
+        -1.1611310314564285
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.055947410315275184,
+        -1.1611310314564285
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.09,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.07999999999999999,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.06999999999999999,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.060000000000000005,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.049999999999999996,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.04,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.030000000000000006,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.019999999999999997,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.01,
+        -1.1586560738484075
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": -31,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7142574786848437,
+        0.36787500023841857,
+        -1.423202265982945
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4625876089676593,
+        0.02637970924377442,
+        -1.1428358776252001
+      ],
+      "penetration": 0.0024123910323406578
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4625876089676593,
+        0.036379709243774414,
+        -1.1428358776252001
+      ],
+      "penetration": 0.0024123910323406578
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4625876089676593,
+        0.04637970924377442,
+        -1.1428358776252001
+      ],
+      "penetration": 0.0024123910323406578
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        -0.02493165075778961,
+        -1.1222032699798927
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        -0.0149316507577896,
+        -1.1222032699798927
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        -0.004931650757789605,
+        -1.1222032699798927
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        0.00506834924221039,
+        -1.1222032699798927
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        0.0150683492422104,
+        -1.1222032699798927
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        0.025068349242210394,
+        -1.1222032699798927
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        0.03506834924221039,
+        -1.1222032699798927
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        0.0450683492422104,
+        -1.1222032699798927
+      ],
+      "penetration": 0.009931650757789595
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7138526563982361,
+        0.36787500023841857,
+        -1.4231857733816726
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -30,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.029505796954035754,
+        -1.1454702086403539
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.05493165075778961,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.04493165075778961,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.034931650757789603,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.02493165075778961,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.0149316507577896,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.004931650757789605,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        0.00506834924221039,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        0.0150683492422104,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        0.025068349242210394,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        0.03506834924221039,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        0.0450683492422104,
+        -1.1176324788477103
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7134481836036043,
+        0.36787500023841857,
+        -1.4231622181692227
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -29,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.029505796954035754,
+        -1.1131424798248477
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.05493165075778961,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.04493165075778961,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.034931650757789603,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.02493165075778961,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.0149316507577896,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.004931650757789605,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        0.00506834924221039,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        0.0150683492422104,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        0.025068349242210394,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        0.03506834924221039,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        0.0450683492422104,
+        -1.1131476995978267
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7130441835072795,
+        0.36787500023841857,
+        -1.4231316075207407
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -28,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.029505796954035754,
+        -1.1086149480524243
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.08950579695403575,
+        -1.1041761749895342
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.07950579695403576,
+        -1.1041761749895342
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.06950579695403575,
+        -1.1041761749895342
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.05950579695403575,
+        -1.1041761749895342
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.04950579695403576,
+        -1.1041761749895342
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.03950579695403575,
+        -1.1041761749895342
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7126407791716048,
+        0.36787500023841857,
+        -1.4230939507605274
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -27,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.029505796954035754,
+        -1.1041761749895342
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": -26,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7122380934774488,
+        0.36787500023841857,
+        -1.423049259359196
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -25,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7118362490867748,
+        0.36787500023841857,
+        -1.4229975469301805
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -24,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7114353684052768,
+        0.36787500023841857,
+        -1.422938829225588
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -23,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.711035573545094,
+        0.36787500023841857,
+        -1.4228731241314
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -22,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7106369862876135,
+        0.36787500023841857,
+        -1.4228004516620245
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -21,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7102397280463754,
+        0.36787500023841857,
+        -1.4227208339542
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -20,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7098439198300881,
+        0.36787500023841857,
+        -1.4226342952602513
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -19,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7094496822057687,
+        0.36787500023841857,
+        -1.422540861940703
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -18,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7090571352620164,
+        0.36787500023841857,
+        -1.4224405624562493
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -17,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7086663985724332,
+        0.36787500023841857,
+        -1.4223334273590849
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -16,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7082775911591999,
+        0.36787500023841857,
+        -1.422219489283598
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -15,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7078908314568207,
+        0.36787500023841857,
+        -1.4220987829364302
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -14,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.707506237276048,
+        0.36787500023841857,
+        -1.4219713450859044
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -13,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7071239257679948,
+        0.36787500023841857,
+        -1.4218372145508242
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -12,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7067440133884497,
+        0.36787500023841857,
+        -1.42169643218865
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -11,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7063666158624041,
+        0.36787500023841857,
+        -1.4215490408830533
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -10,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7059918481488003,
+        0.36787500023841857,
+        -1.421395085530853
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -9,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7056198244055144,
+        0.36787500023841857,
+        -1.4212346130283415
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -8,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7052506579545823,
+        0.36787500023841857,
+        -1.421067672256997
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -7,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7048844612476812,
+        0.36787500023841857,
+        -1.420894314068596
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -6,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7045213458318754,
+        0.36787500023841857,
+        -1.4207145912697219
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -5,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7041614223156384,
+        0.36787500023841857,
+        -1.4205285586056804
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -4,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7038048003351596,
+        0.36787500023841857,
+        -1.420336272743823
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -3,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7034515885209491,
+        0.36787500023841857,
+        -1.4201377922562857
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -2,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.703101894464747,
+        0.36787500023841857,
+        -1.419933177602148
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": -1,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7027558246867506,
+        0.36787500023841857,
+        -1.4197224911090158
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7024134846031665,
+        0.36787500023841857,
+        -1.4195057969540357
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 1,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7020749784941007,
+        0.36787500023841857,
+        -1.4192831611443464
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 2,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7017404094717931,
+        0.36787500023841857,
+        -1.4190546514969724
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 3,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7014098794492087,
+        0.36787500023841857,
+        -1.418820337618166
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 4,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7010834891089948,
+        0.36787500023841857,
+        -1.4185802908822043
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 5,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7007613378728104,
+        0.36787500023841857,
+        -1.4183345844096487
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 6,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.700443523871043,
+        0.36787500023841857,
+        -1.4180832930450706
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 7,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.7001301439129163,
+        0.36787500023841857,
+        -1.4178264933342541
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 8,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6998212934570012,
+        0.36787500023841857,
+        -1.4175642635008792
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 9,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6995170665821384,
+        0.36787500023841857,
+        -1.417296683422693
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 10,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6992175559587814,
+        0.36787500023841857,
+        -1.4170238346071793
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 11,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6989228528207673,
+        0.36787500023841857,
+        -1.4167458001667308
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 12,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6986330469375268,
+        0.36787500023841857,
+        -1.4164626647933314
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 13,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6983482265867393,
+        0.36787500023841857,
+        -1.4161745147327585
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 14,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6980684785274429,
+        0.36787500023841857,
+        -1.4158814377583118
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 15,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6977938879736064,
+        0.36787500023841857,
+        -1.4155835231440772
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 16,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6975245385681724,
+        0.36787500023841857,
+        -1.4152808616377317
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 17,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6972605123575792,
+        0.36787500023841857,
+        -1.4149735454329024
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 18,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6970018897667681,
+        0.36787500023841857,
+        -1.4146616681410824
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 19,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6967487495746857,
+        0.36787500023841857,
+        -1.4143453247631157
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 20,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6965011688902867,
+        0.36787500023841857,
+        -1.41402461166026
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 21,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6962592231290459,
+        0.36787500023841857,
+        -1.413699626524833
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 22,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6960229859899859,
+        0.36787500023841857,
+        -1.413370468350455
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 23,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6957925294332279,
+        0.36787500023841857,
+        -1.4130372374018954
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 24,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6955679236580715,
+        0.36787500023841857,
+        -1.4127000351845282
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 25,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6953492370816116,
+        0.36787500023841857,
+        -1.412358964413416
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 26,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6951365363178977,
+        0.36787500023841857,
+        -1.4120141289820194
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.09049420304596424,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.08049420304596423,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.07049420304596424,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.06049420304596423,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.050494203045964234,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.04049420304596424,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.03049420304596423,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.020494203045964235,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.01049420304596424,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        -0.000494203045964231,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6949298861576432,
+        0.36787500023841857,
+        -1.4116656339305516
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 27,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4632457403639374,
+        0.009505796954035764,
+        -1.6958238250104656
+      ],
+      "penetration": 0.0017542596360625856
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.09049420304596424,
+        -1.6913850519475755
+      ],
+      "penetration": 0.0045057969540357595
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.08049420304596423,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.07049420304596424,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.06049420304596423,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.050494203045964234,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.04049420304596424,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.03049420304596423,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.020494203045964235,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4581212461291646,
+        -0.01049420304596424,
+        -1.6913850519475755
+      ],
+      "penetration": 0.006878753870835377
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.08506834924221038,
+        -1.6868523004021732
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6947293495484886,
+        0.36787500023841857,
+        -1.4113135854139807
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 28,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46053135287723324,
+        -0.07506834924221038,
+        -1.6868523004021732
+      ],
+      "penetration": 0.004468647122766747
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.45977243536911183,
+        -0.016898157894611354,
+        -1.6747750263022891
+      ],
+      "penetration": 0.005227564630888151
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.09049420304596424,
+        -1.6868575201751521
+      ],
+      "penetration": 0.0045057969540357595
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.08049420304596423,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.07049420304596424,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.06049420304596423,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.050494203045964234,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.04049420304596424,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.03049420304596423,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.020494203045964235,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4530749996512613,
+        -0.01049420304596424,
+        -1.6868575201751521
+      ],
+      "penetration": 0.011925000348738682
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.08506834924221038,
+        -1.6823675211522895
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6945349875758278,
+        0.36787500023841857,
+        -1.4109580906696957
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 29,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4555638467506481,
+        -0.07506834924221038,
+        -1.6823675211522895
+      ],
+      "penetration": 0.009436153249351889
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.45501582232558474,
+        -0.016898157894611354,
+        -1.6702788415429444
+      ],
+      "penetration": 0.009984177674415243
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.09049420304596424,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.08049420304596423,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.07049420304596424,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.06049420304596423,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.050494203045964234,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.04049420304596424,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.03049420304596423,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.020494203045964235,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46410854068839297,
+        -0.01049420304596424,
+        -1.654529791359646
+      ],
+      "penetration": 0.0008914593116070152
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        -0.08506834924221038,
+        -1.677796730020107
+      ],
+      "penetration": 0.009931650757789623
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6943468594442004,
+        0.36787500023841857,
+        -1.4105992579848392
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 1,
+      "steer": 30,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.4506753673895572,
+        -0.07506834924221038,
+        -1.677796730020107
+      ],
+      "penetration": 0.01432463261044277
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.07594741031527519,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.06594741031527519,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.055947410315275184,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.09000000000000004,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.08000000000000003,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.07000000000000003,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.46137237399765657,
+        -0.060000000000000046,
+        -1.6413439261515923
+      ],
+      "penetration": 0.003627626002343412
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.0940525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0009474103152752045
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.0840525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.0740525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.0640525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:675:36)",
+      "position": [
+        0.462859478558079,
+        -0.0540525896847248,
+        -1.6388689685435713
+      ],
+      "penetration": 0.0021405214419209645
+    },
+    {
+      "wi": 1,
+      "steer": 31,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6941650224592577,
+        0.36787500023841857,
+        -1.4102371966633234
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.026339861452579494,
+        1.050455594062805
+      ],
+      "penetration": 0.033660138547420504
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.01,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.0163398614525795,
+        1.050455594062805
+      ],
+      "penetration": 0.0436601385474205
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.02,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.05276583358645438,
+        1.0412208974361419
+      ],
+      "penetration": 0.007234166413545615
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.03,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.04276583358645439,
+        1.0412208974361419
+      ],
+      "penetration": 0.01723416641354561
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.03,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.615732704102993,
+        0.28865069508552554,
+        1.414336553402245
+      ],
+      "penetration": 0.0011506950855255556
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.04,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.03276583358645438,
+        1.0412208974361419
+      ],
+      "penetration": 0.02723416641354562
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.04,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7125865153968334,
+        0.2978750002384186,
+        1.3804942030459642
+      ],
+      "penetration": 0.01037500023841863
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.05,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.022765833586454384,
+        1.0412208974361419
+      ],
+      "penetration": 0.037234166413545614
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.05,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7722000002861023,
+        0.288779102563858,
+        1.3527658335864543
+      ],
+      "penetration": 0.0012791025638580374
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.05,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        -0.7125865153968334,
+        0.3078750002384186,
+        1.3804942030459642
+      ],
+      "penetration": 0.007875000238418556
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.06,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.01276583358645439,
+        1.0412208974361419
+      ],
+      "penetration": 0.04723416641354561
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.06,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7722000002861023,
+        0.2895444059371948,
+        1.3063398614525794
+      ],
+      "penetration": 0.0020444059371948382
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.06,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        -0.6277999997138977,
+        0.3018749976158142,
+        1.4
+      ],
+      "penetration": 0.0018749976158141946
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.07,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.05000000000000003,
+        1.0381250023841857
+      ],
+      "penetration": 0.009999999999999967
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.07,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7722000002861023,
+        0.29954440593719484,
+        1.3063398614525794
+      ],
+      "penetration": 0.012044405937194847
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.07,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        -0.7722000002861023,
+        0.30877910256385804,
+        1.3527658335864543
+      ],
+      "penetration": 0.00552212233513388
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.07,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        -0.6277999997138977,
+        0.3118749976158142,
+        1.4
+      ],
+      "penetration": 0.001874997615814217
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.08,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.040000000000000036,
+        1.0381250023841857
+      ],
+      "penetration": 0.019999999999999962
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.08,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7722000002861023,
+        0.29432891964912417,
+        1.2615164309740066
+      ],
+      "penetration": 0.006828919649124177
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.08,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        -0.7722000002861023,
+        0.30954440593719484,
+        1.3063398614525794
+      ],
+      "penetration": 0.006182541373119486
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.08,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        -0.6277999997138977,
+        0.31877910256385805,
+        1.3527658335864543
+      ],
+      "penetration": 0.003220897436141951
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.09,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.030000000000000037,
+        1.0381250023841857
+      ],
+      "penetration": 0.029999999999999957
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.09,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        -0.7722000002861023,
+        0.3043289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.0015773967877321
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.09,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7722000002861023,
+        0.3043289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.00817108035087587
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.09,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        -0.6277999997138977,
+        0.3195444059371948,
+        1.3063398614525794
+      ],
+      "penetration": 0.0024555940628052057
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.1,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.020000000000000028,
+        1.0381250023841857
+      ],
+      "penetration": 0.039999999999999966
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.1,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7722000002861023,
+        0.2933929371833801,
+        1.2190625011920928
+      ],
+      "penetration": 0.005892937183380121
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.1,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        -0.7722000002861023,
+        0.3143289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.010139920283531008
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.1,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        -0.6277999997138977,
+        0.3143289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.004328919649124125
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at chassisAndRecovery (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:682:5)",
+      "position": [
+        -0.6277999997138977,
+        -0.057234166413545604,
+        1.0412208974361419
+      ],
+      "penetration": 0.0027658335864543943
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        -0.7722000002861023,
+        0.3033929371833801,
+        1.2190625011920928
+      ],
+      "penetration": 0.0007292671989843763
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        -0.7722000002861023,
+        0.3033929371833801,
+        1.2190625011920928
+      ],
+      "penetration": 0.009107062816619872
+    },
+    {
+      "wi": 2,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        -0.7125865153968334,
+        0.36787500023841857,
+        1.3804942030459642
+      ],
+      "penetration": 0.0008750002384185634
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.03,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.7842672958970069,
+        0.28865069508552554,
+        1.414336553402245
+      ],
+      "penetration": 0.0011506950855255556
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.04,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6874134846031665,
+        0.2978750002384186,
+        1.3804942030459642
+      ],
+      "penetration": 0.01037500023841863
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.05,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6277999997138977,
+        0.288779102563858,
+        1.3527658335864543
+      ],
+      "penetration": 0.0012791025638580374
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.05,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        0.6874134846031665,
+        0.3078750002384186,
+        1.3804942030459642
+      ],
+      "penetration": 0.007875000238418556
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.06,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6277999997138977,
+        0.2895444059371948,
+        1.3063398614525794
+      ],
+      "penetration": 0.0020444059371948382
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.06,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        0.6277999997138977,
+        0.3018749976158142,
+        1.4
+      ],
+      "penetration": 0.0018749976158141946
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.07,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6277999997138977,
+        0.29954440593719484,
+        1.3063398614525794
+      ],
+      "penetration": 0.012044405937194847
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.07,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        0.6277999997138977,
+        0.30877910256385804,
+        1.3527658335864543
+      ],
+      "penetration": 0.008779102563858027
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.07,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        0.6277999997138977,
+        0.3118749976158142,
+        1.4
+      ],
+      "penetration": 0.001874997615814217
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.08,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6277999997138977,
+        0.29432891964912417,
+        1.2615164309740066
+      ],
+      "penetration": 0.006828919649124177
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.08,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        0.6277999997138977,
+        0.30954440593719484,
+        1.3063398614525794
+      ],
+      "penetration": 0.009544405937194828
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.08,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        0.6277999997138977,
+        0.31877910256385805,
+        1.3527658335864543
+      ],
+      "penetration": 0.003220897436141951
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.09,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        0.6277999997138977,
+        0.3043289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.004328919649124102
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.09,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6277999997138977,
+        0.3043289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.00817108035087587
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.09,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        0.6277999997138977,
+        0.3195444059371948,
+        1.3063398614525794
+      ],
+      "penetration": 0.0024555940628052057
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.1,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6277999997138977,
+        0.2933929371833801,
+        1.2190625011920928
+      ],
+      "penetration": 0.005892937183380121
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.1,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        0.6277999997138977,
+        0.3143289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.014328919649124111
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.1,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:552:7)",
+      "position": [
+        0.6277999997138977,
+        0.3143289196491241,
+        1.2615164309740066
+      ],
+      "penetration": 0.004328919649124125
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:515:7)",
+      "position": [
+        0.6277999997138977,
+        0.3033929371833801,
+        1.2190625011920928
+      ],
+      "penetration": 0.0033929371833801014
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at tub (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:550:5)",
+      "position": [
+        0.6277999997138977,
+        0.3033929371833801,
+        1.2190625011920928
+      ],
+      "penetration": 0.009107062816619872
+    },
+    {
+      "wi": 3,
+      "steer": 0,
+      "bump": 0.11,
+      "part": "at archPanel (/workspace/vehicle-review/hilux-v2/src/render/hiluxProposal.ts:120:5)",
+      "position": [
+        0.6874134846031665,
+        0.36787500023841857,
+        1.3804942030459642
+      ],
+      "penetration": 0.0008750002384185634
+    }
+  ]
+}

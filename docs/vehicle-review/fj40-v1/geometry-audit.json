@@ -1,0 +1,23 @@
+{
+  "body": {
+    "vertices": 213834,
+    "triangles": 71278,
+    "nonfinite": 0,
+    "zeroNormals": 0,
+    "degenerateTriangles": 0,
+    "contraryNormals": 0,
+    "examples": [],
+    "removedDegenerateTriangles": 528
+  },
+  "wheel": {
+    "vertices": 14484,
+    "triangles": 4828,
+    "nonfinite": 0,
+    "zeroNormals": 0,
+    "degenerateTriangles": 0,
+    "contraryNormals": 0,
+    "examples": [],
+    "removedDegenerateTriangles": 4
+  },
+  "originalBodyTriangles": 56388
+}

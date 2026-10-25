@@ -1,0 +1,8 @@
+{
+  "cleanInstall": "npm ci --ignore-scripts passed in a separate copied directory",
+  "typecheck": "passed in both copies",
+  "productionBuild": "passed in both copies",
+  "independentBuildBundleIdentical": true,
+  "bundleSHA256": "2c5d232f5086fab634b13eb82236db1f5f8a2d802f7cd147d08b97d05dd12e0d",
+  "independentCopy": "/workspace/vehicle-review/camel-portable-check"
+}

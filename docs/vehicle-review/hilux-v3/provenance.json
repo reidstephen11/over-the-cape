@@ -1,0 +1,20 @@
+{
+  "source": "https://github.com/reidstephen11/over-the-cape",
+  "checkouts": [
+    {
+      "path": "/workspace/4wd-simulator",
+      "commit": "54a240aebb1af7c2561753a408f3526f461e23a8",
+      "status": "clean; tracked and untracked files unchanged"
+    },
+    {
+      "path": "/workspace/vehicle-review/over-the-cape-source",
+      "commit": "da09ef5d7ec518382953e4a333b101ec06b21004",
+      "status": "clean; tracked and untracked files unchanged"
+    }
+  ],
+  "recoveredRevision2BodyTriangles": 63768,
+  "currentBodyTriangles": 62604,
+  "cleanInstallAndBuild": "passed in a separate copy; production bundle hash matched",
+  "gameIntegration": "none; pending user approval",
+  "referencePhotoComparison": "incomplete; download blocked by network policy"
+}

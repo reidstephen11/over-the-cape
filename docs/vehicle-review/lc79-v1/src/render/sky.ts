@@ -1,0 +1,110 @@
+import * as THREE from 'three';
+import type { EnvironmentConfig } from '../data/environment';
+
+/** Unit vector pointing towards the sun. North is -z, east is +x. */
+export function sunDirection(env: EnvironmentConfig, out = new THREE.Vector3()): THREE.Vector3 {
+  const az = (env.sun.azimuthDeg * Math.PI) / 180;
+  const el = (env.sun.elevationDeg * Math.PI) / 180;
+  return out.set(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)).normalize();
+}
+
+const SKY_VERTEX = /* glsl */ `
+varying vec3 vDir;
+void main() {
+  vDir = normalize( position );
+  vec4 p = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  gl_Position = p.xyww;
+}
+`;
+
+const SKY_FRAGMENT = /* glsl */ `
+uniform vec3 horizon;
+uniform vec3 zenith;
+uniform vec3 ground;
+uniform vec3 sunGlow;
+uniform vec3 sunDir;
+uniform float glowSize;
+uniform float stars;
+uniform float cloudLight;
+varying vec3 vDir;
+float cloudHash(vec2 p) { return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
+float cloudNoise(vec2 p) {
+  vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+  return mix(mix(cloudHash(i),cloudHash(i+vec2(1,0)),f.x),
+             mix(cloudHash(i+vec2(0,1)),cloudHash(i+vec2(1,1)),f.x),f.y);
+}
+void main() {
+  vec3 d = normalize( vDir );
+  float up = d.y;
+  vec3 col = mix( horizon, zenith, pow( smoothstep( 0.0, 1.0, up ), 0.55 ) );
+  col = mix( col, ground, smoothstep( 0.0, -0.08, up ) );
+  float s = max( dot( d, sunDir ), 0.0 );
+  col += sunGlow * ( pow( s, 1.0 / glowSize ) * 0.55 + pow( s, 900.0 ) * 1.6 );
+  if (stars > 0.0 && up > 0.0) {
+    // One star at most per cell of a fine grid on the dome, with a random brightness.
+    vec3 g = d * 260.0;
+    vec3 cell = floor(g);
+    float h = cloudHash(cell.xy + cell.z * 17.31);
+    vec3 at = cell + 0.5 + 0.35 * (vec3(cloudHash(cell.yz), cloudHash(cell.zx), h) - 0.5);
+    float twinkle = 1.0 - smoothstep(0.0, 0.42, length(g - at));
+    float star = step(0.985, h) * twinkle * (0.35 + 0.65 * cloudHash(cell.xz + 3.7));
+    col += vec3(0.85, 0.9, 1.0) * star * stars * smoothstep(0.0, 0.25, up);
+  }
+  if (up > 0.025) {
+    vec2 p = d.xz / (up + 0.16) * 2.8;
+    float n = cloudNoise(p) * 0.6 + cloudNoise(p * 2.1) * 0.27 + cloudNoise(p * 4.3) * 0.13;
+    float cloud = smoothstep(0.57, 0.78, n) * smoothstep(0.025, 0.17, up);
+    col = mix(col, mix(horizon, vec3(0.91, 0.93, 0.91) * cloudLight, 0.55), cloud * 0.6);
+  }
+  gl_FragColor = vec4( col, 1.0 );
+  #include <colorspace_fragment>
+}
+`;
+
+/** Gradient sky dome with a soft sun glow (SPEC §4). Always centred on the camera. */
+export class Sky {
+  readonly mesh: THREE.Mesh;
+  private readonly material: THREE.ShaderMaterial;
+
+  constructor(env: EnvironmentConfig) {
+    this.material = new THREE.ShaderMaterial({
+      uniforms: {
+        horizon: { value: new THREE.Color() },
+        zenith: { value: new THREE.Color() },
+        ground: { value: new THREE.Color() },
+        sunGlow: { value: new THREE.Color() },
+        sunDir: { value: new THREE.Vector3() },
+        glowSize: { value: 0.1 },
+        stars: { value: 0 },
+        cloudLight: { value: 1 },
+      },
+      vertexShader: SKY_VERTEX,
+      fragmentShader: SKY_FRAGMENT,
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false,
+      // The sky shows the Environment colours as authored, without tone mapping.
+      toneMapped: false,
+    });
+    this.mesh = new THREE.Mesh(new THREE.SphereGeometry(100, 32, 16), this.material);
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = -1000;
+    this.setEnvironment(env);
+  }
+
+  setEnvironment(env: EnvironmentConfig): void {
+    const u = this.material.uniforms;
+    u.horizon.value.set(env.sky.horizon);
+    u.zenith.value.set(env.sky.zenith);
+    u.ground.value.set(env.sky.groundColor);
+    u.sunGlow.value.set(env.sky.sunGlow);
+    u.glowSize.value = env.sky.sunGlowSize;
+    u.stars.value = env.stars;
+    u.cloudLight.value = env.cloudLight;
+    sunDirection(env, u.sunDir.value);
+  }
+
+  update(camera: THREE.Camera): void {
+    this.mesh.position.copy(camera.position);
+  }
+}

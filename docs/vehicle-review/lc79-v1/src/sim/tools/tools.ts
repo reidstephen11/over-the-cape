@@ -1,0 +1,93 @@
+import { plankTuning, winchTuning } from '../../data/tools';
+import type { VehicleInput } from '../input/vehicleInput';
+import type { Vehicle } from '../vehicle/vehicle';
+import { rotate } from '../vehicle/math';
+import type { Anchor } from './anchors';
+import { Jack } from './jack';
+import { PlankKit } from './planks';
+import { Winch } from './winch';
+
+export type ToolEvent =
+  | { type: 'winchAttached'; anchor: Anchor }
+  | { type: 'winchDetached' }
+  | { type: 'planksPlaced'; count: number }
+  | { type: 'planksPickedUp'; count: number }
+  | { type: 'planksRecalled' }
+  | { type: 'righted' }
+  | { type: 'noAnchor' };
+
+/** Roadside jobs from the tool menu. */
+export type RepairKind = 'field' | 'spare' | 'plug' | 'refuel';
+
+/** A repair under way at the roadside: the car stays put until it's done. */
+export interface RepairJob {
+  /**
+   * Field repair (mild damage), fitting a spare or plugging a puncture (realistic), or
+   * pouring in a jerry can.
+   */
+  kind: RepairKind;
+  /** Seconds left, out of `total`. */
+  remaining: number;
+  total: number;
+}
+
+/** What a vehicle carries: winch, planks, jack and tools for roadside repairs. */
+export class VehicleTools {
+  readonly winch = new Winch();
+  readonly planks = new PlankKit();
+  readonly jack = new Jack();
+  repair: RepairJob | null = null;
+  /** Manual winch targeting (tool menu): the candidate list and the highlighted one. */
+  targeting: Anchor[] | null = null;
+  targetIndex = 0;
+
+  /** Pick the best anchor in range, preferring ones in front of the vehicle. */
+  bestAnchor(v: Vehicle, anchors: Anchor[]): Anchor | null {
+    const mount = v.localToWorld(v.tuning.winchMount.x, v.tuning.winchMount.y, v.tuning.winchMount.z);
+    const f = rotate(v.body.rotation(), 0, 0, -1);
+    let best: Anchor | null = null;
+    let bestScore = Infinity;
+    for (const a of anchors) {
+      const dx = a.point.x - mount.x;
+      const dz = a.point.z - mount.z;
+      const d = Math.hypot(dx, dz) || 1e-3;
+      const cos = (dx * f.x + dz * f.z) / (d * (Math.hypot(f.x, f.z) || 1));
+      const score = d * (cos < 0 ? winchTuning.behindPenalty : 1) * (1.6 - 0.6 * Math.max(0, cos));
+      if (score < bestScore) {
+        bestScore = score;
+        best = a;
+      }
+    }
+    return best;
+  }
+
+  /** Anchors sorted left-to-right in front of the vehicle, for manual targeting. */
+  sortForTargeting(v: Vehicle, anchors: Anchor[]): Anchor[] {
+    const p = v.body.translation();
+    const f = rotate(v.body.rotation(), 0, 0, -1);
+    const base = Math.atan2(f.x, -f.z);
+    const angle = (a: Anchor) => {
+      let d = Math.atan2(a.point.x - p.x, -(a.point.z - p.z)) - base;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      return d;
+    };
+    return [...anchors].sort((a, b) => angle(a) - angle(b));
+  }
+
+  get busy(): boolean {
+    return this.jack.state === 'righting';
+  }
+
+  /**
+   * Hold brake off while the winch is doing the work. Pulling a bogged vehicle out, the
+   * brakes hold this one where it stands instead.
+   */
+  updateFreeRoll(v: Vehicle, input: VehicleInput): void {
+    v.freeRoll =
+      this.winch.attached &&
+      !this.winch.anchor?.id.startsWith('stuck:') &&
+      (input.winchIn || this.winch.tension > 0);
+  }
+}
+
+export const PLANK_REACH = plankTuning.pickupRange;

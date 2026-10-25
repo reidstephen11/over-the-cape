@@ -1,0 +1,50 @@
+import './ui/styles.css';
+import { Game } from './core/game';
+import { choiceFromSave } from './core/launch';
+import { episodes } from './data/episodes';
+import { maps } from './data/maps';
+import { vehicleLoadout } from './data/vehicles';
+import { loadSave } from './sim/save/save';
+import { LoadingScreen } from './ui/loading';
+import { WelcomeScreen, type WelcomeChoice } from './ui/welcome';
+
+async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> {
+  const appEl = document.getElementById('app') as HTMLElement;
+  const uiEl = document.getElementById('ui') as HTMLElement;
+  const loading = new LoadingScreen(uiEl);
+  const def = episodes[choice.episode];
+  const map = maps[def.mapId].def;
+  const save = loadSave();
+  const checkpoint = choice.resume ? save?.episodes[def.id]?.checkpoint : null;
+  loading.setSubtitle(map.name);
+  loading.briefing(
+    def,
+    vehicleLoadout(def.loadout, choice.vehicle),
+    choice.replay,
+    checkpoint ? (map.pois.find((p) => p.id === checkpoint.camp)?.name ?? null) : null,
+    choice.damage,
+  );
+  try {
+    const game = await Game.create(appEl, uiEl, choice, (p, label) => loading.set(p, label), audio);
+    loading.set(1, 'Ready');
+    await loading.waitForDrive();
+    loading.hide();
+    game.start();
+  } catch (err) {
+    console.error(err);
+    const panel = document.createElement('div');
+    panel.className = 'error-panel';
+    panel.innerHTML = `<div class="paper"><h2>Something went wrong</h2><p></p></div>`;
+    (panel.querySelector('p') as HTMLElement).textContent = String(err);
+    uiEl.appendChild(panel);
+  }
+}
+
+function boot(): void {
+  const uiEl = document.getElementById('ui') as HTMLElement;
+  const save = loadSave();
+  const choice: WelcomeChoice = { ...choiceFromSave(save), damage: save?.settings.damage ?? 'mild' };
+  new WelcomeScreen(uiEl, choice, save, (c, audio) => void play(c, audio));
+}
+
+boot();

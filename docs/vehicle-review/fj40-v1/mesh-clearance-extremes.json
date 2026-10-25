@@ -1,0 +1,32 @@
+{
+  "method": "Triangle-surface intersections using two BVHs",
+  "bodyTriangles": 71482,
+  "wheelTriangles": 4828,
+  "states": 24,
+  "intersections": [
+    {
+      "wi": 2,
+      "deg": 0,
+      "bump": 0.13,
+      "bodyTriangle": 47805,
+      "wheelTriangle": 3173,
+      "bodyCentre": [
+        -0.5433333317438761,
+        0.03999999910593033,
+        1.3233333031336465
+      ]
+    },
+    {
+      "wi": 3,
+      "deg": 0,
+      "bump": 0.13,
+      "bodyTriangle": 49514,
+      "wheelTriangle": 2826,
+      "bodyCentre": [
+        0.5433333317438761,
+        0.03999999910593033,
+        0.9766666491826375
+      ]
+    }
+  ]
+}

@@ -1,0 +1,844 @@
+import type { HorizonDef, MapDef, TrackDef } from '../../sim/world/mapTypes';
+import {
+  bigRed,
+  bigRedBypass,
+  bloomfieldBridge,
+  bloomfieldTrack,
+  bobsHill,
+  concreteDescent,
+  crebRidge,
+  daintreeCrossing,
+  donovansCreek,
+  paddockRoad,
+  rangeTop,
+  roaringMegClimb,
+  roaringMegFallsTrack,
+  upperDaintreeRoad,
+  wujalFallsTrack,
+} from './crebRoute';
+import { crebWashout, stretchCreeks, stretchPois, stretchProps, stretchTracks } from './crebStretches';
+import { crebFindFlats, crebFindPois, crebFindProps, crebFinds, crebFindTracks } from './crebFinds';
+import { crebForkPois, crebForkProps, crebForkTracks, littleAnnanBars } from './crebForks';
+
+/**
+ * Episode 1, the CREB Track: from Daintree Village across the Daintree River, through the
+ * Upper Daintree paddocks and over the rainforest range on the old powerline service track
+ * to the Bloomfield River at Wujal Wujal, then up the Bloomfield Track to the Lions Den
+ * Hotel. Distances are shortened; the obstacles are full size. Coordinates in metres:
+ * x = east, z = south (north is -z).
+ *
+ * The map is a long strip, 1.3 km wide and 6 km from south to north, with the route
+ * running up its length:
+ *   south  – Daintree Village, the Daintree River, the paddocks
+ *   middle – the range along the strip: Big Red, Roaring Meg Creek's gorge, Bob's Hill, the
+ *            lookout, the concrete descent and Donovan's Creek
+ *   north  – the Bloomfield River and its falls, Rossville, and the Lions Den beside the
+ *            Little Annan River
+ */
+// Cuttings and fill are laid back to an average 1 in 2, so a deep cut is a wide clay bank
+// rather than a narrow trench that traps a vehicle.
+const BATTER = 0.5;
+// After the wet the roads are corrugated and potholed and the range tracks washed out.
+const road = {
+  shoulder: 4,
+  batter: BATTER,
+  smooth: 12,
+  ruts: 0.05,
+  camber: 0.2,
+  rough: {
+    bumps: 0.14,
+    swells: 0.3,
+    potholes: 7,
+    potholeDepth: 0.3,
+    washouts: 2,
+    washoutDepth: 0.3,
+    bogs: 1.2,
+    bogDepth: 0.3,
+    sumpDepth: 0.7,
+    longBogs: 0.45,
+  },
+} as const;
+const bush = {
+  shoulder: 3,
+  batter: BATTER,
+  smooth: 8,
+  ruts: 0.08,
+  camber: 0.3,
+  pinMode: 'follow',
+  rough: {
+    bumps: 0.14,
+    swells: 0.18,
+    potholes: 3,
+    potholeDepth: 0.28,
+    washouts: 6,
+    washoutDepth: 0.38,
+    bogs: 1.6,
+    bogDepth: 0.3,
+    sumpDepth: 0.7,
+    longBogs: 0.35,
+  },
+} as const;
+/** The steep pinches: scored with deep cross-ruts by water running down them. */
+const pinch = { bumps: 0.1, washouts: 9, washoutDepth: 0.42 } as const;
+
+const baseTracks: TrackDef[] = [
+  {
+    id: 'upper-daintree-road',
+    name: 'Upper Daintree Road',
+    points: upperDaintreeRoad,
+    width: 5,
+    surface: 'clay',
+    ...road,
+    pinMode: 'follow',
+  },
+  {
+    id: 'daintree-crossing',
+    name: 'Daintree River crossing',
+    points: daintreeCrossing,
+    width: 4.2,
+    shoulder: 3,
+    batter: BATTER,
+    smooth: 12,
+    surface: 'gravel',
+    ruts: 0,
+    camber: 0.3,
+    pinMode: 'follow',
+  },
+  {
+    id: 'paddock-road',
+    name: 'Paddock road',
+    points: paddockRoad,
+    width: 4.4,
+    surface: 'gravel',
+    ...road,
+    pinMode: 'follow',
+  },
+  {
+    id: 'big-red',
+    name: 'Big Red',
+    points: bigRed,
+    width: 3.8,
+    shoulder: 4,
+    batter: BATTER,
+    smooth: 6,
+    surface: 'clay',
+    ruts: 0.12,
+    camber: 0.25,
+    pinSmooth: 14,
+    rough: pinch,
+  },
+  {
+    id: 'big-red-bypass',
+    name: 'Big Red bypass',
+    points: bigRedBypass,
+    width: 3.6,
+    surface: 'clay',
+    ...bush,
+    // Graded evenly from pin to pin, so it never steepens past about 17°.
+    pinMode: 'linear',
+    pinSmooth: 10,
+  },
+  { id: 'creb-ridge', name: 'CREB Track', points: crebRidge, width: 3.6, surface: 'clay', ...bush },
+  {
+    id: 'roaring-meg-climb',
+    name: 'CREB Track',
+    points: roaringMegClimb,
+    width: 3.6,
+    surface: 'clay',
+    ...bush,
+  },
+  {
+    id: 'bobs-hill',
+    name: 'Bob’s Hill',
+    points: bobsHill,
+    width: 3.6,
+    shoulder: 3,
+    batter: BATTER,
+    smooth: 6,
+    surface: 'clay',
+    ruts: 0.1,
+    camber: 0.3,
+    pinSmooth: 12,
+    rough: pinch,
+  },
+  { id: 'range-top', name: 'CREB Track', points: rangeTop, width: 3.6, surface: 'clay', ...bush },
+  {
+    id: 'concrete-descent',
+    name: 'The concrete',
+    points: concreteDescent,
+    width: 3.6,
+    shoulder: 4,
+    batter: BATTER,
+    smooth: 6,
+    surface: 'concrete',
+    ruts: 0,
+    camber: 0.2,
+    pinSmooth: 14,
+  },
+  { id: 'donovans-creek', name: 'CREB Track', points: donovansCreek, width: 3.6, surface: 'clay', ...bush },
+  {
+    id: 'bloomfield-bridge',
+    name: 'Bloomfield River bridge',
+    points: bloomfieldBridge,
+    width: 5,
+    shoulder: 3,
+    batter: BATTER,
+    smooth: 6,
+    surface: 'gravel',
+    ruts: 0,
+    camber: 0.2,
+    bridges: [{ from: 24, to: 76, kind: 'deck', width: 4.8, kerb: 0.3 }],
+  },
+  {
+    id: 'bloomfield-track',
+    name: 'Bloomfield Track',
+    points: bloomfieldTrack,
+    width: 5,
+    surface: 'gravel',
+    ...road,
+    pinMode: 'follow',
+  },
+  {
+    id: 'roaring-meg-falls',
+    name: 'Falls track',
+    points: roaringMegFallsTrack,
+    width: 3,
+    surface: 'clay',
+    ...bush,
+    ruts: 0.03,
+  },
+  {
+    id: 'wujal-falls',
+    name: 'Falls track',
+    points: wujalFallsTrack,
+    width: 3,
+    surface: 'clay',
+    ...bush,
+    ruts: 0.03,
+  },
+  ...crebFindTracks,
+  // The forks: other lines past the deep bog, the concrete and the Little Annan's ford.
+  ...crebForkTracks,
+];
+// Each stretch's own obstacles and mud (crebStretches.ts).
+const tracks = baseTracks.map((t) => ({ ...t, ...stretchTracks[t.id] }));
+
+/**
+ * The country round the CREB, out to the horizon. Real landforms in their real directions,
+ * brought in closer and lower in step with the map (about a quarter of their height):
+ *   east  – the Coral Sea, with Thornton Peak (1374 m), Mt Pieter Botte and Mt Sorrow behind
+ *           Cape Tribulation between the range and the coast, and Mt Finnigan's granite
+ *           tops east of the Bloomfield Track; the Daintree and the Bloomfield run out to
+ *           the sea, the Bloomfield into Weary Bay
+ *   west  – rainforest ranges rising to the flat-topped tablelands of the Great Dividing
+ *           Range; the Bloomfield comes down a gorge from the high country
+ *   north – drier, open eucalypt woodland, the Annan River and the black granite boulder
+ *           heaps of Black Mountain (Kalkajaka) north of the Lions Den; Mt Cook at Cooktown
+ *   south – the Daintree's cane and cattle flats, the ranges towards Mossman and Mt Demi
+ */
+const horizon: HorizonDef = {
+  base: 45,
+  relief: 40,
+  coastPlain: 700,
+  // South to north, sea to the east.
+  coast: [
+    [3600, 30000],
+    [3000, 9000],
+    [2700, 5500],
+    [2350, 3600],
+    [2120, 2700],
+    [2150, 2350],
+    [2450, 1700],
+    [2700, 1000],
+    [2500, 450],
+    [2350, -100],
+    [1950, -550],
+    [1650, -900],
+    [1750, -1300],
+    [2250, -1700],
+    [2600, -2500],
+    [2850, -3600],
+    [2950, -4600],
+    [2800, -5600],
+    [2400, -7000],
+    [2600, -10000],
+    [3500, -30000],
+  ],
+  hills: [
+    // East: the coastal ranges between the CREB and the sea.
+    { id: 'thornton-peak', x: 1350, z: 1450, radius: 950, height: 330, shape: 'dome', bare: 0.88 },
+    {
+      id: 'thornton-range',
+      x: 1300,
+      z: 900,
+      radius: 1300,
+      height: 120,
+      shape: 'dome',
+      stretch: [0.45, 1, 0],
+    },
+    { id: 'pieter-botte', x: 1200, z: 150, radius: 650, height: 240, shape: 'dome', bare: 0.84 },
+    { id: 'mt-sorrow', x: 2150, z: 350, radius: 500, height: 165, shape: 'dome' },
+    { id: 'snapper-island', x: 2750, z: 2150, radius: 170, height: 38, shape: 'dome' },
+    { id: 'mt-finnigan', x: 1600, z: -1700, radius: 850, height: 285, shape: 'dome', bare: 0.85 },
+    { id: 'cedar-bay-hills', x: 2250, z: -3200, radius: 600, height: 90, shape: 'dome' },
+    { id: 'archer-point', x: 2650, z: -4300, radius: 450, height: 65, shape: 'dome' },
+    { id: 'mt-cook', x: 1900, z: -6600, radius: 600, height: 110, shape: 'dome' },
+    // West: the tablelands of the Great Dividing Range and the high country before them.
+    { id: 'tablelands', x: -4200, z: 900, radius: 4200, height: 265, shape: 'mesa', stretch: [0.32, 1, 6] },
+    { id: 'bloomfield-headwaters', x: -2600, z: -1300, radius: 900, height: 170, shape: 'dome' },
+    { id: 'mt-spurgeon', x: -3000, z: 4800, radius: 1100, height: 250, shape: 'dome' },
+    // South: the ranges towards Mossman.
+    { id: 'mt-demi', x: -1400, z: 5800, radius: 800, height: 280, shape: 'dome' },
+    // North: Black Mountain, heaps of bare black granite boulders.
+    {
+      id: 'black-mountain',
+      x: -300,
+      z: -4250,
+      radius: 450,
+      height: 100,
+      shape: 'cone',
+      bare: 0,
+      granite: 'black',
+    },
+    {
+      id: 'black-mountain-east',
+      x: 0,
+      z: -4450,
+      radius: 320,
+      height: 75,
+      shape: 'dome',
+      bare: 0,
+      granite: 'black',
+    },
+    {
+      id: 'black-mountain-west',
+      x: -560,
+      z: -4480,
+      radius: 300,
+      height: 65,
+      shape: 'cone',
+      bare: 0,
+      granite: 'black',
+    },
+  ],
+  ridges: [
+    // Rainforest ranges west of the CREB.
+    {
+      id: 'west-ranges',
+      points: [
+        [-1700, 3200],
+        [-1900, 1500],
+        [-1600, 0],
+        [-1900, -1500],
+        [-2300, -2400],
+      ],
+      height: 140,
+      width: 900,
+    },
+    // The range behind Mt Finnigan.
+    {
+      id: 'finnigan-range',
+      points: [
+        [1100, -1150],
+        [1500, -1900],
+        [1800, -2600],
+      ],
+      height: 110,
+      width: 700,
+    },
+    // South of the Daintree towards Mossman.
+    {
+      id: 'mossman-ranges',
+      points: [
+        [-2600, 4300],
+        [-1200, 4700],
+        [300, 5200],
+        [1600, 5800],
+      ],
+      height: 170,
+      width: 1000,
+    },
+  ],
+  valleys: [
+    {
+      id: 'daintree-mouth',
+      points: [
+        { x: 640, z: 2205, level: 4.6 },
+        { x: 1100, z: 2260, level: 3.2 },
+        { x: 1600, z: 2380, level: 1.8 },
+        { x: 2150, z: 2480, level: -1 },
+      ],
+      channel: 24,
+      floor: 260,
+      slope: 0.12,
+      cleared: true,
+    },
+    {
+      id: 'upper-daintree',
+      points: [
+        { x: -640, z: 2250, level: 5.4 },
+        { x: -1100, z: 2350, level: 6.5 },
+        { x: -1800, z: 2700, level: 9 },
+        { x: -2600, z: 3300, level: 14 },
+        { x: -3400, z: 4100, level: 22 },
+      ],
+      channel: 20,
+      floor: 200,
+      slope: 0.15,
+      cleared: true,
+    },
+    {
+      id: 'roaring-meg-creek',
+      points: [
+        { x: 640, z: 830, level: 5 },
+        { x: 1100, z: 860, level: 3.5 },
+        { x: 1700, z: 820, level: 2 },
+        { x: 2300, z: 900, level: 0.5 },
+        { x: 2900, z: 950, level: -2 },
+      ],
+      channel: 7,
+      floor: 60,
+      slope: 0.35,
+    },
+    {
+      id: 'bloomfield-mouth',
+      points: [
+        { x: 640, z: -880, level: 2.7 },
+        { x: 950, z: -930, level: 1.6 },
+        { x: 1300, z: -950, level: 0.4 },
+        { x: 1800, z: -990, level: -2 },
+      ],
+      channel: 18,
+      floor: 140,
+      slope: 0.2,
+      cleared: true,
+    },
+    {
+      id: 'bloomfield-gorge',
+      points: [
+        { x: -640, z: -640, level: 80 },
+        { x: -1100, z: -560, level: 95 },
+        { x: -1700, z: -450, level: 120 },
+        { x: -2400, z: -300, level: 160 },
+        { x: -3000, z: -200, level: 200 },
+      ],
+      channel: 7,
+      floor: 25,
+      slope: 0.6,
+    },
+    {
+      id: 'little-annan-upper',
+      points: [
+        { x: -640, z: -2420, level: 29 },
+        { x: -1200, z: -2500, level: 38 },
+        { x: -2000, z: -2700, level: 55 },
+        { x: -2900, z: -2900, level: 80 },
+      ],
+      channel: 5,
+      floor: 40,
+      slope: 0.3,
+    },
+    {
+      id: 'annan',
+      points: [
+        { x: 640, z: -2500, level: 9 },
+        { x: 1100, z: -2750, level: 7 },
+        { x: 1600, z: -3300, level: 5 },
+        { x: 2100, z: -4000, level: 3 },
+        { x: 2500, z: -4700, level: 1 },
+        { x: 3000, z: -5300, level: -2 },
+      ],
+      channel: 9,
+      floor: 90,
+      slope: 0.2,
+    },
+  ],
+  // North of the Bloomfield the country dries out to open eucalypt woodland.
+  woodland: [
+    { x: 0, z: -5600, radius: 3800 },
+    { x: -2400, z: -3200, radius: 1700 },
+    { x: 1300, z: -3700, radius: 1300 },
+  ],
+};
+
+export const crebMap: MapDef = {
+  id: 'creb',
+  name: 'The CREB Track',
+  seed: 1873,
+  width: 1280,
+  length: 6144,
+  wall: [534, 2966],
+  floor: [
+    [-3072, 8],
+    [0, 9],
+    [2000, 10],
+    [3072, 10],
+  ],
+  floorAlong: 'z',
+  noise: {
+    macroAmplitude: 10,
+    macroScale: 420,
+    midAmplitude: 4,
+    midScale: 110,
+    detailAmplitude: 0.14,
+    detailScale: 7,
+    creekCalm: 80,
+  },
+  border: {
+    width: 230,
+    // Rainforest ridges either side of the range, not mountains: the country beyond is in `horizon`.
+    height: 80,
+    forested: true,
+    gaps: [
+      { x: -640, z: 2250, radius: 80 },
+      { x: 640, z: 2205, radius: 80 },
+      { x: 640, z: 830, radius: 100 },
+      { x: -640, z: -640, radius: 100 },
+      { x: 640, z: -880, radius: 120 },
+      { x: -640, z: -2420, radius: 80 },
+      { x: 640, z: -2500, radius: 80 },
+      // North of the Lions Den, where the road runs on past Black Mountain to Cooktown.
+      { x: 60, z: -3072, radius: 220 },
+    ],
+  },
+  horizon,
+  scarps: [],
+  hills: [
+    // The range: a long ridge north from the Daintree flats to the Bloomfield, with the
+    // track along its crest; higher towards its north end.
+    { id: 'range', x: -10, z: 430, radius: 1190, height: 125, shape: 'dome', stretch: [0.378, 1, 0] },
+    // The north end rises to a peak above the Bloomfield; the lookout is on its top.
+    { id: 'range-north', x: -2, z: -259, radius: 380, height: 75, shape: 'dome' },
+    // High country to the north-west, where the Bloomfield comes down from.
+    { id: 'bloomfield-highlands', x: -343, z: -699, radius: 380, height: 70, shape: 'dome' },
+    // The crest between Bob's Hill and the lookout.
+    { id: 'range-crest', x: -12, z: 40, radius: 260, height: 30, shape: 'dome' },
+    // Bob's Hill: a steep knob on the crest.
+    { id: 'bobs-knob', x: -20, z: 124, radius: 80, height: 20, shape: 'dome' },
+    // Big Red's spur stands out of the range's south foot.
+    { id: 'big-red-spur', x: -10, z: 1124, radius: 200, height: 46, shape: 'dome' },
+    // Low hills round Rossville and the Lions Den.
+    { id: 'rossville-rise', x: -250, z: -1600, radius: 300, height: 30, shape: 'dome' },
+    { id: 'helenvale-hill', x: 260, z: -2150, radius: 300, height: 30, shape: 'dome' },
+    { id: 'annan-rise', x: -280, z: -2250, radius: 260, height: 26, shape: 'dome' },
+  ],
+  ridges: [],
+  flats: [
+    { id: 'village', x: -60, z: 2640, radius: 26, blend: 20 },
+    { id: 'lookout', x: -7, z: -283, radius: 9, blend: 10 },
+    { id: 'bloomfield-camp', x: 81, z: -662, radius: 14, blend: 12 },
+    { id: 'roaring-meg-camp', x: -23, z: 661, radius: 12, blend: 14 },
+    { id: 'lions-den', x: 100, z: -2560, radius: 22, blend: 16 },
+    ...crebFindFlats,
+  ],
+  creeks: [
+    {
+      id: 'daintree',
+      name: 'Daintree River',
+      valley: 70,
+      // Running high after the overnight rain: enough to carry a vehicle off the deep line.
+      flow: 2.6,
+      points: [
+        { x: -640, z: 2250, water: 5.4, halfWidth: 20, depth: 1.6, bankSlope: 0.3 },
+        { x: -330, z: 2245, water: 5.2, halfWidth: 21, depth: 1.5, bankSlope: 0.3 },
+        { x: -30, z: 2238, water: 5.0, halfWidth: 26, depth: 1.05, bankSlope: 0.2, bed: 'gravel' },
+        { x: 220, z: 2230, water: 4.8, halfWidth: 22, depth: 1.5, bankSlope: 0.3 },
+        { x: 640, z: 2205, water: 4.6, halfWidth: 22, depth: 1.6, bankSlope: 0.3 },
+      ],
+      // The shallow line: a gravel bar downstream of the straight crossing, littered with
+      // boulders (below) and scoured into holes, over a rough, rocky bed.
+      bars: [{ x: 6, z: 2236, radiusX: 36, radiusZ: 13, rotationDeg: 80, depth: 0.6 }],
+      rough: [{ x: 6, z: 2238, radius: 34, height: 0.12 }],
+      holes: [
+        { x: 6.5, z: 2241, radius: 1.8, depth: 0.5 },
+        { x: 0.4, z: 2218.5, radius: 1.8, depth: 0.55 },
+      ],
+    },
+    {
+      id: 'roaring-meg',
+      name: 'Roaring Meg Creek',
+      valley: 34,
+      flow: 2.4,
+      points: [
+        { x: -19, z: 494, water: 127, halfWidth: 2, depth: 0.4 },
+        { x: 14, z: 503, water: 124, halfWidth: 2.8, depth: 0.4 },
+        // The ford: wider, so the water runs slower over its gravel.
+        {
+          x: 35,
+          z: 508,
+          water: 122.7,
+          halfWidth: 3.6,
+          depth: 0.45,
+          bed: 'gravel',
+          bankSlope: 0.35,
+          flow: 1.8,
+        },
+        { x: 72, z: 499, water: 118, halfWidth: 3, depth: 0.5 },
+        { x: 90, z: 503, water: 116.5, halfWidth: 3.2, depth: 0.5, bankSlope: 1 },
+        // Roaring Meg Falls: the creek drops off a granite lip into a plunge pool.
+        { x: 102, z: 507, water: 104, halfWidth: 4.6, depth: 1.2, bankSlope: 1 },
+        { x: 136, z: 523, water: 100, halfWidth: 3.4, depth: 0.6 },
+        { x: 197, z: 575, water: 68, halfWidth: 3.6, depth: 0.6 },
+        { x: 255, z: 618, water: 42, halfWidth: 3.8, depth: 0.6 },
+        { x: 320, z: 679, water: 24, halfWidth: 4, depth: 0.7 },
+        { x: 390, z: 730, water: 12, halfWidth: 4.5, depth: 0.8 },
+        { x: 480, z: 780, water: 7, halfWidth: 5, depth: 0.9 },
+        { x: 640, z: 830, water: 5, halfWidth: 5.5, depth: 1 },
+      ],
+    },
+    {
+      id: 'donovans',
+      name: 'Donovan’s Creek',
+      valley: 40,
+      flow: 2.6,
+      points: [
+        { x: -159, z: -457, water: 24, halfWidth: 2.4, depth: 0.45 },
+        { x: -80, z: -520, water: 21, halfWidth: 2.8, depth: 0.45 },
+        { x: -20, z: -575, water: 17.5, halfWidth: 3, depth: 0.4 },
+        { x: 30, z: -602, water: 14, halfWidth: 3.2, depth: 0.45 },
+        { x: 64, z: -613, water: 12.3, halfWidth: 3.4, depth: 0.5, bankSlope: 0.4 },
+        { x: 100, z: -622, water: 9, halfWidth: 3, depth: 0.45 },
+        { x: 150, z: -660, water: 6.5, halfWidth: 3.2, depth: 0.5 },
+        { x: 200, z: -715, water: 4.5, halfWidth: 3.2, depth: 0.5 },
+        { x: 240, z: -760, water: 3, halfWidth: 3.6, depth: 0.7 },
+      ],
+    },
+    {
+      id: 'bloomfield',
+      name: 'Bloomfield River',
+      valley: 60,
+      flow: 1.5,
+      points: [
+        { x: -640, z: -640, water: 80, halfWidth: 6, depth: 0.8 },
+        { x: -408, z: -643, water: 74, halfWidth: 6, depth: 0.8 },
+        { x: -272, z: -650, water: 69, halfWidth: 7, depth: 0.9 },
+        { x: -212, z: -661, water: 62, halfWidth: 8, depth: 0.9 },
+        { x: -172, z: -667, water: 47.5, halfWidth: 9, depth: 0.8, bankSlope: 1.2 },
+        // Wujal Wujal Falls: the river drops over 20 m into a deep pool.
+        { x: -147, z: -670, water: 24, halfWidth: 12, depth: 2.4, bankSlope: 1.2 },
+        { x: -112, z: -677, water: 20, halfWidth: 12, depth: 1.8 },
+        { x: -72, z: -686, water: 11.5, halfWidth: 12, depth: 1.8 },
+        { x: -14, z: -701, water: 8.5, halfWidth: 13, depth: 1.8 },
+        { x: 40, z: -727, water: 4.6, halfWidth: 14, depth: 1.8 },
+        { x: 105, z: -755, water: 3.2, halfWidth: 14, depth: 1.8 },
+        { x: 240, z: -762, water: 3, halfWidth: 15, depth: 1.8 },
+        { x: 640, z: -880, water: 2.7, halfWidth: 16, depth: 1.8 },
+      ],
+    },
+    {
+      id: 'little-annan',
+      name: 'Little Annan River',
+      valley: 50,
+      flow: 2.4,
+      points: [
+        { x: -640, z: -2420, water: 29, halfWidth: 4, depth: 0.6 },
+        { x: -330, z: -2430, water: 25, halfWidth: 5, depth: 0.6 },
+        { x: -150, z: -2445, water: 11, halfWidth: 5.5, depth: 0.6 },
+        { x: 40, z: -2458, water: 10, halfWidth: 7, depth: 0.55, bankSlope: 0.3 },
+        { x: 160, z: -2468, water: 9.6, halfWidth: 6, depth: 0.7 },
+        { x: 300, z: -2478, water: 9.4, halfWidth: 6, depth: 0.7 },
+        { x: 640, z: -2500, water: 9, halfWidth: 6, depth: 0.8 },
+      ],
+      bars: littleAnnanBars,
+    },
+    ...stretchCreeks,
+  ],
+  tracks,
+  patches: [
+    { id: 'roaring-meg-lip', kind: 'rock', x: 97, z: 505, radius: 14, ragged: 0.5 },
+    { id: 'wujal-falls-rock', kind: 'rock', x: -160, z: -669, radius: 30, ragged: 0.6 },
+    { id: 'village-dirt', kind: 'dirt', x: -56, z: 2636, radius: 8, ragged: 0.5 },
+  ],
+  bogs: [],
+  gullies: [crebWashout],
+  pois: [
+    {
+      id: 'daintree-village',
+      name: 'Daintree Village',
+      kind: 'campsite',
+      x: -60,
+      z: 2640,
+      radius: 30,
+      reset: { x: -62, z: 2622, headingDeg: 340 },
+      note: 'Where timber cutters once floated red cedar down the river',
+    },
+    {
+      id: 'daintree-crossing',
+      name: 'Daintree River crossing',
+      kind: 'feature',
+      x: 10,
+      z: 2238,
+      radius: 34,
+      note: 'Deep in the middle; the shallow bar downstream is strewn with rocks and holes',
+    },
+    {
+      id: 'big-red',
+      name: 'Big Red',
+      kind: 'feature',
+      x: 4,
+      z: 1226,
+      radius: 30,
+      note: 'Red clay climb; the bypass goes round to the west',
+    },
+    {
+      id: 'roaring-meg-camp',
+      name: 'Roaring Meg camp',
+      kind: 'campsite',
+      x: -27,
+      z: 661,
+      radius: 22,
+      reset: { x: -17, z: 666, headingDeg: 320 },
+      note: 'A clearing beside the track above the creek',
+    },
+    {
+      id: 'roaring-meg-crossing',
+      name: 'Roaring Meg Creek',
+      kind: 'feature',
+      x: 35,
+      z: 508,
+      radius: 24,
+      note: 'Rocky creek crossing above the falls',
+    },
+    { id: 'roaring-meg-falls', name: 'Roaring Meg Falls', kind: 'landmark', x: 90, z: 497, radius: 22 },
+    {
+      id: 'bobs-hill',
+      name: 'Bob’s Hill',
+      kind: 'feature',
+      x: -22,
+      z: 144,
+      radius: 30,
+      note: 'Steep, rutted and rocky',
+    },
+    {
+      id: 'creb-lookout',
+      name: 'Range lookout',
+      kind: 'viewpoint',
+      x: -7,
+      z: -283,
+      radius: 24,
+      note: 'View north over the Bloomfield valley',
+    },
+    {
+      id: 'the-concrete',
+      name: 'The concrete',
+      kind: 'feature',
+      x: -9,
+      z: -395,
+      radius: 34,
+      note: 'Concrete strips on the steepest descent',
+    },
+    {
+      id: 'donovans-crossing',
+      name: 'Donovan’s Creek',
+      kind: 'feature',
+      x: 64,
+      z: -613,
+      radius: 24,
+      note: 'A clear, rocky stream',
+    },
+    {
+      id: 'bloomfield-camp',
+      name: 'Bloomfield River',
+      kind: 'campsite',
+      x: 81,
+      z: -662,
+      radius: 22,
+      reset: { x: 81, z: -672, headingDeg: 0 },
+      note: 'Beside the bridge at Wujal Wujal',
+    },
+    { id: 'wujal-falls', name: 'Wujal Wujal Falls', kind: 'landmark', x: -113, z: -657, radius: 26 },
+    { id: 'rossville', name: 'Rossville', kind: 'landmark', x: -110, z: -1500, radius: 34 },
+    {
+      id: 'lions-den',
+      name: 'Lions Den Hotel',
+      kind: 'campsite',
+      x: 100,
+      z: -2560,
+      radius: 26,
+      reset: { x: 92, z: -2548, headingDeg: 20 },
+      note: 'Built in 1875',
+    },
+    ...stretchPois,
+    ...crebFindPois,
+    ...crebForkPois,
+  ],
+  props: [
+    { kind: 'signpost', x: -46, z: 2612, headingDeg: 180, text: 'CREB Track' },
+    { kind: 'signpost', x: -54, z: 2312, headingDeg: 160, text: 'Crocodiles' },
+    { kind: 'signpost', x: 1, z: 1310, headingDeg: 160, text: 'Big Red' },
+    { kind: 'signpost', x: 3, z: 1364, headingDeg: 130, text: 'Big Red bypass' },
+    { kind: 'signpost', x: 44, z: 470, headingDeg: 40, text: 'Roaring Meg Falls' },
+    { kind: 'fireRing', x: -38, z: 660, headingDeg: 0, flatten: 3 },
+    { kind: 'logSeat', x: -40, z: 666, headingDeg: 20 },
+    { kind: 'signpost', x: -33, z: 240, headingDeg: 160, text: 'Bob’s Hill' },
+    { kind: 'signpost', x: 2, z: -275, headingDeg: 180, text: 'Lookout' },
+    { kind: 'signpost', x: 66, z: -674, headingDeg: 250, text: 'Falls' },
+    { kind: 'fireRing', x: 79, z: -656, headingDeg: 0, flatten: 3 },
+    { kind: 'signpost', x: -100, z: -1476, headingDeg: 100, text: 'Rossville' },
+    { kind: 'hut', x: 116, z: -2576, headingDeg: 190, flatten: 10 },
+    { kind: 'waterTank', x: 128, z: -2568, headingDeg: 0 },
+    { kind: 'signpost', x: 80, z: -2538, headingDeg: 270, text: 'Lions Den Hotel' },
+    ...stretchProps,
+    ...crebFindProps,
+    ...crebForkProps,
+  ],
+  finds: crebFinds,
+  boulders: [
+    // On the Daintree's bar: across the straight line and either side of the weaving one,
+    // standing a metre or so out of the water.
+    { x: 8.6, z: 2253, radius: 1.2, sink: 0.15 },
+    { x: 2.9, z: 2232, radius: 1.2, sink: 0.15 },
+    { x: 19, z: 2251, radius: 1.1, sink: 0.15 },
+    { x: -4.5, z: 2243.5, radius: 1, sink: 0.15 },
+    { x: 14, z: 2230, radius: 1.1, sink: 0.15 },
+    { x: 39, z: 496, radius: 1.1 },
+    { x: 29, z: 521, radius: 0.9 },
+    { x: 95, z: 499, radius: 1.6 },
+    { x: 107, z: 514, radius: 1.4 },
+    { x: 49, z: -610, radius: 0.9 },
+    { x: 80, z: -621, radius: 1 },
+    { x: -136, z: -657, radius: 1.8 },
+    { x: -159, z: -685, radius: 1.5 },
+  ],
+  tors: [],
+  fallenTrees: [{ id: 'fallen-tree', x: -5, z: 1048, headingDeg: 50, length: 11, radius: 0.4, mass: 700 }],
+  vegetation: {
+    flora: 'tropical',
+    // Open country: the village and the paddocks north of the river, and the drier hills
+    // round Rossville and the Lions Den.
+    woodland: [
+      { x: -50, z: 2560, radius: 280 },
+      { x: -20, z: 1780, radius: 440 },
+      { x: -40, z: -1700, radius: 460 },
+      { x: 40, z: -2340, radius: 420 },
+    ],
+    maxTreeDensity: 1.5,
+    ashBelow: 0,
+    snowGumAbove: 1000,
+    patchScale: 160,
+    trackClearance: 2,
+    boulderDensity: 0.006,
+    clearings: [
+      { x: -60, z: 2640, radius: 46 },
+      { x: 60, z: 1990, radius: 120 },
+      { x: -120, z: 1690, radius: 110 },
+      { x: -27, z: 661, radius: 18 },
+      { x: -7, z: -283, radius: 18 },
+      { x: 81, z: -662, radius: 22 },
+      { x: 100, z: -2560, radius: 40 },
+      { x: -110, z: -1500, radius: 40 },
+    ],
+  },
+  palette: {
+    // Red clay tracks, lush green grass.
+    dirtTrack: '#A35A38',
+    dirtDark: '#7A3F27',
+    grassDry: '#9FA45E',
+    grassSage: '#6E8C4E',
+    mud: '#6A3E2A',
+  },
+  clayBanks: true,
+  // After the wet, the flatter ground off the tracks is boggy black soil: stay on the track.
+  blackSoil: { margin: 4, maxSlopeDeg: 16, firmAbove: 0.55 },
+  spawnCampsite: 'daintree-village',
+};

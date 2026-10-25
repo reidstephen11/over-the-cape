@@ -1,0 +1,14 @@
+{
+  "method": "Both spare wheels versus body triangle surfaces; each own carrier excluded as intended support",
+  "spares": [
+    {
+      "name": "behind cab",
+      "intersections": []
+    },
+    {
+      "name": "left dropside",
+      "intersections": []
+    }
+  ],
+  "intersections": []
+}

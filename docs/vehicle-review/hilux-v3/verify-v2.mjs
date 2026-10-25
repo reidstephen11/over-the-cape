@@ -1,0 +1,15 @@
+import {chromium} from '@playwright/test';
+import {writeFileSync} from 'node:fs';
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+const page=await browser.newPage({viewport:{width:1200,height:860}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto('http://127.0.0.1:5183/Hilux-review.html');await page.waitForFunction(()=>window.review?.ready,null,{timeout:90000});
+const source=await page.evaluate(()=>{let triangles=0;window.review.models.proposed.root.traverse(o=>{if(o.isMesh)triangles+=(o.geometry.index?.count??o.geometry.attributes.position.count)/3});return {triangles,bodyIndexCount:window.review.models.proposed.body.geometry.index.count}});
+await page.getByRole('button',{name:'Original',exact:true}).click();if(await page.locator('#mode').textContent()!=='CURRENT GAME MODEL')throw Error('Original toggle failed');
+await page.getByRole('button',{name:'Proposed',exact:true}).click();
+await page.getByRole('button',{name:'Hide bullbar',exact:true}).click();const hiddenCount=await page.evaluate(()=>window.review.models.proposed.body.geometry.index.count);if(hiddenCount>=source.bodyIndexCount)throw Error('Hide bar did not change geometry');
+await page.getByRole('button',{name:'Show bullbar',exact:true}).click();if(await page.evaluate(()=>window.review.models.proposed.body.geometry.index.count)!==source.bodyIndexCount)throw Error('Restore changed geometry');
+for(const label of ['Front ¾','Front','Side','Rear ¾','Grille & bar','Cab & bonnet'])await page.getByRole('button',{name:label,exact:true}).click();
+const glb=await page.evaluate(()=>window.review.validateGLB());if(glb.triangles!==source.triangles)throw Error('GLB/source triangle count mismatch');
+if(errors.length)throw Error(errors.join('\n'));
+const result={standaloneViewer:'passed over local HTTP; file URLs blocked by managed browser policy',originalProposalSwitch:'passed',barHideAndExactRestore:'passed',sixCameraButtons:'passed',glbReimport:'passed',exportPreservesTriangleCount:true,source,glb,browserErrors:errors};
+writeFileSync('validation-v2.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));await browser.close();

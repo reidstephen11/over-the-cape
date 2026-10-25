@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Perentie • Model review 01</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #e7e8e5;
+        color: #202f32;
+        font:
+          14px system-ui,
+          sans-serif;
+      }
+      header {
+        position: absolute;
+        top: 28px;
+        left: 36px;
+        right: 36px;
+        pointer-events: none;
+      }
+      small {
+        font-size: 10px;
+        letter-spacing: 2px;
+        font-weight: 700;
+        color: #607072;
+      }
+      h1 {
+        font-size: 30px;
+        letter-spacing: -1px;
+        margin: 8px 0;
+      }
+      header p {
+        margin: 0;
+        color: #586568;
+        font-size: 12px;
+      }
+      .tag {
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding: 9px 13px;
+        border: 1px solid #bac5c3;
+        border-radius: 30px;
+        font-size: 10px;
+        letter-spacing: 1px;
+      }
+      nav {
+        position: absolute;
+        bottom: 28px;
+        left: 36px;
+        right: 36px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      button {
+        border: 1px solid #bec9c6;
+        background: #f6f6f2;
+        color: #34484c;
+        border-radius: 7px;
+        padding: 11px 15px;
+        cursor: pointer;
+        font: 12px system-ui;
+      }
+      button.active {
+        color: #fff;
+        background: #294a4c;
+        border-color: #294a4c;
+      }
+      button:hover {
+        border-color: #34484c;
+      }
+      .divider {
+        height: 28px;
+        border-left: 1px solid #b2c0bd;
+        margin: 0 5px;
+      }
+      #note {
+        position: absolute;
+        bottom: 145px;
+        left: 36px;
+        font-size: 12px;
+        color: #57696a;
+      }
+      #mode {
+        position: absolute;
+        top: 144px;
+        left: 36px;
+        font-size: 11px;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: #98623c;
+      }
+      canvas {
+        display: block;
+      }
+      #pose {
+        position: absolute;
+        right: 36px;
+        top: 100px;
+        display: grid;
+        gap: 10px;
+        background: #f6f6f2e8;
+        padding: 14px;
+        border: 1px solid #bec9c6;
+        border-radius: 7px;
+        width: 235px;
+      }
+      #pose label {
+        display: grid;
+        gap: 5px;
+        font-size: 12px;
+      }
+      #pose output {
+        float: right;
+      }
+      #pose input {
+        width: 100%;
+        accent-color: #294a4c;
+      }
+      #pose button {
+        padding: 7px;
+      }
+      .right {
+        margin-left: auto;
+      }
+      @media (max-width: 800px) {
+        header {
+          left: 20px;
+          top: 20px;
+        }
+        .tag {
+          display: none;
+        }
+        #pose {
+          right: 12px;
+          top: 120px;
+          width: 190px;
+        }
+        nav {
+          left: 20px;
+          bottom: 15px;
+          gap: 5px;
+        }
+        button {
+          padding: 8px;
+        }
+        #note {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <small>OVER THE CAPE / VEHICLE STUDIES</small>
+      <h1>Perentie, refined.</h1>
+      <p>Australian Army · Bush Tucker Man · Series 1 / 48-001 · Revision 01</p>
+      <span class="tag">REVIEW PROTOTYPE · NOT IN GAME</span>
+    </header>
+    <aside id="pose">
+      <label
+        >Steering <output id="steer-value">0°</output
+        ><input
+          id="steer"
+          type="range"
+          min="-31"
+          max="31"
+          value="0"
+          aria-label="Steering angle" /></label
+      ><label
+        >Suspension compression <output id="bump-value">0 mm</output
+        ><input
+          id="bump"
+          type="range"
+          min="0"
+          max="150"
+          step="10"
+          value="0"
+          aria-label="Suspension compression" /></label
+      ><button id="pose-reset">Reset stance</button>
+    </aside>
+    <div id="mode">PROPOSED MODEL</div>
+    <div id="note">
+      Drag to orbit · Scroll to zoom · Both versions use identical lighting and
+      camera positions
+    </div>
+    <nav>
+      <button id="proposed" class="active">Proposed</button
+      ><button id="original">Original</button><span class="divider"></span
+      ><button data-view="hero">Front ¾</button
+      ><button data-view="front">Front</button
+      ><button data-view="side">Side</button
+      ><button data-view="rear">Rear ¾</button
+      ><button data-view="detail">Grille &amp; bar</button
+      ><button data-view="roof">Canvas &amp; load</button
+      ><button id="bar">Hide bullbar</button
+      ><button id="rack">Hide roof gear</button
+      ><button id="gear">Hide bonnet gear</button
+      ><button id="canvas">Hide canvas</button
+      ><button id="export" class="right">Export GLB</button>
+    </nav>
+    <script type="module" src="/review.ts"></script>
+  </body>
+</html>

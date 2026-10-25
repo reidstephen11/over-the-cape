@@ -1,0 +1,9 @@
+{
+  "typecheck": "passed",
+  "productionBuild": "passed",
+  "formatting": "passed",
+  "cleanDependencyInstall": "passed in separate directory",
+  "independentBuildBundleIdentical": true,
+  "bundleSHA256": "a5af80dfb2815d4dff6b1e4aafafe042f10c5478ca353e5b56f20728c556f8f0",
+  "baselineRenderedAttributes": "exact match to untouched game"
+}
