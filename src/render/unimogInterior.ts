@@ -19,7 +19,7 @@ export function addUnimogInterior(b: VehicleBuilder, redlineRpm: number): void {
     metal = new THREE.Color('#8A8E86'),
     inner = paint.clone().multiplyScalar(0.8);
   // Rubber floor mat and the gearbox hump between the seats.
-  b.block(0, 0.71, -0.88, 2.1, 0.02, 1.5, mat, M.Rubber, Z.Trim);
+  b.block(0, 0.756, -0.88, 2.1, 0.012, 1.5, mat, M.Rubber, Z.Trim);
   b.block(0, 0.84, -0.95, 0.46, 0.26, 1.0, inner, M.Paint, Z.Trim, 0.04);
   // Dash: a steel panel across the cab under the screen, and its top rail.
   b.block(0, 1.17, -1.47, 2.1, 0.32, 0.25, inner, M.Paint, Z.Trim, 0.02);

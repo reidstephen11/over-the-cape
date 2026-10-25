@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { plateText } from './patrolLettering';
+import { continuousTube, subdivideSurface, cleanGeometry } from './bodyRefinement';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { VehicleTuning } from '../data/vehicle';
 import { plankTuning } from '../data/tools';
@@ -44,7 +46,7 @@ const SILL = 0.02;
 const TWO_TONE = 0.3;
 const AXLE = 1.485;
 /** Square wheel openings: half-widths at the sill and at the flat top, and the top height. */
-const ARCH = { bottom: 0.56, top: 0.38, y: 0.41 };
+const ARCH = { bottom: 0.58, top: 0.4, y: 0.455 };
 const F = -2.27;
 const BONNET_FRONT = 0.675;
 const BONNET_BACK = 0.72;
@@ -135,11 +137,11 @@ function lowerBody(b: VehicleBuilder): void {
         0.025,
       );
       // Dark wheelhouse: an inner wall and a roof over the tyre.
-      const wellX = axle < 0 ? 0.42 : 0.6;
+      const wellX = axle < 0 ? 0.38 : 0.59;
       b.block(side * wellX, 0.17, axle, 0.03, 0.5, ARCH.bottom * 2, well, M.Rubber, Z.Trim);
       b.block(
         (side * (wellX + SIDE - 0.05)) / 2,
-        ARCH.y + 0.01,
+        ARCH.y + 0.035,
         axle,
         SIDE - 0.05 - wellX,
         0.02,
@@ -152,7 +154,7 @@ function lowerBody(b: VehicleBuilder): void {
         b.block(
           (side * (wellX + SIDE - 0.05)) / 2,
           0.2,
-          axle + dz * (archHalf(0.2) + 0.01),
+          axle + dz * 0.62,
           SIDE - 0.05 - wellX,
           0.4,
           0.02,
@@ -194,21 +196,6 @@ function bonnetAndFace(b: VehicleBuilder): void {
     lower,
   );
   const top = (z: number) => BONNET_FRONT + ((z - F) / (SCUTTLE - 0.12 - F)) * (BONNET_BACK - BONNET_FRONT);
-  extrudeX(
-    b,
-    sideShape([
-      [F + 0.16, top(F + 0.16) - 0.01],
-      [F + 0.16, top(F + 0.16) + 0.014, 0.012],
-      [SCUTTLE - 0.2, top(SCUTTLE - 0.2) + 0.014, 0.012],
-      [SCUTTLE - 0.2, top(SCUTTLE - 0.2) - 0.01],
-    ]),
-    -0.4,
-    0.4,
-    paint,
-    M.Paint,
-    Z.Front,
-    0.012,
-  );
   // Shut lines between the bonnet and the guard tops.
   for (const side of [-1, 1])
     b.rod(
@@ -244,8 +231,34 @@ function bonnetAndFace(b: VehicleBuilder): void {
     );
   for (const x of [-0.5, 0.5])
     b.block(x, gy, F - 0.016, 0.024, 0.2, 0.014, trim.clone().multiplyScalar(1.35), M.Rubber, Z.Front, 0.005);
-  b.block(0, gy, F - 0.03, 0.17, 0.05, 0.012, chrome, M.Metal, Z.Front, 0.014);
-  b.block(0, gy, F - 0.036, 0.14, 0.026, 0.006, black, M.Rubber, Z.Front, 0.006);
+  b.block(0, gy, F - 0.03, 0.205, 0.055, 0.012, chrome, M.Metal, Z.Front, 0.004);
+  b.block(0, gy, F - 0.038, 0.193, 0.043, 0.006, black, M.Rubber, Z.Front, 0.002);
+  const glyphs: Record<string, string[]> = {
+    N: ['10001', '11001', '10101', '10011', '10001'],
+    I: ['111', '010', '010', '010', '111'],
+    S: ['11111', '10000', '11111', '00001', '11111'],
+    A: ['01110', '10001', '11111', '10001', '10001'],
+  };
+  const word = 'NISSAN',
+    pitch = 0.028;
+  [...word].forEach((ch, k) =>
+    glyphs[ch].forEach((row, j) =>
+      [...row].forEach((pixel, i) => {
+        if (pixel === '1')
+          b.block(
+            0.081 - k * pitch - i * 0.004,
+            gy + 0.011 - j * 0.0055,
+            F - 0.043,
+            0.0035,
+            0.0045,
+            0.002,
+            chrome,
+            M.Metal,
+            Z.Front,
+          );
+      }),
+    ),
+  );
   for (const side of [-1, 1]) {
     const x = side * 0.645;
     // Square surround round the lamp, then the lamp itself.
@@ -268,14 +281,14 @@ function bonnetAndFace(b: VehicleBuilder): void {
 }
 
 function tubePath(b: VehicleBuilder, pts: ReturnType<typeof v>[], r: number, color: THREE.Color): void {
-  for (let i = 0; i + 1 < pts.length; i++) b.rod(pts[i], pts[i + 1], r, color, M.Metal, Z.Front);
-  b.slot = M.Metal;
-  b.tag = Z.Front;
-  for (const p of pts.slice(1, -1)) {
-    b.push().translate(p.x, p.y, p.z);
-    b.geometry(new THREE.SphereGeometry(r, 12, 8), color);
-    b.pop();
-  }
+  continuousTube(
+    b,
+    pts.map((p) => new THREE.Vector3(p.x, p.y, p.z)),
+    r,
+    color,
+    Z.Front,
+    M.Rubber,
+  );
 }
 
 /**
@@ -286,50 +299,76 @@ function tubePath(b: VehicleBuilder, pts: ReturnType<typeof v>[], r: number, col
 function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   const face = tuning.winchMount.z;
   const back = F - 0.03;
-  const zc = (face + back) / 2,
-    depth = back - face;
+  const zc = (face + back) / 2;
   const panY = 0.12,
     panH = 0.3;
-  b.block(0, panY, zc, 1.3, panH, depth, bar, M.Metal, Z.Front, 0.025);
+  const outline = new THREE.Shape();
+  const perimeter = [
+    [-1.0, face + 0.22],
+    [-0.89, face + 0.04],
+    [-0.62, face],
+    [0.62, face],
+    [0.89, face + 0.04],
+    [1.0, face + 0.22],
+    [0.93, back + 0.1],
+    [0.68, back],
+    [-0.68, back],
+    [-0.93, back + 0.1],
+  ];
+  perimeter.forEach(([x, z], i) => (i ? outline.lineTo(x, z) : outline.moveTo(x, z)));
+  outline.closePath();
+  const pan = new THREE.ExtrudeGeometry(outline, {
+    depth: panH,
+    bevelEnabled: true,
+    bevelSize: 0.009,
+    bevelThickness: 0.009,
+    bevelSegments: 2,
+    steps: 1,
+  });
+  pan.rotateX(Math.PI / 2);
+  pan.translate(0, panY + panH / 2, 0);
+  b.slot = M.Metal;
+  b.tag = Z.Front;
+  b.geometry(pan, bar);
   for (const side of [-1, 1]) {
     b.push()
-      .translate(side * 0.79, panY, zc + 0.05)
-      .rotate(0, -side * 0.42, 0);
-    b.block(0, 0, 0, 0.36, panH, depth, bar, M.Metal, Z.Front, 0.025);
-    // Indicator in the wing face.
-    b.block(0.0, 0.05, -depth / 2 - 0.004, 0.14, 0.06, 0.012, amber, M.Amber, Z.Front, 0.008);
+      .translate(side * 0.8, panY + 0.04, face + 0.014)
+      .rotate(0, -side * 0.16, 0);
+    b.block(0, 0, 0, 0.155, 0.075, 0.014, black, M.Rubber, Z.Front, 0.008);
+    b.block(0, 0, -0.008, 0.13, 0.053, 0.008, amber, M.Amber, Z.Front, 0.005);
     b.pop();
   }
-  // Top of the pan: a flat ledge the hoops stand on.
-  b.block(0, panY + panH / 2, zc + 0.01, 1.32, 0.03, depth + 0.03, bar, M.Metal, Z.Front, 0.012);
-  for (const x of [-0.47, 0.47]) b.block(x, 0.1, back + 0.1, 0.08, 0.12, 0.24, bar, M.Metal, Z.Trim);
-  const top = panY + panH / 2;
-  const zt = F - 0.09;
-  // Centre hoop over the grille, with a mid rail.
-  for (const side of [-1, 1])
-    tubePath(
-      b,
-      [v(side * 0.4, top, zc + 0.01), v(side * 0.4, 0.7, zt), v(side * 0.34, 0.76, zt)],
-      0.032,
-      bar,
-    );
-  b.rod(v(-0.34, 0.76, zt), v(0.34, 0.76, zt), 0.032, bar, M.Metal, Z.Front);
-  b.rod(v(-0.4, 0.52, (zc + zt) / 2), v(0.4, 0.52, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
-  // Loops: up from the wing ends, over the headlamps and back in to the hoop.
-  for (const side of [-1, 1])
-    tubePath(
+  const top = panY + panH / 2,
+    zt = F - 0.09;
+  const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+  const zAt = (y: number) => zc + 0.01 + ((y - top) / (0.78 - top)) * (zt - zc - 0.01);
+  continuousTube(
+    b,
+    [
+      V(-0.42, top - 0.018, zAt(top)),
+      V(-0.42, 0.78, zAt(0.78)),
+      V(0.42, 0.78, zAt(0.78)),
+      V(0.42, top - 0.018, zAt(top)),
+    ],
+    0.032,
+    bar,
+  );
+  // Branch ends penetrate the centre posts; their bases penetrate the swept bumper.
+  for (const side of [-1, 1]) {
+    continuousTube(
       b,
       [
-        v(side * 0.9, top, zc + 0.14),
-        v(side * 0.9, 0.57, zt + 0.08),
-        v(side * 0.84, 0.65, zt + 0.04),
-        v(side * 0.4, 0.67, zt),
+        V(side * 0.414, 0.67, zAt(0.67)),
+        V(side * 0.91, 0.65, zt + 0.07),
+        V(side * 0.92, top - 0.018, back + 0.01),
       ],
       0.028,
       bar,
     );
-  for (const x of [-0.9, -0.4, 0.4, 0.9])
-    b.block(x, top + 0.03, x * x > 0.5 ? zc + 0.12 : zc, 0.07, 0.04, 0.1, bar, M.Metal, Z.Front);
+    b.block(side * 0.42, top + 0.008, zAt(top), 0.085, 0.028, 0.085, bar, M.Metal, Z.Front, 0.006);
+    b.block(side * 0.92, top + 0.008, back + 0.01, 0.08, 0.028, 0.085, bar, M.Metal, Z.Front, 0.006);
+    b.rod(v(side * 0.36, 0.1, back + 0.08), v(side * 0.36, 0.06, F + 0.28), 0.028, bar, M.Metal, Z.Trim);
+  }
   // Winch drum behind the pan, between the hoop's legs.
   b.rod(v(-0.24, top + 0.06, back - 0.02), v(0.24, top + 0.06, back - 0.02), 0.07, trim);
   for (let i = 0; i < 15; i++)
@@ -343,7 +382,7 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   for (const x of [m.x - 0.11, m.x + 0.11])
     b.rod(v(x, m.y - 0.045, face - 0.03), v(x, m.y + 0.045, face - 0.03), 0.015, steel, M.Metal, Z.Front);
   b.block(0.44, 0.12, face - 0.012, 0.37, 0.12, 0.01, new THREE.Color('#F0EEE6'), M.Lamp, Z.Front, 0.006);
-  b.block(0.44, 0.12, face - 0.018, 0.34, 0.012, 0.004, black, M.Rubber, Z.Front);
+  plateText(b, 'GQ-060', 0.44, 0.12, face - 0.02, -1);
   for (const side of [-1, 1]) {
     const x = side * 0.62;
     b.block(x, -0.04, face + 0.02, 0.07, 0.08, 0.06, steel, M.Metal, Z.Trim);
@@ -352,9 +391,9 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   // Driving lamps hung from tabs under the top rail, inside the hoop (lit on high beam).
   for (const side of [-1, 1]) {
     const lx = side * 0.19,
-      ly = 0.645,
+      ly = 0.48,
       lz = zt - 0.01;
-    b.block(lx, 0.745, zt, 0.04, 0.04, 0.05, black, M.Metal, Z.Front);
+    b.block(lx, 0.335, zt, 0.045, 0.14, 0.05, black, M.Metal, Z.Front, 0.005);
     b.slot = M.Metal;
     b.tag = Z.Front;
     b.push()
@@ -564,15 +603,46 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
     bevelSegments: 3,
     curveSegments: 8,
   });
-  const g = toCreasedNormals(raw, Math.PI / 5);
+  let g = toCreasedNormals(raw, Math.PI / 5);
   g.rotateX(-Math.PI / 2);
+  g = subdivideSurface(g, (_p, n) => Math.abs(n.y) > 0.8, 2);
+  const rp = g.getAttribute('position'),
+    rn = g.getAttribute('normal');
+  const centre = (front + rear) / 2,
+    halfLength = (rear - front) / 2;
+  for (let i = 0; i < rp.count; i++) {
+    const x = rp.getX(i),
+      z = rp.getZ(i),
+      u = x / half,
+      t = (z - centre) / halfLength;
+    const qx = Math.max(0, 1 - u * u),
+      qz = Math.max(0, 1 - t * t),
+      crown = 0.018 * qx * qz;
+    const dx = ((-0.036 * x) / (half * half)) * qz,
+      dz = ((-0.036 * (z - centre)) / (halfLength * halfLength)) * qx;
+    rp.setY(i, rp.getY(i) + crown);
+    const n = new THREE.Vector3(
+      rn.getX(i) - dx * rn.getY(i),
+      rn.getY(i),
+      rn.getZ(i) - dz * rn.getY(i),
+    ).normalize();
+    rn.setXYZ(i, n.x, n.y, n.z);
+  }
   b.slot = M.Paint;
   b.tag = Z.Roof;
   b.push().translate(0, ROOF - 0.05, 0);
   b.geometry(g, paint);
   b.pop();
   for (const x of [-0.5, -0.17, 0.17, 0.5])
-    b.block(x, ROOF + 0.001, 1.0, 0.03, 0.008, 2.6, paint, M.Paint, Z.Roof, 0.004);
+    for (let k = 0; k < 24; k++) {
+      const z0 = -0.3 + (k * 2.6) / 24,
+        z1 = z0 + 2.6 / 24;
+      const y = (z: number) =>
+        ROOF +
+        0.003 +
+        0.018 * Math.max(0, 1 - (x / half) ** 2) * Math.max(0, 1 - ((z - centre) / halfLength) ** 2);
+      b.rod(v(x, y(z0), z0), v(x, y(z1), z1), 0.006, paint, M.Paint, Z.Roof);
+    }
   // Steel tradesman rack: feet on the gutters, side rails, cross bars and a wind deflector.
   const y = ROOF + 0.11,
     z0 = -0.36,
@@ -594,21 +664,35 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
   for (let z = z0 + 0.05; z <= z1; z += 0.33)
     b.rod(v(-0.79, y, z), v(0.79, y, z), 0.014, bar, M.Metal, Z.Roof);
   b.push()
-    .translate(0, y + 0.02, z0 - 0.02)
+    .translate(0, y + 0.02, z0 - 0.1)
     .rotate(-0.6, 0, 0);
   b.block(0, 0, 0, 1.6, 0.012, 0.16, bar, M.Metal, Z.Roof);
   b.pop();
+  for (const side of [-1, 1])
+    b.rod(v(side * 0.79, y + 0.061, z0 - 0.04), v(side * 0.79, y, z0 + 0.02), 0.012, bar, M.Metal, Z.Roof);
   // A rolled swag and a jerry can tied to the back of the rack.
   b.slot = M.Fabric;
   b.tag = Z.Roof;
   b.push()
-    .translate(0, y + 0.12, 2.05)
+    .translate(0, y + 0.134, 2.0)
     .rotate(0, 0, Math.PI / 2);
   b.geometry(new THREE.CylinderGeometry(0.12, 0.12, 1.2, 16), new THREE.Color('#5E6B4A'));
   b.pop();
-  for (const x of [-0.35, 0.35])
-    b.block(x, y + 0.12, 2.05, 0.04, 0.245, 0.245, black, M.Rubber, Z.Roof, 0.02);
-  b.block(0, y + 0.2, 1.3, 0.16, 0.36, 0.34, new THREE.Color('#2F5E37'), M.Paint, Z.Roof, 0.02);
+  for (const x of [-0.35, 0.35]) {
+    b.slot = M.Rubber;
+    b.tag = Z.Roof;
+    b.push()
+      .translate(x, y + 0.134, 2.0)
+      .rotate(0, Math.PI / 2, 0)
+      .scale(1, 1, 8);
+    b.geometry(new THREE.TorusGeometry(0.1215, 0.0025, 6, 48), black);
+    b.pop();
+  }
+  b.block(0, y + 0.194, 1.3, 0.16, 0.36, 0.34, new THREE.Color('#2F5E37'), M.Paint, Z.Roof, 0.02);
+  // A strap closes around the can and a rack crossbar.
+  b.block(0, y + 0.383, 1.34, 0.2, 0.012, 0.045, black, M.Rubber, Z.Roof);
+  b.block(0, y - 0.02, 1.34, 0.2, 0.012, 0.045, black, M.Rubber, Z.Roof);
+  for (const x of [-0.094, 0.094]) b.block(x, y + 0.1815, 1.34, 0.012, 0.415, 0.045, black, M.Rubber, Z.Roof);
   // The second spare lies flat at the front of the rack, between the boards, strapped down.
   const sy = y + 0.014 + tuning.wheelWidth * 0.53,
     sz = 0.32,
@@ -727,7 +811,7 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.ring(0, -0.02, z + 0.23, 0.035, 0.012, steel, M.Metal, 'y', Z.Rear);
   for (const side of [-1, 1]) b.ring(side * 0.66, -0.07, z + 0.12, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
   b.block(0.42, 0.24, z + 0.006, 0.36, 0.12, 0.01, new THREE.Color('#F0EEE6'), M.Lamp, Z.Rear, 0.006);
-  b.block(0.42, 0.24, z + 0.012, 0.33, 0.012, 0.004, black, M.Rubber, Z.Rear);
+  plateText(b, 'GQ-060', 0.42, 0.24, z + 0.02, 1);
   // The spare on its carrier on the wider door, with a black cover plate over the hub.
   b.tag = Z.Rear;
   b.push()
@@ -739,7 +823,30 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
 }
 
 function chassis(b: VehicleBuilder): void {
-  for (const x of [-0.47, 0.47]) b.block(x, 0.02, 0.04, 0.1, 0.18, 4.4, black, M.Metal, Z.Trim);
+  for (const side of [-1, 1]) {
+    const outline = new THREE.Shape(),
+      stations = [
+        [-2.16, 0.35],
+        [-0.87, 0.35],
+        [-0.6, 0.47],
+        [2.24, 0.47],
+      ];
+    const pts = [
+      ...stations.map(([z, x]) => [side * x - 0.05, z]),
+      ...[...stations].reverse().map(([z, x]) => [side * x + 0.05, z]),
+    ];
+    pts.forEach(([x, z], i) => (i ? outline.lineTo(x, z) : outline.moveTo(x, z)));
+    outline.closePath();
+    const rail = new THREE.ExtrudeGeometry(outline, {
+      depth: 0.18,
+      bevelEnabled: false,
+    });
+    rail.rotateX(Math.PI / 2);
+    rail.translate(0, 0.11, 0);
+    b.slot = M.Metal;
+    b.tag = Z.Trim;
+    b.geometry(rail, black);
+  }
   for (const z of [-2.1, -0.75, 0.6, 2.2]) b.block(0, 0.0, z, 0.9, 0.08, 0.08, black, M.Metal, Z.Trim);
   b.block(0.06, -0.03, -0.25, 0.42, 0.2, 0.62, black, M.Metal, Z.Trim, 0.03);
   const shaft = steel.clone().multiplyScalar(0.55);
@@ -756,7 +863,13 @@ function chassis(b: VehicleBuilder): void {
   b.geometry(new THREE.CylinderGeometry(0.09, 0.09, 0.55, 12), steel.clone().multiplyScalar(0.6));
   b.pop();
   // Floor pan under the cabin and the cargo floor behind the seats.
-  b.block(0, 0.14, 0.15, 1.66, 0.03, 4.4, black, M.Rubber, Z.Trim);
+  for (const [start, end, width] of [
+    [-2.05, -0.86, 0.72],
+    [-0.86, 0.89, 1.66],
+    [0.89, 2.1, 1.16],
+    [2.1, 2.35, 1.66],
+  ])
+    b.block(0, 0.14, (start + end) / 2, width, 0.03, end - start, black, M.Rubber, Z.Trim);
 }
 
 export function buildPatrolBody(tuning: VehicleTuning, wheel: THREE.BufferGeometry): THREE.BufferGeometry {
@@ -771,7 +884,28 @@ export function buildPatrolBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
   rearEnd(b, wheel);
   chassis(b);
   addPatrolInterior(b, tuning.engine.redlineRpm);
-  return b.build();
+  const g = b.build();
+  const pos = g.getAttribute('position'),
+    normal = g.getAttribute('normal');
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i),
+      y = pos.getY(i),
+      ax = Math.abs(x),
+      t = (y - SILL) / (WAIST - SILL);
+    if (t <= 0 || t >= 1 || ax <= 0.78) continue;
+    const u = Math.min(1, (ax - 0.78) / 0.06),
+      gain = u * u * (3 - 2 * u),
+      dg = u < 1 ? (6 * u * (1 - u)) / 0.06 : 0;
+    const bow = 0.009 * Math.sin(Math.PI * t) - 0.008 * Math.sin(2 * Math.PI * t);
+    const by =
+      (0.009 * Math.PI * Math.cos(Math.PI * t) - 0.016 * Math.PI * Math.cos(2 * Math.PI * t)) /
+      (WAIST - SILL);
+    pos.setX(i, x + Math.sign(x) * gain * bow);
+    const nx = normal.getX(i) / (1 + dg * bow),
+      n = new THREE.Vector3(nx, normal.getY(i) - Math.sign(x) * gain * by * nx, normal.getZ(i)).normalize();
+    normal.setXYZ(i, n.x, n.y, n.z);
+  }
+  return cleanGeometry(g);
 }
 
 /**
@@ -861,7 +995,7 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.geometry(new THREE.CylinderGeometry(0.042, 0.05, 0.045, 20), chrome);
     b.pop();
   }
-  return b.build();
+  return cleanGeometry(b.build());
 }
 
 /** A recovery board strapped to the roof rack (index 0 on the left). */
@@ -869,7 +1003,7 @@ export function buildPatrolPlank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   const wood = new THREE.Color('#A9824F');
   const x = index === 0 ? -0.6 : 0.6,
-    y = ROOF + 0.155,
+    y = ROOF + 0.149,
     z = 0.75;
   const L = plankTuning.length,
     W = plankTuning.width;
@@ -886,10 +1020,21 @@ export function buildPatrolPlank(index: number): THREE.BufferGeometry {
       M.Fabric,
       Z.Roof,
     );
-  for (const dz of [-0.8, 0.8]) {
+  for (const dz of [-0.73, 0.92]) {
+    b.block(x, ROOF + 0.09, z + dz, W + 0.02, 0.012, 0.045, black, M.Rubber, Z.Roof);
     b.block(x, y + 0.03, z + dz, W + 0.01, 0.012, 0.045, black, M.Rubber, Z.Roof);
     for (const s of [-1, 1])
-      b.block(x + (s * (W + 0.02)) / 2, y - 0.01, z + dz, 0.012, 0.07, 0.045, black, M.Rubber, Z.Roof);
+      b.block(
+        x + (s * (W + 0.02)) / 2,
+        (y + 0.03 + ROOF + 0.09) / 2,
+        z + dz,
+        0.012,
+        y + 0.03 - (ROOF + 0.09),
+        0.045,
+        black,
+        M.Rubber,
+        Z.Roof,
+      );
   }
   return b.build();
 }
