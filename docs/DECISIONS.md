@@ -1003,3 +1003,23 @@ The owner asked for a way to test driving in bad weather and to start anywhere o
   - GQ Patrol and LC79: flat on the roof rack, between the recovery boards, which moved out towards the rails (as on the Troop Carrier). The Patrol's jerry can moved to the middle of the rack. The LC79's boards are longer than its shorter rack, so they overhang a little at each end.
   - Troop Carrier: unchanged (back door and roof rack).
 - **Checked from all sides** in the studio page: nine views of each vehicle and close-ups of every new part.
+
+## v0.30: reference photographs for every modelled vehicle
+
+No change to a vehicle's shape, tuning or driving. The bodies are still drawn in code. What this adds is the set of photographs and published dimensions a later modelling pass has to work from, under `reference/vehicles/`, plus the note in `reference/vehicles/README.md` (linked from CLAUDE.md and SPEC.md §5a).
+
+**Why.** The bodies were rebuilt toward the real vehicles in v0.21 and v0.22, but the photographs were never kept in the repo, so the next pass had nothing in the tree to compare against. Each folder now holds full-size files from Wikimedia Commons (CC BY, CC BY-SA, CC0 or public domain), and `SOURCES.md` records the Commons page, the author and the licence. A picture whose licence forbids redistribution was left out and named under Gaps instead. The game does not load any of these files.
+
+**How a later pass should use them.** Read the vehicle's `SOURCES.md`, open the photographs, measure the body in metres (1 unit = 1 metre; origin at mid-wheelbase, 0.12 m above the parked hubs), then render the studio page (`scripts/studio/?vehicle=<id>`, or `scripts/studio-shots.ts`) from the front, the side and above, and put those renders beside the photographs. Fix the silhouette and the identifying features before adding smaller parts. Stay near the 40 Series' budget of about 62,000 triangles for a complete vehicle. Write down which photographs were compared, and update the "in the current model" column when a measurement moves.
+
+**Where the current models disagree with those photographs.** Left for a later update, not fixed here:
+
+- **Hilux.** The body draws round headlamps in square bezels. The 1979–83 4WD has one rectangular lamp each side. The skin is about 100–150 mm shorter than the published 4,690–4,730 mm.
+- **GQ Patrol.** The body draws a round lamp in a square surround. Series 1 and the GQ II facelift both have rectangular lamps. The body is about 1.74 m wide against the wagon's 1,930 mm.
+- **Unimog.** The model puts a canvas roof on the cab. The UL1700L's cab is steel; the canvas tilt belongs over the tray. The axles are drawn like the other vehicles' axles, not as the portal axles in the side photograph. Overall length is about 6.39 m, past the published range's 6,100 mm end.
+- **40 Series (and the Camel Trophy car, which uses that body).** Width and the round lamps match. Bumper-to-bumper length is about 4.10 m against 3,840.5 mm, and the hardtop is about 2.14 m against 2,000 mm. The Camel Trophy dress stays a game choice: the 1986 event ran Land Rover 90s, and this car stays an FJ40.
+- **Perentie.** Wheelbase matches the 110 in. The body is about 100 mm narrower than 1,791 mm, and the skin is shorter than the civilian 110's 4,600 mm before the bull bar.
+- **Troop Carrier.** The round lamps and the high body are the right generation. Length is about 4.78 m against 4,995 mm, and width is 1.69 m against 1,790–1,870 mm.
+- **LC79.** Wheelbase, the 37 inch tyres and the 4 inch lift already follow the brief. The front clip should be checked against the 2024 single-cab photograph (round LED lamps in a wide black grille), not against the pre-facelift sealed beams. No freely licensed photograph of this lifted tray-and-canopy build was found, so those parts have no picture in the folder.
+
+Each `SOURCES.md` has the measurements, the sources, and which photograph shows which angle. Gaps (no top view anywhere; no straight-on front of a 4WD Hilux; no side of a 2024 79 single cab) are listed there too.

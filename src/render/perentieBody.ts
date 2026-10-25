@@ -16,6 +16,7 @@ import { extrudeZ, rounded, type Vtx } from './bodyShapes';
  * Perentie's spare wheel slung under the rear floor, a second spare on the bonnet, and a
  * pick, shovel and axe in brackets across the tailgate. Ground is
  * about 0.52 m below the origin when parked.
+ * Photographs and dimensions: reference/vehicles/land-rover-110-perentie/SOURCES.md.
  */
 const { paint, canvas, bar, galv } = perentieColors;
 const black = new THREE.Color('#1F2320'),

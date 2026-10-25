@@ -1,0 +1,45 @@
+# Toyota Land Cruiser 79 single cab, 2024-on face, as modified in the game
+
+Game id: `lc79`.
+
+**What to match.** A VDJ79 single cab with the front Toyota introduced for 2024 (announced in 2023). The game's truck is not stock. DECISIONS v0.22: 4.5 L 1VD-FTV twin-turbo diesel V8, 4 inch lift, rear leaves swapped for coils, 37×12.5R17 tyres on spacers (1.6 m track), steel bar with a winch, driving lamps and a light bar, snorkel on the right pillar, alloy tray, black canopy with gullwing doors, one spare on the canopy's rear door and one on the rack. The cab is the 70 Series cab.
+
+Read the photographs in three layers:
+
+1. **2024 front clip.** `front-34-single-cab.jpg` is a 2024 single cab (African GRJ petrol; the face is the facelift, the badges are not the Australian diesel). `front-34-double-cab.jpg` is the same face on a double cab. The J71 Bahrain pictures are the 2024 wagon: same lamps and grille, wrong body behind the cab.
+2. **Single-cab proportions from before the facelift.** `pre-facelift-single-cab.jpg` is a 2022 single-cab ute. Use it for the cab and a factory ute's length. Its round sealed-beam lamps are the old face. Do not copy them.
+3. **The modifications** are the owner's brief, not something a stock photo will show. No freely licensed photo of a 4-inch-lifted 79 on 37-inch tyres with this canopy was found, so those parts are not in this folder.
+
+## Dimensions
+
+Wheelbase 3,180 mm, and the family's lengths, widths and heights, are the J70 infobox on [Toyota Land Cruiser (J70)](<https://en.wikipedia.org/wiki/Toyota_Land_Cruiser_(J70)>). Width 1,790–1,870 mm cites Toyota Australia's October 2025 specification table. The single cab is the 3,180 mm wheelbase. A bull bar, a long tray and a lift move the overall length and height off the stock numbers, so the stock figures are the cab and the wheelbase, not the finished truck.
+
+|           | Published, stock                                    | In the current model                                                                                        |
+| --------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Wheelbase | 3,180 mm                                            | 3.18 m                                                                                                      |
+| Length    | 5,245 mm is the longer of the two J70 lengths       | about 5.34 m from the nose skin to the tray's back, before judging the bull bar (`F` −2.36, tray back 2.98) |
+| Cab width | 1,790–1,870 mm for the family                       | cab 1.72 m (`SIDE` 0.86); tray 1.90 m                                                                       |
+| Tyres     | stock tyres vary; the game specifies 37×12.5R17     | radius 0.47 m, which is 37 inches                                                                           |
+| Lift      | the game specifies 4 inches                         | `LC79_CAB_LIFT` 0.10 m                                                                                      |
+| Track     | stock is narrower; the game uses 1.6 m with spacers | 1.6 m                                                                                                       |
+
+**Check these first.** The model sets round LED lamps into a wide black mesh grille (`lc79Body.ts`). Open `front-34-single-cab.jpg` and `front-34-wagon.jpg` beside a studio front view and match the lamp units and the grille to those, rather than to the pre-facelift round sealed beams. The wheelbase, the 37-inch tyres and the 4-inch lift already follow the brief.
+
+## Gaps
+
+No side or rear of a 2024 single cab under a free licence. The wagon's side and rear are here and are labelled as the wagon. No top view. No free photo of the lifted tray-and-canopy build. No press-kit image was committed: the kits that turn up for this facelift do not grant redistribution in a public repository.
+
+## Photographs
+
+Keep this list with the files. CC BY-SA requires credit to the author, which is this table. The Bahrain set is CC0.
+
+| File                          | Angle               | What it shows                                                                                                                                                                                                             | Source page                                                                                                                   | Author       | Licence                                                         | Pixels    |
+| ----------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------- | --------- |
+| `front-34-single-cab.jpg`     | front three-quarter | 2024 facelift 79 single cab, African GRJ petrol. The front clip is the 2024 face. The Australian truck is the VDJ diesel; do not copy petrol badges. This is not the game's lifted truck, 37-inch tyres or custom canopy. | [Commons](https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_79_Simple_cabine_GRJ_facelift_2024_version_Afrique.jpg) | 4x4pro       | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)  | 2400×1600 |
+| `front-34-double-cab.jpg`     | front three-quarter | 2024 facelift 79 double cab. Use for the front clip only. The game is a single cab.                                                                                                                                       | [Commons](https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_79_Double_cabine_facelift_2024_version_Afrique.jpg)     | 4x4pro       | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)  | 2400×1600 |
+| `front-34-wagon.jpg`          | front three-quarter | 2024 J71 wagon in Bahrain. Same 2024 front clip as the 79. Do not copy the wagon body onto the single cab.                                                                                                                | [Commons](https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_J71_Bahrain_2024.jpg)                                   | ToyGTone     | [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) | 3648×2736 |
+| `front-34-wagon-2.jpg`        | front three-quarter | Another front three-quarter of the 2024 J71.                                                                                                                                                                              | [Commons](https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_J71_Bahrain_2024_2.jpg)                                 | ToyGTone     | [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) | 3648×2736 |
+| `side-wagon.jpg`              | side                | 2024 J71 wagon in profile. Front clip and cab. The rear is a wagon, not a tray.                                                                                                                                           | [Commons](https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_J71_Bahrain_2024_3.jpg)                                 | ToyGTone     | [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) | 3648×2736 |
+| `rear-34-wagon.jpg`           | rear three-quarter  | 2024 J71 wagon, rear three-quarter. Useful for the facelift's rear lamps. Not the 79 ute's rear.                                                                                                                          | [Commons](https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_J71_Bahrain_2024_rear.jpg)                              | ToyGTone     | [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) | 3648×2736 |
+| `rear-wagon.jpg`              | rear                | 2024 J71 wagon, another rear view.                                                                                                                                                                                        | [Commons](https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_J71_Bahrain_2024_rear_2.jpg)                            | ToyGTone     | [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) | 3648×2736 |
+| `pre-facelift-single-cab.jpg` | three-quarter       | 2022 79 single-cab pickup, the face before the 2024 facelift, with round sealed-beam lamps. Use for the single cab and a factory ute's proportions only. Do not copy this front onto the LC79.                            | [Commons](https://commons.wikimedia.org/wiki/File:2022_Toyota_Land_Cruiser_79_pickup_truck,_06-30-2024.jpg)                   | Ethan Llamas | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)  | 5496×3778 |

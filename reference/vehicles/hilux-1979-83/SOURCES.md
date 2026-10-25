@@ -1,0 +1,44 @@
+# Toyota Hilux, third generation, 1979–83 4WD styleside
+
+Game id: `hilux`.
+
+**What to match.** The Hilux redesigned in August 1978 (codes N30 short, N40 long), with 4WD from January 1979, built until October 1983. In Australia the 4WD utes were the RN36 and RN46, both with the 2.0 L 18R petrol four. The game follows the long one: 2.8 m wheelbase, about 4.7 m long, 1.69 m wide, a single cab and the factory styleside tub, painted red, with a bull bar and a rack over the tub added for the game.
+
+The RN36 is the short-wheelbase sister (2,585 mm). Do not shorten the model to that.
+
+North American pictures in this folder are the same N40 body, sold there as the Pickup, often with the 22R 2.4 L rather than the Australian 18R. Use them for the body. The two RN40R pictures are Australian, and they are two-wheel drive: same cab and tub, lower stance, different front axle. Do not copy that ride height.
+
+## Dimensions
+
+From the third-generation infobox on [Toyota Hilux](<https://en.wikipedia.org/wiki/Toyota_Hilux#Third_generation_(N30,_N40;_1978)>), citing the Japanese Motor Vehicles Guide Book, vol. 25 (10 October 1978), for the wheelbases.
+
+|           | Published, 4WD long bed (N40)                                   | In the current model                                                                                 |
+| --------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Wheelbase | 2,800 mm (short bed N30 is 2,585 mm)                            | 2.80 m                                                                                               |
+| Length    | 4,690–4,730 mm                                                  | about 4.58 m, nose skin to tailgate (`FRONT_FACE` −2.15 to `TAIL` 2.43 in `src/render/hiluxBody.ts`) |
+| Width     | 1,690 mm (2WD is 1,610 mm)                                      | 1.67 m (`SIDE` 0.835)                                                                                |
+| Height    | 1,675–1,765 mm                                                  | about 1.77 m (roof y = 1.27, ground 0.495 m below the origin)                                        |
+| Track     | not in that infobox; the game uses 1.43 m front and 1.40 m rear | 1.43 m front, 1.40 m rear                                                                            |
+| Tyres     | the game uses 7.00-16                                           | radius 0.375 m, so 0.75 m across                                                                     |
+
+**Check these first.** The headlamps are the obvious miss. `src/render/hiluxBody.ts` draws round lamps in square chrome bezels. This generation has rectangular lamps, one wide lamp each side: see `front-34-right.jpg`, `front-34-left.jpg` and `front-34-1983.jpg`. The wheelbase, width and height are close. The skin is about 100–150 mm shorter than the published length. A 7.00-16 tyre is usually nearer 0.80 m across than the model's 0.75 m.
+
+## Gaps
+
+No true top view. The only side-on view of a 4WD is `side-1980-4wd.jpg`, and that scan is 738 pixels wide. Straight front and straight rear are the two-wheel-drive Australian ute. No free factory blueprint.
+
+## Photographs
+
+Keep this list with the files. CC BY and CC BY-SA require credit to the author, which is this table.
+
+| File                         | Angle                      | What it shows                                                                                                                                                            | Source page                                                                                                                     | Author                                                   | Licence                                                           | Pixels    |
+| ---------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------- | --------- |
+| `front-34-right.jpg`         | front three-quarter, right | 1981 North American Pickup 4WD long bed (N40 Hilux). Rectangular headlamps. Not the Australian 18R, but the same generation's 4WD body.                                  | [Commons](https://commons.wikimedia.org/wiki/File:1981_Toyota_Deluxe_Pickup_4WD_Long_Bed_in_Beige,_Front_Right,_06-10-2023.jpg) | Elise240SX                                               | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)    | 3563×2332 |
+| `rear-34-right.jpg`          | rear three-quarter, right  | Same 1981 4WD long bed, rear three-quarter from the right. Styleside bed.                                                                                                | [Commons](https://commons.wikimedia.org/wiki/File:1981_Toyota_Deluxe_Pickup_4WD_Long_Bed_in_Beige,_Rear_Right,_06-10-2023.jpg)  | Elise240SX                                               | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)    | 3770×2503 |
+| `front-34-left.jpg`          | front three-quarter, left  | 1982 SR5 4WD (RN48, 2.4 L 22R), front three-quarter from the left. US spec, same N40 body.                                                                               | [Commons](https://commons.wikimedia.org/wiki/File:1982_Toyota_Pickup_SR-5_4WD_in_white,_front_left.jpg)                         | Mr.choppers                                              | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0)    | 5236×3468 |
+| `front-34-utility.jpg`       | front three-quarter        | 1982 Hilux utility the photographer describes as a 1978-83 four-wheel-drive. Closest Australian styleside in the set.                                                    | [Commons](https://commons.wikimedia.org/wiki/File:1982_Toyota_Hilux_Utility.jpg)                                                | Cars Down Under                                          | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0)          | 5184×3456 |
+| `side-1980-4wd.jpg`          | side                       | 1980 Hilux SR5 4x4 long bed, side-on. The file itself is only 738 by 422 pixels; that is the original scan, not a thumbnail of a larger photo.                           | [Commons](https://commons.wikimedia.org/wiki/File:80_Hilux4wd.jpg)                                                              | BillD234 at English Wikipedia                            | [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)    | 738×422   |
+| `front-34-1980-brochure.jpg` | front three-quarter        | Same 1980 SR5 4x4, front three-quarter. The original file is 600 by 507 pixels.                                                                                          | [Commons](https://commons.wikimedia.org/wiki/File:80_Hilux4wd2.jpg)                                                             | The original uploader was BillD234 at English Wikipedia. | [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/)    | 600×507   |
+| `front-utility-2wd.jpg`      | front                      | 1981 Australian RN40R two-wheel-drive styleside utility. Same generation of cab and tub. Not the 4WD: the stance and the front axle differ. Do not copy the ride height. | [Commons](<https://commons.wikimedia.org/wiki/File:1981_Toyota_HiLux_(RN40R)_2-door_utility_(2015-07-14)_01.jpg>)               | OSX                                                      | Public domain (released by the photographer on Wikimedia Commons) | 4272×2856 |
+| `rear-utility-2wd.jpg`       | rear                       | Rear of the same RN40R two-wheel-drive utility. Vertical tail lamps and the styleside tailgate.                                                                          | [Commons](<https://commons.wikimedia.org/wiki/File:1981_Toyota_HiLux_(RN40R)_2-door_utility_(2015-07-14)_02.jpg>)               | OSX                                                      | Public domain (released by the photographer on Wikimedia Commons) | 4272×2856 |
+| `front-34-1983.jpg`          | front three-quarter        | 1983 4x4 SR5. The original file is 1600 by 1200 pixels.                                                                                                                  | [Commons](https://commons.wikimedia.org/wiki/File:1983Toyota4X4SR5.jpg)                                                         | 83toyota                                                 | Public domain (released by the photographer on Wikimedia Commons) | 1600×1200 |

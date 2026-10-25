@@ -89,7 +89,7 @@ Each episode defines (src/data/episodes.ts): its map, the mission line and goal 
 
 Keep the game's current look and lighting, made more realistic rather than stylised. A mock-up in Over The Hill's folded-paper style was tried and turned down. Not photo-real and not highly detailed. In practice:
 
-- Vehicle bodies come first: accurate shapes and proportions, and the details that make each one recognisable (bull bar, snorkel, roof rack, wheel arches, mudguards over the wheels, lamps). The 40 Series shorty is the first, from a mock-up the owner signs off before it goes into the game.
+- Vehicle bodies come first: accurate shapes and proportions, and the details that make each one recognisable (bull bar, snorkel, roof rack, wheel arches, mudguards over the wheels, lamps). The 40 Series shorty is the first, from a mock-up the owner signs off before it goes into the game. Photographs, licences and published dimensions for every modelled vehicle are in `reference/vehicles/`. Read `reference/vehicles/README.md` before changing a body.
 - Ground, trees and lighting stay as they are for now.
 
 ## 6. Interface
