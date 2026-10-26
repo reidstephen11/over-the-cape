@@ -1,5 +1,15 @@
 import * as THREE from 'three';
-import { GroundTint, NO_TRACK_EDGE, TrackPaintKind, trackTint, type Terrain } from '../sim/world/terrain';
+import {
+  GroundTint,
+  NO_TRACK_EDGE,
+  PATCH_REACH,
+  TrackPaintKind,
+  patchTint,
+  trackTint,
+  unpackBank,
+  unpackPatch,
+  type Terrain,
+} from '../sim/world/terrain';
 import { DETAIL_SUB, patchStride, patchTriangles, type DetailPatch } from '../sim/world/detail';
 import { smoothstep } from '../sim/world/noise';
 import { pal } from './colors';
@@ -32,13 +42,19 @@ const PAINT_EDGE = 0.8,
   BAND_BLEND = 0.2;
 /** Edge distance (m) given to samples with no track paint beside a painted one. */
 const OUTSIDE_PAINT = 2.5;
+/** Half-width (m) of the blend at a ground patch's edge and into its rim. */
+const PATCH_BLEND = 0.3,
+  RIM_BLEND = 0.2;
 /**
  * Shading values per vertex: the ground's colour (r, g, b), rockiness and wetness; the
- * colour of a track there (r, g, b); and the distance (m) out from the track's edge, where
+ * colour of a track there (r, g, b); the distance (m) out from the track's edge, where
  * its paint ends, the width of its darker edge band (0: none) and the rut tone (below 0
- * darker, above 0 paler).
+ * darker, above 0 paler); then a ground patch's inner and rim colours (r, g, b each), the
+ * distance (m) out from its edge and its rim's width; for a round patch its centre (x, z),
+ * radius (m) and 1 (0 for any other); and the distance (m, roughly) out from a clay bank.
  */
-const SHADE = 12;
+const SHADE = 25;
+const RUT = 11;
 
 /** The shading values as the ground material's attributes. */
 function setShadeAttributes(geo: THREE.BufferGeometry, shade: Float32Array): void {
@@ -47,6 +63,11 @@ function setShadeAttributes(geo: THREE.BufferGeometry, shade: Float32Array): voi
   geo.setAttribute('ground', new THREE.InterleavedBufferAttribute(buffer, 2, 3));
   geo.setAttribute('trackColor', new THREE.InterleavedBufferAttribute(buffer, 3, 5));
   geo.setAttribute('trackEdge', new THREE.InterleavedBufferAttribute(buffer, 4, 8));
+  geo.setAttribute('patchInner', new THREE.InterleavedBufferAttribute(buffer, 3, 12));
+  geo.setAttribute('patchRim', new THREE.InterleavedBufferAttribute(buffer, 3, 15));
+  geo.setAttribute('patchEdge', new THREE.InterleavedBufferAttribute(buffer, 2, 18));
+  geo.setAttribute('patchCircle', new THREE.InterleavedBufferAttribute(buffer, 4, 20));
+  geo.setAttribute('clayBank', new THREE.InterleavedBufferAttribute(buffer, 1, 24));
 }
 const isRock = (tint: number) =>
   tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel;
@@ -122,6 +143,8 @@ export class TerrainMesh {
       paintBlend: PAINT_BLEND,
       bandBlend: BAND_BLEND,
       band: this.colors[GroundTint.DirtEdge],
+      patchBlend: PATCH_BLEND,
+      rimBlend: RIM_BLEND,
       rut: this.rutDark,
       crest: this.crestPale,
     });
@@ -192,8 +215,8 @@ export class TerrainMesh {
         if (o < 0) {
           const k2 = Math.min(1, -o / 0.45);
           shade[k * SHADE + 4] = Math.max(shade[k * SHADE + 4], k2 * 0.6);
-          shade[k * SHADE + SHADE - 1] = -k2;
-        } else shade[k * SHADE + SHADE - 1] = Math.min(1, o / 0.6);
+          shade[k * SHADE + RUT] = -k2;
+        } else shade[k * SHADE + RUT] = Math.min(1, o / 0.6);
       }
     const indices: number[] = [];
     patchTriangles(p, (i, j) => indices.push(j * w + i));
@@ -359,6 +382,59 @@ export class TerrainMesh {
     const out = this.shade;
     out.fill(0);
     const i = iz * t.resX + ix;
+    this.trackShade(ix, iz);
+    // A ground patch is drawn over the track paint with its own smooth edge.
+    const packed = t.groundPatches.get(i);
+    const patch = packed === undefined ? null : unpackPatch(packed);
+    if (patch && patch.edge <= 0) {
+      out[3] = isRock(t.tint[i]) ? 1 : 0;
+      out[4] = isWet(t.tint[i]) ? 1 : 0;
+    }
+    const inner = patch ? (this.colors[patch.inner] ?? this.colors[0]) : null;
+    const rim = patch ? (this.colors[patch.rim] ?? this.colors[0]) : null;
+    const edge = patch?.edge ?? PATCH_REACH + 0.5;
+    const [cx, cz] = patch?.centre ?? [0, 0];
+    const bank = t.clayBanks.get(i);
+    out.splice(
+      12,
+      13,
+      inner?.r ?? out[0],
+      inner?.g ?? out[1],
+      inner?.b ?? out[2],
+      rim?.r ?? out[0],
+      rim?.g ?? out[1],
+      rim?.b ?? out[2],
+      edge,
+      patch?.rimWidth ?? 0,
+      ix - t.halfX + cx,
+      iz - t.halfZ + cz,
+      patch?.centre ? Math.hypot(cx, cz) - edge : -edge,
+      patch?.centre ? 1 : 0,
+      bank === undefined ? PATCH_REACH + 0.5 : unpackBank(bank).edge,
+    );
+    return out;
+  }
+
+  /** The tint a sample's ground had before any ground patch or clay bank was laid over it. */
+  private underTint(i: number): number {
+    const t = this.terrain;
+    const packed = t.groundPatches.get(i);
+    let tint: number = t.tint[i];
+    if (packed !== undefined) {
+      const patch = unpackPatch(packed);
+      // Something painted after the patch (a puddle) shows as it is.
+      if (tint === patchTint(patch)) tint = patch.under;
+    }
+    const bank = t.clayBanks.get(i);
+    if (bank !== undefined && tint === GroundTint.DirtEdge) tint = unpackBank(bank).under;
+    return tint;
+  }
+
+  /** The ground's own and any track's shading at a sample, into `shade`. */
+  private trackShade(ix: number, iz: number): void {
+    const t = this.terrain;
+    const out = this.shade;
+    const i = iz * t.resX + ix;
     const paint = t.trackPaint;
     const p = paint?.paint[i] ?? 0;
     if (paint && p) {
@@ -382,18 +458,17 @@ export class TerrainMesh {
       const c = this.colors[centre] ?? this.colors[0];
       out.splice(0, 3, u.r, u.g, u.b);
       out.splice(5, 6, c.r, c.g, c.b, e, end, band);
-      return out;
+      return;
     }
     for (const [ox, oz, weight] of TINT_SAMPLES) {
       const x = Math.max(0, Math.min(t.sizeX, ix + ox));
       const z = Math.max(0, Math.min(t.sizeZ, iz + oz));
-      this.addTint(t.tint[z * t.resX + x], weight);
+      this.addTint(this.underTint(z * t.resX + x), weight);
     }
     // No track colour of its own. Where something was painted over a track, keep the
     // distance to its edge so the blend from a painted neighbour stays true.
     const e = paint?.edge[i] ?? NO_TRACK_EDGE;
     out.splice(5, 6, out[0], out[1], out[2], e === NO_TRACK_EDGE ? OUTSIDE_PAINT : e / 10, PAINT_EDGE, 0);
-    return out;
   }
 
   private addTint(tint: number, weight: number): void {

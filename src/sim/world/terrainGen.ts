@@ -2,13 +2,24 @@ import { SurfaceId } from '../../data/surfaces';
 import type { FlatDef, MapDef, ScarpDef, HillDef, TrackDef } from './mapTypes';
 import { Noise2D, clamp, smoothstep } from './noise';
 import { attrAt, densify, locate, type DensePolyline } from './polyline';
-import { GroundTint, NO_TRACK_EDGE, NO_WATER, Terrain, TrackPaintKind, trackTint } from './terrain';
+import {
+  GroundTint,
+  NO_TRACK_EDGE,
+  NO_WATER,
+  PATCH_REACH,
+  Terrain,
+  packBank,
+  TrackPaintKind,
+  packPatch,
+  patchTint,
+  trackTint,
+} from './terrain';
 import type { CreekInfo, GullyInfo, StaticBox, TerrainFeatures, TrackInfo } from './features';
 import { buildDetailPatch, type DetailPatch } from './detail';
 import { onBridge } from './bridges';
 import {
   roughHole,
-  roughMark,
+  roughPatch,
   roughOffset,
   trackMudHoles,
   trackRoughness,
@@ -197,6 +208,11 @@ function bilinear(src: Float32Array, resX: number, resZ: number, fx: number, fz:
 }
 
 /** A track's bank width (m) at a dense-point parameter. */
+/** The x in [0, 1] at which smoothstep(0, 1, x) is y. */
+function inverseSmoothstep(y: number): number {
+  return 0.5 - Math.sin(Math.asin(1 - 2 * Math.min(1, Math.max(0, y))) / 3);
+}
+
 function shoulderAt(t: TrackInfo, p: number): number {
   return t.shoulders ? atParam(t.shoulders, p) : t.def.shoulder;
 }
@@ -578,13 +594,39 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     stampPolyline(poly, reach, grid, trackDist, trackParam, trackSide, trackOwner, id);
   });
 
-  // Banks beside the tracks the grading cut into or built up by more than BANK_CUT.
-  const cutBank = new Uint8Array(n);
+  // How far (dm) out from a track's edge the grading cut into or built up the ground by
+  // more than BANK_CUT, plus 1 (0: not beside a track).
+  const bankReach = new Uint8Array(n);
   // Potholes and washouts in the graded tracks: sample index → depth (m), and which are potholes.
   const holes = new Map<number, number>();
   const potholes = new Set<number>();
-  // The ones deep enough to pinch a tyre, marked to be seen: 1 inside, 2 on the rim.
-  const holeMarks = new Map<number, 1 | 2>();
+  // Ground painted over in patches, drawn with smooth edges: sample index → the patch and
+  // the order it was laid in. Inside two patches the later one shows; otherwise the nearer.
+  const overlays = new Map<
+    number,
+    {
+      edge: number;
+      inner: GroundTint;
+      rim: GroundTint;
+      rimWidth: number;
+      layer: number;
+      centre?: readonly [number, number];
+    }
+  >();
+  const addPatch = (
+    i: number,
+    edge: number,
+    inner: GroundTint,
+    rim: GroundTint,
+    rimWidth: number,
+    layer: number,
+    centre?: readonly [number, number],
+  ) => {
+    if (edge >= PATCH_REACH) return;
+    const old = overlays.get(i);
+    if (old && (old.edge <= 0 && edge <= 0 ? old.layer > layer : old.edge <= edge)) return;
+    overlays.set(i, { edge, inner, rim, rimWidth, layer, centre });
+  };
   for (let i = 0; i < n; i++) {
     const id = trackOwner[i];
     if (id < 0) continue;
@@ -625,12 +667,38 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         holes.set(i, hole.depth);
         if (hole.kind === 'pothole') potholes.add(i);
       }
-      const mark = d <= hw + 0.6 ? roughMark(rough, s, trackSide[i]) : 0;
-      if (mark) holeMarks.set(i, mark);
+      // Potholes and washouts hold dark mud or show the earth they cut into; those deep
+      // enough to pinch a tyre are darker still, ringed with pale gravel. Their paint
+      // stops a little past the track's edge.
+      const patch =
+        def.surface !== 'concrete' && d < hw + 0.5 + PATCH_REACH
+          ? roughPatch(rough, s, trackSide[i], PATCH_REACH)
+          : null;
+      if (patch) {
+        const inner = patch.rim
+          ? GroundTint.Pothole
+          : patch.kind === 'pothole'
+            ? GroundTint.Mud
+            : GroundTint.DirtEdge;
+        const rim = patch.rim ? GroundTint.Gravel : inner;
+        if (patch.centre) {
+          // A pothole is round: turn its centre from along and across the track to east and south.
+          const k = Math.min(t.poly.count - 2, Math.floor(p));
+          const tx = t.poly.xs[k + 1] - t.poly.xs[k];
+          const tz = t.poly.zs[k + 1] - t.poly.zs[k];
+          const len = Math.hypot(tx, tz) || 1;
+          const [along, left] = patch.centre;
+          const centre = [(along * tx - left * tz) / len, (along * tz + left * tx) / len] as const;
+          addPatch(i, patch.edge, inner, rim, patch.rim, 0, centre);
+        } else addPatch(i, Math.max(patch.edge, d - hw - 0.5), inner, rim, patch.rim, 0);
+      }
     }
     const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + shoulderAt(t, p), d);
     heights[i] = h + (target - h) * w;
-    if (d > hw && Math.abs(target - h) * w > BANK_CUT) cutBank[i] = 1;
+    // The cut fades out across the shoulder: find where it falls to BANK_CUT.
+    const cut = Math.abs(target - h);
+    const reachOut = cut > BANK_CUT ? shoulderAt(t, p) * inverseSmoothstep(1 - BANK_CUT / cut) : 0;
+    bankReach[i] = 1 + Math.min(254, Math.round(reachOut * 10));
   }
 
   // Staircase ledges: granite steps across the track (static boxes). Each leans with the
@@ -700,7 +768,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const a = (b.rotationDeg * Math.PI) / 180;
     const c = Math.cos(a);
     const s = Math.sin(a);
-    const R = Math.max(b.radiusX, b.radiusZ) * 1.6;
+    const R = Math.max(b.radiusX, b.radiusZ) * 1.6 + PATCH_REACH;
     for (let iz = Math.floor(b.z - R + halfZ); iz <= Math.ceil(b.z + R + halfZ); iz++)
       for (let ix = Math.floor(b.x - R + halfX); ix <= Math.ceil(b.x + R + halfX); ix++) {
         if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
@@ -709,8 +777,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         const rx = (x * c + z * s) / b.radiusX;
         const rz = (-x * s + z * c) / b.radiusZ;
         const r = Math.sqrt(rx * rx + rz * rz) + noise3.noise((ix - halfX) / 4, (iz - halfZ) / 4) * 0.18;
-        if (r > 1.5) continue;
         const i = iz * resX + ix;
+        addPatch(i, (r - 1.12) * Math.min(b.radiusX, b.radiusZ), GroundTint.Mud, GroundTint.Mud, 0, 1);
+        if (r > 1.5) continue;
         const dip =
           b.depth * (1 - smoothstep(0.35, 1.05, r)) -
           0.06 * noise2.noise((ix - halfX) / 1.7, (iz - halfZ) / 1.7) * (r < 1 ? 1 : 0);
@@ -758,8 +827,10 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         const along = x * dirX + z * dirZ;
         const lat = Math.abs(-x * dirZ + z * dirX);
         const endFade = smoothstep(L + 1.5, L - 3, Math.abs(along));
-        if (endFade <= 0 || lat > rampOut) continue;
         const i = iz * resX + ix;
+        const edge = Math.max(lat - rampOut, Math.abs(along) - L - 1.5);
+        addPatch(i, edge, GroundTint.DirtEdge, GroundTint.DirtEdge, 0, 2);
+        if (endFade <= 0 || lat > rampOut) continue;
         const depth = g.depth * endFade;
         const carve = lat <= trenchHalf ? depth : depth * (1 - (lat - trenchHalf) / (rampOut - trenchHalf));
         heights[i] -= carve;
@@ -807,6 +878,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   };
 
   // --- Surfaces and tints ---
+  const clayBanks = new Map<number, number>();
   for (let iz = 2; iz < resZ - 2; iz++) {
     for (let ix = 2; ix < resX - 2; ix++) {
       const i = iz * resX + ix;
@@ -824,13 +896,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         tint[i] = !border.forested && nz > 0.45 && slope > 36 ? GroundTint.Scree : GroundTint.ForestFloor;
         continue;
       }
-      // Cuttings and fill beside a track on a clay map are bare clay, not scree. (Judged by
-      // how far the grading moved the ground rather than by slope, which the bumps along a
-      // rough road would swing to and fro, striping the banks.)
-      if (map.clayBanks && cutBank[i] && slope > 12 + nz * 3) {
-        surface[i] = SurfaceId.Dirt;
-        tint[i] = GroundTint.DirtEdge;
-      } else if (slope > 39 + nz * 4) {
+      if (slope > 39 + nz * 4) {
         surface[i] = SurfaceId.Rock;
         tint[i] = nz > 0.1 ? GroundTint.Rock : GroundTint.Scree;
       } else if (slope > 31.5 + nz * 5) {
@@ -843,6 +909,25 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         surface[i] = SurfaceId.Grass;
         const wet = creekDist[i] - creekHalfAt[i];
         tint[i] = creekDist[i] < 1e8 && wet < 14 + nz * 6 ? GroundTint.GrassSage : GroundTint.GrassDry;
+      }
+      // Cuttings and fill beside a track on a clay map are bare clay, not scree: where the
+      // grading moved the ground more than BANK_CUT (judged by that rather than by slope
+      // alone, which the bumps along a rough road would swing to and fro, striping the
+      // banks) on a slope. Kept for drawing as the distance (m) out from the bank's outer
+      // edge, a metre more for each 10° too gentle: a plain distance from the track, so
+      // the edge is drawn smooth however narrow the bank. The track paint covers it on the
+      // track, except on a track with no paint.
+      if (map.clayBanks && bankReach[i]) {
+        const def = tracks[trackOwner[i]].def;
+        const hw = def.width / 2;
+        const d = trackDist[i];
+        let bank = d - hw - (bankReach[i] - 1) / 10 + Math.max(0, (12 + nz * 3 - slope) / 10);
+        if (def.surface === 'rock' || def.surface === 'sand') bank = Math.max(bank, hw - d);
+        if (bank < PATCH_REACH) clayBanks.set(i, packBank(bank, tint[i] as GroundTint));
+        if (bank <= 0 && d > hw) {
+          surface[i] = SurfaceId.Dirt;
+          tint[i] = GroundTint.DirtEdge;
+        }
       }
     }
   }
@@ -902,7 +987,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
             : TrackPaintKind.Dirt;
     if (kind && d - hw < 2) {
       paintEdge[i] = Math.max(-127, Math.round((d - hw) * 10));
-      paint[i] = kind | (tint[i] << 3);
+      // The ground beside the track, as it would be without a clay bank (drawn separately).
+      const bank = clayBanks.get(i);
+      paint[i] = kind | ((bank === undefined ? tint[i] : bank >> 8) << 3);
     }
     if (d > hw + 0.6) continue;
     if (def.faint) {
@@ -958,27 +1045,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     }
   }
 
-  // Potholes hold dark mud; washouts show the earth they cut into. Those deep enough to
-  // pinch a tyre are darker still, ringed with pale gravel.
-  for (const i of holes.keys()) {
-    if (trackOwner[i] < 0 || tracks[trackOwner[i]].def.surface === 'concrete') continue;
-    tint[i] = potholes.has(i) ? GroundTint.Mud : GroundTint.DirtEdge;
-  }
-  for (const [i, mark] of holeMarks) {
-    if (trackOwner[i] < 0 || tracks[trackOwner[i]].def.surface === 'concrete') continue;
-    tint[i] = mark === 1 ? GroundTint.Pothole : GroundTint.Gravel;
-  }
-
   for (let i = 0; i < n; i++) {
     if (bogMask[i]) {
       // A deep bog's floor is sticky black soil.
       surface[i] = bogMask[i] === 2 ? SurfaceId.BlackSoil : SurfaceId.Mud;
-      tint[i] = GroundTint.Mud;
     }
-    if (gullyMask[i]) {
-      if (surface[i] !== SurfaceId.Mud) surface[i] = SurfaceId.Dirt;
-      tint[i] = GroundTint.DirtEdge;
-    }
+    if (gullyMask[i] && surface[i] !== SurfaceId.Mud) surface[i] = SurfaceId.Dirt;
   }
 
   const creekDistance = new Uint8Array(n).fill(255);
@@ -992,13 +1064,22 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const gravel = attrAt(c.gravel, u) > 0.5;
     // A sandy river's dry bed runs out either side of the water to its banks.
     const sand = attrAt(c.sand, u) > 0.5;
-    if (water[i] > NO_WATER) {
-      surface[i] = SurfaceId.Water;
-      tint[i] = sand ? GroundTint.Sand : gravel ? GroundTint.Gravel : GroundTint.CreekBed;
-    } else if (d <= hw + 1.6 + (sand ? (c.def.sandBank ?? 0) : 0)) {
-      surface[i] = sand ? SurfaceId.Sand : gravel ? SurfaceId.Gravel : SurfaceId.Mud;
-      tint[i] = sand ? GroundTint.Sand : gravel ? GroundTint.Gravel : GroundTint.Mud;
-    }
+    const bank = hw + 1.6 + (sand ? (c.def.sandBank ?? 0) : 0);
+    const wet = water[i] > NO_WATER;
+    if (wet) surface[i] = SurfaceId.Water;
+    else if (d <= bank) surface[i] = sand ? SurfaceId.Sand : gravel ? SurfaceId.Gravel : SurfaceId.Mud;
+    const look = wet
+      ? sand
+        ? GroundTint.Sand
+        : gravel
+          ? GroundTint.Gravel
+          : GroundTint.CreekBed
+      : sand
+        ? GroundTint.Sand
+        : gravel
+          ? GroundTint.Gravel
+          : GroundTint.Mud;
+    addPatch(i, wet ? Math.min(d - bank, -0.1) : d - bank, look, look, 0, 3);
   }
 
   yield { progress: 0.8, label: 'Terrain ready' };
@@ -1010,10 +1091,19 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const t = tint[i];
     if (t !== p >> 3 && t !== GroundTint.DirtEdge && t !== trackTint(p & 7)) paint[i] = 0;
   }
+  // Patches are drawn over the track paint; the tint grid takes them at each sample.
+  const packedOverlays = new Map<number, number>();
+  for (const [i, p] of overlays) {
+    const patch = { ...p, under: tint[i] as GroundTint };
+    tint[i] = patchTint(patch);
+    packedOverlays.set(i, packPatch(patch));
+  }
 
   const terrain = new Terrain(map.width, map.length, heights, surface, tint, water);
   terrain.holes = holes;
   terrain.trackPaint = { edge: paintEdge, paint };
+  terrain.groundPatches = packedOverlays;
+  terrain.clayBanks = clayBanks;
   // Fine ruts and drainage humps over the finished 1 m ground.
   const patches: DetailPatch[] = [];
   for (const t of tracks) {
