@@ -98,13 +98,25 @@ export function addTroopyInterior(
     b.block(0, 1.49, -0.15, 1.6, 0.008, 1.1, new THREE.Color('#C4BDAA'), M.Fabric, Z.Trim);
     return;
   }
-  // Behind the seats: the steel floor and a long bench along each side.
-  b.block(0, floor, 1.4, 1.6, 0.03, 2.3, mat, M.Rubber, Z.Trim);
+  const inner = paint.clone().multiplyScalar(0.82);
+  // A load floor and closed wheel boxes, with benches supported above them.
+  b.block(0, floor, 1.49, 1.1, 0.03, 1.23, mat, M.Rubber, Z.Trim);
+  for (const [z0, z1] of [
+    [0.25, 0.875],
+    [2.105, 2.55],
+  ])
+    b.block(0, floor, (z0 + z1) / 2, 1.6, 0.03, z1 - z0, mat, M.Rubber, Z.Trim);
   for (const side of [-1, 1]) {
-    const x = side * 0.62;
-    b.block(x, floor + 0.38, 1.6, 0.3, 0.08, 1.6, vinyl, M.Fabric, Z.Trim, 0.03);
-    b.block(x, floor + 0.17, 1.6, 0.26, 0.34, 1.5, dark, M.Metal, Z.Trim);
-    b.block(side * 0.79, floor + 0.72, 1.6, 0.06, 0.5, 1.6, vinyl, M.Fabric, Z.Trim, 0.03);
+    const low = floor,
+      top = 0.455;
+    b.block(side * 0.55, (low + top) / 2, 1.49, 0.02, top - low, 1.23, inner, M.Paint, Z.Trim);
+    b.block(side * 0.685, top, 1.49, 0.28, 0.02, 1.23, inner, M.Paint, Z.Trim);
+    for (const z of [0.875, 2.105])
+      b.block(side * 0.685, (low + top) / 2, z, 0.28, top - low, 0.02, inner, M.Paint, Z.Trim);
+    b.block(side * 0.62, floor + 0.38, 1.6, 0.3, 0.08, 1.6, vinyl, M.Fabric, Z.Trim, 0.03);
+    for (const z of [0.84, 2.3]) b.block(side * 0.62, 0.33, z, 0.035, 0.34, 0.05, dark, M.Metal, Z.Trim);
+    b.block(side * 0.65, 0.485, 1.49, 0.08, 0.04, 0.5, dark, M.Metal, Z.Trim);
+    b.block(side * 0.78, floor + 0.72, 1.6, 0.06, 0.5, 1.6, vinyl, M.Fabric, Z.Trim, 0.03);
   }
   // The headlining.
   b.block(0, 1.49, 0.9, 1.6, 0.008, 3.3, new THREE.Color('#C4BDAA'), M.Fabric, Z.Trim);
