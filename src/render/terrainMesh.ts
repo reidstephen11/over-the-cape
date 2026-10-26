@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GroundTint, TrackPaintKind, trackTint, type Terrain } from '../sim/world/terrain';
+import { GroundTint, NO_TRACK_EDGE, TrackPaintKind, trackTint, type Terrain } from '../sim/world/terrain';
 import { DETAIL_SUB, patchStride, patchTriangles, type DetailPatch } from '../sim/world/detail';
 import { smoothstep } from '../sim/world/noise';
 import { pal } from './colors';
@@ -30,6 +30,24 @@ const PAINT_EDGE = 0.8,
   EDGE_BAND = 0.4,
   CONCRETE_BAND = 0.3,
   BAND_BLEND = 0.2;
+/** Edge distance (m) given to samples with no track paint beside a painted one. */
+const OUTSIDE_PAINT = 2.5;
+/**
+ * Shading values per vertex: the ground's colour (r, g, b), rockiness and wetness; the
+ * colour of a track there (r, g, b); and the distance (m) out from the track's edge, where
+ * its paint ends, the width of its darker edge band (0: none) and the rut tone (below 0
+ * darker, above 0 paler).
+ */
+const SHADE = 12;
+
+/** The shading values as the ground material's attributes. */
+function setShadeAttributes(geo: THREE.BufferGeometry, shade: Float32Array): void {
+  const buffer = new THREE.InterleavedBuffer(shade, SHADE);
+  geo.setAttribute('color', new THREE.InterleavedBufferAttribute(buffer, 3, 0));
+  geo.setAttribute('ground', new THREE.InterleavedBufferAttribute(buffer, 2, 3));
+  geo.setAttribute('trackColor', new THREE.InterleavedBufferAttribute(buffer, 3, 5));
+  geo.setAttribute('trackEdge', new THREE.InterleavedBufferAttribute(buffer, 4, 8));
+}
 const isRock = (tint: number) =>
   tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel;
 const isWet = (tint: number) =>
@@ -84,6 +102,9 @@ export class TerrainMesh {
   readonly group = new THREE.Group();
   readonly material: THREE.MeshStandardMaterial;
   private readonly colors = tintColors();
+  /** Rut floors darken towards this and hump crests pale towards this. */
+  private readonly rutDark = pal('dirtDark').clone().lerp(pal('mud'), 0.35);
+  private readonly crestPale = pal('dirtTrack').clone().lerp(pal('grassDry'), 0.25);
   private readonly nodes = new Map<string, Node>();
   private readonly roots: Node[] = [];
   private lodDistances: readonly number[] = [96, 230, 520];
@@ -97,7 +118,13 @@ export class TerrainMesh {
     private readonly terrain: Terrain,
     _seed: number,
   ) {
-    this.material = createGroundMaterial();
+    this.material = createGroundMaterial({
+      paintBlend: PAINT_BLEND,
+      bandBlend: BAND_BLEND,
+      band: this.colors[GroundTint.DirtEdge],
+      rut: this.rutDark,
+      crest: this.crestPale,
+    });
     this.group.name = 'terrain';
     const rootSize = LEVELS[ROOT].size;
     for (let z = 0; z < terrain.sizeZ / rootSize; z++)
@@ -128,19 +155,15 @@ export class TerrainMesh {
     const n = w * rows;
     const pos = new Float32Array(n * 3),
       nrm = new Float32Array(n * 3),
-      col = new Float32Array(n * 3),
-      ground = new Float32Array(n * 2);
-    const color = new THREE.Color();
-    const dark = pal('dirtDark').clone().lerp(pal('mud'), 0.35),
-      pale = pal('dirtTrack').clone().lerp(pal('grassDry'), 0.25);
+      shade = new Float32Array(n * SHADE);
     const h = (i: number, j: number) =>
       p.heights[Math.min(rows - 1, Math.max(0, j)) * w + Math.min(w - 1, Math.max(0, i))];
-    // Colour, rock and wetness at each 1 m vertex of the patch, with the 1 m mesh's blend.
+    // Shading at each 1 m vertex of the patch, as the 1 m mesh has it.
     const cw = p.nx + 1;
-    const corners = new Float32Array(cw * (p.nz + 1) * 5);
+    const corners = new Float32Array(cw * (p.nz + 1) * SHADE);
     for (let cz = 0; cz <= p.nz; cz++)
       for (let cx = 0; cx <= p.nx; cx++) {
-        corners.set(this.sampleShade(p.ix0 + cx, p.iz0 + cz), (cz * cw + cx) * 5);
+        corners.set(this.sampleShade(p.ix0 + cx, p.iz0 + cz), (cz * cw + cx) * SHADE);
       }
     for (let j = 0; j < rows; j++)
       for (let i = 0; i < w; i++) {
@@ -152,42 +175,32 @@ export class TerrainMesh {
           dz = (h(i, j - 1) - h(i, j + 1)) * DETAIL_SUB;
         const length = Math.hypot(dx, 2, dz);
         nrm.set([dx / length, 2 / length, dz / length], k * 3);
-        // Blend the 1 m vertex tints across the cell, as the 1 m mesh does.
+        // Blend the 1 m vertex shading across the cell, as the 1 m mesh does.
         const cx = Math.min(p.nx - 1, Math.floor(i / DETAIL_SUB)),
           cz = Math.min(p.nz - 1, Math.floor(j / DETAIL_SUB));
         const tx = i / DETAIL_SUB - cx,
           tz = j / DETAIL_SUB - cz;
-        color.setRGB(0, 0, 0);
-        let rock = 0,
-          wet = 0;
         for (const [corner, weight] of [
           [cz * cw + cx, (1 - tx) * (1 - tz)],
           [cz * cw + cx + 1, tx * (1 - tz)],
           [(cz + 1) * cw + cx, (1 - tx) * tz],
           [(cz + 1) * cw + cx + 1, tx * tz],
-        ]) {
-          color.r += corners[corner * 5] * weight;
-          color.g += corners[corner * 5 + 1] * weight;
-          color.b += corners[corner * 5 + 2] * weight;
-          rock += corners[corner * 5 + 3] * weight;
-          wet += corners[corner * 5 + 4] * weight;
-        }
+        ])
+          for (let c = 0; c < SHADE; c++) shade[k * SHADE + c] += corners[corner * SHADE + c] * weight;
+        // The shader darkens rut floors and pales hump crests after the edge blend.
         const o = p.offset[k];
         if (o < 0) {
           const k2 = Math.min(1, -o / 0.45);
-          color.lerp(dark, k2 * 0.7);
-          wet = Math.max(wet, k2 * 0.6);
-        } else color.lerp(pale, Math.min(1, o / 0.6) * 0.35);
-        col.set([color.r, color.g, color.b], k * 3);
-        ground.set([rock, wet], k * 2);
+          shade[k * SHADE + 4] = Math.max(shade[k * SHADE + 4], k2 * 0.6);
+          shade[k * SHADE + SHADE - 1] = -k2;
+        } else shade[k * SHADE + SHADE - 1] = Math.min(1, o / 0.6);
       }
     const indices: number[] = [];
     patchTriangles(p, (i, j) => indices.push(j * w + i));
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    geo.setAttribute('ground', new THREE.BufferAttribute(ground, 2));
+    setShadeAttributes(geo, shade);
     geo.setIndex(indices);
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
@@ -332,44 +345,54 @@ export class TerrainMesh {
     return counts;
   }
 
-  private readonly shade = [0, 0, 0, 0, 0];
+  private readonly shade = new Array<number>(SHADE).fill(0);
 
   /**
-   * Colour (r, g, b), rockiness and wetness at a 1 m sample. Near a track's edge they come
-   * from the distance to the edge, so the edge runs smooth between samples instead of in
-   * 1 m steps; elsewhere a narrow blend of the neighbouring tints softens the grid.
+   * Shading at a 1 m sample: the colour of the ground beside any track, rockiness and
+   * wetness, and near a track's edge the track's own colour with the distance to the edge.
+   * The ground shader blends the two from that distance per pixel, so the edge follows the
+   * real line of the track instead of the triangles. Elsewhere both colours are the same
+   * narrow blend of the neighbouring tints, which softens the grid.
    */
   private sampleShade(ix: number, iz: number): number[] {
     const t = this.terrain;
     const out = this.shade;
     out.fill(0);
     const i = iz * t.resX + ix;
-    const p = t.trackPaint?.paint[i] ?? 0;
-    if (p) {
+    const paint = t.trackPaint;
+    const p = paint?.paint[i] ?? 0;
+    if (paint && p) {
       const kind = p & 7,
         under = p >> 3;
-      const e = (t.trackPaint as NonNullable<Terrain['trackPaint']>).edge[i] / 10;
+      const e = paint.edge[i] / 10;
       const faint = kind === TrackPaintKind.Faint;
       const end = faint ? FAINT_EDGE : PAINT_EDGE;
-      if (e < end + PAINT_BLEND + 0.2) {
-        const centre = trackTint(kind);
-        const band = kind === TrackPaintKind.Concrete ? CONCRETE_BAND : EDGE_BAND;
-        const inner = faint ? 1 : smoothstep(-band + BAND_BLEND, -band - BAND_BLEND, e);
-        const cover = smoothstep(end + PAINT_BLEND, end - PAINT_BLEND, e);
-        for (const [tint, weight] of [
-          [under, 1 - cover],
-          [GroundTint.DirtEdge, cover * (1 - inner)],
-          [centre, cover * inner],
-        ] as const)
-          this.addTint(tint, weight);
-        return out;
-      }
+      const band = faint ? 0 : kind === TrackPaintKind.Concrete ? CONCRETE_BAND : EDGE_BAND;
+      const centre = trackTint(kind);
+      // Rock and wetness don't need a sharp edge, so they are still blended per sample.
+      const inner = band ? smoothstep(-band + BAND_BLEND, -band - BAND_BLEND, e) : 1;
+      const cover = smoothstep(end + PAINT_BLEND, end - PAINT_BLEND, e);
+      for (const [tint, weight] of [
+        [under, 1 - cover],
+        [GroundTint.DirtEdge, cover * (1 - inner)],
+        [centre, cover * inner],
+      ] as const)
+        this.addTint(tint, weight);
+      const u = this.colors[under] ?? this.colors[0];
+      const c = this.colors[centre] ?? this.colors[0];
+      out.splice(0, 3, u.r, u.g, u.b);
+      out.splice(5, 6, c.r, c.g, c.b, e, end, band);
+      return out;
     }
     for (const [ox, oz, weight] of TINT_SAMPLES) {
       const x = Math.max(0, Math.min(t.sizeX, ix + ox));
       const z = Math.max(0, Math.min(t.sizeZ, iz + oz));
       this.addTint(t.tint[z * t.resX + x], weight);
     }
+    // No track colour of its own. Where something was painted over a track, keep the
+    // distance to its edge so the blend from a painted neighbour stays true.
+    const e = paint?.edge[i] ?? NO_TRACK_EDGE;
+    out.splice(5, 6, out[0], out[1], out[2], e === NO_TRACK_EDGE ? OUTSIDE_PAINT : e / 10, PAINT_EDGE, 0);
     return out;
   }
 
@@ -389,8 +412,7 @@ export class TerrainMesh {
     const count = (cells * cells * 2 + cells * 16) * 3;
     const pos = new Float32Array(count * 3);
     const nrm = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
-    const ground = new Float32Array(count * 2);
+    const shade = new Float32Array(count * SHADE);
     let v = 0;
     const vertex = (sx: number, sz: number, drop = 0) => {
       const ix = Math.max(0, Math.min(t.sizeX, sx));
@@ -401,9 +423,7 @@ export class TerrainMesh {
       const dz = t.sample(ix, iz - 1) - t.sample(ix, iz + 1);
       const length = Math.hypot(dx, 2, dz);
       nrm.set([dx / length, 2 / length, dz / length], v * 3);
-      const [r, g, b, rock, wet] = this.sampleShade(ix, iz);
-      col.set([r, g, b], v * 3);
-      ground.set([rock, wet], v * 2);
+      shade.set(this.sampleShade(ix, iz), v * SHADE);
       v++;
     };
     for (let j = 0; j < cells; j++) {
@@ -444,8 +464,7 @@ export class TerrainMesh {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    geo.setAttribute('ground', new THREE.BufferAttribute(ground, 2));
+    setShadeAttributes(geo, shade);
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
     return geo;
