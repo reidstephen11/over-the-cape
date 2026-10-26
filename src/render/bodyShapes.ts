@@ -105,6 +105,8 @@ export function sideShape(outline: Vtx[], holes: Vtx[][] = []): THREE.Shape {
  * Extrude a side-view shape across the car from x0 to x1 with rounded edges that keep the
  * outline: each edge rounds over `bevel` across the car and `bevel * ratio` within the
  * outline. Walls facing a wheel opening (centres in `wells`, as z, y) are painted dark.
+ * `reshape`, if given, reshapes the panel once it faces across the car, before it is moved
+ * out to x0 (so its x runs from −bevel to x1 − x0 − bevel).
  */
 export function extrudeX(
   b: VehicleBuilder,
@@ -118,6 +120,7 @@ export function extrudeX(
   wells: [number, number][] = [],
   segments = 3,
   ratio = 0.8,
+  reshape?: (g: THREE.BufferGeometry) => THREE.BufferGeometry,
 ): void {
   const size = bevel * ratio;
   const raw = new THREE.ExtrudeGeometry(shape, {
@@ -129,7 +132,7 @@ export function extrudeX(
     bevelSegments: segments,
     curveSegments: 12,
   });
-  const g = toCreasedNormals(raw, Math.PI / 5);
+  let g = toCreasedNormals(raw, Math.PI / 5);
   if (wells.length) {
     const pos = g.getAttribute('position'),
       nrm = g.getAttribute('normal');
@@ -166,6 +169,7 @@ export function extrudeX(
     g.setAttribute('materialSlot', new THREE.BufferAttribute(slots, 1));
   }
   g.rotateY(Math.PI / 2);
+  if (reshape) g = reshape(g);
   b.slot = slot as typeof b.slot;
   b.tag = zone;
   b.push().translate(x0 + bevel, 0, 0);

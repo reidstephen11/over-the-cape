@@ -4,9 +4,17 @@ import { plankTuning } from '../data/tools';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { addPerentieInterior } from './perentieInterior';
 import { perentieColors } from './perentiePaint';
-import { hoopBar } from './roobar';
+import { cleanGeometry, continuousTube } from './bodyRefinement';
+import {
+  addCanvasTilt,
+  addTiltRack,
+  addCanvasHoops,
+  TILT_BOARD_Y,
+  TILT_BOARD_Z,
+  TILT_RACK_Z,
+} from './perentieCanvas';
 import { mirrorHead, stalk } from './mirrors';
-import { extrudeZ, rounded, type Vtx } from './bodyShapes';
+import { extrudeX, extrudeZ, sideShape, rounded, type Vtx } from './bodyShapes';
 
 /**
  * Land Rover 110 "Perentie" General Service soft top in Australian Army green, with an
@@ -37,7 +45,6 @@ const FRONT_FACE = -2.02;
 const SCUTTLE = -0.8;
 const B_PILLAR = 0.21;
 const TAIL = 2.3;
-const ROOF = 1.51;
 const SCREEN_TOP = 1.36;
 /** The bonnet: flush with the wing tops at its edges and crowned a little in the middle. */
 const BONNET = { half: 0.58, low: 0.56, edge: 0.61, crown: 0.645 };
@@ -86,23 +93,31 @@ function archPanel(
     if (side > 0) b.quad(d, c, ci, di, paint);
     else b.quad(di, ci, c, d, paint);
   }
-  // Flat black wheel-arch flare standing proud of the opening.
-  b.slot = M.Rubber;
-  b.tag = zone;
-  b.push()
-    .translate(side * (SIDE + 0.012), ARCH.cy, axle)
-    .rotate(0, Math.PI / 2, 0)
-    .scale(1, 1, 0.55);
-  b.geometry(new THREE.TorusGeometry(ARCH.radius + 0.03, 0.045, 4, 36, Math.PI), black);
-  b.pop();
+  // A shallow rubber lip follows the opening and terminates at the sill.
+  const arc = (radius: number) =>
+    Array.from({ length: 33 }, (_, i) => {
+      const a = Math.asin((SILL - ARCH.cy) / radius),
+        theta = a + ((Math.PI - 2 * a) * i) / 32;
+      return [axle + radius * Math.cos(theta), ARCH.cy + radius * Math.sin(theta)] as Vtx;
+    });
+  extrudeX(
+    b,
+    sideShape([...arc(ARCH.radius + 0.045), ...arc(ARCH.radius - 0.005).reverse()]),
+    side > 0 ? SIDE - 0.006 : -SIDE - 0.038,
+    side > 0 ? SIDE + 0.038 : -SIDE + 0.006,
+    black,
+    M.Rubber,
+    zone,
+    0.006,
+  );
   // Inner wheel box, so the opening shows a dark well rather than the far side; the front
   // ones sit further in, clear of the wheels at full lock.
   b.block(side * wellX, ARCH.cy + 0.2, axle, 0.03, 0.62, ARCH.radius * 2, black, M.Rubber, Z.Trim);
   b.block(
-    (side * (wellX + SIDE)) / 2,
+    (side * (wellX + SIDE - 0.025)) / 2,
     ARCH.cy + ARCH.radius + 0.015,
     axle,
-    SIDE - wellX,
+    SIDE - wellX - 0.025,
     0.03,
     ARCH.radius * 1.6,
     black,
@@ -193,7 +208,7 @@ function frontEnd(b: VehicleBuilder): void {
     b.block(side * 0.5, 0.59, F - 0.002, 0.05, 0.05, 0.02, black, M.Rubber, Z.Front);
     // Wing top, the outer wing around the wheel and the inner wing beside the engine.
     b.block(side * 0.727, 0.59, -1.41, 0.24, 0.04, 1.22, paint, M.Paint, Z.Front, 0.012);
-    archPanel(b, side, F, SCUTTLE, -1.397, 0.585, Z.Front, 0.45);
+    archPanel(b, side, F, SCUTTLE, -1.397, 0.585, Z.Front, 0.39);
     // Headlamp panel: round lamp in a black bezel, side lamp and indicator beneath, and
     // the convoy lamp above it.
     b.block(side * 0.63, 0.33, F + 0.02, 0.42, 0.52, 0.04, paint, M.Paint, Z.Front, 0.01);
@@ -205,19 +220,53 @@ function frontEnd(b: VehicleBuilder): void {
     b.geometry(new THREE.CylinderGeometry(0.115, 0.115, 0.03, 28), black);
     b.pop();
     b.ring(side * 0.625, 0.39, F - 0.022, 0.093, 0.012, steel, M.Metal, 'z', Z.Front);
+    b.slot = M.Metal;
+    b.push()
+      .translate(side * 0.625, 0.39, F - 0.025)
+      .scale(1, 1, 0.22);
+    b.geometry(new THREE.SphereGeometry(0.088, 32, 12), steel);
+    b.pop();
     b.slot = M.Headlamp;
     b.push()
-      .translate(side * 0.625, 0.39, F - 0.022)
-      .scale(1, 1, 0.3);
-    b.geometry(new THREE.SphereGeometry(0.088, 24, 12), lens);
+      .translate(side * 0.625, 0.39, F - 0.036)
+      .scale(1, 1, 0.12);
+    b.geometry(new THREE.SphereGeometry(0.079, 32, 12), lens.clone().multiplyScalar(0.78));
     b.pop();
+    // Fine vertical flute ribs on the convex sealed-beam cover.
+    for (const dx of [-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06]) {
+      const h = Math.sqrt(0.079 ** 2 - dx ** 2);
+      b.rod(
+        { x: side * 0.625 + dx, y: 0.39 - h, z: F - 0.047 },
+        { x: side * 0.625 + dx, y: 0.39 + h, z: F - 0.047 },
+        0.0012,
+        glass,
+        M.Glass,
+        Z.Front,
+      );
+    }
     // Army convoy lamp above the headlamp: a small hooded box with a narrow slit lens.
     b.block(side * 0.625, 0.548, F - 0.018, 0.1, 0.05, 0.05, black, M.Rubber, Z.Front, 0.008);
     b.block(side * 0.625, 0.578, F - 0.03, 0.11, 0.008, 0.07, black, M.Rubber, Z.Front, 0.003);
     b.block(side * 0.625, 0.545, F - 0.044, 0.06, 0.012, 0.004, lens, M.Rubber, Z.Front);
-    b.block(side * 0.625, 0.18, F - 0.005, 0.2, 0.075, 0.03, black, M.Rubber, Z.Front, 0.008);
-    b.block(side * 0.675, 0.18, F - 0.024, 0.085, 0.052, 0.012, amber, M.Amber, Z.Front, 0.005);
-    b.block(side * 0.575, 0.18, F - 0.024, 0.085, 0.052, 0.012, lens, M.Headlamp, Z.Front, 0.005);
+    for (const [offset, col, slot] of [
+      [0.72, amber, M.Amber],
+      [0.535, lens, M.Headlamp],
+    ] as const) {
+      b.slot = M.Rubber;
+      b.tag = Z.Front;
+      b.push()
+        .translate(side * offset, 0.18, F - 0.012)
+        .rotate(Math.PI / 2, 0, 0);
+      b.geometry(new THREE.CylinderGeometry(0.041, 0.041, 0.027, 24), black);
+      b.pop();
+      b.ring(side * offset, 0.18, F - 0.029, 0.034, 0.004, steel, M.Metal, 'z', Z.Front);
+      b.slot = slot;
+      b.push()
+        .translate(side * offset, 0.18, F - 0.031)
+        .scale(1, 1, 0.32);
+      b.geometry(new THREE.SphereGeometry(0.032, 24, 10), col);
+      b.pop();
+    }
     // Air intake grille on the left wing; the right wing is plain.
     if (side < 0) {
       b.block(-SIDE - 0.004, 0.45, -1.02, 0.012, 0.13, 0.26, black, M.Rubber, Z.Front, 0.006);
@@ -225,18 +274,87 @@ function frontEnd(b: VehicleBuilder): void {
         b.block(-SIDE - 0.011, 0.4 + i * 0.024, -1.02, 0.006, 0.006, 0.23, rubber, M.Rubber, Z.Front);
     }
   }
-  // Black slatted grille with a plain oval badge.
-  b.block(0, 0.33, F + 0.005, 0.84, 0.46, 0.03, black, M.Rubber, Z.Front, 0.01);
-  for (let i = 0; i < 10; i++)
-    b.block(0, 0.135 + i * 0.044, F - 0.016, 0.8, 0.018, 0.016, rubber, M.Rubber, Z.Front, 0.004);
-  for (const x of [-0.2, 0, 0.2]) b.block(x, 0.33, F - 0.02, 0.016, 0.44, 0.012, rubber, M.Rubber, Z.Front);
-  b.push()
-    .translate(0, 0.5, F - 0.03)
-    .rotate(Math.PI / 2, 0, 0)
-    .scale(1.7, 1, 1);
-  b.slot = M.Metal;
-  b.tag = Z.Front;
-  b.geometry(new THREE.CylinderGeometry(0.035, 0.035, 0.01, 20), steel.clone().multiplyScalar(0.7));
+  // Recessed horizontal grille louvers, with a small two-line oval identity badge.
+  b.block(0, 0.33, F + 0.008, 0.84, 0.46, 0.028, black, M.Rubber, Z.Front, 0.009);
+  for (let i = 0; i < 14; i++)
+    b.block(0, 0.137 + i * 0.0295, F - 0.012, 0.797, 0.012, 0.018, rubber, M.Rubber, Z.Front, 0.002);
+  for (const x of [-0.29, 0.29]) b.block(x, 0.33, F - 0.003, 0.009, 0.43, 0.012, black, M.Rubber, Z.Front);
+  const oval = new THREE.Shape();
+  oval.absellipse(0, 0, 0.078, 0.038, 0, Math.PI * 2, false, 0);
+  b.push().translate(0, 0.496, F - 0.025);
+  extrudeZ(b, oval, -0.007, 0, steel, M.Metal, Z.Front, 0.001);
+  const inner = new THREE.Shape();
+  inner.absellipse(0, 0, 0.072, 0.032, 0, Math.PI * 2, false, 0);
+  extrudeZ(b, inner, -0.009, -0.007, paint.clone().multiplyScalar(0.55), M.Paint, Z.Front, 0);
+  const glyph: Record<string, number[][]> = {
+    L: [
+      [0, 1, 0, 0],
+      [0, 0, 1, 0],
+    ],
+    A: [
+      [0, 0, 0.5, 1],
+      [0.5, 1, 1, 0],
+      [0.2, 0.4, 0.8, 0.4],
+    ],
+    N: [
+      [0, 0, 0, 1],
+      [0, 1, 1, 0],
+      [1, 0, 1, 1],
+    ],
+    D: [
+      [0, 0, 0, 1],
+      [0, 1, 0.7, 1],
+      [0.7, 1, 1, 0.7],
+      [1, 0.7, 1, 0.3],
+      [1, 0.3, 0.7, 0],
+      [0.7, 0, 0, 0],
+    ],
+    R: [
+      [0, 0, 0, 1],
+      [0, 1, 1, 1],
+      [1, 1, 1, 0.5],
+      [1, 0.5, 0, 0.5],
+      [0.4, 0.5, 1, 0],
+    ],
+    O: [
+      [0, 0, 0, 1],
+      [0, 1, 1, 1],
+      [1, 1, 1, 0],
+      [1, 0, 0, 0],
+    ],
+    V: [
+      [0, 1, 0.5, 0],
+      [0.5, 0, 1, 1],
+    ],
+    E: [
+      [0, 0, 0, 1],
+      [0, 1, 1, 1],
+      [0, 0.5, 0.8, 0.5],
+      [0, 0, 1, 0],
+    ],
+  };
+  ['LAND', 'ROVER'].forEach((word, row) =>
+    [...word].forEach((ch, i) => {
+      const start = ((word.length - 1) * 0.012) / 2 - i * 0.012;
+      for (const [x0, y0, x1, y1] of glyph[ch])
+        b.rod(
+          {
+            x: start - (x0 - 0.5) * 0.008,
+            y: 0.006 - row * 0.019 + y0 * 0.012,
+            z: -0.01,
+          },
+          {
+            x: start - (x1 - 0.5) * 0.008,
+            y: 0.006 - row * 0.019 + y1 * 0.012,
+            z: -0.01,
+          },
+          0.00085,
+          white,
+          M.Metal,
+          Z.Front,
+        );
+    }),
+  );
   b.pop();
   // Sump, steering box and the front crossmember below the grille.
   b.block(0, -0.04, -1.62, 0.36, 0.16, 0.5, black, M.Metal, Z.Trim, 0.02);
@@ -438,6 +556,11 @@ function rearBody(b: VehicleBuilder): void {
   // The benches run along the tops of the wheel boxes.
   const bench = paint.clone().multiplyScalar(0.75);
   for (const side of [-1, 1]) b.block(side * 0.68, 0.54, 1.35, 0.3, 0.05, 1.8, bench, M.Paint, Z.Trim, 0.01);
+  // Bench legs land on the load floor ahead of and behind the wheel boxes.
+  for (const side of [-1, 1]) {
+    for (const z of [0.55, 2.15]) b.block(side * 0.68, 0.355, z, 0.025, 0.31, 0.04, paint, M.Paint, Z.Trim);
+    b.block(side * 0.68, 0.503, 1.35, 0.08, 0.03, 0.55, paint, M.Paint, Z.Trim);
+  }
   // A rolled swag and a tucker box.
   b.slot = M.Fabric;
   b.tag = Z.Trim;
@@ -449,7 +572,6 @@ function rearBody(b: VehicleBuilder): void {
   b.block(0.25, 0.36, 1.45, 0.5, 0.3, 0.36, new THREE.Color('#6A4A30'), M.Fabric, Z.Trim, 0.01);
 }
 
-/** Pressed-steel jerry can in a holder, standing against the body side. */
 /**
  * The Army's pioneer tools across the tailgate, the bonnet being taken by the second spare:
  * a shovel along the top, a pick below it and an axe at the bottom, each held clear of the
@@ -502,6 +624,7 @@ function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
   b.rod({ x: -0.07, y: top + 0.05, z }, { x: 0.07, y: top + 0.05, z }, 0.01, steel, M.Metal, Z.Front);
 }
 
+/** Pressed-steel jerry can in a holder, standing against the body side. */
 function jerryCan(b: VehicleBuilder, x: number, y: number, z: number): void {
   const can = new THREE.Color('#5B6640');
   const s = Math.sign(x);
@@ -518,74 +641,39 @@ function jerryCan(b: VehicleBuilder, x: number, y: number, z: number): void {
   b.block(x, y + 0.26, z - 0.08, 0.03, 0.05, 0.12, can, M.Paint, Z.Rear, 0.01);
   b.block(x, y + 0.255, z + 0.1, 0.06, 0.04, 0.06, can, M.Paint, Z.Rear, 0.01);
   b.block(x - s * 0.06, y - 0.25, z, 0.25, 0.03, 0.38, bar, M.Metal, Z.Rear);
-  b.block(x + s * 0.09, y + 0.05, z, 0.012, 0.04, 0.4, black, M.Rubber, Z.Rear);
+  b.block(x + s * 0.09, y + 0.05, z, 0.012, 0.04, 0.38, black, M.Rubber, Z.Rear);
+  for (const dz of [-0.185, 0.185]) b.block(x, y + 0.05, z + dz, 0.19, 0.04, 0.012, black, M.Rubber, Z.Rear);
+  b.block(x - s * 0.09, y + 0.05, z, 0.012, 0.04, 0.38, black, M.Rubber, Z.Rear);
+  b.block(x + s * 0.098, y + 0.05, z, 0.012, 0.06, 0.05, steel, M.Metal, Z.Rear, 0.003);
 }
 
 function tilt(b: VehicleBuilder): void {
-  const z0 = SCUTTLE + 0.07;
-  // Roof over cab and tub, the tub sides and back, with darker straps at the hoops.
-  b.block(
-    0,
-    ROOF - 0.07,
-    (z0 + TAIL) / 2 + 0.005,
-    1.7,
-    0.14,
-    TAIL - z0 + 0.03,
-    canvas,
-    M.Fabric,
-    Z.Roof,
-    0.06,
-  );
-  const sideH = ROOF - 0.12 - 0.69;
-  for (const side of [-1, 1]) {
-    b.block(
-      side * (SIDE + 0.006),
-      0.69 + sideH / 2,
-      (B_PILLAR + TAIL) / 2,
-      0.03,
-      sideH,
-      TAIL - B_PILLAR,
-      canvas,
-      M.Fabric,
-      Z.Sides,
-      0.01,
-    );
-    b.rod(
-      { x: side * (SIDE + 0.024), y: 0.71, z: B_PILLAR + 0.04 },
-      { x: side * (SIDE + 0.024), y: 0.71, z: TAIL - 0.04 },
-      0.006,
-      rubber,
-      M.Rubber,
-      Z.Sides,
-    );
-  }
-  b.block(0, 0.69 + sideH / 2, TAIL + 0.01, 1.7, sideH, 0.03, canvas, M.Fabric, Z.Rear, 0.01);
-  const strap = canvas.clone().multiplyScalar(0.72);
-  for (const z of [B_PILLAR + 0.02, 0.95, 1.62, TAIL - 0.02]) {
-    b.block(0, ROOF + 0.002, z, 1.62, 0.006, 0.05, strap, M.Fabric, Z.Roof);
-    for (const side of [-1, 1])
-      b.block(
-        side * (SIDE + 0.023),
-        0.69 + sideH / 2 + 0.03,
-        z,
-        0.006,
-        sideH - 0.06,
-        0.05,
-        strap,
-        M.Fabric,
-        Z.Sides,
-      );
-  }
-  // Rear curtain: the flap seam and its buckled straps.
-  b.block(0, 1.3, TAIL + 0.028, 1.6, 0.012, 0.006, strap, M.Fabric, Z.Rear);
-  for (const x of [-0.45, 0.45]) b.block(x, 1.0, TAIL + 0.03, 0.05, 0.6, 0.006, strap, M.Fabric, Z.Rear);
-  // The canvas wraps over the windscreen's top rail.
-  b.block(0, SCREEN_TOP + 0.02, SCUTTLE + 0.1, 1.68, 0.06, 0.12, canvas, M.Fabric, Z.Roof, 0.025);
+  addCanvasTilt(b);
 }
 
 function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   // Galvanised ladder frame, crossmembers, outriggers and the rear crossmember.
-  for (const x of [-0.43, 0.43]) b.block(x, 0.03, 0.08, 0.1, 0.18, 4.04, galv, M.Paint, Z.Trim);
+  for (const side of [-1, 1]) {
+    b.block(side * 0.355, 0.03, -1.51, 0.1, 0.18, 0.9, galv, M.Paint, Z.Trim);
+    b.rod(
+      { x: side * 0.355, y: 0.03, z: -1.08 },
+      { x: side * 0.43, y: 0.03, z: -0.86 },
+      0.05,
+      galv,
+      M.Paint,
+      Z.Trim,
+    );
+    b.block(side * 0.43, 0.03, 0.22, 0.1, 0.18, 2.16, galv, M.Paint, Z.Trim);
+    b.rod(
+      { x: side * 0.43, y: 0.03, z: 1.28 },
+      { x: side * 0.495, y: 0.03, z: 1.72 },
+      0.05,
+      galv,
+      M.Paint,
+      Z.Trim,
+    );
+    b.block(side * 0.495, 0.03, 2.01, 0.1, 0.18, 0.6, galv, M.Paint, Z.Trim);
+  }
   for (const z of [-1.96, -0.62, 0.62]) b.block(0, 0.02, z, 0.86, 0.1, 0.1, galv, M.Paint, Z.Trim);
   b.block(0, 0.02, 2.36, 1.48, 0.14, 0.1, galv, M.Paint, Z.Trim);
   // Gearbox and transfer case, propshafts, fuel tank and the exhaust out the back.
@@ -615,11 +703,12 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   // The Perentie's own spare wheel, slung flat in a cradle under the rear floor.
   b.tag = Z.Rear;
   b.push()
-    .translate(0, 0.03, 1.94)
+    .translate(0, 0.03, 1.85)
     .rotate(0, 0, Math.PI / 2);
   b.geometry(wheel.clone(), black);
   b.pop();
-  for (const x of [-0.2, 0.2]) b.block(x, -0.09, 1.94, 0.05, 0.03, 0.84, galv, M.Paint, Z.Trim);
+  for (const x of [-0.2, 0.2]) b.block(x, -0.09, 1.85, 0.05, 0.03, 0.84, galv, M.Paint, Z.Trim);
+  for (const z of [1.43, 2.27]) b.block(0, -0.075, z, 0.99, 0.04, 0.035, galv, M.Paint, Z.Trim);
   // Pintle hook and trailer socket for the No. 5 trailer, and the rear plate.
   b.block(0, -0.02, 2.43, 0.14, 0.12, 0.08, black, M.Metal, Z.Rear, 0.01);
   b.ring(0, -0.04, 2.5, 0.045, 0.014, black, M.Metal, 'y', Z.Rear);
@@ -633,18 +722,66 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   // The Army brushguard: a heavy beam that serves as the bumper, with towing eyes under it,
   // and three hoops over the grille and headlamps.
   const face = -2.22;
-  hoopBar(b, {
-    face,
-    beamY: 0.06,
-    beamH: 0.17,
-    half: 0.88,
-    post: 0.4,
-    top: 0.67,
-    lamp: 0.6,
-    outer: 0.86,
-    tube: 0.03,
-    color: bar,
+  const pan = new THREE.Shape();
+  pan.moveTo(-0.78, -face);
+  pan.lineTo(0.78, -face);
+  pan.lineTo(0.97, -face - 0.1);
+  pan.lineTo(0.93, -face - 0.22);
+  pan.lineTo(0.76, -face - 0.12);
+  pan.lineTo(-0.76, -face - 0.12);
+  pan.lineTo(-0.93, -face - 0.22);
+  pan.lineTo(-0.97, -face - 0.1);
+  pan.closePath();
+  const beam = new THREE.ExtrudeGeometry(pan, {
+    depth: 0.146,
+    bevelEnabled: true,
+    bevelThickness: 0.012,
+    bevelSize: 0.012,
+    bevelSegments: 3,
+    steps: 1,
   });
+  beam.rotateX(-Math.PI / 2);
+  beam.translate(0, -0.013, 0);
+  b.slot = M.Metal;
+  b.tag = Z.Front;
+  b.geometry(beam, bar);
+  const beamTop = 0.145,
+    zb = face + 0.05,
+    zAt = (y: number) => zb + ((y - beamTop) * 0.06) / (0.67 - beamTop);
+  const tube = (pts: number[][]) =>
+    continuousTube(
+      b,
+      pts.map((p) => new THREE.Vector3(...(p as [number, number, number]))),
+      0.03,
+      bar,
+    );
+  tube([
+    [-0.4, beamTop - 0.012, zb],
+    [-0.4, 0.67, zAt(0.67)],
+    [0.4, 0.67, zAt(0.67)],
+    [0.4, beamTop - 0.012, zb],
+  ]);
+  const mid = 0.4275;
+  b.rod({ x: -0.4, y: mid, z: zAt(mid) }, { x: 0.4, y: mid, z: zAt(mid) }, 0.024, bar, M.Metal, Z.Front);
+  for (const side of [-1, 1]) {
+    const x = side * 0.86,
+      footZ = face + 0.14;
+    tube([
+      [side * 0.4, 0.6, zAt(0.6)],
+      [x, 0.6, zAt(0.6) + 0.025],
+      [x, beamTop - 0.01, footZ],
+    ]);
+    b.block(x, beamTop, footZ, 0.09, 0.025, 0.09, bar, M.Metal, Z.Front, 0.005);
+    b.block(side * 0.4, beamTop, zb, 0.09, 0.025, 0.09, bar, M.Metal, Z.Front, 0.005);
+    b.rod(
+      { x: side * 0.36, y: 0.055, z: face + 0.1 },
+      { x: side * 0.36, y: 0.015, z: -1.91 },
+      0.028,
+      bar,
+      M.Metal,
+      Z.Trim,
+    );
+  }
   for (const side of [-1, 1])
     b.ring(side * 0.55, -0.06, face + 0.06, 0.04, 0.012, bar, M.Metal, 'x', Z.Front);
   armyPlate(b, -0.55, 0.06, face - 0.01, -1);
@@ -678,7 +815,10 @@ export function buildPerentieBody(tuning: VehicleTuning, wheel: THREE.BufferGeom
   tilt(b);
   chassisAndRecovery(b, tuning, wheel);
   addPerentieInterior(b, tuning.engine.redlineRpm);
-  return b.build();
+  addCanvasHoops(b);
+  addTiltRack(b);
+  const g = b.build();
+  return cleanGeometry(g);
 }
 
 /** 7.50R16 bar-and-block tread on a tall sidewall, a green steel wheel and five studs. */
@@ -771,17 +911,17 @@ export function buildPerentieWheel(tuning: VehicleTuning): THREE.BufferGeometry 
     b.geometry(new THREE.CylinderGeometry(0.048, 0.055, 0.05, 20), galv.clone().multiplyScalar(0.8));
     b.pop();
   }
-  return b.build();
+  return cleanGeometry(b.build());
 }
 
-/** A recovery board strapped to the tilt roof over the hoops (index 0 on the left). */
+/** Recovery board resting on the two external support bows, with closed straps. */
 export function buildPerentiePlank(index: number): THREE.BufferGeometry {
-  const b = new VehicleBuilder();
-  const wood = new THREE.Color('#A9824F');
-  const x = index === 0 ? -0.36 : 0.36,
-    y = ROOF + 0.035,
-    z = 0.85;
-  const L = plankTuning.length,
+  const b = new VehicleBuilder(),
+    wood = new THREE.Color('#A9824F'),
+    x = index === 0 ? -0.36 : 0.36,
+    y = TILT_BOARD_Y,
+    z = TILT_BOARD_Z,
+    L = plankTuning.length,
     W = plankTuning.width;
   b.block(x, y, z, W, 0.05, L, wood, M.Fabric, Z.Roof);
   for (let i = 0; i < 4; i++)
@@ -796,10 +936,11 @@ export function buildPerentiePlank(index: number): THREE.BufferGeometry {
       M.Fabric,
       Z.Roof,
     );
-  for (const dz of [-0.75, 0.75]) {
-    b.block(x, y + 0.03, z + dz, W + 0.01, 0.012, 0.045, black, M.Rubber, Z.Roof);
-    for (const s of [-1, 1])
-      b.block(x + (s * (W + 0.02)) / 2, y - 0.01, z + dz, 0.012, 0.07, 0.045, black, M.Rubber, Z.Roof);
+  for (const zz of TILT_RACK_Z) {
+    b.block(x, y + 0.03, zz, W + 0.02, 0.012, 0.045, black, M.Rubber, Z.Roof);
+    for (const side of [-1, 1])
+      b.block(x + (side * (W + 0.02)) / 2, y - 0.018, zz, 0.012, 0.1, 0.045, black, M.Rubber, Z.Roof);
+    b.block(x, y - 0.06, zz, W + 0.03, 0.012, 0.045, black, M.Rubber, Z.Roof);
   }
-  return b.build();
+  return cleanGeometry(b.build());
 }
