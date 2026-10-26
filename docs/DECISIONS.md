@@ -1047,3 +1047,14 @@ The first vehicle compared with the v0.30 photographs. Compared: `front-34-right
 - **Wheel openings.** Radius 0.47 m to 0.52 m, with a thicker flared lip. The 4WD's openings in `front-34-right.jpg` and `side-1980-4wd.jpg` leave a wide gap round the tyre; the model's sat tight on it.
 - **Unchanged:** wheelbase, width, height, tuning, collision boxes, the bull bar, winch, rack and spares. About 900 more triangles.
 - **Still disagrees.** The tyre is 0.75 m across against about 0.80 m for a 7.00-16; changing it changes the tuning and the physics tests, so it is left for its own update. The skin length is unchanged. There is no straight front or rear photograph of a 4WD to check the front against square-on.
+
+## v0.33: the GQ Patrol's width and front checked against the photographs
+
+Compared: `front-34-1988.jpg` and `front-34-left-1989.jpg` (Series 1), `front-34-1994.jpg` and `side-1992.jpg` (GQ II), and `side-right-1989.jpg`, beside studio renders of the front (near-orthographic), both front three-quarters and the side, before and after.
+
+- **Headlamps stay round.** v0.30's note said every front view shows rectangular lamps. All five front views show a round 7-inch lamp in a square recess, Series 1 and GQ II alike. The model already had that; `SOURCES.md` is corrected.
+- **Width.** The front view measured about 1.87 m across the flares (body 1.74 m) against the published 1,930 mm. The finished body is now stretched across by 3.5% (`WIDEN` in `patrolBody.ts`): 1.93 m across the flares, 1.80 m across the body. Scaling the whole body keeps the bull bar, rack, snorkel, mirrors and interior where they were relative to the panels; changing `SIDE` alone would have left dozens of fixed positions behind. The headlamp and driving-lamp beam origins and the recovery boards on the rack get the same factor. The track and tyres are unchanged, so the wheels sit a little further inside the flares, as on the real wagon.
+- **Front face.** The model had one black panel with a small badge. The Series 1 face is a grey moulded panel with three grille openings of horizontal slats between the lamps and large NISSAN letters across them; the model now has that. The game's driving lamps cover part of the lettering, as a bar does in `front-34-left-1989.jpg`.
+- **Bonnet.** A thick front edge that overhangs the grille, and a raised centre panel, as in `front-34-1988.jpg`.
+- **Unchanged:** tuning, collision boxes, wheelbase, height, the two-tone paint and the game's kit.
+- **Still disagrees.** The GQ II's grille and its clear corner lamps are not drawn; the game keeps Series 1. No straight front or rear photograph to check the face square-on.
