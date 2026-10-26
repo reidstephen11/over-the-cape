@@ -1123,7 +1123,27 @@ Map-placed patches of rock, gravel, dirt, mud and sand still use the old per-sam
 
 **Decision.** The village's start spot moves onto the middle of the road at (-63.7, 2623), facing along it (330°). The camp itself is unchanged.
 
-## v0.41: phone warnings leave the road
+## v0.41: smoother play on the long maps
+
+**What the owner asked.** Why play had become choppy since the maps grew and the new vehicle bodies arrived, and then to fix the three causes found. They play on a laptop.
+
+**What was measured.** In the browser on the CREB at Medium, and in Node. Physics was not the cause: a step takes about 0.7 ms. Three things were.
+
+- **Ground tiles built while driving.** Each 64 m tile near the car was built on the main thread in about 45 ms (60–90 ms in the browser here), up to three in one frame, so the game froze for 50–270 ms whenever the car reached new ground. v0.35–v0.37 had made this worse: each of a tile's 27,648 vertices carried 31 values, and each 1 m sample was worked out six times, once for every triangle corner on it (25 ms and 1.2 MB a tile in v0.34, 45 ms and 3.4 MB in v0.37).
+- **The trees.** All 45,109 trees on the CREB were one batch, and three.js tested each one against the view every frame, twice (the view and the shadows): about 6 ms a frame, growing with the size of the map.
+- **The light changing.** About every 30 s of play the time-of-day update made a new reflection sky and filter, compiling their shaders again: a pause of about 50 ms.
+
+**What changed.**
+
+- `TerrainMesh.buildGeometry` shares each sample's vertex between its triangles (an indexed mesh), works each sample out once, writes the shading values without building arrays, and remembers each sample's ground colour under any patch, since every sample's neighbours read it too. The triangles and every value on them are exactly as before (checked tile by tile against v0.40 at every detail level). A fine tile now takes about 7 ms in Node and 0.6 MB. Tiles are now built against a time limit (3 ms a frame, always at least one) instead of three a frame. The map also loads about 8 s sooner, since the coarse tiles are built at load.
+- Trees are batched in 384 m map tiles (`TREE_TILE` in `src/render/vegetation.ts`), each with its own copy of the tree models (0.4 MB). three.js skips a whole tile that is out of view or out of the shadow area, and only tests the trees in the rest one by one; a tile whose trees are all beyond the draw distance is hidden. Tree culling went from about 6 ms to 1.9 ms a frame, and the three.js render call from about 14 to 9 ms. The CREB has 70 tiles; a frame draws about 10 more draw calls than before. Each tile's bounding sphere is taken from the middle detail models with 5 m to spare.
+- The reflection sky and filter are made once and kept (`GameRenderer.updateReflections`): a light change now costs about 7 ms including a frame.
+
+**Checked.** Screenshots of the same three views on v0.40 and v0.41 match apart from a history card that opened in one of them. Timings are from this container's software renderer, so the frame rate itself can't be judged here: the CPU times above are what changed. The cost of drawing (triangles, the ground shader, the vehicle bodies) is unchanged; trimming the bodies towards their triangle budget was left until the owner has tried this on the laptop.
+
+**Still to do.** The grass round the car is rebuilt every 8 m on the main thread (up to about 25 ms), a smaller pause of the same kind.
+
+## v0.42: phone warnings leave the road
 
 **What the owner saw.** On a phone held sideways, "The current is taking the car" and "Engine flooded" stacked as two banners across the middle of the view, over the water and on top of the pitch gauge. Upright, the same banners stretched almost the full width just above the buttons.
 

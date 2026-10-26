@@ -69,6 +69,12 @@ function setShadeAttributes(geo: THREE.BufferGeometry, shade: Float32Array): voi
   geo.setAttribute('patchCircle', new THREE.InterleavedBufferAttribute(buffer, 4, 20));
   geo.setAttribute('clayBank', new THREE.InterleavedBufferAttribute(buffer, 1, 24));
 }
+/** `TerrainMesh.under` for a sample not looked at yet. */
+const UNKNOWN_TINT = 255;
+/** Write values into a shading array from `at` on (in place of a splice, which allocates). */
+function setShade(out: number[], at: number, ...values: number[]): void {
+  for (let k = 0; k < values.length; k++) out[at + k] = values[k];
+}
 const isRock = (tint: number) =>
   tint === GroundTint.Rock || tint === GroundTint.Scree || tint === GroundTint.Gravel;
 const isWet = (tint: number) =>
@@ -128,13 +134,21 @@ export class TerrainMesh {
   /** Rut floors darken towards this and hump crests pale towards this. */
   private readonly rutDark = pal('dirtDark').clone().lerp(pal('mud'), 0.35);
   private readonly crestPale = pal('dirtTrack').clone().lerp(pal('grassDry'), 0.25);
+  /**
+   * Each sample's `underTint`, worked out the first time it's needed: every sample is
+   * read by its four neighbours too. The ground's paint is final before the mesh is built.
+   */
+  private readonly under: Uint8Array;
   private readonly nodes = new Map<string, Node>();
   private readonly roots: Node[] = [];
   private lodDistances: readonly number[] = [96, 230, 520];
   private frame = 0;
   private readonly visible = new Set<Node>();
-  /** Max on-demand node builds per frame. */
-  buildBudget = 3;
+  /**
+   * Main-thread time (ms) for on-demand node builds per frame. One node is always built
+   * when one is needed; more only while under this.
+   */
+  buildMs = 3;
   private readonly cacheLimit = [48, 160];
 
   constructor(
@@ -142,6 +156,7 @@ export class TerrainMesh {
     _seed: number,
   ) {
     this.edgeTint = terrain.muddyEdges ? GroundTint.Mud : GroundTint.DirtEdge;
+    this.under = new Uint8Array(terrain.resX * terrain.resZ).fill(UNKNOWN_TINT);
     this.material = createGroundMaterial({
       paintBlend: PAINT_BLEND,
       bandBlend: BAND_BLEND,
@@ -307,7 +322,8 @@ export class TerrainMesh {
   /** Update which nodes are drawn for an eye position. `all` builds everything needed now. */
   update(eye: THREE.Vector3, all = false): void {
     this.frame++;
-    let budget = all ? Infinity : this.buildBudget;
+    const start = performance.now();
+    let built = 0;
     const want: Node[] = [];
     const requests: { n: Node; d: number }[] = [];
     const visit = (n: Node) => {
@@ -329,10 +345,10 @@ export class TerrainMesh {
     for (const r of this.roots) visit(r);
     requests.sort((a, b) => a.d - b.d);
     for (const r of requests) {
-      if (budget <= 0) break;
+      if (!all && built > 0 && performance.now() - start > this.buildMs) break;
       if (!r.n.mesh) {
         this.build(r.n);
-        budget--;
+        built++;
       }
     }
     if (all && requests.length > 0) {
@@ -398,9 +414,9 @@ export class TerrainMesh {
     const edge = patch?.edge ?? PATCH_REACH + 0.5;
     const [cx, cz] = patch?.centre ?? [0, 0];
     const bank = t.clayBanks.get(i);
-    out.splice(
+    setShade(
+      out,
       12,
-      13,
       inner?.r ?? out[0],
       inner?.g ?? out[1],
       inner?.b ?? out[2],
@@ -420,6 +436,14 @@ export class TerrainMesh {
 
   /** The tint a sample's ground had before any ground patch or clay bank was laid over it. */
   private underTint(i: number): number {
+    const cached = this.under[i];
+    if (cached !== UNKNOWN_TINT) return cached;
+    const tint = this.findUnderTint(i);
+    this.under[i] = tint;
+    return tint;
+  }
+
+  private findUnderTint(i: number): number {
     const t = this.terrain;
     const packed = t.groundPatches.get(i);
     let tint: number = t.tint[i];
@@ -451,16 +475,15 @@ export class TerrainMesh {
       // Rock and wetness don't need a sharp edge, so they are still blended per sample.
       const inner = band ? smoothstep(-band + BAND_BLEND, -band - BAND_BLEND, e) : 1;
       const cover = smoothstep(end + PAINT_BLEND, end - PAINT_BLEND, e);
-      for (const [tint, weight] of [
-        [under, 1 - cover],
-        [this.edgeTint, cover * (1 - inner)],
-        [centre, cover * inner],
-      ] as const)
-        this.addTint(tint, weight);
+      this.addTint(under, 1 - cover);
+      this.addTint(this.edgeTint, cover * (1 - inner));
+      this.addTint(centre, cover * inner);
       const u = this.colors[under] ?? this.colors[0];
       const c = this.colors[centre] ?? this.colors[0];
-      out.splice(0, 3, u.r, u.g, u.b);
-      out.splice(5, 6, c.r, c.g, c.b, e, end, band);
+      out[0] = u.r;
+      out[1] = u.g;
+      out[2] = u.b;
+      setShade(out, 5, c.r, c.g, c.b, e, end, band);
       return;
     }
     for (const [ox, oz, weight] of TINT_SAMPLES) {
@@ -471,7 +494,7 @@ export class TerrainMesh {
     // No track colour of its own. Where something was painted over a track, keep the
     // distance to its edge so the blend from a painted neighbour stays true.
     const e = paint?.edge[i] ?? NO_TRACK_EDGE;
-    out.splice(5, 6, out[0], out[1], out[2], e === NO_TRACK_EDGE ? OUTSIDE_PAINT : e / 10, PAINT_EDGE, 0);
+    setShade(out, 5, out[0], out[1], out[2], e === NO_TRACK_EDGE ? OUTSIDE_PAINT : e / 10, PAINT_EDGE, 0);
   }
 
   private addTint(tint: number, weight: number): void {
@@ -487,62 +510,78 @@ export class TerrainMesh {
   buildGeometry(ix0: number, iz0: number, size: number, step: number): THREE.BufferGeometry {
     const t = this.terrain;
     const cells = size / step;
-    const count = (cells * cells * 2 + cells * 16) * 3;
+    const row = cells + 1;
+    const grid = row * row;
+    // Each sample is shaded once and shared by its triangles; the skirts add a dropped
+    // copy of every sample along the four edges.
+    const count = grid + 4 * row;
     const pos = new Float32Array(count * 3);
     const nrm = new Float32Array(count * 3);
     const shade = new Float32Array(count * SHADE);
-    let v = 0;
-    const vertex = (sx: number, sz: number, drop = 0) => {
-      const ix = Math.max(0, Math.min(t.sizeX, sx));
-      const iz = Math.max(0, Math.min(t.sizeZ, sz));
-      pos.set([sx - t.halfX, t.solidSample(ix, iz) - drop, sz - t.halfZ], v * 3);
-      // The same central-difference normal at every shared vertex, including LOD seams.
-      const dx = t.sample(ix - 1, iz) - t.sample(ix + 1, iz);
-      const dz = t.sample(ix, iz - 1) - t.sample(ix, iz + 1);
-      const length = Math.hypot(dx, 2, dz);
-      nrm.set([dx / length, 2 / length, dz / length], v * 3);
-      shade.set(this.sampleShade(ix, iz), v * SHADE);
-      v++;
-    };
-    for (let j = 0; j < cells; j++) {
-      for (let i = 0; i < cells; i++) {
-        const x = ix0 + i * step,
-          z = iz0 + j * step;
-        // Keep the exact Rapier diagonal and heights; only shading changes.
-        vertex(x, z);
-        vertex(x, z + step);
-        vertex(x + step, z);
-        vertex(x + step, z);
-        vertex(x, z + step);
-        vertex(x + step, z + step);
+    for (let j = 0; j < row; j++) {
+      for (let i = 0; i < row; i++) {
+        const sx = ix0 + i * step,
+          sz = iz0 + j * step;
+        const ix = Math.max(0, Math.min(t.sizeX, sx));
+        const iz = Math.max(0, Math.min(t.sizeZ, sz));
+        const v = j * row + i;
+        pos[v * 3] = sx - t.halfX;
+        pos[v * 3 + 1] = t.solidSample(ix, iz);
+        pos[v * 3 + 2] = sz - t.halfZ;
+        // The same central-difference normal at every shared vertex, including LOD seams.
+        const dx = t.sample(ix - 1, iz) - t.sample(ix + 1, iz);
+        const dz = t.sample(ix, iz - 1) - t.sample(ix, iz + 1);
+        const length = Math.hypot(dx, 2, dz);
+        nrm[v * 3] = dx / length;
+        nrm[v * 3 + 1] = 2 / length;
+        nrm[v * 3 + 2] = dz / length;
+        shade.set(this.sampleShade(ix, iz), v * SHADE);
       }
     }
     const skirt = 1.5 * step + 1;
-    const edge = (ax: number, az: number, bx: number, bz: number) => {
-      vertex(ax, az);
-      vertex(bx, bz, skirt);
-      vertex(bx, bz);
-      vertex(ax, az);
-      vertex(ax, az, skirt);
-      vertex(bx, bz, skirt);
-      vertex(ax, az);
-      vertex(bx, bz);
-      vertex(bx, bz, skirt);
-      vertex(ax, az);
-      vertex(bx, bz, skirt);
-      vertex(ax, az, skirt);
-    };
-    for (let i = 0; i < cells; i++) {
-      const a = i * step;
-      edge(ix0 + a, iz0, ix0 + a + step, iz0);
-      edge(ix0 + a, iz0 + size, ix0 + a + step, iz0 + size);
-      edge(ix0, iz0 + a, ix0, iz0 + a + step);
-      edge(ix0 + size, iz0 + a, ix0 + size, iz0 + a + step);
+    // The samples along each edge: bottom, top, left, right.
+    const edges = [
+      (k: number) => k,
+      (k: number) => cells * row + k,
+      (k: number) => k * row,
+      (k: number) => k * row + cells,
+    ];
+    edges.forEach((at, e) => {
+      for (let k = 0; k < row; k++) {
+        const src = at(k),
+          dst = grid + e * row + k;
+        pos.copyWithin(dst * 3, src * 3, src * 3 + 3);
+        pos[dst * 3 + 1] -= skirt;
+        nrm.copyWithin(dst * 3, src * 3, src * 3 + 3);
+        shade.copyWithin(dst * SHADE, src * SHADE, src * SHADE + SHADE);
+      }
+    });
+    const index = new (count > 65535 ? Uint32Array : Uint16Array)(cells * cells * 6 + 4 * cells * 12);
+    let n = 0;
+    for (let j = 0; j < cells; j++) {
+      for (let i = 0; i < cells; i++) {
+        const a = j * row + i;
+        // Keep the exact Rapier diagonal and heights; only shading changes.
+        index.set([a, a + row, a + 1, a + 1, a + row, a + row + 1], n);
+        n += 6;
+      }
+    }
+    for (let k = 0; k < cells; k++) {
+      edges.forEach((at, e) => {
+        const a = at(k),
+          b = at(k + 1),
+          da = grid + e * row + k,
+          db = da + 1;
+        // Both windings, so the skirt shows from either side.
+        index.set([a, db, b, a, da, db, a, b, db, a, db, da], n);
+        n += 12;
+      });
     }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
     setShadeAttributes(geo, shade);
+    geo.setIndex(new THREE.BufferAttribute(index, 1));
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
     return geo;

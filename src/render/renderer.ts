@@ -42,6 +42,8 @@ export class GameRenderer {
   private lastFrame = performance.now();
   private firstFrame = true;
   private reflectionMap: THREE.WebGLRenderTarget | null = null;
+  /** The sky the reflections are filtered from, and the filter. */
+  private reflection: { scene: THREE.Scene; sky: Sky; pmrem: THREE.PMREMGenerator } | null = null;
   /** Point the shadow camera follows (the vehicle). */
   readonly focus = new THREE.Vector3();
 
@@ -125,19 +127,22 @@ export class GameRenderer {
   }
 
   private updateReflections(env: EnvironmentConfig): void {
-    // A filtered sky supplies coherent highlights on paint, glass and water.
-    const scene = new THREE.Scene();
-    const sky = new Sky(env);
-    scene.add(sky.mesh);
-    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    // A filtered sky supplies coherent highlights on paint, glass and water. The sky and
+    // the filter are kept between updates: making new ones compiled their shaders again,
+    // a pause in play every time the light changed.
+    if (!this.reflection) {
+      const scene = new THREE.Scene();
+      const sky = new Sky(env);
+      scene.add(sky.mesh);
+      this.reflection = { scene, sky, pmrem: new THREE.PMREMGenerator(this.renderer) };
+    }
+    const { scene, sky, pmrem } = this.reflection;
+    sky.setEnvironment(env);
     const next = pmrem.fromScene(scene, 0.04, 0.1, 200, { size: 128 });
     this.scene.environment = next.texture;
     this.scene.environmentIntensity = 0.45;
     this.reflectionMap?.dispose();
     this.reflectionMap = next;
-    sky.mesh.geometry.dispose();
-    (sky.mesh.material as THREE.Material).dispose();
-    pmrem.dispose();
   }
 
   setEnvironment(env: EnvironmentConfig): void {
