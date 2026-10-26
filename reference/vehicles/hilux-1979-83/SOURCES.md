@@ -19,9 +19,9 @@ From the third-generation infobox on [Toyota Hilux](<https://en.wikipedia.org/wi
 | Width     | 1,690 mm (2WD is 1,610 mm)                                      | 1.67 m (`SIDE` 0.835)                                                                                |
 | Height    | 1,675–1,765 mm                                                  | about 1.77 m (roof y = 1.27, ground 0.495 m below the origin)                                        |
 | Track     | not in that infobox; the game uses 1.43 m front and 1.40 m rear | 1.43 m front, 1.40 m rear                                                                            |
-| Tyres     | the game uses 7.00-16                                           | radius 0.375 m, so 0.75 m across                                                                     |
+| Tyres     | the game uses 7.00-16                                           | radius 0.375 m, so 0.75 m across; wheel openings 0.52 m radius                                       |
 
-**Check these first.** The headlamps are the obvious miss. `src/render/hiluxBody.ts` draws round lamps in square chrome bezels. This generation has rectangular lamps, one wide lamp each side: see `front-34-right.jpg`, `front-34-left.jpg` and `front-34-1983.jpg`. The wheelbase, width and height are close. The skin is about 100–150 mm shorter than the published length. A 7.00-16 tyre is usually nearer 0.80 m across than the model's 0.75 m.
+**Check these first.** The headlamps are round 7-inch lamps in square chrome bezels on the 1979–81 trucks (`front-34-right.jpg`, `front-utility-2wd.jpg`, `side-1980-4wd.jpg`); the rectangular lamps in `front-34-left.jpg` and `front-34-1983.jpg` are the 1982–83 facelift; the game keeps the earlier face. v0.32 matched the front face (lamp bezels, grille between them, corner parking lamps), the bonnet's fall to the nose and the wheel openings to these photographs. The wheelbase, width and height are close. The skin is about 100–150 mm shorter than the published length. A 7.00-16 tyre is usually nearer 0.80 m across than the model's 0.75 m.
 
 ## Gaps
 
