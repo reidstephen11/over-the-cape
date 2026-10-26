@@ -14,6 +14,11 @@ const MARGIN = 70;
 const MIN_SHEET = 0.45;
 /** Closest zoom (the whole map is 1). */
 const MAX_ZOOM = 4;
+/**
+ * A view this much wider than the map (a phone held sideways) shows a window on the
+ * map instead of shrinking the whole sheet to a thin column.
+ */
+const WINDOW_ASPECT = 1.25;
 /** A sheet smaller than this (CSS px, a phone) opens zoomed in on the car. */
 const SMALL_SHEET = 600;
 const PHONE_ZOOM = 2.5;
@@ -21,8 +26,43 @@ const PHONE_ZOOM = 2.5;
 const hints = {
   keyboard: 'Scroll to zoom · drag to move · M or Esc to close',
   gamepad: 'B or View to close',
-  touch: 'Pinch to zoom · drag to move · tap outside to close',
+  touch: 'Pinch to zoom · drag to move · Close, or tap outside',
 };
+
+/**
+ * Canvas size at zoom 1. A square view shows the whole sheet. A short, wide view of a
+ * tall map fills the width and scrolls along the length, so the sheet can use the screen
+ * without stretching the map.
+ */
+export function mapCanvasBase(
+  viewW: number,
+  viewH: number,
+  mapW: number,
+  mapH: number,
+): { baseW: number; baseH: number; windowed: boolean } {
+  if (viewW <= 0 || viewH <= 0 || mapW <= 0 || mapH <= 0)
+    return { baseW: Math.max(0, viewW), baseH: Math.max(0, viewH), windowed: false };
+  const mapAspect = mapW / mapH;
+  if (viewW / viewH > mapAspect * WINDOW_ASPECT)
+    return { baseW: viewW, baseH: viewW / mapAspect, windowed: true };
+  return { baseW: viewW, baseH: viewH, windowed: false };
+}
+
+/** Keep a zoomed map covering the view. Pan is in CSS pixels, origin top-left. */
+export function clampMapPan(
+  panX: number,
+  panY: number,
+  viewW: number,
+  viewH: number,
+  baseW: number,
+  baseH: number,
+  zoom: number,
+): { panX: number; panY: number } {
+  return {
+    panX: Math.min(0, Math.max(viewW - baseW * zoom, panX)),
+    panY: Math.min(0, Math.max(viewH - baseH * zoom, panY)),
+  };
+}
 
 /**
  * Fold-out paper map (SPEC §9) drawn on a canvas from the real heightfield: shaded
@@ -40,6 +80,7 @@ export class PaperMap {
   onClose: (() => void) | null = null;
   private readonly view: HTMLElement;
   private readonly hint: HTMLElement;
+  private hintTimer = 0;
   /** Zoom (1 = the whole map) and the canvas's offset in the view (CSS px). */
   private zoom = 1;
   private panX = 0;
@@ -66,13 +107,12 @@ export class PaperMap {
     this.height = Math.round(Math.max(2 * this.halfZ * this.scale + 2 * MARGIN, MIN_SHEET * SIZE));
     this.el = document.createElement('div');
     this.el.className = 'paper-map hidden';
-    this.el.innerHTML = `<div class="paper-map-sheet"><div class="paper-map-view"><canvas width="${this.width}" height="${this.height}"></canvas></div><div class="paper-map-hint"></div></div>`;
+    this.el.innerHTML = `<div class="paper-map-sheet"><button type="button" class="paper-map-close" aria-label="Close map">Close</button><div class="paper-map-view"><canvas width="${this.width}" height="${this.height}"></canvas></div><div class="paper-map-hint"></div></div>`;
     root.appendChild(this.el);
-    // The sheet takes the map's shape, as big as fits the screen.
+    // The sheet takes the map's shape, as big as fits the screen. A short landscape
+    // phone overrides this in CSS and shows a window onto the map instead.
     const sheet = this.el.querySelector('.paper-map-sheet') as HTMLElement;
-    const aspect = this.width / this.height;
-    sheet.style.aspectRatio = `${this.width} / ${this.height}`;
-    sheet.style.width = `min(92vw, ${(92 * aspect).toFixed(2)}vh, ${Math.round((1000 * this.width) / Math.max(this.width, this.height))}px)`;
+    sheet.style.setProperty('--map-aspect', (this.width / this.height).toFixed(4));
     this.canvas = this.el.querySelector('canvas') as HTMLCanvasElement;
     this.view = this.el.querySelector('.paper-map-view') as HTMLElement;
     this.hint = this.el.querySelector('.paper-map-hint') as HTMLElement;
@@ -97,6 +137,15 @@ export class PaperMap {
     this.el.addEventListener('click', (e) => {
       if (e.target === this.el) this.onClose?.();
     });
+    this.el.querySelector('.paper-map-close')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.onClose?.();
+    });
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => {
+        if (this.isOpen) this.applyView();
+      }).observe(this.view);
+    }
     for (const k of ['campsite', 'viewpoint', 'landmark', 'feature'] as const) {
       const img = new Image();
       img.src = `data:image/svg+xml;utf8,${encodeURIComponent(icons[k].replace(/currentColor/g, '#3B2A1E').replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '))}`;
@@ -468,15 +517,22 @@ export class PaperMap {
     const opening = !this.isOpen;
     this.el.classList.remove('hidden');
     this.isOpen = true;
+    document.body.classList.toggle('map-open', true);
     this.hint.textContent = hints[device];
     if (opening) {
       this.pointers.clear();
+      this.armHint();
       const [w, h] = [this.view.clientWidth, this.view.clientHeight];
+      const base = mapCanvasBase(w, h, this.width, this.height);
       const [mx, my] = this.toMap(player.x, player.z);
       this.zoom = 1;
       this.panX = this.panY = 0;
-      if (w > 0 && Math.max(w, h) < SMALL_SHEET)
-        this.zoomAt(PHONE_ZOOM, w / 2, h / 2, (mx / this.width) * w, (my / this.height) * h);
+      const ux = (mx / this.width) * base.baseW;
+      const uy = (my / this.height) * base.baseH;
+      // A wide short sheet shows the map full width, scrolled to the car. A small
+      // fitted sheet (a phone held upright) opens zoomed in on the car.
+      if (w > 0 && base.windowed) this.zoomAt(1, w / 2, h / 2, ux, uy);
+      else if (w > 0 && Math.max(w, h) < SMALL_SHEET) this.zoomAt(PHONE_ZOOM, w / 2, h / 2, ux, uy);
       else this.applyView();
     }
     if (!this.base) {
@@ -518,6 +574,15 @@ export class PaperMap {
   close(): void {
     this.el.classList.add('hidden');
     this.isOpen = false;
+    document.body.classList.remove('map-open');
+    window.clearTimeout(this.hintTimer);
+  }
+
+  /** The hint stays long enough to read, then gets out of the way of the map. */
+  private armHint(): void {
+    this.hint.classList.remove('faded');
+    window.clearTimeout(this.hintTimer);
+    this.hintTimer = window.setTimeout(() => this.hint.classList.add('faded'), 3200);
   }
 
   /** Current zoom and offset (tests). */
@@ -566,8 +631,13 @@ export class PaperMap {
   /** Keep the map covering the view, then move the canvas. */
   private applyView(): void {
     const [w, h] = [this.view.clientWidth, this.view.clientHeight];
-    this.panX = Math.min(0, Math.max(w - w * this.zoom, this.panX));
-    this.panY = Math.min(0, Math.max(h - h * this.zoom, this.panY));
+    const base = mapCanvasBase(w, h, this.width, this.height);
+    if (w <= 0 || h <= 0) return;
+    this.canvas.style.width = `${base.baseW}px`;
+    this.canvas.style.height = `${base.baseH}px`;
+    const clamped = clampMapPan(this.panX, this.panY, w, h, base.baseW, base.baseH, this.zoom);
+    this.panX = clamped.panX;
+    this.panY = clamped.panY;
     this.canvas.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
     this.view.classList.toggle('zoomed', this.zoom > 1);
   }
