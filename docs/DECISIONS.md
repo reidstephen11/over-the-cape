@@ -1110,3 +1110,9 @@ Map-placed patches of rock, gravel, dirt, mud and sand still use the old per-sam
 **What went wrong.** v0.37's deploy stopped on one unit test: taken fast on the CREB's range-top sideling, the Land Rover 110 had to lean at least 3° more than when crawling. With the edge of the track now mud, it slides towards the drop instead of digging in, so it leans 28.5° against 26.7° crawling (34.6° before the mud).
 
 **Decision.** The test still asks that going fast leans the car further and slides it more than 2 m towards the drop, but the extra lean it asks for is now 1°. Sliding instead of tipping is what mud should do, so the game is unchanged.
+
+## v0.39: deploy without waiting for the tests
+
+**What the owner asked.** To get each update live faster.
+
+**Decision.** The deploy job now waits only for the build, which takes about a minute, and no longer for the lint and unit tests, which take about ten. The tests still run on every pull request and on `main` and show red on GitHub when they fail; a failure is fixed in a follow-up update. The cost is that a version failing a test still goes live, as v0.37 would have done.

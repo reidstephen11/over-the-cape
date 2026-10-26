@@ -5,6 +5,9 @@ name: Build and deploy to GitHub Pages
 # and configure-pages fails the job when the Pages site does not exist yet.
 # That 404 is what failed the 16–17 Oct 2026 runs after the build had succeeded,
 # so the Pages steps stay on the deploy path and do not fail the code checks.
+# The deploy waits only for the build (about a minute), not for the unit tests
+# (about ten): the owner wants each update live at once, and a failing test is
+# fixed in a follow-up update (v0.39).
 on:
   push:
     branches: [main]
@@ -16,11 +19,11 @@ permissions:
   pages: write
   id-token: write
 
-# One run per ref. Leave an in-progress production deploy to finish;
-# cancel an outdated pull-request run.
+# Cancel an outdated pull-request run. Runs on main don't queue behind each
+# other's tests: only their deploys take turns (below), and each one finishes.
 concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.ref) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: true
 
 jobs:
   checks:
@@ -58,7 +61,10 @@ jobs:
 
   deploy:
     name: Deploy
-    needs: [checks, build]
+    needs: [build]
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
