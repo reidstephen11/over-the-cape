@@ -305,6 +305,11 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
   opacity: 0;
 }
 
+/* Groups the readout cards without a box of its own, except on a short sideways phone. */
+.hud-readout {
+  display: contents;
+}
+
 .hud svg {
   width: 100%;
   height: 100%;
@@ -839,21 +844,28 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(30, 22, 14, 0.55);
+  background: rgba(30, 22, 14, 0.72);
   perspective: 1400px;
-  z-index: 30;
+  z-index: 32;
+}
+
+/* The compass and panels sit under this dim; hide them so they can't show through it. */
+body.map-open .hud {
+  visibility: hidden;
 }
 
 .paper-map-sheet {
   position: relative;
-  width: min(92vmin, 1000px);
-  aspect-ratio: 1;
+  /* Longer side at most 1000px; the short side follows the map (--map-aspect is width / height). */
+  width: min(92vw, calc(92vh * var(--map-aspect, 1)), calc(1000px * min(var(--map-aspect, 1), 1)));
+  aspect-ratio: var(--map-aspect, 1);
   transform-origin: center top;
   animation: map-unfold 0.45s cubic-bezier(0.2, 0.8, 0.3, 1);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
 
 .paper-map-view {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -867,17 +879,40 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
 }
 
 .paper-map canvas {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
   transform-origin: 0 0;
 }
 
-/* Inside the sheet's bottom edge, so a short screen can't cut it off. */
+.paper-map-close {
+  display: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 10px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: rgba(243, 235, 218, 0.94);
+  color: var(--ink);
+  font: 800 13px var(--font);
+  cursor: pointer;
+}
+
+.touch-mode .paper-map-close {
+  display: block;
+}
+
+/* Inside the sheet's bottom edge, so a short screen can't cut it off. Fades once read. */
 .paper-map-hint {
   position: absolute;
   right: 8px;
   bottom: 8px;
+  z-index: 2;
   padding: 2px 8px;
   border-radius: 5px;
   background: rgba(243, 235, 218, 0.88);
@@ -885,6 +920,11 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
   font-weight: 700;
   font-size: 12px;
   pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.paper-map-hint.faded {
+  opacity: 0;
 }
 
 @keyframes map-unfold {
@@ -2054,6 +2094,191 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   .touch-mode .mission strong,
   .touch-mode .mission:has(.mission-clock:empty) {
     display: none;
+  }
+}
+
+/*
+ * A phone held sideways is short. The map fills it (the tall sheet would otherwise be a
+ * thin column). The readout is one card under the top buttons, the view controls shrink
+ * to icons, and a prompt sits above the pedals instead of over the car. GAS, BRAKE and
+ * the joystick stay full size. Upright and desktop keep the rules above.
+ */
+@media (orientation: landscape) and (max-height: 540px) {
+  .touch-mode .paper-map-sheet {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(20px, env(safe-area-inset-left));
+    width: auto;
+    height: auto;
+    aspect-ratio: auto;
+  }
+
+  .touch-mode .paper-map-view {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  .touch-mode .paper-map-close {
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .touch-mode .paper-map-hint {
+    top: 8px;
+    right: 78px;
+    bottom: auto;
+    left: 8px;
+    font-size: 11px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .touch-mode .touch-top {
+    gap: 4px;
+  }
+
+  .touch-mode .touch-top .touch-btn {
+    height: 34px;
+    min-width: 36px;
+    padding: 0 7px;
+    font-size: 12px;
+  }
+
+  .touch-mode .camera-help {
+    gap: 4px;
+    padding: 2px;
+  }
+
+  .touch-mode .camera-help .camera-preset-name,
+  .touch-mode .camera-help .camera-reset-label,
+  .touch-mode .camera-help kbd {
+    display: none;
+  }
+
+  .touch-mode .camera-help .camera-reset-icon {
+    display: inline;
+  }
+
+  .touch-mode .camera-help button {
+    min-width: 36px;
+    height: 32px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .touch-mode .hud-readout {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: calc(max(8px, env(safe-area-inset-top)) + 40px);
+    left: max(8px, env(safe-area-inset-left));
+    width: max-content;
+    max-width: min(220px, calc(50vw - 150px));
+    gap: 1px;
+    padding: 3px 8px 4px;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 8px 10px 7px 9px;
+    box-shadow: 2px 3px 0 rgba(59, 42, 30, 0.25);
+    opacity: 0.94;
+    overflow: hidden;
+  }
+
+  .touch-mode .hud-readout > .paper {
+    position: static;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    min-width: 0;
+    max-width: 100%;
+    width: auto;
+    transform: none;
+    background: none;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    opacity: 1;
+  }
+
+  .touch-mode .hud-readout .status {
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  .touch-mode .hud-readout .status-range {
+    width: 22px;
+    height: 22px;
+    font-size: 16px;
+  }
+
+  .touch-mode .hud-readout .status-speed {
+    gap: 4px;
+    font-size: 15px;
+  }
+
+  .touch-mode .hud-readout .status-gear {
+    font-size: 13px;
+  }
+
+  .touch-mode .hud-readout .status-label {
+    display: none;
+  }
+
+  .touch-mode .hud-readout .supplies {
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .touch-mode .hud-readout .mission-clock {
+    display: block;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .touch-mode .hud-readout .course-hint {
+    font-size: 11px;
+    gap: 0;
+  }
+
+  .touch-mode .hud-readout .course-hint span,
+  .touch-mode .hud-readout .course-hint small {
+    display: none;
+  }
+
+  .touch-mode .prompts {
+    left: auto;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + var(--touch-right-height, 220px) + 6px);
+    transform: none;
+    align-items: flex-end;
+    max-width: min(190px, 34vw);
+    gap: 4px;
+  }
+
+  .touch-mode .prompt {
+    padding: 2px 8px 3px;
+    font-size: 12px;
+    white-space: normal;
+    text-align: right;
+  }
+
+  .touch-mode .prompt-echo .key {
+    display: none;
+  }
+
+  .touch-mode .touch-right {
+    gap: 6px;
   }
 }
 

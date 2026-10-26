@@ -186,22 +186,22 @@ Placing planks: choose **Place planks** in the tool menu, move them with W/S, tu
 
 ### Phones and tablets
 
-On a touch screen the game shows on-screen controls, held sideways or upright. The fuel and supplies and the mission panel sit under the status strip at the top left; held sideways the mission panel shows only the clock and deadline. On reaching a place, its history note stops the game and shows in the middle of the screen; tap it to carry on. LOW, CRAWL and the diff locks sit behind the 4WD button, which opens them in a row above it; while it's closed, its letters L, C, F and R light up for each one that's on. Held upright, the view widens so the car and the windscreen don't fill the screen, prompts such as "USE Attach winch" sit just above the buttons on the right, and the crawl gauges sit top right under the fuel. Warnings (the current taking the car, a flooded engine) are short lines under the compass — a row in the middle when the phone is sideways, stacked on the right when it is upright — so they leave the road and the controls clear. A less urgent one shrinks to a few words after a few seconds; tap it to read it again. The same words still show in full at the bottom on a computer.
+On a touch screen the game shows on-screen controls, held sideways or upright. Held upright, the fuel, supplies and mission panel sit under the status strip at the top left, and the view widens so the car and the windscreen don't fill the screen. Held sideways, those cards fold into one short strip under the II / MAP / LIGHTS buttons (speed, gear, planks, fuel and the clock), and the view buttons shrink to "View" and a reset icon, so the track stays in the middle. Prompts such as "Attach winch" sit just above the buttons on the right — held sideways the prompt drops the USE badge, because that button is already labelled USE. The map (MAP) fills a sideways phone; pinch to zoom, drag to move, and close it with Close or by tapping the margin. On a tall screen it stays a sheet the shape of the route. LOW, CRAWL and the diff locks sit behind the 4WD button, which opens them in a row above it; while it's closed, its letters L, C, F and R light up for each one that's on. The crawl gauges sit top right under the fuel when the phone is upright, and along the bottom when it is sideways. On reaching a place, its history note stops the game and shows in the middle of the screen; tap it to carry on. Warnings (the current taking the car, a flooded engine) are short lines under the compass — a row in the middle when the phone is sideways, stacked on the right when it is upright — so they leave the road and the controls clear. A less urgent one shrinks to a few words after a few seconds; tap it to read it again. The same words still show in full at the bottom on a computer.
 
-| Action                                | Touch                                                          |
-| ------------------------------------- | -------------------------------------------------------------- |
-| Steer                                 | Joystick, bottom left (push part way for part lock)            |
-| Accelerate / brake and reverse        | GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse) |
-| Handbrake on / off                    | HAND                                                           |
-| High / low range                      | 4WD, then LOW                                                  |
-| Precision crawl, diff locks           | 4WD, then CRAWL, F LOCK, R LOCK (tap 4WD again to tuck away)   |
-| Winch attach / detach, pick up planks | USE                                                            |
-| Winch in / out                        | Hold IN / OUT (shown while the winch is attached)              |
-| Right vehicle                         | Hold UPRIGHT (shown when needed)                               |
-| Tool menu                             | TOOLS, then tap an option (tap the space around it to close)   |
-| Orbit camera / camera distance        | Drag a finger on the view / pinch with two fingers             |
-| Cycle views / recenter camera         | View and Reset view, top right                                 |
-| Map / pause / full screen / lights    | MAP, II, ⛶ and LIGHTS, top left                                |
+| Action                                | Touch                                                             |
+| ------------------------------------- | ----------------------------------------------------------------- |
+| Steer                                 | Joystick, bottom left (push part way for part lock)               |
+| Accelerate / brake and reverse        | GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse)    |
+| Handbrake on / off                    | HAND                                                              |
+| High / low range                      | 4WD, then LOW                                                     |
+| Precision crawl, diff locks           | 4WD, then CRAWL, F LOCK, R LOCK (tap 4WD again to tuck away)      |
+| Winch attach / detach, pick up planks | USE                                                               |
+| Winch in / out                        | Hold IN / OUT (shown while the winch is attached)                 |
+| Right vehicle                         | Hold UPRIGHT (shown when needed)                                  |
+| Tool menu                             | TOOLS, then tap an option (tap the space around it to close)      |
+| Orbit camera / camera distance        | Drag a finger on the view / pinch with two fingers                |
+| Cycle views / recenter camera         | View and Reset view, top right (icons when the phone is sideways) |
+| Map / pause / full screen / lights    | MAP, II, ⛶ and LIGHTS, top left                                   |
 
 ## Driving tips
 
@@ -247,6 +247,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 ## What to test
 
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
+- [ ] **v0.43:** the loading screen and pause menu show v0.43. On a phone held sideways, the map should fill the screen (a margin remains to tap it shut, and there is a Close button). Pinch still zooms and a drag still moves it, and the hint along the top fades instead of covering the map. The compass and the panels should disappear while it is open. Upright, the map is still a tall sheet. While driving sideways, speed, fuel and the clock share one small card under the MAP button, not a stack of cards over the joystick, and "Attach winch" sits by the USE button rather than over the car. GAS, BRAKE and the joystick stay large. Upright and on a computer, the panels stay as they were.
 - [ ] **v0.42:** the loading screen and pause menu show v0.42. On a phone, sideways and upright, get the current taking the car and the engine flooded at the same time (stop in the deep, fast water). The two warnings should be short lines under the compass, not banners across the middle, and they should leave the road, the joystick, the pedals, the compass and the pitch gauge clear. A computer still shows the full sentences at the bottom.
 - [ ] **v0.41 smoother play:** the loading screen and pause menu show v0.41. The map should load a few seconds sooner. Drive the CREB at road speed on your laptop: are the short freezes as you drive into new ground gone, or much rarer? Does it feel smoother overall, especially looking along the map through the trees? Nothing should look different: trees, road edges, potholes and the light at dusk as before. If a tree pops in or out at the edge of the screen, note where.
 - [ ] **v0.40:** the loading screen and pause menu show v0.40. Starting the CREB at Daintree Village, does the car sit in the middle of the road, facing along it, and pull away cleanly without the wheels in the mud edge?

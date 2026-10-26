@@ -4,6 +4,29 @@ import { CrawlGauges, formatSpeed, type GaugeMode, type GaugeState, type SpeedUn
 import type { HeadlightMode } from '../data/headlights';
 import { railItems, touchNotice, warningView, type RailItem } from './alerts';
 
+/** Labels already printed on the on-screen buttons. A prompt with only these keys repeats them. */
+const TOUCH_BUTTON_KEYS = new Set([
+  'USE',
+  'GAS',
+  'BRAKE',
+  'HAND',
+  'TOOLS',
+  'LOW',
+  'MAP',
+  'II',
+  'LIGHTS',
+  'IN',
+  'OUT',
+  'UPRIGHT',
+  'BACK',
+]);
+
+/** True when every key in a touch prompt is already a button, so the badge can be dropped. */
+export function echoesTouchButton(keys: string): boolean {
+  const parts = keys.split(' / ');
+  return parts.length > 0 && parts.every((part) => TOUCH_BUTTON_KEYS.has(part));
+}
+
 export interface Prompt {
   /** Key or button glyphs, e.g. "E" or "Hold J". */
   keys: string;
@@ -141,6 +164,7 @@ export class Hud {
     this.el.className = 'hud';
     this.el.innerHTML = `
       <div class="compass paper"><canvas width="840" height="76"></canvas></div>
+      <div class="hud-readout">
       <div class="status paper">
         <div class="status-range" title="Transfer range">H</div>
         <div class="status-speed" title="Speed and gear"><span class="status-speed-value">0.0 km/h</span><span class="status-gear">1</span></div>
@@ -160,6 +184,7 @@ export class Hud {
       </div>
       <div class="mission paper hidden"><small></small><strong></strong><span class="mission-clock"></span></div>
       <div class="course-hint paper hidden"><strong></strong><span></span><small></small></div>
+      </div>
       <div class="prompts"></div>
       <div class="alert-rail" aria-live="polite"><div class="alerts"></div></div>
       <div class="camera-help paper">
@@ -325,6 +350,7 @@ export class Hud {
       for (const p of prompts) {
         const el = document.createElement('div');
         el.className = 'prompt paper';
+        if (touch && echoesTouchButton(p.keys)) el.classList.add('prompt-echo');
         const k = document.createElement('span');
         k.className = 'key';
         k.textContent = p.keys;
