@@ -4,7 +4,7 @@ import type { VehicleId, VehicleTuning } from '../data/vehicle';
 import { buildVehicleBody } from './vehicleBody';
 import { buildVehicleWheel } from './vehicleWheel';
 import { buildRackPlank } from './vehicleEquipment';
-import { buildPatrolBody, buildPatrolPlank, buildPatrolWheel } from './patrolBody';
+import { WIDEN as PATROL_WIDEN, buildPatrolBody, buildPatrolPlank, buildPatrolWheel } from './patrolBody';
 import { buildPerentieBody, buildPerentiePlank, buildPerentieWheel } from './perentieBody';
 import { addCamelTrophyKit, camelLivery, camelRim } from './camelLivery';
 import { buildHiluxBody, buildHiluxPlank, buildHiluxWheel } from './hiluxBody';
@@ -122,13 +122,13 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'coil',
     lamps: {
       head: [
-        { x: -0.645, y: 0.48, z: -2.3 },
-        { x: 0.645, y: 0.48, z: -2.3 },
+        { x: -0.645 * PATROL_WIDEN, y: 0.48, z: -2.3 },
+        { x: 0.645 * PATROL_WIDEN, y: 0.48, z: -2.3 },
       ],
       // The two driving lamps under the bull bar's top rail come on with high beam.
       roof: [
-        { x: -0.19, y: 0.645, z: -2.417 },
-        { x: 0.19, y: 0.645, z: -2.417 },
+        { x: -0.19 * PATROL_WIDEN, y: 0.645, z: -2.417 },
+        { x: 0.19 * PATROL_WIDEN, y: 0.645, z: -2.417 },
       ],
     },
   },
