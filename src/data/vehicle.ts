@@ -72,10 +72,15 @@ export interface VehicleTuning {
     /** Drag at the wheels from a stalled engine (N) per unit of total gear ratio, halved. */
     engineBrake: number;
     /**
-     * Fuel: tank size (L), the share of the fuel's energy that becomes combustion torque,
-     * and the fuel's energy (MJ/L). Burn = combustion power ÷ (efficiency × energy).
+     * Real tank capacity and unscaled fuel use. Idle is L/h; efficiency converts useful
+     * engine work to fuel energy. Episode pacing belongs in EpisodeDef.fuelScale.
      */
-    fuel: { tankLitres: number; efficiency: number; energyMJPerLitre: number };
+    fuel: {
+      tankLitres: number;
+      idleLitresPerHour: number;
+      efficiency: number;
+      energyMJPerLitre: number;
+    };
   };
   /**
    * Torque converter between engine and gearbox. Pump torque = (rpm / capacity)² minus
@@ -226,8 +231,8 @@ export const vehicleTuning: VehicleTuning = {
     friction: { base: 15, perRpm: 0.01, pumpingPerRpm: 0.016 },
     inertia: 0.3,
     engineBrake: 120,
-    // Petrol six: a 70 L tank.
-    fuel: { tankLitres: 70, efficiency: 0.3, energyMJPerLitre: 34.2 },
+    // 1976 FJ40 owner's manual: 62 L (also the Camel variant). Sources: docs/FUEL.md.
+    fuel: { tankLitres: 62, idleLitresPerHour: 1.4, efficiency: 0.24, energyMJPerLitre: 34.2 },
   },
   // Stalls (full throttle, wheels held) at about 2000 rpm.
   converter: { capacity: 120, stallRatio: 1.15, couplingPoint: 0.8 },

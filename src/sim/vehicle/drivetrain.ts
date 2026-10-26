@@ -179,10 +179,16 @@ export function updateDrivetrain(
     out += tc.turbine / steps;
   }
   s.slip = s.rpm > 1 ? Math.max(0, turbine) / s.rpm : 0;
-  // Combustion power over what the fuel's energy turns into it.
+  // Separate the engine's idle allowance from work. The clutch/converter and engine
+  // friction are tuned for driving feel, not a real engine's internal losses: charging
+  // fuel for them directly made small engines idle on 3–5 L/h. Subtract friction and
+  // the coupling's idle loss, then charge for positive engine work above that. A hard
+  // pull or wheelspin still costs fuel even when the car isn't moving.
   const F = E.fuel;
-  s.fuelRate =
-    (Math.max(0, combustion) * s.rpm * ((2 * Math.PI) / 60)) / (F.efficiency * F.energyMJPerLitre * 1e6);
+  const omega = (s.rpm * 2 * Math.PI) / 60;
+  const idleLoss = converterTorque(t, E.idleRpm, 0).pump * ((E.idleRpm * 2 * Math.PI) / 60);
+  const work = Math.max(0, (combustion - frictionTorque(t, s.rpm, throttle)) * omega - idleLoss);
+  s.fuelRate = F.idleLitresPerHour / 3600 + work / (F.efficiency * F.energyMJPerLitre * 1e6);
   let force = (out * ratio * g.efficiency) / t.wheelRadius;
   if (s.shiftTimer > 0) force *= 0.5;
   // Load: combustion beyond what just keeps the engine turning, against what it could give.

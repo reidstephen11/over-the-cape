@@ -93,8 +93,8 @@ export const hiluxTuning: VehicleTuning = {
     friction: { base: 8, perRpm: 0.005, pumpingPerRpm: 0.008 },
     inertia: 0.18,
     engineBrake: 100,
-    // Petrol four: a 65 L tank.
-    fuel: { tankLitres: 65, efficiency: 0.3, energyMJPerLitre: 34.2 },
+    // Toyota's 1979 RN46 brochure: 61 L. Sources: docs/FUEL.md.
+    fuel: { tankLitres: 61, idleLitresPerHour: 0.8, efficiency: 0.3, energyMJPerLitre: 34.2 },
   },
   // The game changes gear itself; this coupling stands in for the clutch.
   converter: { capacity: 150, stallRatio: 1.2, couplingPoint: 0.8 },

@@ -6,7 +6,7 @@ import type { VehicleTuning } from './vehicle';
  * rear leaf springs swapped for coils, 37×12.5R17 mud-terrain tyres on spacers, 4.3 axle
  * gears to turn them, a steel bar with a winch, a snorkel, an alloy tray with a canopy,
  * one spare on the canopy's rear door and a second on its roof rack. 3.18 m wheelbase, 1.6 m track over the
- * spacers, the five-speed manual with a 2.488 low range, and the 130 L long-range tank.
+ * spacers, the five-speed manual with a 2.488 low range, and the factory 130 L tank.
  * Same local frame as the other vehicles: x right, y up, z back, origin 0.12 m above the
  * parked hubs, so the ground is about 0.59 m below it.
  */
@@ -95,8 +95,8 @@ export const lc79Tuning: VehicleTuning = {
     friction: { base: 30, perRpm: 0.018, pumpingPerRpm: 0.008 },
     inertia: 0.7,
     engineBrake: 190,
-    // The 130 L long-range tank.
-    fuel: { tankLitres: 130, efficiency: 0.4, energyMJPerLitre: 38.6 },
+    // Toyota's VDJ79 single cab has 130 L as standard. Sources: docs/FUEL.md.
+    fuel: { tankLitres: 130, idleLitresPerHour: 1.2, efficiency: 0.4, energyMJPerLitre: 38.6 },
   },
   // The game changes gear itself; this coupling stands in for the clutch.
   converter: { capacity: 82, stallRatio: 1.15, couplingPoint: 0.8 },
