@@ -659,7 +659,7 @@ export const crebMap: MapDef = {
       x: -60,
       z: 2640,
       radius: 30,
-      reset: { x: -62, z: 2622, headingDeg: 340 },
+      reset: { x: -63.7, z: 2623, headingDeg: 330 },
       note: 'Where timber cutters once floated red cedar down the river',
     },
     {

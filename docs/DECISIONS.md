@@ -1104,3 +1104,21 @@ Map-placed patches of rock, gravel, dirt, mud and sand still use the old per-sam
 **What changed.** A map can now set `muddyEdges` (`src/sim/world/mapTypes.ts`). The CREB (just after the wet) and Lakefield (the first storm of the wet) set it; the Old Coach Road, in the dry season, doesn't. On those maps the band along the edges of dirt, clay and gravel tracks, from `MUD_EDGE` (0.4 m) inside the edge to 0.6 m outside it, is now the Mud surface (grip 0.45, heavy drag, wheels sink up to 0.15 m) and the mud tint, and so are the clay banks. The ground shader draws the band and the banks in the mud colour, with the wet sheen mud has. The middle of the road drives as before. Concrete tracks no longer draw a darker band, since their edges are not mud.
 
 **Not yet checked.** The owner asked to merge before the tests finish and fix anything they find afterwards. The scripted drives in the unit tests keep to the wheel lines, about 1 m inside the edges on most tracks, but a narrow track or a tight corner could put a wheel in the mud.
+
+## v0.38: sideling test after the muddy edges
+
+**What went wrong.** v0.37's deploy stopped on one unit test: taken fast on the CREB's range-top sideling, the Land Rover 110 had to lean at least 3° more than when crawling. With the edge of the track now mud, it slides towards the drop instead of digging in, so it leans 28.5° against 26.7° crawling (34.6° before the mud).
+
+**Decision.** The test still asks that going fast leans the car further and slides it more than 2 m towards the drop, but the extra lean it asks for is now 1°. Sliding instead of tipping is what mud should do, so the game is unchanged.
+
+## v0.39: deploy without waiting for the tests
+
+**What the owner asked.** To get each update live faster.
+
+**Decision.** The deploy job now waits only for the build, which takes about a minute, and no longer for the lint and unit tests, which take about ten. The tests still run on every pull request and on `main` and show red on GitHub when they fail; a failure is fixed in a follow-up update. The cost is that a version failing a test still goes live, as v0.37 would have done.
+
+## v0.40: CREB start on the middle of the road
+
+**What went wrong.** The browser tests on v0.37 found the car pulling away from Daintree Village too slowly on the phone controls and in the Hilux. The start spot sat 2 m off the centre of the Upper Daintree Road, so with the edges now mud (v0.37) the left wheels started in it.
+
+**Decision.** The village's start spot moves onto the middle of the road at (-63.7, 2623), facing along it (330°). The camp itself is unchanged.
