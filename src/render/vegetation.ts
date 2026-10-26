@@ -15,6 +15,8 @@ const SPECIES: TreeSpecies[] = ['ash', 'candlebark', 'snowgum', 'dead', 'rainfor
 /** Nominal model heights; instances scale to their own height. */
 /** Tree LOD value for "not drawn". */
 const HIDDEN = 3;
+/** Size (m) of the map tiles the trees are batched in. */
+const TREE_TILE = 384;
 
 const NOMINAL: Record<TreeSpecies, number> = {
   ash: 28,
@@ -439,10 +441,16 @@ export function coverCapacity(q: QualityPreset): number {
 export class Vegetation {
   readonly group = new THREE.Group();
   readonly material: THREE.MeshLambertMaterial;
-  private readonly trees: THREE.BatchedMesh;
+  /** The tree tiles' batches. */
+  private readonly trees = new THREE.Group();
+  private readonly treeTiles: THREE.BatchedMesh[] = [];
+  /** Trees drawn in each tile: a tile with none is hidden. */
+  private readonly treeShown: number[] = [];
   private readonly meadow: Meadow;
   private readonly treeGeo: number[][] = [];
-  private readonly treeIds: number[] = [];
+  /** Each tree's tile and its instance id in that tile's batch. */
+  private readonly treeTile: Uint16Array;
+  private readonly treeIds: number[];
   private readonly treeLod: Uint8Array;
   private readonly cover: THREE.BatchedMesh;
   private readonly coverGeo: number[] = [];
@@ -467,31 +475,60 @@ export class Vegetation {
     this.group.add(this.meadow.mesh);
 
     // --- Trees ---
+    // One batch per map tile, so three.js skips a whole tile out of view (or out of the
+    // shadow area) instead of testing each of the map's trees, twice a frame.
     const foliage = createFoliageMaterials();
     const geos: THREE.BufferGeometry[][] = SPECIES.map((s) =>
       [0, 1].flatMap((v) => [buildTree(s, v, 0), buildTree(s, v, 1), buildTree(s, v, 2)]),
     );
     const all = geos.flat();
     const list = world.scatter.trees;
-    this.trees = new THREE.BatchedMesh(list.length, geometrySize(all), 0, foliage.material);
-    this.trees.customDepthMaterial = foliage.depth;
-    this.trees.castShadow = true;
-    this.trees.receiveShadow = true;
-    this.trees.sortObjects = false;
-    for (const g of geos) this.treeGeo.push(g.map((geo) => this.trees.addGeometry(geo)));
+    this.trees.name = 'trees';
+    const tileOf = new Map<string, number>();
+    const members: number[][] = [];
+    this.treeTile = new Uint16Array(list.length);
+    list.forEach((t, i) => {
+      const key = `${Math.floor(t.x / TREE_TILE)},${Math.floor(t.z / TREE_TILE)}`;
+      let tile = tileOf.get(key);
+      if (tile === undefined) {
+        tile = members.length;
+        tileOf.set(key, tile);
+        members.push([]);
+      }
+      members[tile].push(i);
+      this.treeTile[i] = tile;
+    });
     this.treeLod = new Uint8Array(list.length).fill(1);
-    for (const t of list) {
-      const si = SPECIES.indexOf(t.species);
-      const variant = t.seed < 0.5 ? 0 : 1;
-      const id = this.trees.addInstance(this.treeGeo[si][variant * 3 + 1]);
-      const s = t.height / NOMINAL[t.species];
-      this.tmpE.set(t.leanX, t.yaw, t.leanZ);
-      this.tmpQ.setFromEuler(this.tmpE);
-      this.tmpM.compose(this.tmpV.set(t.x, t.y, t.z), this.tmpQ, this.tmpS.set(s, s, s));
-      this.trees.setMatrixAt(id, this.tmpM);
-      const tint = 0.9 + t.seed * 0.2;
-      this.trees.setColorAt(id, this.tmpC.setRGB(tint, tint, tint * (0.97 + t.seed * 0.06)));
-      this.treeIds.push(id);
+    this.treeIds = new Array<number>(list.length);
+    for (const tileTrees of members) {
+      const batch = new THREE.BatchedMesh(tileTrees.length, geometrySize(all), 0, foliage.material);
+      batch.customDepthMaterial = foliage.depth;
+      batch.castShadow = true;
+      batch.receiveShadow = true;
+      batch.sortObjects = false;
+      // Every tile adds the same geometries in the same order, so the ids match.
+      const ids = geos.map((g) => g.map((geo) => batch.addGeometry(geo)));
+      if (this.treeGeo.length === 0) this.treeGeo.push(...ids);
+      for (const i of tileTrees) {
+        const t = list[i];
+        const si = SPECIES.indexOf(t.species);
+        const variant = t.seed < 0.5 ? 0 : 1;
+        const id = batch.addInstance(this.treeGeo[si][variant * 3 + 1]);
+        const s = t.height / NOMINAL[t.species];
+        this.tmpE.set(t.leanX, t.yaw, t.leanZ);
+        this.tmpQ.setFromEuler(this.tmpE);
+        this.tmpM.compose(this.tmpV.set(t.x, t.y, t.z), this.tmpQ, this.tmpS.set(s, s, s));
+        batch.setMatrixAt(id, this.tmpM);
+        const tint = 0.9 + t.seed * 0.2;
+        batch.setColorAt(id, this.tmpC.setRGB(tint, tint, tint * (0.97 + t.seed * 0.06)));
+        this.treeIds[i] = id;
+      }
+      // The sphere is taken from the middle detail; the others are near enough its size.
+      batch.computeBoundingSphere();
+      batch.boundingSphere!.radius += 5;
+      this.treeTiles.push(batch);
+      this.treeShown.push(tileTrees.length);
+      this.trees.add(batch);
     }
     this.group.add(this.trees);
 
@@ -583,15 +620,23 @@ export class Vegetation {
       const lod = d2 < near2 ? 0 : d2 < mid2 ? 1 : d2 < far2 ? 2 : HIDDEN;
       if (lod === this.treeLod[i]) continue;
       const id = this.treeIds[i];
-      if (lod === HIDDEN) this.trees.setVisibleAt(id, false);
-      else {
-        if (this.treeLod[i] === HIDDEN) this.trees.setVisibleAt(id, true);
+      const tile = this.treeTile[i];
+      const batch = this.treeTiles[tile];
+      if (lod === HIDDEN) {
+        batch.setVisibleAt(id, false);
+        this.treeShown[tile]--;
+      } else {
+        if (this.treeLod[i] === HIDDEN) {
+          batch.setVisibleAt(id, true);
+          this.treeShown[tile]++;
+        }
         const si = SPECIES.indexOf(t.species);
         const variant = t.seed < 0.5 ? 0 : 1;
-        this.trees.setGeometryIdAt(id, this.treeGeo[si][variant * 3 + lod]);
+        batch.setGeometryIdAt(id, this.treeGeo[si][variant * 3 + lod]);
       }
       this.treeLod[i] = lod;
     }
+    for (let k = 0; k < this.treeTiles.length; k++) this.treeTiles[k].visible = this.treeShown[k] > 0;
     this.updateCover(eye);
   }
 
