@@ -2,6 +2,7 @@ import { camelTuning } from './camel';
 import { hiluxTuning } from './hilux';
 import { LC79_CAB_LIFT, lc79Tuning } from './lc79';
 import { patrolTuning } from './patrol';
+import { sooty80Cabin, sooty80Tuning } from './sooty80';
 import { perentieTuning } from './perentie';
 import { TROOPY_START_FUEL, troopyTuning } from './troopy';
 import { unimogTuning } from './unimog';
@@ -142,6 +143,13 @@ function raised(c: CabinLayout, dy: number): CabinLayout {
 }
 
 export const vehicles: Record<VehicleId, VehicleDef> = {
+  sooty80: {
+    tuning: sooty80Tuning,
+    blurb:
+      'Sooty MkII-inspired modified 80 Series, 4.2 L turbo diesel six, 3 inch lift, 35 inch tyres and touring gear.',
+    cabin: sooty80Cabin,
+    cameraScale: 1.15,
+  },
   shortie: {
     tuning: vehicleTuning,
     blurb: '1970s-style short-wheelbase 4WD, 4.2 L petrol six, three-speed automatic.',
@@ -321,6 +329,7 @@ export const vehicleOrder: readonly VehicleId[] = [
   'troopy',
   'patrol',
   'lc79',
+  'sooty80',
 ];
 
 export function isVehicleId(x: unknown): x is VehicleId {

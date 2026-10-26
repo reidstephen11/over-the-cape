@@ -34,6 +34,7 @@ describe('vehicle fuel', () => {
     ['troopy', 11, 19],
     ['patrol', 10, 18],
     ['lc79', 13, 24],
+    ['sooty80', 12, 24],
   ] as const;
   it.each(cases)(
     '%s uses plausible idle and light-road fuel before episode scaling',

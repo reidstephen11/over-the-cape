@@ -159,7 +159,7 @@ export class VehicleModel {
       this.root.add(pivot);
       this.wheels.push({ pivot, spin, mesh });
     }
-    this.suspension = new VehicleSuspension(tuning, materials, look.springs);
+    this.suspension = new VehicleSuspension(tuning, materials, look.springs, look.suspension);
     this.suspension.update([0, 0, 0, 0]);
     this.root.add(this.suspension.group);
   }

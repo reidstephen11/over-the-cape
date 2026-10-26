@@ -11,6 +11,9 @@ import { buildHiluxBody, buildHiluxPlank, buildHiluxWheel } from './hiluxBody';
 import { buildUnimogBody, buildUnimogPlank, buildUnimogWheel } from './unimogBody';
 import { buildTroopyBody, buildTroopyPlank, buildTroopyWheel } from './troopyBody';
 import { LC79_DRIVING_LAMPS, buildLc79Body, buildLc79Plank, buildLc79Wheel } from './lc79Body';
+import { buildVehicleBody as buildSooty80Body, buildRackPlank as buildSooty80Plank } from './sooty80Body';
+import { buildVehicleWheel as buildSooty80Wheel } from './sooty80Wheel';
+import type { SuspensionLayout } from './vehicleSuspension';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
 export interface VehicleLook {
@@ -20,6 +23,7 @@ export interface VehicleLook {
   plank(index: number): THREE.BufferGeometry;
   paint: { roughness: number; metalness: number; clearcoat: number; clearcoatRoughness: number };
   springs: 'leaf' | 'coil';
+  suspension?: SuspensionLayout;
   /** Lens centres: the headlamps, and any driving lamps that come on with high beam. */
   lamps: { head: readonly Vec3[]; roof?: readonly Vec3[] };
 }
@@ -30,6 +34,22 @@ const fortySeriesHeadlamps: Vec3[] = [
 ];
 
 export const vehicleLooks: Record<VehicleId, VehicleLook> = {
+  sooty80: {
+    name: 'sooty-mkii-80-series',
+    body: buildSooty80Body,
+    wheel: buildSooty80Wheel,
+    plank: buildSooty80Plank,
+    paint: { roughness: 0.68, metalness: 0.06, clearcoat: 0.08, clearcoatRoughness: 0.7 },
+    springs: 'coil',
+    suspension: { coilInboard: 0.42, radiusArmAxleX: 0.36, radiusArmChassisX: 0.4, rearDamperOffset: -0.1 },
+    lamps: {
+      head: [-0.662, 0.662].map((x) => ({ x, y: 0.518, z: -2.282 })),
+      roof: [
+        ...[-0.23, 0.23].map((x) => ({ x, y: 0.545, z: -2.511 })),
+        ...[-0.5, 0, 0.5].map((x) => ({ x, y: 1.535, z: -0.816 })),
+      ],
+    },
+  },
   shortie: {
     name: '40-series-4wd',
     body: buildVehicleBody,
