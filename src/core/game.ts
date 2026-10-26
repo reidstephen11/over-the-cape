@@ -155,6 +155,15 @@ export class Game {
   private clock = 0;
   private anchorCheck = 0;
   private anchorInReach = false;
+  /** Layout checks: keep the swept and flooded warnings up, then put the car back. */
+  private pinnedHazards: { swept?: boolean; flooded?: boolean } | null = null;
+  private hazardSnapshot: {
+    swept: number;
+    stalled: boolean;
+    submerged: boolean;
+    timer: number;
+    dryTime: number;
+  } | null = null;
   private storageOk = true;
   private readonly tmpPos = new THREE.Vector3();
   private readonly tmpFwd = new THREE.Vector3();
@@ -555,6 +564,50 @@ export class Game {
       console.warn('Over the Cape: browser storage is unavailable, progress will not be saved.');
     }
     return ok;
+  }
+
+  /**
+   * Hold the "current is taking the car" and "engine flooded" warnings for a layout check.
+   * Pass null to put the car back as it was.
+   */
+  pinHazards(pin: { swept?: boolean; flooded?: boolean } | null): void {
+    if (pin) {
+      if (!this.hazardSnapshot) {
+        const f = this.vehicle.condition.flood;
+        this.hazardSnapshot = {
+          swept: this.vehicle.swept,
+          stalled: f.stalled,
+          submerged: f.submerged,
+          timer: f.timer,
+          dryTime: f.dryTime,
+        };
+      }
+      this.pinnedHazards = pin;
+      this.applyPinnedHazards();
+      return;
+    }
+    this.pinnedHazards = null;
+    const saved = this.hazardSnapshot;
+    this.hazardSnapshot = null;
+    if (!saved) return;
+    const f = this.vehicle.condition.flood;
+    this.vehicle.swept = saved.swept;
+    f.stalled = saved.stalled;
+    f.submerged = saved.submerged;
+    f.timer = saved.timer;
+    f.dryTime = saved.dryTime;
+  }
+
+  private applyPinnedHazards(): void {
+    const pin = this.pinnedHazards;
+    if (!pin) return;
+    if (pin.swept) this.vehicle.swept = Math.max(this.vehicle.swept, 0.5);
+    if (pin.flooded) {
+      const f = this.vehicle.condition.flood;
+      f.stalled = true;
+      f.submerged = true;
+      f.dryTime = 0;
+    }
   }
 
   changeSettings(s: Partial<Settings>): void {
@@ -1241,6 +1294,7 @@ export class Game {
       jackAvailable: tools.jack.state === 'available',
     });
     this.hud.el.classList.toggle('tool-menu-open', this.toolMenu.isOpen);
+    this.applyPinnedHazards();
     this.hud.update(
       buildHudState({
         vehicle: v,

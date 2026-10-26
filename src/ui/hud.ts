@@ -2,6 +2,7 @@ import { icons, type PoiIcon } from './icons';
 import { cameraPresets, type CameraPreset } from '../data/camera';
 import { CrawlGauges, formatSpeed, type GaugeMode, type GaugeState, type SpeedUnits } from './crawlGauges';
 import type { HeadlightMode } from '../data/headlights';
+import { railItems, touchNotice, warningView, type RailItem } from './alerts';
 
 export interface Prompt {
   /** Key or button glyphs, e.g. "E" or "Hold J". */
@@ -97,7 +98,15 @@ export class Hud {
   private readonly winchEl: HTMLElement;
   private readonly engineEl: HTMLElement;
   private readonly promptsEl: HTMLElement;
+  private readonly alertRail: HTMLElement;
+  private readonly alertsEl: HTMLElement;
+  private readonly noticesEl: HTMLElement;
   private readonly toasts: HTMLElement;
+  /** When a touch warning was first shown, so an advisory can shrink after a few seconds. */
+  private readonly alertSeen = new Map<string, number>();
+  /** Tapped chips stay open until this time. */
+  private readonly alertExpanded = new Map<string, number>();
+  private lastAlertKey = '';
   private readonly discovery: HTMLElement;
   private readonly cameraHelpEl: HTMLElement;
   private readonly cameraHint: HTMLElement;
@@ -152,6 +161,7 @@ export class Hud {
       <div class="mission paper hidden"><small></small><strong></strong><span class="mission-clock"></span></div>
       <div class="course-hint paper hidden"><strong></strong><span></span><small></small></div>
       <div class="prompts"></div>
+      <div class="alert-rail" aria-live="polite"><div class="alerts"></div></div>
       <div class="camera-help paper">
         <span class="camera-hint">Drag to orbit · Scroll to zoom</span>
         <button type="button" class="camera-preset" aria-label="Camera view" title="Cycle wheel-placement views: C / hold LB + click right stick">View<span class="camera-preset-name">: <span>Follow</span></span> <kbd>C</kbd></button>
@@ -188,7 +198,17 @@ export class Hud {
     this.winchEl = this.el.querySelector('.status-winch') as HTMLElement;
     this.engineEl = this.el.querySelector('.status-engine') as HTMLElement;
     this.promptsEl = this.el.querySelector('.prompts') as HTMLElement;
+    this.alertRail = this.el.querySelector('.alert-rail') as HTMLElement;
+    this.alertsEl = this.el.querySelector('.alerts') as HTMLElement;
+    this.noticesEl = this.el.querySelector('.notices') as HTMLElement;
     this.toasts = this.el.querySelector('.toasts') as HTMLElement;
+    this.alertRail.addEventListener('click', (e) => {
+      const hit = (e.target as HTMLElement).closest<HTMLElement>('.alert.minimised');
+      const id = hit?.dataset.id;
+      if (!id) return;
+      this.alertExpanded.set(id, performance.now() + 5000);
+      this.lastAlertKey = '';
+    });
     this.discovery = this.el.querySelector('.discovery') as HTMLElement;
     this.cameraHelpEl = this.el.querySelector('.camera-help') as HTMLElement;
     this.cameraHint = this.el.querySelector('.camera-hint') as HTMLElement;
@@ -295,11 +315,14 @@ export class Hud {
     this.engineEl.classList.toggle('shown', s.engine > 0);
     this.engineEl.classList.toggle('stalled', s.engine === 2);
     this.status.dataset.engine = String(s.engine);
-    const key = s.prompts.map((p) => `${p.keys}|${p.text}|${p.progress?.toFixed(2) ?? ''}`).join('#');
+    const touch = document.body.classList.contains('touch-mode');
+    // Warnings leave the banner stack on a phone; what you can do (winch, handbrake) stays.
+    const prompts = touch ? s.prompts.filter((p) => p.keys !== '!') : s.prompts;
+    const key = `${touch ? 't' : 'd'}:${prompts.map((p) => `${p.keys}|${p.text}|${p.progress?.toFixed(2) ?? ''}`).join('#')}`;
     if (key !== this.lastPromptKey) {
       this.lastPromptKey = key;
       this.promptsEl.innerHTML = '';
-      for (const p of s.prompts) {
+      for (const p of prompts) {
         const el = document.createElement('div');
         el.className = 'prompt paper';
         const k = document.createElement('span');
@@ -310,6 +333,40 @@ export class Hud {
         this.promptsEl.appendChild(el);
       }
     }
+    this.drawAlerts(
+      touch,
+      s.prompts.filter((p) => p.keys === '!'),
+    );
+  }
+
+  /**
+   * Phone warnings and notices share a short rail under the compass. A keyboard or a pad
+   * keeps the warnings in the prompt stack and the notices in the top right.
+   */
+  private drawAlerts(touch: boolean, warnings: Prompt[]): void {
+    const parent = touch ? this.alertRail : this.noticesEl;
+    if (this.toasts.parentElement !== parent) parent.appendChild(this.toasts);
+    if (!touch) {
+      if (this.alertsEl.childElementCount > 0) this.alertsEl.replaceChildren();
+      this.alertRail.classList.remove('full');
+      this.lastAlertKey = '';
+      return;
+    }
+    const now = performance.now();
+    const views = warnings.map((p) => warningView(p.text));
+    const ids = new Set(views.map((v) => v.id));
+    for (const id of [...this.alertSeen.keys()]) if (!ids.has(id)) this.alertSeen.delete(id);
+    for (const id of [...this.alertExpanded.keys()]) {
+      if (!ids.has(id) || (this.alertExpanded.get(id) ?? 0) <= now) this.alertExpanded.delete(id);
+    }
+    for (const v of views) if (!this.alertSeen.has(v.id)) this.alertSeen.set(v.id, now);
+    const items = railItems(views, now, this.alertSeen, this.alertExpanded);
+    const key = items.map((i) => `${i.id}|${i.text}|${i.minimised}`).join('#');
+    this.alertRail.classList.toggle('full', items.length >= 2);
+    if (key === this.lastAlertKey) return;
+    this.lastAlertKey = key;
+    this.alertsEl.replaceChildren();
+    for (const item of items) this.alertsEl.appendChild(alertElement(item));
   }
 
   private drawMission(e: EpisodeHud | null): void {
@@ -429,11 +486,13 @@ export class Hud {
     c.fill();
   }
 
-  /** Short message card (range change, winch attached...). */
+  /** Short message card (range change, winch attached...). On a phone it is one short line. */
   toast(text: string, ms = 2200): void {
     const el = document.createElement('div');
     el.className = 'toast paper';
-    el.textContent = text;
+    const touch = document.body.classList.contains('touch-mode');
+    el.textContent = touch ? touchNotice(text) : text;
+    if (touch && el.textContent !== text) el.title = text;
     this.toasts.appendChild(el);
     while (this.toasts.children.length > 3) this.toasts.firstElementChild?.remove();
     setTimeout(() => el.classList.add('out'), ms);
@@ -473,6 +532,22 @@ export interface GateState {
   passed: number;
   missed: number;
   flags: number;
+}
+
+function alertElement(item: RailItem): HTMLElement {
+  const el = document.createElement('div');
+  el.className = `alert paper${item.critical ? ' critical' : ''}${item.minimised ? ' minimised' : ''}`;
+  el.dataset.id = item.id;
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-label', item.full);
+  const mark = document.createElement('span');
+  mark.className = 'mark';
+  mark.setAttribute('aria-hidden', 'true');
+  mark.textContent = '!';
+  const label = document.createElement('span');
+  label.textContent = item.text;
+  el.append(mark, label);
+  return el;
 }
 
 function flagsText(flags: number): string {

@@ -147,6 +147,11 @@ export interface GameHook {
   setLights(mode: HeadlightMode): void;
   /** Damage the vehicle directly: engine, tyres and suspension health (1 = as new). */
   setHealth(h: { engine?: number; tyres?: number[]; suspension?: number[] }): void;
+  /**
+   * Hold the swept-away and flooded-engine warnings for a layout check. Null puts the
+   * car back as it was.
+   */
+  pinHazards(pin: { swept?: boolean; flooded?: boolean } | null): void;
   /** The vehicle's health and supplies, and whether a roadside job is under way. */
   health(): {
     engine: number;
@@ -392,6 +397,7 @@ export function installHook(game: Game): void {
       });
       h.suspension?.forEach((t, i) => (c.suspension[i] = t));
     },
+    pinHazards: (pin) => g.pinHazards(pin),
     health: () => {
       const c = g.vehicle.condition;
       return {

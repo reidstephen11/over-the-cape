@@ -1122,3 +1122,9 @@ Map-placed patches of rock, gravel, dirt, mud and sand still use the old per-sam
 **What went wrong.** The browser tests on v0.37 found the car pulling away from Daintree Village too slowly on the phone controls and in the Hilux. The start spot sat 2 m off the centre of the Upper Daintree Road, so with the edges now mud (v0.37) the left wheels started in it.
 
 **Decision.** The village's start spot moves onto the middle of the road at (-63.7, 2623), facing along it (330°). The camp itself is unchanged.
+
+## v0.41: phone warnings leave the road
+
+**What the owner saw.** On a phone held sideways, "The current is taking the car" and "Engine flooded" stacked as two banners across the middle of the view, over the water and on top of the pitch gauge. Upright, the same banners stretched almost the full width just above the buttons.
+
+**Decision.** On a touch screen a `!` prompt is no longer a banner. It becomes a short line in a rail in the sky band under the compass: held sideways the lines share one row in the middle, between the left-hand panels and the camera buttons; held upright they stack on the right, under the compass and clear of the status strip and the gauges (`src/ui/alerts.ts`, `src/ui/hud.ts`). Two fit at once. The current taking the car, a flooded intake, a wrecked engine and an empty tank stay as a readable line for as long as they apply. A less urgent warning (the current lifting the car, water at the intake, drying out) shrinks to a few words after five seconds; tapping it opens the line again for five seconds. Anything past the second slot takes a turn there. Toasts use the same rail, one at a time, and hide while two warnings are up. The full sentence is still what a screen reader reads, and a keyboard or a pad still shows it as a banner at the bottom. What you can do — attach the winch, release the handbrake — stays next to the buttons, because it names one.
