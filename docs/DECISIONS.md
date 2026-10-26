@@ -1096,3 +1096,11 @@ Clay banks are different: a bank is often narrower than a metre, and a strip tha
 Map-placed patches of rock, gravel, dirt, mud and sand still use the old per-sample tint. Tracks are painted over them, so they need to sit under the track paint, and they were left for a later update.
 
 **Checked.** Screenshots before and after near the CREB start, of a marked pothole, a clay cutting, a washout and a creek bank: potholes are round with clean rims, the clay banks no longer show a saw-tooth, and creek banks have a clean edge.
+
+## v0.37: muddy road edges
+
+**What the owner asked.** Whether the darker edges of the roads were boggy mud, and if not, to make them so: both the strip along each road's edge and the bare clay banks beside the cuttings, and to have them drive like mud.
+
+**What changed.** A map can now set `muddyEdges` (`src/sim/world/mapTypes.ts`). The CREB (just after the wet) and Lakefield (the first storm of the wet) set it; the Old Coach Road, in the dry season, doesn't. On those maps the band along the edges of dirt, clay and gravel tracks, from `MUD_EDGE` (0.4 m) inside the edge to 0.6 m outside it, is now the Mud surface (grip 0.45, heavy drag, wheels sink up to 0.15 m) and the mud tint, and so are the clay banks. The ground shader draws the band and the banks in the mud colour, with the wet sheen mud has. The middle of the road drives as before. Concrete tracks no longer draw a darker band, since their edges are not mud.
+
+**Not yet checked.** The owner asked to merge before the tests finish and fix anything they find afterwards. The scripted drives in the unit tests keep to the wheel lines, about 1 m inside the edges on most tracks, but a narrow track or a tight corner could put a wheel in the mud.

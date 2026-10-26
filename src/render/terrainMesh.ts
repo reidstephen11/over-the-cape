@@ -32,13 +32,13 @@ const TINT_SAMPLES = [
 ] as const;
 /**
  * Where track paint ends (m out from the track's edge) and how wide the blend into the
- * ground beside it is; and the same for the darker edge band inside a graded track.
+ * ground beside it is; and the same for the band of mud inside a graded track's edge
+ * (MUD_EDGE in the terrain generator). Concrete has no mud band.
  */
 const PAINT_EDGE = 0.8,
   FAINT_EDGE = 0.3,
   PAINT_BLEND = 0.45,
   EDGE_BAND = 0.4,
-  CONCRETE_BAND = 0.3,
   BAND_BLEND = 0.2;
 /** Edge distance (m) given to samples with no track paint beside a painted one. */
 const OUTSIDE_PAINT = 2.5;
@@ -123,6 +123,8 @@ export class TerrainMesh {
   readonly group = new THREE.Group();
   readonly material: THREE.MeshStandardMaterial;
   private readonly colors = tintColors();
+  /** The tint of the band along a track's edges and of clay banks: mud after rain. */
+  private readonly edgeTint: GroundTint;
   /** Rut floors darken towards this and hump crests pale towards this. */
   private readonly rutDark = pal('dirtDark').clone().lerp(pal('mud'), 0.35);
   private readonly crestPale = pal('dirtTrack').clone().lerp(pal('grassDry'), 0.25);
@@ -139,10 +141,11 @@ export class TerrainMesh {
     private readonly terrain: Terrain,
     _seed: number,
   ) {
+    this.edgeTint = terrain.muddyEdges ? GroundTint.Mud : GroundTint.DirtEdge;
     this.material = createGroundMaterial({
       paintBlend: PAINT_BLEND,
       bandBlend: BAND_BLEND,
-      band: this.colors[GroundTint.DirtEdge],
+      band: this.colors[this.edgeTint],
       patchBlend: PATCH_BLEND,
       rimBlend: RIM_BLEND,
       rut: this.rutDark,
@@ -426,7 +429,7 @@ export class TerrainMesh {
       if (tint === patchTint(patch)) tint = patch.under;
     }
     const bank = t.clayBanks.get(i);
-    if (bank !== undefined && tint === GroundTint.DirtEdge) tint = unpackBank(bank).under;
+    if (bank !== undefined && tint === this.edgeTint) tint = unpackBank(bank).under;
     return tint;
   }
 
@@ -443,14 +446,14 @@ export class TerrainMesh {
       const e = paint.edge[i] / 10;
       const faint = kind === TrackPaintKind.Faint;
       const end = faint ? FAINT_EDGE : PAINT_EDGE;
-      const band = faint ? 0 : kind === TrackPaintKind.Concrete ? CONCRETE_BAND : EDGE_BAND;
+      const band = faint || kind === TrackPaintKind.Concrete ? 0 : EDGE_BAND;
       const centre = trackTint(kind);
       // Rock and wetness don't need a sharp edge, so they are still blended per sample.
       const inner = band ? smoothstep(-band + BAND_BLEND, -band - BAND_BLEND, e) : 1;
       const cover = smoothstep(end + PAINT_BLEND, end - PAINT_BLEND, e);
       for (const [tint, weight] of [
         [under, 1 - cover],
-        [GroundTint.DirtEdge, cover * (1 - inner)],
+        [this.edgeTint, cover * (1 - inner)],
         [centre, cover * inner],
       ] as const)
         this.addTint(tint, weight);

@@ -141,6 +141,8 @@ export class Terrain {
   groundPatches = new Map<number, number>();
   /** Clay banks beside the tracks near each 1 m sample they cover or come within `PATCH_REACH` of (packed). */
   clayBanks = new Map<number, number>();
+  /** The edges of the tracks and the clay banks are mud (`GroundTint.Mud`), not `DirtEdge`. */
+  muddyEdges = false;
   private readonly detailCells = new Map<number, DetailPatch>();
 
   /** `sizeX` × `sizeZ` cells of 1 m: the map's width (east–west) and length (north–south). */
