@@ -5,14 +5,14 @@ import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGe
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 
 /**
- * The Perentie's cab: three seats on the steel seat box, a plain steel dash with the
+ * The Perentie's cab: two seats on the steel seat box, a plain steel dash with the
  * instrument binnacle in front of the right-hand driver, a big four-spoke wheel, the
  * gear and transfer levers on the tunnel (the handbrake lever moves: see
  * vehicleInstruments.ts), and the tilt hoops behind.
  */
 export function addPerentieInterior(b: VehicleBuilder, redlineRpm: number): void {
   const cabin = vehicles.perentie.cabin;
-  const { paint, galv } = perentieColors;
+  const { paint } = perentieColors;
   const dark = new THREE.Color('#2C302B'),
     seat = new THREE.Color('#33372F'),
     metal = new THREE.Color('#8A8E86'),
@@ -46,12 +46,12 @@ export function addPerentieInterior(b: VehicleBuilder, redlineRpm: number): void
     b.rod({ x, y: 0.6, z: -0.7 }, { x, y: 0.3, z: -0.56 }, 0.01, metal);
     b.block(x, 0.29, -0.55, w, 0.09, 0.015, dark, M.Rubber, Z.Trim);
   }
-  // Seat box, three seats and their backrests against the tilt's front hoop.
+  // Seat box and the two front seats of the General Service configuration.
   b.block(0, 0.31, 0.02, 1.6, 0.3, 0.38, inner, M.Paint, Z.Trim, 0.01);
-  for (const x of [-0.42, 0, 0.42]) {
-    const w = x === 0 ? 0.34 : 0.44;
+  for (const x of [-0.42, 0.42]) {
+    const w = 0.44;
     b.block(x, 0.51, 0.0, w, 0.1, 0.4, seat, M.Fabric, Z.Trim, 0.035);
-    b.block(x, x === 0 ? 0.76 : 0.86, 0.2, w, x === 0 ? 0.4 : 0.6, 0.1, seat, M.Fabric, Z.Trim, 0.035);
+    b.block(x, 0.86, 0.2, w, 0.6, 0.1, seat, M.Fabric, Z.Trim, 0.035);
     for (const dx of [-w / 4, w / 4]) b.block(x + dx, 0.562, 0.0, 0.01, 0.006, 0.34, dark, M.Fabric, Z.Trim);
   }
   // Main gear lever and transfer lever.
@@ -71,10 +71,4 @@ export function addPerentieInterior(b: VehicleBuilder, redlineRpm: number): void
   // Door pulls on the painted inner door skins.
   for (const side of [-1, 1])
     b.block(side * 0.81, 0.62, -0.1, 0.02, 0.04, 0.22, dark, M.Rubber, Z.Trim, 0.01);
-  // Tilt hoops: posts down to the capping rails and a bow under the canvas.
-  for (const z of [0.23, 0.95, 1.62, 2.26]) {
-    for (const side of [-1, 1])
-      b.rod({ x: side * 0.8, y: 0.79, z }, { x: side * 0.8, y: 1.38, z }, 0.016, galv, M.Paint, Z.Trim);
-    b.rod({ x: -0.8, y: 1.4, z }, { x: 0.8, y: 1.4, z }, 0.016, galv, M.Paint, Z.Trim);
-  }
 }

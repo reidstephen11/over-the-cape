@@ -63,9 +63,9 @@ export interface TubeBend {
   share: number;
 }
 
-/** Tight bends, as on the Patrol's bull bar and rack. */
+/** Tight bends, as on the Patrol's and Perentie's bull bars and racks. */
 export const TIGHT_BEND: TubeBend = { min: 0.085, perRadius: 0, share: 0.35 };
-/** Wider bends that grow with the tube, as on the Unimog. */
+/** Wider bends that grow with the tube, as on the Unimog and the Troop Carrier's bull bar. */
 export const ROUND_BEND: TubeBend = { min: 0.085, perRadius: 2.4, share: 0.45 };
 
 /** One smoothly swept tube per bent member, rather than separate cylinders and joint balls. */

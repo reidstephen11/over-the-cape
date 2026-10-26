@@ -9,7 +9,7 @@ import { addPatrolInterior } from './patrolInterior';
 import { patrolColors } from './patrolPaint';
 import {
   cornerWrap,
-  extrudeX,
+  extrudeX as extrudePanel,
   extrudeZ,
   frontPane,
   inset,
@@ -20,6 +20,53 @@ import {
   type Vtx,
 } from './bodyShapes';
 import { mirrorHead } from './mirrors';
+
+/** Panels as `extrudePanel`, with an 18 mm crown on the bonnet top and the thin side skins split finer, so the bow pressed into the sides at the end of `buildPatrolBody` bends them smoothly. */
+function extrudeX(
+  b: VehicleBuilder,
+  shape: THREE.Shape,
+  x0: number,
+  x1: number,
+  color: THREE.Color,
+  slot: number,
+  zone: number,
+  bevel: number,
+  wells: [number, number][] = [],
+  segments = 3,
+  ratio = 0.8,
+): void {
+  const reshape = (g: THREE.BufferGeometry): THREE.BufferGeometry => {
+    if (zone === Z.Sides && slot === M.Paint && x1 - x0 < 0.08)
+      return subdivideSurface(g, (_p, n) => Math.abs(n.x) > 0.5, 1);
+    if (zone !== Z.Front || slot !== M.Paint || x1 - x0 <= 1.6) return g;
+    g = subdivideSurface(g, (p, n) => p.y > 0.6 && n.y > 0.6, 2);
+    const p = g.getAttribute('position'),
+      n = g.getAttribute('normal');
+    const smooth = (t: number) => {
+      t = Math.max(0, Math.min(1, t));
+      return t * t * (3 - 2 * t);
+    };
+    const crown = (x: number, z: number) =>
+      0.018 * Math.max(0, 1 - (x / 0.74) ** 2) * smooth((z + 2.23) / 0.1) * smooth((-0.9 - z) / 0.1);
+    for (let i = 0; i < p.count; i++)
+      if (p.getY(i) > 0.6 && n.getY(i) > 0.4) {
+        const x = p.getX(i) + x0 + bevel,
+          z = p.getZ(i),
+          eps = 0.0001;
+        const dx = (crown(x + eps, z) - crown(x - eps, z)) / (2 * eps),
+          dz = (crown(x, z + eps) - crown(x, z - eps)) / (2 * eps);
+        p.setY(i, p.getY(i) + crown(x, z));
+        const v = new THREE.Vector3(
+          n.getX(i) - dx * n.getY(i),
+          n.getY(i),
+          n.getZ(i) - dz * n.getY(i),
+        ).normalize();
+        n.setXYZ(i, v.x, v.y, v.z);
+      }
+    return g;
+  };
+  extrudePanel(b, shape, x0, x1, color, slot, zone, bevel, wells, segments, ratio, reshape);
+}
 
 /**
  * GQ Patrol wagon body: a front clip with rounded shoulders and front corners and a bonnet
