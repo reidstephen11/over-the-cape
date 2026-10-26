@@ -754,5 +754,9 @@ export const engineSynthTunings = {
   unimog: dieselSixSynthTuning,
   troopy: troopyDieselSynthTuning,
   patrol: td42SynthTuning,
+  sooty80: {
+    ...td42SynthTuning,
+    turbo: v8DieselSynthTuning.turbo,
+  },
   lc79: v8DieselSynthTuning,
 } as const;

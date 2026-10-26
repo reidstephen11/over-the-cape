@@ -22,6 +22,8 @@ Not modelled yet, so there is no folder. Collect photographs the same way before
 - A 1980s 6x4 box trailer, and the Australian Army No. 5 trailer, for the towing work in `docs/NEXT.md`. The Perentie and the Unimog already draw a pintle for the No. 5.
 - A Suzuki Sierra, and a 1950s vehicle, were offered for later episodes and not chosen. Do not start either until the owner picks it.
 
+The `sooty80` addition uses the recovered MkII-inspired 80 Series review draft; see [`landcruiser-80-sooty/SOURCES.md`](landcruiser-80-sooty/SOURCES.md) for sources, dimensions and the outstanding photo comparison.
+
 ## Before changing a body
 
 1. Read that vehicle's `SOURCES.md`, including the gaps and the "check these first" lines. The current model already disagrees with the photographs in specific places. Those lines are the list.

@@ -5,6 +5,20 @@ import { BodyZone, VehicleBuilder, VehicleMaterial as M, groupVehicleMaterials }
 /** Coil seats, as an offset across from each wheel and a height on the chassis. */
 const COIL = { inboard: 0.24, top: 0.24, axleTop: 0.09 };
 
+/** Placement for a vehicle whose wide tyres need a different spring and link envelope. */
+export interface SuspensionLayout {
+  coilInboard: number;
+  radiusArmAxleX: number;
+  radiusArmChassisX: number;
+  rearDamperOffset: number;
+}
+const DEFAULT_LAYOUT: SuspensionLayout = {
+  coilInboard: COIL.inboard,
+  radiusArmAxleX: 0.5,
+  radiusArmChassisX: 0.42,
+  rearDamperOffset: 0.02,
+};
+
 /** Unit-height coil spring along +y, stretched each frame to the gap it spans. */
 function coilGeometry(steel: THREE.Color): THREE.BufferGeometry {
   const turns = 7,
@@ -47,6 +61,7 @@ export class VehicleSuspension {
     private readonly tuning: VehicleTuning,
     materials: THREE.Material[],
     private readonly springs: 'leaf' | 'coil' = 'leaf',
+    private readonly layout: SuspensionLayout = DEFAULT_LAYOUT,
   ) {
     const steel = new THREE.Color('#6D756D'),
       dark = new THREE.Color('#343C36');
@@ -129,7 +144,7 @@ export class VehicleSuspension {
         // Radius arms (front) and trailing links (rear) run forward or back to the chassis.
         const toward = w.front ? 1 : -1;
         for (const [ax, cx, len] of [
-          [0.5, 0.42, 0.95],
+          [layout.radiusArmAxleX, layout.radiusArmChassisX, 0.95],
           ...(w.front ? [] : ([[0.18, 0.12, 0.7]] as const)),
         ] as const) {
           const mesh = new THREE.Mesh(armGeometry, materials);
@@ -163,14 +178,23 @@ export class VehicleSuspension {
       } else {
         // Dampers stand just behind (front) or ahead of (rear) the coils.
         const dz = wheel.front ? 0.16 : -0.16;
-        this.from.set(side * (Math.abs(wheel.x) - COIL.inboard + 0.02), COIL.top + 0.08, wheel.z + dz);
-        this.to.set(side * (Math.abs(wheel.x) - COIL.inboard + 0.04), wheelHeights[i] + 0.03, wheel.z + dz);
+        const offset = wheel.front ? 0.02 : this.layout.rearDamperOffset;
+        this.from.set(
+          side * (Math.abs(wheel.x) - this.layout.coilInboard + offset),
+          COIL.top + 0.08,
+          wheel.z + dz,
+        );
+        this.to.set(
+          side * (Math.abs(wheel.x) - this.layout.coilInboard + offset + 0.02),
+          wheelHeights[i] + 0.03,
+          wheel.z + dz,
+        );
       }
       this.stretch(this.shocks[i], this.from, this.to);
     }
     for (let i = 0; i < this.coils.length; i++) {
       const wheel = this.tuning.wheels[i],
-        x = Math.sign(wheel.x) * (Math.abs(wheel.x) - COIL.inboard);
+        x = Math.sign(wheel.x) * (Math.abs(wheel.x) - this.layout.coilInboard);
       this.from.set(x, COIL.top, wheel.z);
       this.to.set(x, wheelHeights[i] + COIL.axleTop, wheel.z);
       this.stretch(this.coils[i], this.from, this.to);

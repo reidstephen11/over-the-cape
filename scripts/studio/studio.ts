@@ -46,13 +46,13 @@ const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(400, 400).rotateX(-Math.PI / 2),
   new THREE.MeshStandardMaterial({ color: '#8B7355', roughness: 1 }),
 );
-// The parked hubs are 0.12 m below the origin, the ground a wheel radius below them.
-ground.position.y = -(tuning.wheelRadius + 0.12);
+// Derive the hub height from the suspension: lifted vehicles need not use -0.12 m.
+const rest = tuning.suspensionRestLength - 0.12;
+ground.position.y = tuning.wheels[0].y - rest - tuning.wheelRadius;
 ground.receiveShadow = true;
 scene.add(ground);
 
 const model = new VehicleModel(tuning);
-const rest = tuning.suspensionRestLength - 0.12;
 for (let i = 0; i < 4; i++) model.wheels[i].pivot.position.y = tuning.wheels[i].y - rest;
 model.suspension.update(model.wheels.map((w) => w.pivot.position.y));
 scene.add(model.root);
