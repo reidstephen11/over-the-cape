@@ -70,7 +70,8 @@ function extrudeX(
 
 /**
  * GQ Patrol wagon body: a front clip with rounded shoulders and front corners and a bonnet
- * sloping gently to the nose, square GQ wheel openings under flat-topped flares, panels
+ * sloping gently to the nose with a raised centre and a thick front edge over a grey front
+ * panel (three grille openings, NISSAN across them, round lamps in square recesses), square GQ wheel openings under flat-topped flares, panels
  * with rounded edges, a glasshouse with its pillars and window rubbers, door mirrors on
  * black sails, and a wide ARB-style bar with driving lamps under its top rail (x across,
  * y up, z back; the ground 0.51 m below the origin when parked).
@@ -88,6 +89,8 @@ const red = new THREE.Color('#B12F27'),
 const glass = new THREE.Color('#9FB6B7');
 
 const SIDE = 0.87;
+/** The finished body is stretched across by this much: the flares then measure 1.93 m. */
+export const WIDEN = 1.035;
 const WAIST = 0.76;
 const SILL = 0.02;
 const TWO_TONE = 0.3;
@@ -258,48 +261,55 @@ function bonnetAndFace(b: VehicleBuilder): void {
   for (let i = 0; i < 14; i++)
     b.block(-0.52 + i * 0.08, 0.777, SCUTTLE - 0.07, 0.05, 0.004, 0.06, black, M.Rubber, Z.Front);
 
-  // Front panel (Series 1): one black grille panel across the front with horizontal slats,
-  // a round 7 inch headlamp in a square surround at each end, and the park lamp and
-  // indicator wrapped round each guard corner outboard of the headlamps.
+  // The bonnet's thick front edge overhangs the grille, and a raised centre panel runs back
+  // from it (front-34-1988.jpg, front-34-left-1989.jpg).
+  b.block(0, BONNET_FRONT - 0.03, F - 0.018, 1.5, 0.055, 0.07, paint, M.Paint, Z.Front, 0.02);
+  const rise = Math.atan2(BONNET_BACK - BONNET_FRONT, SCUTTLE - 0.12 - F),
+    bz0 = F + 0.05,
+    bz1 = SCUTTLE - 0.16;
+  b.push()
+    .translate(0, top((bz0 + bz1) / 2) + 0.012, (bz0 + bz1) / 2)
+    .rotate(-rise, 0, 0);
+  b.block(0, 0, 0, 0.92, 0.03, bz1 - bz0, paint, M.Paint, Z.Front, 0.014);
+  b.pop();
+
+  // Front panel (Series 1, front-34-1988.jpg): a grey moulded panel across the front with
+  // three grille openings of horizontal slats between the lamps, big NISSAN letters across
+  // the middle, a round 7 inch headlamp in a square recess at each end, and the park lamp
+  // and indicator wrapped round each guard corner outboard of the headlamps.
   const gy = 0.48;
-  b.block(0, gy, F - 0.002, 1.56, 0.235, 0.02, black, M.Rubber, Z.Front, 0.014);
-  for (let i = 0; i < 5; i++)
-    b.block(
-      0,
-      gy - 0.084 + i * 0.042,
-      F - 0.016,
-      0.96,
-      0.02,
-      0.014,
-      trim.clone().multiplyScalar(1.35),
-      M.Rubber,
-      Z.Front,
-      0.005,
-    );
-  for (const x of [-0.5, 0.5])
-    b.block(x, gy, F - 0.016, 0.024, 0.2, 0.014, trim.clone().multiplyScalar(1.35), M.Rubber, Z.Front, 0.005);
-  b.block(0, gy, F - 0.03, 0.205, 0.055, 0.012, chrome, M.Metal, Z.Front, 0.004);
-  b.block(0, gy, F - 0.038, 0.193, 0.043, 0.006, black, M.Rubber, Z.Front, 0.002);
+  const facia = new THREE.Color('#5E6264');
+  const slat = trim.clone().multiplyScalar(1.35);
+  b.block(0, gy, F - 0.002, 1.56, 0.25, 0.02, facia, M.Rubber, Z.Front, 0.014);
+  for (const cx of [-0.3, 0, 0.3]) {
+    b.block(cx, gy - 0.005, F - 0.008, 0.24, 0.17, 0.012, black, M.Rubber, Z.Front, 0.006);
+    for (let i = 0; i < 5; i++)
+      b.block(cx, gy - 0.072 + i * 0.034, F - 0.016, 0.23, 0.016, 0.012, slat, M.Rubber, Z.Front, 0.004);
+  }
   const glyphs: Record<string, string[]> = {
     N: ['10001', '11001', '10101', '10011', '10001'],
-    I: ['111', '010', '010', '010', '111'],
+    I: ['00100', '00100', '00100', '00100', '00100'],
     S: ['11111', '10000', '11111', '00001', '11111'],
     A: ['01110', '10001', '11111', '10001', '10001'],
   };
+  const letter = new THREE.Color('#E8E8E2');
   const word = 'NISSAN',
-    pitch = 0.028;
+    px = 0.012,
+    py = 0.016,
+    pitch = 0.072,
+    x0 = (word.length * pitch - (pitch - 5 * px)) / 2 - px / 2;
   [...word].forEach((ch, k) =>
     glyphs[ch].forEach((row, j) =>
       [...row].forEach((pixel, i) => {
         if (pixel === '1')
           b.block(
-            0.081 - k * pitch - i * 0.004,
-            gy + 0.011 - j * 0.0055,
-            F - 0.043,
-            0.0035,
-            0.0045,
-            0.002,
-            chrome,
+            x0 - k * pitch - i * px,
+            gy + 2 * py - j * py,
+            F - 0.026,
+            px * 1.02,
+            py * 1.02,
+            0.008,
+            letter,
             M.Metal,
             Z.Front,
           );
@@ -308,8 +318,8 @@ function bonnetAndFace(b: VehicleBuilder): void {
   );
   for (const side of [-1, 1]) {
     const x = side * 0.645;
-    // Square surround round the lamp, then the lamp itself.
-    b.block(x, gy, F - 0.012, 0.25, 0.225, 0.012, black.clone().multiplyScalar(0.8), M.Rubber, Z.Front, 0.02);
+    // Square recess round the lamp, then the lamp itself.
+    b.block(x, gy, F - 0.012, 0.23, 0.21, 0.012, black.clone().multiplyScalar(0.8), M.Rubber, Z.Front, 0.02);
     roundHeadlamp(b, x, gy, F - 0.018, 0.089, lens, chrome, black);
     // Corner lamp wrapped round the guard corner: clear park lamp on top, amber indicator
     // below, in a black housing.
@@ -952,6 +962,9 @@ export function buildPatrolBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
       n = new THREE.Vector3(nx, normal.getY(i) - Math.sign(x) * gain * by * nx, normal.getZ(i)).normalize();
     normal.setXYZ(i, n.x, n.y, n.z);
   }
+  // Widened evenly to the wagon's published 1,930 mm across the flares (side-right-1989.jpg,
+  // front-34-1988.jpg). Normals are left alone: a 3.5% stretch barely turns them.
+  for (let i = 0; i < pos.count; i++) pos.setX(i, pos.getX(i) * WIDEN);
   return cleanGeometry(g);
 }
 
@@ -1049,7 +1062,7 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
 export function buildPatrolPlank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   const wood = new THREE.Color('#A9824F');
-  const x = index === 0 ? -0.6 : 0.6,
+  const x = (index === 0 ? -0.6 : 0.6) * WIDEN,
     y = ROOF + 0.149,
     z = 0.75;
   const L = plankTuning.length,

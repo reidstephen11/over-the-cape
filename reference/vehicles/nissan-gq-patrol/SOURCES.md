@@ -4,7 +4,7 @@ Game id: `patrol`.
 
 **What to match.** The Australian GQ is the Y60, built from 1987 to 1997. The game is the long-wheelbase wagon: 2.97 m wheelbase, coil springs, the 4.2 L TD42 diesel, five-speed, and the usual Cape touring kit (steel bull bar with a winch and two driving lamps, a snorkel, a roof rack, 31×10.5R15 tyres). The photographs are stock wagons, so they show the body without that kit. Match the body first, then the kit.
 
-Series 1 (the 1988 and 1989 cars here) and the GQ II facelift (1992, 1994, 1997) both have rectangular headlamps. The facelift changes the grille and the lamp units. It does not switch them to round lamps.
+Series 1 (the 1988 and 1989 cars here) and the GQ II facelift (1992, 1994, 1997) both have round 7-inch headlamps in square recesses. The facelift changes the grille and the corner lamps, not the headlamps.
 
 ## Dimensions
 
@@ -14,12 +14,12 @@ From the Y60 infobox on [Nissan Patrol](<https://en.wikipedia.org/wiki/Nissan_Pa
 | --------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Wheelbase | 2,970 mm                                              | 2.97 m                                                                                                              |
 | Length    | 4,810 mm                                              | about 4.72 m for the skin (`F` −2.27 to `TAIL` 2.45 in `src/render/patrolBody.ts`); the bull bar is further forward |
-| Width     | 1,930 mm                                              | 1.74 m (`SIDE` 0.87)                                                                                                |
+| Width     | 1,930 mm                                              | 1.93 m across the flares, 1.80 m across the body (`SIDE` 0.87 × `WIDEN` 1.035)                                      |
 | Height    | 1,820 mm low roof, 1,995 mm high roof                 | about 1.80 m to the roof (y = 1.29, ground 0.51 m below the origin), before the rack                                |
 | Track     | the game uses 1.555 m                                 | 1.555 m                                                                                                             |
 | Tyres     | the game's touring size is 31×10.5R15 (787 mm across) | radius 0.394 m                                                                                                      |
 
-**Check these first.** `patrolBody.ts` draws a round 7-inch lamp in a square surround and calls that panel series 1. Every front view in this folder shows rectangular lamps. That is the largest identifying miss. The body is also about 190 mm narrower than the wagon's 1,930 mm, which will show immediately against `side-right-1989.jpg` and `side-1992.jpg`. Wheelbase and roof height are close.
+**Check these first.** v0.33 widened the body to 1.93 m across the flares and matched the Series 1 front panel (three grille openings, NISSAN letters, round lamps in square recesses) and the bonnet's thick front edge and raised centre to these photographs. The GQ II grille is not drawn. Wheelbase and roof height are close.
 
 ## Gaps
 
