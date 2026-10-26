@@ -32,6 +32,8 @@ export const cameraTuning = {
   /** Extra distance at speed (fraction of distance at `speedRef`). */
   speedPullback: 0.3,
   speedRef: 22,
+  /** Towing a trailer, the outside views stand this much further back and higher (share of the usual). */
+  towScale: 0.6,
   /** Extra height on steep slopes (m at 30°). */
   slopeLift: 1.2,
   /** Distance multiplier when crawling. */

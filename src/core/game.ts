@@ -26,6 +26,9 @@ import { Exploration } from '../sim/exploration';
 import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
+import { TrailerView } from '../render/trailerView';
+import { boxTrailer, drumLoad } from '../data/trailers';
+import { trailerMessage } from './trailerMessages';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
 import { planDuration, planSurprises } from '../sim/world/surprisePlan';
 import { surpriseMessage } from './surpriseMessages';
@@ -104,6 +107,8 @@ export class Game {
   model: VehicleModel;
   /** Other people's bogged vehicles, as drawn. */
   private readonly stuckViews: StuckVehicleView[] = [];
+  /** The trailers drawn, by trailer id. */
+  private readonly trailerViews = new Map<string, TrailerView>();
   /** Seconds before the HUD can say again that the stockman is still bogged. */
   private rescueNag = 0;
   /** Which vehicle the player drives (saved). */
@@ -320,6 +325,7 @@ export class Game {
             this.hud.toast(vehicles[id].tuning.name, 1800);
           },
           mainMenu: () => void this.toMainMenu(),
+          trailer: (drums) => this.devTrailer(drums),
         })
       : null;
     window.addEventListener('keydown', (e) => {
@@ -332,6 +338,10 @@ export class Game {
       if (e.phase !== 'started') return;
       const plan = sim.surprises?.plans.find((p) => p.id === e.id);
       this.audio.surprise(e.kind, plan ? planDuration(plan) : 2);
+    });
+    sim.events.on('trailer', (e) => {
+      const text = trailerMessage(e.event);
+      if (text) this.hud.toast(text, 2600);
     });
     sim.events.on('rescued', () => {
       this.run.rescued = true;
@@ -731,10 +741,37 @@ export class Game {
     this.save();
   }
 
+  /**
+   * Test mode: hitch a box trailer behind the car, with this many 200 L drums of diesel in
+   * it, or take the trailer away (null).
+   */
+  devTrailer(drums: number | null): void {
+    for (const id of [...this.sim.trailers.keys()]) {
+      this.sim.removeTrailer(id);
+      const view = this.trailerViews.get(id);
+      if (view) {
+        this.view.scene.remove(view.root);
+        view.dispose();
+      }
+      this.trailerViews.delete(id);
+    }
+    if (drums === null) return;
+    const t = this.sim.addTrailer('box', boxTrailer, LOCAL_VEHICLE);
+    if (drums > 0) {
+      const load = drumLoad(drums, boxTrailer.bed);
+      t.setLoad(load.mass, load.com, load.half);
+    }
+    const view = new TrailerView(t);
+    view.setDrums(drums);
+    this.trailerViews.set(t.id, view);
+    this.view.scene.add(view.root);
+  }
+
   teleportToPoi(p: PoiDef): void {
     this.crawlRuns.cancel();
     const r = p.reset ?? { x: p.x, z: p.z + 12, headingDeg: 0 };
     this.vehicle.teleport(this.sim.poseAt(r.x, r.z, r.headingDeg, this.vehicle.tuning.wheelRadius));
+    this.sim.bringTrailer(LOCAL_VEHICLE);
     this.chase.reset();
     this.view.snap();
   }
@@ -789,7 +826,13 @@ export class Game {
         : t.planks.canRecall(v)
           ? { id: 'recall', label: 'Recall planks', icon: 'planks', enabled: true }
           : { id: 'planks', label: 'Planks are out', icon: 'planks', enabled: false };
+    const hitch = this.sim.hitchOption(LOCAL_VEHICLE);
+    const trailer: ToolOption[] =
+      hitch?.kind === 'unhitch'
+        ? [{ id: 'unhitch', label: 'Unhitch the trailer', icon: 'detach', enabled: true }]
+        : [];
     return [
+      ...trailer,
       t.winch.attached
         ? { id: 'detach', label: 'Detach winch', icon: 'detach', enabled: true }
         : { id: 'winch', label: 'Winch', icon: 'winch', enabled: this.anchorInReach },
@@ -841,6 +884,8 @@ export class Game {
     else if (id === 'planks') this.tool.startPlanks();
     else if (id === 'recall') this.sim.recallPlanks(LOCAL_VEHICLE);
     else if (id === 'detach') this.sim.detachWinch(LOCAL_VEHICLE);
+    else if (id === 'unhitch' && !this.sim.unhitchTrailer(LOCAL_VEHICLE))
+      this.hud.toast(this.sim.hitchOption(LOCAL_VEHICLE)?.reason ?? 'No trailer on the back');
     else if (id === 'repair' && !this.sim.startRepair(LOCAL_VEHICLE))
       this.hud.toast(this.sim.repairOption(LOCAL_VEHICLE)?.reason ?? 'Nothing to repair');
     else if (id === 'refuel' && !this.sim.startRepair(LOCAL_VEHICLE, true))
@@ -1240,6 +1285,7 @@ export class Game {
     }
     this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
     for (const s of this.stuckViews) s.update();
+    for (const t of this.trailerViews.values()) t.update(this.loop.paused ? 1 : alpha);
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
     this.toolsView.update(v, tools, this.sim.probeGround, this.clock);
@@ -1247,6 +1293,7 @@ export class Game {
     if (this.freeCamOn) this.freeCam.update(frameDt);
     else if (!this.loop.paused) {
       this.chase.toolView = this.tool.mode !== 'drive';
+      this.chase.towing = this.sim.trailerOf(LOCAL_VEHICLE) !== null;
       const p = this.model.root.position;
       this.tmpPos.copy(p);
       const f = v.forward();
@@ -1313,6 +1360,8 @@ export class Game {
         repair: this.sim.repairOption(LOCAL_VEHICLE),
         refuel: this.sim.refuelOption(LOCAL_VEHICLE),
         find: this.findNearby(),
+        hitch: this.sim.hitchOption(LOCAL_VEHICLE),
+        trailer: this.sim.trailerOf(LOCAL_VEHICLE),
         episode: {
           title: `Episode ${this.episode.number} · ${this.episode.title}`,
           mission: this.run.missionLine(),

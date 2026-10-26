@@ -37,6 +37,8 @@ export class DevPanel {
       teleport: (poi: PoiDef) => void;
       vehicle: (id: VehicleId) => void;
       mainMenu: () => void;
+      /** Hitch a box trailer with this many drums of diesel, or take it away (null). */
+      trailer: (drums: number | null) => void;
     },
   ) {
     this.panel = document.createElement('div');
@@ -55,6 +57,8 @@ export class DevPanel {
       <div class="debug-teleports"></div>
       <h3>Vehicle</h3>
       <div class="debug-row">${vehicleOrder.map((id) => `<button data-vehicle="${id}">${vehicles[id].tuning.name}</button>`).join('')}</div>
+      <h3>Trailer</h3>
+      <div class="debug-row"><button data-trailer="0">Box trailer, empty</button><button data-trailer="2">With two drums of diesel</button><button data-trailer="none">No trailer</button></div>
       <div class="debug-row"><button data-act="menu">Change episode</button></div>
     </details>`;
     root.appendChild(this.panel);
@@ -85,6 +89,10 @@ export class DevPanel {
     }
     for (const b of this.panel.querySelectorAll<HTMLButtonElement>('[data-vehicle]'))
       b.addEventListener('click', () => actions.vehicle(b.dataset.vehicle as VehicleId));
+    for (const b of this.panel.querySelectorAll<HTMLButtonElement>('[data-trailer]'))
+      b.addEventListener('click', () =>
+        actions.trailer(b.dataset.trailer === 'none' ? null : Number(b.dataset.trailer)),
+      );
     this.panel.querySelector('[data-act="menu"]')?.addEventListener('click', () => actions.mainMenu());
     // Keys pressed on the panel don't drive the car, and a click hands the keys back to driving.
     this.panel.addEventListener('keydown', (e) => e.stopPropagation());

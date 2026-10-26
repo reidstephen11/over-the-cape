@@ -142,4 +142,6 @@ export const perentieTuning: VehicleTuning = {
   intake: { x: -0.66, y: 0.95 - R - 0.12, z: -1.02 },
   winchMount: { x: 0, y: 0.06, z: -2.25 },
   towPoint: { x: 0, y: 0.0, z: 2.4 },
+  // The pintle hook drawn under the rear crossmember (src/render/perentieBody.ts).
+  hitch: { x: 0, y: -0.04, z: 2.5 },
 };
