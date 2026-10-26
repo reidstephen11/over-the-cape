@@ -179,6 +179,40 @@ test.describe('phone', () => {
       await waitSim(page, 0.2);
       expect(await overlapping(page), `${size.width}×${size.height}`).toEqual([]);
     }
+
+    // Two warnings at once: short lines under the compass, off the road and the controls.
+    await f.tap('.touch-pile-toggle');
+    await expect(page.locator('.touch-pile')).toBeVisible();
+    await page.evaluate(() => window.__game!.pinHazards({ swept: true, flooded: true }));
+    await expect(page.locator('.alert')).toHaveCount(2);
+    const warned =
+      '.alert, .touch-btn, .touch-stick-base, .hud button, .compass, .status, .supplies, .mission, .camera-help, .crawl-gauges, .prompt';
+    for (const size of [
+      { width: 844, height: 390 },
+      { width: 915, height: 412 },
+      { width: 390, height: 844 },
+      { width: 740, height: 360 },
+      { width: 375, height: 667 },
+    ]) {
+      await page.setViewportSize(size);
+      await waitSim(page, 0.2);
+      const where = `warnings ${size.width}×${size.height}`;
+      expect(await overlapping(page, warned), where).toEqual([]);
+      const centre = await page.evaluate(() =>
+        [...document.querySelectorAll('.alert')].flatMap((el) => {
+          const r = el.getBoundingClientRect();
+          const hit =
+            r.width > 0 &&
+            r.left < innerWidth * 0.7 &&
+            innerWidth * 0.3 < r.right &&
+            r.top < innerHeight * 0.65 &&
+            innerHeight * 0.35 < r.bottom;
+          return hit ? [el.textContent?.trim() ?? 'alert'] : [];
+        }),
+      );
+      expect(centre, where).toEqual([]);
+    }
+    await page.evaluate(() => window.__game!.pinHazards(null));
     expect(errors).toEqual([]);
   });
 });

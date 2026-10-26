@@ -665,6 +665,11 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
   font-size: 18px;
 }
 
+/* Phone warnings. Hidden until touch controls are up; then a short rail (see .touch-mode). */
+.alert-rail {
+  display: none;
+}
+
 /* Messages and discovery cards stack in the top right corner, clear of the track ahead. */
 .notices {
   position: absolute;
@@ -1441,6 +1446,7 @@ table.controls td {
 /*
  * Below the camera buttons in the top right corner, one at a time (the newest message,
  * else the discovery card), so the stack never reaches the buttons under the thumb.
+ * Warnings and toasts leave this corner for the rail under the compass.
  */
 .touch-mode .notices {
   top: max(62px, calc(env(safe-area-inset-top) + 52px));
@@ -1448,8 +1454,83 @@ table.controls td {
 }
 
 .touch-mode .toasts .toast:not(:last-child),
-.touch-mode .notices:has(.toast) .discovery {
+body.touch-mode:has(.alert-rail .alert) .discovery,
+body.touch-mode:has(.alert-rail .toast) .discovery {
   display: none;
+}
+
+/*
+ * Warnings sit in the sky band under the compass, one short line each, clear of the
+ * road, the joystick, the pedals and the panels. Held sideways they share a row in the
+ * middle, between the left-hand panels and the camera buttons. Held upright the compass
+ * is lower and the right-hand panels start sooner, so the lines stack on the right.
+ */
+.touch-mode .alert-rail {
+  position: fixed;
+  z-index: 4;
+  display: flex;
+  pointer-events: none;
+  top: calc(max(10px, env(safe-area-inset-top)) + 46px);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  max-width: min(300px, calc(100vw - 220px));
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.touch-mode .alerts,
+.touch-mode .alert-rail .toasts {
+  display: contents;
+}
+
+.touch-mode .alert-rail.full .toasts {
+  display: none;
+}
+
+.touch-mode .alert {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px 2px 3px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 rgba(59, 42, 30, 0.25);
+}
+
+.touch-mode .alert .mark {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: #a3311f;
+  color: var(--paper);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.touch-mode .alert.critical {
+  border-color: #a3311f;
+}
+
+.touch-mode .alert.minimised {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.touch-mode .alert-rail .toast {
+  padding: 2px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(220px, 40vw);
 }
 
 .touch-mode .camera-help {
@@ -1548,6 +1629,16 @@ table.controls td {
 
   .touch-mode .notices {
     top: 104px;
+  }
+
+  .touch-mode .alert-rail {
+    top: calc(max(60px, env(safe-area-inset-top) + 50px) + 40px);
+    left: auto;
+    right: max(8px, env(safe-area-inset-right));
+    transform: none;
+    max-width: calc(100vw - 220px);
+    flex-direction: column;
+    align-items: flex-end;
   }
 
   .touch-mode .crawl-gauges,
