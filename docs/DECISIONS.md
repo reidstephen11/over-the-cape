@@ -1116,3 +1116,9 @@ Map-placed patches of rock, gravel, dirt, mud and sand still use the old per-sam
 **What the owner asked.** To get each update live faster.
 
 **Decision.** The deploy job now waits only for the build, which takes about a minute, and no longer for the lint and unit tests, which take about ten. The tests still run on every pull request and on `main` and show red on GitHub when they fail; a failure is fixed in a follow-up update. The cost is that a version failing a test still goes live, as v0.37 would have done.
+
+## v0.40: CREB start on the middle of the road
+
+**What went wrong.** The browser tests on v0.37 found the car pulling away from Daintree Village too slowly on the phone controls and in the Hilux. The start spot sat 2 m off the centre of the Upper Daintree Road, so with the edges now mud (v0.37) the left wheels started in it.
+
+**Decision.** The village's start spot moves onto the middle of the road at (-63.7, 2623), facing along it (330°). The camp itself is unchanged.

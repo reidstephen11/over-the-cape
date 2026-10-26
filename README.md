@@ -247,6 +247,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 ## What to test
 
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
+- [ ] **v0.40:** the loading screen and pause menu show v0.40. Starting the CREB at Daintree Village, does the car sit in the middle of the road, facing along it, and pull away cleanly without the wheels in the mud edge?
 - [ ] **v0.39:** the loading screen and pause menu show v0.39. Nothing in the game changes: a merged update now goes live about a minute after merging, without waiting for the unit tests.
 - [ ] **v0.38:** the loading screen and pause menu show v0.38. Nothing else changes: this update fixes a test so v0.37's muddy edges could go live.
 - [ ] **v0.37 muddy road edges:** the loading screen and pause menu show v0.37. On dirt, clay and gravel roads, are the darker edges now mud? Run a wheel along the edge: does the car slow, slide and throw mud, as in a bog, while the middle of the road still drives as before? On the CREB, do the bare red banks beside the cuttings drive as mud too? Can you still keep to the road without the edges catching you on tight corners? Concrete crossings no longer have a darker edge: does that look right? On the Old Coach Road (the dry season) the edges should still be dry dirt.
