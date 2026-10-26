@@ -151,4 +151,6 @@ export const unimogTuning: VehicleTuning = {
   intake: { x: 0.95, y: 2.3 - R - 0.12, z: 0 },
   winchMount: { x: 0, y: 0.32, z: -3.22 },
   towPoint: { x: 0, y: 0.12, z: 3.52 },
+  // The pintle hook on the rear crossmember (src/render/unimogBody.ts).
+  hitch: { x: 0, y: 0.11, z: 3.54 },
 };

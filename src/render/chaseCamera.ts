@@ -37,6 +37,9 @@ export class ChaseCamera {
   seat: Pick<CabinLayout, 'eye' | 'pitch'> = vehicles.shortie.cabin;
   /** Vehicle size: the outside views stand back and look higher by this much (1 = short 4WD). */
   scale = 1;
+  /** A trailer on the back: the outside views stand further back and higher to show it. */
+  towing = false;
+  private towBlend = 0;
   private toolBlend = 0;
   private yaw = 0;
   private orbitYaw = 0;
@@ -177,12 +180,14 @@ export class ChaseCamera {
     this.manualBlend += ((this.manualView ? 1 : 0) - this.manualBlend) * orbitK;
 
     this.toolBlend += ((this.toolView ? 1 : 0) - this.toolBlend) * Math.min(1, dt * 3);
+    this.towBlend += ((this.towing ? 1 : 0) - this.towBlend) * Math.min(1, dt * 2);
+    const scale = this.scale * (1 + C.towScale * this.towBlend);
     const speedF = Math.min(1, this.speedSmoothed / C.speedRef);
-    let dist = this.distance * this.scale * (1 + C.speedPullback * speedF);
+    let dist = this.distance * scale * (1 + C.speedPullback * speedF);
     if (this.speedSmoothed < C.crawlSpeed)
       dist *= C.crawlCloser + (1 - C.crawlCloser) * (this.speedSmoothed / C.crawlSpeed);
     let height =
-      profile.height * (dist / (profile.distance * this.scale)) ** 0.8 * this.scale +
+      profile.height * (dist / (profile.distance * scale)) ** 0.8 * scale +
       C.slopeLift * Math.min(1, this.slopeSmoothed / 30) * (this.preset === 'follow' ? 1 : 0.25);
     const toolLift = this.toolBlend * (1 - this.manualBlend);
     height += toolLift * 4.5;
@@ -207,7 +212,7 @@ export class ChaseCamera {
     this.targetY += (t.position.y - this.targetY) * Math.min(1, dt * C.targetHeightRate);
     // Never let the smoothed target fall far behind (big drops, jack, teleports).
     this.targetY = THREE.MathUtils.clamp(this.targetY, t.position.y - 0.6, t.position.y + 0.6);
-    this.look.y = this.targetY + profile.targetHeight * this.scale;
+    this.look.y = this.targetY + profile.targetHeight * scale;
     const desired = new THREE.Vector3().copy(this.look).addScaledVector(back, radius * Math.cos(elevation));
     desired.y += radius * Math.sin(elevation);
 

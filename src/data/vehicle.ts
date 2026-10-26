@@ -156,6 +156,8 @@ export interface VehicleTuning {
   winchMount: { x: number; y: number; z: number };
   /** Rear recovery point another vehicle's winch can hook (local). */
   towPoint: { x: number; y: number; z: number };
+  /** Where a trailer's coupling goes, when not on the towbar's ball behind the tow point (local). */
+  hitch?: { x: number; y: number; z: number };
 }
 
 export type VehicleId =

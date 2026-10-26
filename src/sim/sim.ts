@@ -33,6 +33,8 @@ import { headingOf, rotate, v3 } from './vehicle/math';
 import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } from './surprises';
 import type { SurprisePlan } from './world/surprisePlan';
 import { StuckVehicle, type StuckVehicleDef } from './stuckVehicle';
+import { poseBehind, Trailer, type TrailerEvent } from './trailer';
+import { trailerTuning, type TrailerTuning } from '../data/trailers';
 
 /** Rotation that lays a +y capsule flat (90° about x) and then turns it `yaw` about y. */
 export function quatYawX(yaw: number): { x: number; y: number; z: number; w: number } {
@@ -71,6 +73,8 @@ export interface SimEvents extends Record<string, unknown> {
   surprise: SurpriseEvent;
   /** A bogged vehicle came free on the end of the winch line. */
   rescued: { id: string };
+  /** A trailer was hitched or unhitched, came round against the car, tipped over or was put back up. */
+  trailer: { id: string; vehicle: string | null; event: TrailerEvent | { type: 'hitched' | 'unhitched' } };
 }
 
 /** Plain-data snapshot of the simulation (SPEC §11: sim state must be serialisable). */
@@ -117,6 +121,8 @@ export class Simulation {
   surprises: Surprises | null = null;
   /** Other people's vehicles bogged and waiting for a winch (an episode's rescue), by id. */
   readonly stuck = new Map<string, StuckVehicle>();
+  /** Trailers, hitched or standing on their jockey wheels, by id. */
+  readonly trailers = new Map<string, Trailer>();
   time = 0;
   /** How harsh mechanical damage is (the settings choice; off unless the game sets it). */
   damage: DamageMode = 'off';
@@ -271,6 +277,106 @@ export class Simulation {
     return s;
   }
 
+  /** A trailer hitched straight behind a vehicle, or standing at a pose of its own. */
+  addTrailer(
+    id: string,
+    tuning: TrailerTuning,
+    at:
+      string | { x: number; y: number; z: number; rotation: { x: number; y: number; z: number; w: number } },
+  ): Trailer {
+    const behind = typeof at === 'string' ? this.vehicleOf(at) : null;
+    const pose = behind
+      ? poseBehind(behind, tuning, (x, z) => this.world.terrain.heightAt(x, z))
+      : (at as Exclude<typeof at, string>);
+    const env = this.env;
+    const t = new Trailer(id, this.physics, tuning, pose, {
+      get wetness() {
+        return env.wetness;
+      },
+      get waterLevelOffset() {
+        return env.waterLevelOffset;
+      },
+    });
+    this.trailers.set(id, t);
+    if (behind) t.hitch(behind);
+    // Rapier 0.21 leaves a new body frozen if anything is moved before a step has run (as
+    // in replaceVehicle): step once now, so a camp or a teleport straight after is safe.
+    this.physics.step();
+    return t;
+  }
+
+  /** Take a trailer out of the world. */
+  removeTrailer(id: string): void {
+    this.trailers.get(id)?.remove();
+    this.trailers.delete(id);
+  }
+
+  /** The trailer a vehicle is towing, if any. */
+  trailerOf(id: string): Trailer | null {
+    const v = this.vehicles.get(id);
+    for (const t of this.trailers.values()) if (v && t.hitchedTo === v) return t;
+    return null;
+  }
+
+  /**
+   * What the hitch could do now: hitch the nearest trailer whose coupling is in reach, or
+   * unhitch the one on the back. Null with nothing to hitch or unhitch.
+   */
+  hitchOption(
+    id: string,
+  ): { kind: 'hitch' | 'unhitch'; trailer: Trailer; possible: boolean; reason?: string } | null {
+    const v = this.vehicleOf(id);
+    const towing = this.trailerOf(id);
+    const stopped = Math.abs(v.speed) <= trailerTuning.stoppedSpeed;
+    if (towing)
+      return {
+        kind: 'unhitch',
+        trailer: towing,
+        possible: stopped,
+        reason: stopped ? undefined : 'Stop first',
+      };
+    let best: Trailer | null = null;
+    let near = trailerTuning.hitchReach;
+    for (const t of this.trailers.values()) {
+      if (t.hitchedTo || t.tipped) continue;
+      const d = t.distanceToHitch(v);
+      if (d <= near) {
+        near = d;
+        best = t;
+      }
+    }
+    if (!best) return null;
+    return { kind: 'hitch', trailer: best, possible: stopped, reason: stopped ? undefined : 'Stop first' };
+  }
+
+  /** Hitch the trailer in reach onto a vehicle. False if there's none, or it isn't stopped. */
+  hitchTrailer(id: string): boolean {
+    const o = this.hitchOption(id);
+    if (!o || o.kind !== 'hitch' || !o.possible) return false;
+    o.trailer.hitch(this.vehicleOf(id));
+    this.events.emit('trailer', { id: o.trailer.id, vehicle: id, event: { type: 'hitched' } });
+    return true;
+  }
+
+  /** Unhitch a vehicle's trailer where it stands. False if it has none, or isn't stopped. */
+  unhitchTrailer(id: string): boolean {
+    const o = this.hitchOption(id);
+    if (!o || o.kind !== 'unhitch' || !o.possible) return false;
+    o.trailer.unhitch();
+    this.events.emit('trailer', { id: o.trailer.id, vehicle: null, event: { type: 'unhitched' } });
+    return true;
+  }
+
+  /** Bring a vehicle's trailer along after the vehicle has been moved: hitched straight behind it. */
+  bringTrailer(id: string, trailer: Trailer | null = this.trailerOf(id)): void {
+    if (!trailer) return;
+    const v = this.vehicleOf(id);
+    trailer.unhitch();
+    const p = poseBehind(v, trailer.tuning, (x, z) => this.world.terrain.heightAt(x, z));
+    trailer.teleport(p.x, p.y, p.z, p.rotation);
+    trailer.hitch(v);
+  }
+
   /**
    * Follow a change in the weather: how wet the ground is (the tyres' grip) and the rain,
    * and how high and fast the creeks run. The creek level offset stays as the world was
@@ -328,6 +434,8 @@ export class Simulation {
     const tools = this.toolsOf(id);
     tools.winch.detach();
     tools.planks.recall(this.physics);
+    const towing = this.trailerOf(id);
+    towing?.unhitch();
     const p = old.body.translation();
     const f = old.forward();
     const ground = this.world.terrain.heightAt(p.x, p.z);
@@ -347,6 +455,7 @@ export class Simulation {
     // a step has run, or if either is moved (to a camp, say) before one has. Step once now.
     this.physics.step();
     this.physics.world.removeRigidBody(old.body);
+    this.bringTrailer(id, towing);
     // The driver keeps the lights as they had them.
     v.lights = old.lights;
     return v;
@@ -390,7 +499,8 @@ export class Simulation {
       if (input.interact && tools.planks.inReach(v).length > 0) {
         const n = tools.planks.pickUp(v, this.physics);
         this.toolEvent(id, { type: 'planksPickedUp', count: n });
-      } else if (input.winchAttach) this.quickAttach(id);
+      } else if (input.interact && this.hitchOption(id)?.kind === 'hitch') this.hitchTrailer(id);
+      else if (input.winchAttach) this.quickAttach(id);
       // Winching a bogged vehicle out, the brakes hold this one where it stands (unless driving).
       if (tools.winch.anchor?.id.startsWith('stuck:') && input.throttle === 0 && !tools.repair)
         input = { ...input, brake: 1 };
@@ -431,7 +541,11 @@ export class Simulation {
     if (this.surprises)
       for (const e of this.surprises.update(this.vehicles.values().next().value, dt))
         this.events.emit('surprise', e);
+    for (const t of this.trailers.values()) t.step(dt);
     this.physics.step();
+    for (const t of this.trailers.values())
+      for (const event of t.postStep())
+        this.events.emit('trailer', { id: t.id, vehicle: t.hitchedTo?.id ?? null, event });
     for (const [id, v] of this.vehicles) {
       v.postStep(dt);
       for (let i = 0; i < v.wheelImpacts.length; i++)
@@ -549,6 +663,22 @@ export class Simulation {
         body: s.body,
         local: { ...s.hook },
         label: s.def.name,
+      });
+    }
+    for (const t of this.trailers.values()) {
+      // A strap on the drawbar of a trailer standing on its own (tipped, or stuck in a bog).
+      if (t.hitchedTo) continue;
+      const c = t.tuning.coupling;
+      const p = t.couplingWorld();
+      if (!within(p.x, p.y, p.z)) continue;
+      out.push({
+        kind: 'object',
+        id: `trailer:${t.id}`,
+        point: p,
+        radius: 0.05,
+        body: t.body,
+        local: { x: c.x, y: c.y, z: c.z + 0.3 },
+        label: 'Trailer drawbar',
       });
     }
     for (const other of this.vehicles.values()) {
@@ -757,7 +887,9 @@ export class Simulation {
     tools.jack.waitTime = 0;
     tools.repair = null;
     this.repairAtCamp(id);
+    const towing = this.trailerOf(id);
     v.teleport(this.campsitePose(campsiteId, v.tuning.wheelRadius));
+    this.bringTrailer(id, towing);
     const f = v.condition.flood;
     f.timer = 0;
     f.stalled = false;

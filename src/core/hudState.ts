@@ -42,6 +42,10 @@ export interface HudInputs {
   find?: { name: string; inReach: boolean } | null;
   /** Show the fuel gauge and supplies (an episode is under way). */
   supplies?: boolean;
+  /** A trailer to hitch or unhitch, and whether it can be done now. */
+  hitch?: { kind: 'hitch' | 'unhitch'; possible: boolean } | null;
+  /** The trailer on the back has come round against the car, or tipped over. */
+  trailer?: { jackknifed: boolean; tipped: boolean } | null;
 }
 
 /** What each roadside job says while it's under way, and as a prompt beforehand. */
@@ -114,7 +118,16 @@ export function buildHudState(i: HudInputs): HudState {
           ? `Stop here to load the ${i.find.name.toLowerCase()}`
           : `${i.find.name} by the hut — pull up beside it`,
       });
+    if (i.trailer?.tipped) prompts.push({ keys: '!', text: 'The trailer has tipped over' });
+    else if (i.trailer?.jackknifed)
+      prompts.push({ keys: '!', text: 'Jackknifed — pull forward to straighten the trailer' });
     if (t.planks.inReach(v).length > 0) prompts.push({ keys: g.interact ?? 'E', text: 'Pick up planks' });
+    else if (i.hitch?.kind === 'hitch')
+      prompts.push(
+        i.hitch.possible
+          ? { keys: g.interact ?? 'E', text: 'Hitch the trailer' }
+          : { keys: 'Stop', text: 'Stop to hitch the trailer' },
+      );
     else if (t.winch.attached) {
       prompts.push({ keys: `${g.winchIn} / ${g.winchOut}`, text: 'Winch in / out' });
       prompts.push({ keys: g.winch ?? 'E', text: 'Detach winch' });

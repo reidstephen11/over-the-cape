@@ -44,6 +44,26 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   await expect.poll(() => page.evaluate(() => window.__game!.vehicleId())).toBe('perentie');
   await shot(page, 'dev', 'test-panel');
 
+  // A box trailer with two drums goes on the back and comes along.
+  await panel.getByRole('button', { name: 'With two drums of diesel' }).click();
+  const hitched = await page.evaluate(() => window.__game!.trailer());
+  expect(hitched?.hitched).toBe(true);
+  const start = await page.evaluate(() => window.__game!.vehicle());
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.5 }));
+  await expect
+    .poll(async () => {
+      const v = await page.evaluate(() => window.__game!.vehicle());
+      return Math.hypot(v.x - start.x, v.z - start.z);
+    })
+    .toBeGreaterThan(8);
+  await page.evaluate(() => window.__game!.setInput(null));
+  const towed = await page.evaluate(() => window.__game!.trailer());
+  expect(towed?.hitched).toBe(true);
+  expect(Math.hypot(towed!.x - hitched!.x, towed!.z - hitched!.z)).toBeGreaterThan(5);
+  await shot(page, 'dev', 'trailer');
+  await panel.getByRole('button', { name: 'No trailer' }).click();
+  expect(await page.evaluate(() => window.__game!.trailer())).toBeNull();
+
   // Nothing is saved in test mode.
   const saved = await page.evaluate(() => localStorage.getItem('overthecape.save.v1'));
   expect(saved).not.toContain('"episode"');

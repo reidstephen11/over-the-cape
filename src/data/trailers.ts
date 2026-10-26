@@ -1,0 +1,137 @@
+import type { VehicleTuning } from './vehicle';
+
+/**
+ * Trailers (docs/NEXT.md). Local frame as for the vehicles: x = right, y = up, z = back
+ * (the drawbar points to -z). The origin is on the axle line at the springs' top mounts.
+ */
+export interface TrailerTuning {
+  id: 'box6x4';
+  name: string;
+  /** Empty (tare) mass (kg), centre of mass and principal inertia: pitch (x), yaw (y), roll (z). */
+  mass: number;
+  com: { x: number; y: number; z: number };
+  inertia: { x: number; y: number; z: number };
+  wheelRadius: number;
+  wheelWidth: number;
+  /** Spring top mounts (local), left then right. */
+  wheels: { x: number; y: number; z: number }[];
+  suspensionRestLength: number;
+  suspensionTravel: number;
+  /** Spring rate at each wheel (N/m): the loaded trailer sits lower than the empty one. */
+  springRate: number;
+  damperCompression: number;
+  damperRelaxation: number;
+  /** Side grip of the tyres (multiplied by the surface's grip). */
+  lateralGrip: number;
+  /** The coupling's socket, where it sits on the tow ball (local). */
+  coupling: { x: number; y: number; z: number };
+  /** The jockey wheel under the coupling, wound down when unhitched (local centre and radius). */
+  jockey: { x: number; y: number; z: number; r: number };
+  /** Collision boxes (local centre + half extents): the box, and the drawbar clear of the coupling. */
+  boxes: { cx: number; cy: number; cz: number; hx: number; hy: number; hz: number }[];
+  /** Load space: floor height (local y) and inside half extents. */
+  bed: { y: number; hx: number; hz: number; cz: number; sides: number };
+  /** Most it may carry (kg): its ATM less its tare. */
+  payload: number;
+}
+
+/** A 6×4 box trailer of the 1980s: steel box on leaf springs, 13-inch wheels, no brakes. */
+export const boxTrailer: TrailerTuning = {
+  id: 'box6x4',
+  name: '6×4 box trailer',
+  mass: 240,
+  com: { x: 0, y: -0.05, z: -0.3 },
+  inertia: { x: 190, y: 230, z: 65 },
+  wheelRadius: 0.3,
+  wheelWidth: 0.19,
+  wheels: [
+    { x: -0.74, y: 0, z: 0 },
+    { x: 0.74, y: 0, z: 0 },
+  ],
+  suspensionRestLength: 0.2,
+  suspensionTravel: 0.14,
+  springRate: 42000,
+  damperCompression: 2.4,
+  damperRelaxation: 3.2,
+  // Narrow, lightly loaded tyres: pushed sideways the loaded trailer slides before it tips.
+  lateralGrip: 0.72,
+  coupling: { x: 0, y: 0.1, z: -2.3 },
+  jockey: { x: 0, y: -0.33, z: -2.1, r: 0.1 },
+  boxes: [
+    // The box: floor, sides and the guards over the wheels.
+    { cx: 0, cy: 0.17, cz: -0.2, hx: 0.64, hy: 0.04, hz: 0.93 },
+    { cx: -0.63, cy: 0.38, cz: -0.2, hx: 0.02, hy: 0.21, hz: 0.93 },
+    { cx: 0.63, cy: 0.38, cz: -0.2, hx: 0.02, hy: 0.21, hz: 0.93 },
+    { cx: 0, cy: 0.38, cz: -1.11, hx: 0.64, hy: 0.21, hz: 0.02 },
+    { cx: 0, cy: 0.38, cz: 0.71, hx: 0.64, hy: 0.21, hz: 0.02 },
+    // The A-frame drawbar, stopping short of the coupling so the tow ball's tongue never touches it.
+    { cx: 0, cy: 0.1, cz: -1.42, hx: 0.28, hy: 0.04, hz: 0.29 },
+  ],
+  bed: { y: 0.21, hx: 0.6, hz: 0.9, cz: -0.2, sides: 0.42 },
+  payload: 510,
+};
+
+export const trailerTuning = {
+  /** The coupling hitches when it is this close to the tow ball (m): near enough to wheel it on by hand. */
+  hitchReach: 0.7,
+  /** Stopped (m/s) to hitch or unhitch. */
+  stoppedSpeed: 0.5,
+  /** Angle between the vehicle and the trailer (degrees) where the drawbar is about to meet the back of the car:
+   * reversing on full lock it stops against the bumper at about 70°; driving forwards on full
+   * lock it settles at about 56°. */
+  jackknifeDeg: 62,
+  /** Folded this far (degrees), the drawbar is against the towbar's tongue and goes no further. */
+  foldLimitDeg: 68,
+  /** Tilted this far over (degrees), it has tipped onto its side. */
+  tippedDeg: 60,
+  /** Unhitched, the wheels are chocked: brake force at each (N). */
+  chockForce: 6000,
+};
+
+/** A 200 L steel drum: 585 mm across and 880 mm tall, 18 kg empty. */
+export const DRUM = { radius: 0.29, height: 0.88, empty: 18 };
+
+/** A drum full of diesel (0.84 kg/L) weighs about 186 kg. */
+export const DIESEL_DRUM_MASS = DRUM.empty + 200 * 0.84;
+
+/** Where `count` drums stand on the floor (x, z): two across, filling from the front of the box. */
+export function drumSpots(count: number, bed: TrailerTuning['bed']): [number, number][] {
+  const spots: [number, number][] = [];
+  const front = bed.cz - bed.hz + DRUM.radius + 0.02;
+  for (let i = 0; i < count; i++) {
+    const row = Math.floor(i / 2);
+    spots.push([(i % 2 === 0 ? -1 : 1) * (bed.hx - DRUM.radius), front + row * (2 * DRUM.radius + 0.02)]);
+  }
+  return spots;
+}
+
+/** The mass, centre and half extents of `count` full drums standing in a trailer, for Trailer.setLoad. */
+export function drumLoad(
+  count: number,
+  bed: TrailerTuning['bed'],
+): { mass: number; com: { x: number; y: number; z: number }; half: { x: number; y: number; z: number } } {
+  const spots = drumSpots(count, bed);
+  const n = Math.max(1, spots.length);
+  const x = spots.reduce((a, s) => a + s[0], 0) / n;
+  const z = spots.reduce((a, s) => a + s[1], 0) / n;
+  const zs = spots.map((s) => s[1]);
+  return {
+    mass: count * DIESEL_DRUM_MASS,
+    com: { x, y: bed.y + DRUM.height / 2, z },
+    half: {
+      x: count > 1 ? bed.hx : DRUM.radius,
+      y: DRUM.height / 2,
+      z: (Math.max(...zs, 0) - Math.min(...zs, 0)) / 2 + DRUM.radius,
+    },
+  };
+}
+
+/**
+ * Where a trailer's coupling sits on a vehicle (local): the ball on the towbar tongue
+ * drawn behind the tow point (src/render/vehicleEquipment.ts), or the vehicle's own hitch
+ * (a pintle hook) where it has one.
+ */
+export function hitchPoint(t: VehicleTuning): { x: number; y: number; z: number } {
+  if (t.hitch) return t.hitch;
+  return { x: t.towPoint.x, y: t.towPoint.y + 0.1, z: t.towPoint.z + 0.13 };
+}

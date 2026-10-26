@@ -20,7 +20,22 @@ They chose the order: the Hilux, then Episode 2, then towing. The Hilux shipped 
 - **Episodes.** `EpisodeDef` in `src/data/episodes.ts` has the mission, goal POI, deadline (with `deadline.until`), `rescue`, `lastLeg` and loadout. There is no delivery goal yet.
 - **The plan already allows for it.** SPEC.md §2a lists "Deliver supplies (fuel, a part, food) to someone waiting at a camp" as a goal, with the grandparent's 1986 diary giving each deadline its reason. SPEC.md §1 says trailers and towing come in later episodes, with each update bringing the mechanics it needs.
 
-## Ask the owner first
+## The owner's answers (2026-10-26)
+
+Asked when they said "build out next episode":
+
+1. **Episode 4, the Frenchmans Track, is the towing episode**, with fuel drums on a trailer delivered to someone at a camp.
+2. **Both trailers:** the 6×4 box trailer for the civilian vehicles and the Army's No. 5 for the Perentie and Unimog.
+3. **The player can unhitch.**
+4. **Everything can go wrong:** tipping on a side slope, a trailer tyre cut on Realistic, drums coming loose on rough ground, and jackknifing in reverse.
+
+## Progress
+
+- **v0.46, step 1 done:** trailer physics, hitching and unhitching, tipping and jackknifing, the box trailer in test mode (DECISIONS v0.46).
+- **Next, step 2:** the box trailer and the No. 5 drawn from reference photographs (add them to `reference/`), the No. 5's ring on the pintle, a HUD line for the trailer and its load, and sound.
+- **Then step 3:** Episode 4 itself: the map, the delivery goal, water for the trailer (buoyancy and drag; drums float), a trailer tyre cut on Realistic, drums coming loose, and camps saving the trailer and its load.
+
+## The questions that were asked
 
 One question at a time, each with a recommended option (the owner's preference).
 

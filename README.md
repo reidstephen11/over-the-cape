@@ -173,7 +173,7 @@ The 80 Series uses the same controls below, including low range, lockers, winch 
 | Winch quick attach / detach   | E                                                     | RB                                                   |
 | Winch in / out                | R / F                                                 | D-pad up / down                                      |
 | Tool menu                     | Hold Q, point with the mouse, arrows or WASD, release | Hold LB, point with the left stick or d-pad, release |
-| Interact (pick up planks)     | E (when prompted)                                     | A / Cross                                            |
+| Interact (planks, hitch)      | E (when prompted)                                     | A / Cross                                            |
 | Right vehicle                 | Hold J (when prompted)                                | Hold B / Circle                                      |
 | Orbit camera                  | Mouse drag (left or right button), or Num 4/6/8/2     | Right stick                                          |
 | Camera distance               | Scroll                                                | D-pad left/right while driving                       |
@@ -185,7 +185,7 @@ The 80 Series uses the same controls below, including low range, lockers, winch 
 | Map                           | M (scroll to zoom, drag to move it)                   | View / Select                                        |
 | Pause                         | Esc                                                   | Start / Options                                      |
 
-The **tool menu** holds: Winch (or Detach winch), the front and rear diff locks, Place planks (or Recall planks), precision crawl, the headlights, the repair the car needs (Field repair, Plug the tyre or Fit a spare) and Pour in a jerry can. Finds load by themselves when you stop beside them. An option that can't be used now is greyed out; picking it says why ("Stop first", "No spares left"...).
+The **tool menu** holds: Unhitch the trailer (while towing one), Winch (or Detach winch), the front and rear diff locks, Place planks (or Recall planks), precision crawl, the headlights, the repair the car needs (Field repair, Plug the tyre or Fit a spare) and Pour in a jerry can. Finds load by themselves when you stop beside them. An option that can't be used now is greyed out; picking it says why ("Stop first", "No spares left"...).
 
 Placing planks: choose **Place planks** in the tool menu, move them with W/S, turn them with A/D, place with E, cancel with Esc. Prompts switch between keyboard and gamepad glyphs depending on what you last touched.
 
@@ -193,20 +193,20 @@ Placing planks: choose **Place planks** in the tool menu, move them with W/S, tu
 
 On a touch screen the game shows on-screen controls, held sideways or upright. Held upright, the fuel, supplies and mission panel sit under the status strip at the top left, and the view widens so the car and the windscreen don't fill the screen. Held sideways, those cards fold into one short strip under the II / MAP / LIGHTS buttons (speed, gear, planks, fuel and the clock), and the view buttons shrink to "View" and a reset icon, so the track stays in the middle. Prompts such as "Attach winch" sit just above the buttons on the right — held sideways the prompt drops the USE badge, because that button is already labelled USE. The map (MAP) fills a sideways phone; pinch to zoom, drag to move, and close it with Close or by tapping the margin. On a tall screen it stays a sheet the shape of the route. LOW, CRAWL and the diff locks sit behind the 4WD button, which opens them in a row above it; while it's closed, its letters L, C, F and R light up for each one that's on. The crawl gauges sit top right under the fuel when the phone is upright, and along the bottom when it is sideways. On reaching a place, its history note stops the game and shows in the middle of the screen; tap it to carry on. Warnings (the current taking the car, a flooded engine) are short lines under the compass — a row in the middle when the phone is sideways, stacked on the right when it is upright — so they leave the road and the controls clear. A less urgent one shrinks to a few words after a few seconds; tap it to read it again. The same words still show in full at the bottom on a computer.
 
-| Action                                | Touch                                                             |
-| ------------------------------------- | ----------------------------------------------------------------- |
-| Steer                                 | Joystick, bottom left (push part way for part lock)               |
-| Accelerate / brake and reverse        | GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse)    |
-| Handbrake on / off                    | HAND                                                              |
-| High / low range                      | 4WD, then LOW                                                     |
-| Precision crawl, diff locks           | 4WD, then CRAWL, F LOCK, R LOCK (tap 4WD again to tuck away)      |
-| Winch attach / detach, pick up planks | USE                                                               |
-| Winch in / out                        | Hold IN / OUT (shown while the winch is attached)                 |
-| Right vehicle                         | Hold UPRIGHT (shown when needed)                                  |
-| Tool menu                             | TOOLS, then tap an option (tap the space around it to close)      |
-| Orbit camera / camera distance        | Drag a finger on the view / pinch with two fingers                |
-| Cycle views / recenter camera         | View and Reset view, top right (icons when the phone is sideways) |
-| Map / pause / full screen / lights    | MAP, II, ⛶ and LIGHTS, top left                                   |
+| Action                             | Touch                                                             |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| Steer                              | Joystick, bottom left (push part way for part lock)               |
+| Accelerate / brake and reverse     | GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse)    |
+| Handbrake on / off                 | HAND                                                              |
+| High / low range                   | 4WD, then LOW                                                     |
+| Precision crawl, diff locks        | 4WD, then CRAWL, F LOCK, R LOCK (tap 4WD again to tuck away)      |
+| Winch, planks, hitch a trailer     | USE                                                               |
+| Winch in / out                     | Hold IN / OUT (shown while the winch is attached)                 |
+| Right vehicle                      | Hold UPRIGHT (shown when needed)                                  |
+| Tool menu                          | TOOLS, then tap an option (tap the space around it to close)      |
+| Orbit camera / camera distance     | Drag a finger on the view / pinch with two fingers                |
+| Cycle views / recenter camera      | View and Reset view, top right (icons when the phone is sideways) |
+| Map / pause / full screen / lights | MAP, II, ⛶ and LIGHTS, top left                                   |
 
 ## Driving tips
 
@@ -239,7 +239,10 @@ Add `?dev` to the address: https://reidstephen11.github.io/over-the-cape/?dev. E
 - set the weather: clear, cloudy with wet ground, light rain or a heavy storm, then fine-tune the rain, how wet the ground is and how high the rivers are;
 - start from any place on the map;
 - change vehicle where you are;
+- hitch a 6×4 box trailer behind the car, empty or with two 200 L drums of diesel, or take it away (from v0.46; no episode uses trailers yet);
 - go back to the welcome screen to change episode.
+
+**Towing a trailer** (v0.46, test mode only for now). The trailer rides on the tow ball (the pintle hook on the Land Rover and the Unimog) and follows on its own two wheels; it has no brakes, so a loaded one makes the car slower to pull away and to stop. The camera stands further back while it's on. Reverse gently: on full lock it folds round until the drawbar is against the back of the car (the HUD says it has jackknifed), and you pull forward to straighten it. A loaded trailer leans hard in corners and can tip over in a fast turn across a slope. Stopped, **Unhitch the trailer** (tool menu) stands it on its jockey wheel with its wheels chocked, so you can drive or winch a hard bit without it; back up until the ball is under the coupling (within about 0.7 m), stop and press **E** (A on a pad, USE on a phone) to hitch it again. A trailer standing on its own can be winched by its drawbar.
 
 Nothing is saved in test mode, so your real progress is safe. Puddles on the track come from the weather picked on the welcome screen. There is no wind yet.
 
@@ -250,6 +253,8 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 Add `?seed=7` (any number) to start a new run with that run's surprises, to see the same ones again, or `?surprises=off` to drive without them.
 
 ## What to test
+
+- [ ] **v0.46 trailer, first look:** the loading screen and pause menu show v0.46. Open the game with `?dev`, drive an episode and press **With two drums of diesel** in the Test mode panel. Does the trailer sit right behind the car, and does the camera show both? Drive, corner and brake: does it follow believably and make the car feel heavier? Reverse with the wheel turned until it jackknifes, then pull forward. Stop, unhitch it from the tool menu (Q), drive off, come back, back up to it and press E: was it easy to line up? Try it behind the Land Rover and the Unimog too. The trailer's look is a first draft: the next update draws it properly, with the Army trailer.
 
 - [ ] **v0.45 80 Series:** choose **80 Series — Sooty MkII** on the welcome screen or in Pause → Vehicle. Drive, brake, engage low range and lockers, try the winch and high beam, and switch to the cockpit. Check that the saved vehicle is selected after reloading, that its menu button fits on a phone, and that fuel starts at the episode amount with a 145 L capacity. Check the lifted wheels and body on rough terrain. The photo-based visual revision is still pending.
 
