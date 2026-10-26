@@ -9,8 +9,10 @@ import { roundHead, stalk } from './mirrors';
 
 /**
  * Early Toyota Hilux 4WD single cab (1979–83) with the factory styleside tub, in deep
- * red: a long flat bonnet between flat-topped wings, a full-width grille with round
- * headlamps in square bezels at its ends, a raked windscreen, door glass with a vent
+ * red: a long bonnet with a raised centre, falling slightly to the front between
+ * flat-topped wings, round headlamps in square chrome bezels with tall parking lamps
+ * round the corners outboard of them, a grille between the bezels, large flared wheel
+ * openings, a raked windscreen, door glass with a vent
  * window, a short cab with a small rear window, and a tub whose smooth sides run on
  * flush with the cab, with vertical tail lamps in its rear corners and a chrome step
  * bumper. Added for the game: a black bull bar with a winch behind it, and a ladder rack
@@ -33,7 +35,7 @@ const glass = new THREE.Color('#A2BAB6'),
 const SIDE = 0.835;
 const SILL = -0.02;
 const WAIST = 0.6;
-const ARCH = { radius: 0.47, cy: -0.1 };
+const ARCH = { radius: 0.52, cy: -0.1 };
 const FRONT_FACE = -2.15;
 const COWL = { y: 0.63, z: -0.93 };
 const SCREEN_TOP = { y: 1.21, z: -0.5 };
@@ -97,7 +99,7 @@ function archPanel(
     .translate(side * (SIDE + 0.008), ARCH.cy, axle)
     .rotate(0, Math.PI / 2, 0)
     .scale(1, 1, 0.45);
-  b.geometry(new THREE.TorusGeometry(ARCH.radius + 0.012, 0.022, 5, 36, Math.PI), paint);
+  b.geometry(new THREE.TorusGeometry(ARCH.radius + 0.016, 0.034, 5, 36, Math.PI), paint);
   b.pop();
   b.block(side * wellX, ARCH.cy + 0.22, axle, 0.03, 0.58, ARCH.radius * 2, black, M.Rubber, Z.Trim);
   // The well's roof stops at the inner skin, so it never shows through the outer one.
@@ -177,46 +179,55 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: 1 | -
 
 function frontEnd(b: VehicleBuilder): void {
   const F = FRONT_FACE;
-  // Flat bonnet between flat-topped wings, with its front lip and the cowl vent behind it.
-  b.block(0, 0.59, -1.54, 1.46, 0.04, 1.2, paint, M.Paint, Z.Front, 0.018);
-  b.block(0, 0.565, F + 0.04, 1.46, 0.05, 0.06, paint, M.Paint, Z.Front, 0.012);
+  // Bonnet and wings fall about 40 mm from the cowl to the nose (side-1980-4wd.jpg). The
+  // bonnet has a raised centre panel (front-utility-2wd.jpg), its front lip, and the cowl
+  // vent behind it.
+  const fall = Math.atan2(0.04, 1.2);
+  b.push().translate(0, 0.59, -1.54).rotate(-fall, 0, 0);
+  b.block(0, 0, 0, 1.46, 0.04, 1.2, paint, M.Paint, Z.Front, 0.018);
+  b.block(0, 0.022, 0.02, 0.86, 0.012, 1.12, paint, M.Paint, Z.Front, 0.01);
+  for (const side of [-1, 1]) b.block(side * 0.785, 0, 0.01, 0.1, 0.03, 1.24, paint, M.Paint, Z.Front, 0.012);
+  b.pop();
+  b.block(0, 0.545, F + 0.04, 1.46, 0.05, 0.06, paint, M.Paint, Z.Front, 0.012);
   b.block(0, 0.618, COWL.z - 0.02, 1.5, 0.03, 0.1, paint, M.Paint, Z.Front, 0.01);
   for (let i = 0; i < 9; i++)
     b.block(-0.4 + i * 0.1, 0.635, COWL.z - 0.02, 0.06, 0.006, 0.06, black, M.Rubber, Z.Front);
+  // Body-colour front panel the lamps and the grille sit in.
+  b.block(0, 0.4, F + 0.02, 1.66, 0.3, 0.04, paint, M.Paint, Z.Front, 0.012);
   for (const side of [-1, 1]) {
-    b.block(side * 0.785, 0.59, -1.53, 0.1, 0.03, 1.24, paint, M.Paint, Z.Front, 0.012);
     archPanel(b, side, F, DOOR.front - 0.01, -1.4, 0.6, Z.Front, 0.47);
-    // Round headlamp in a square chrome bezel at each end of the grille.
-    const hx = side * 0.66;
-    b.block(hx, 0.42, F - 0.002, 0.24, 0.22, 0.03, chrome, M.Metal, Z.Front, 0.012);
-    b.slot = M.Rubber;
+    // Round headlamp in its own square chrome bezel, outboard of the grille.
+    const hx = side * 0.6;
+    b.block(hx, 0.41, F - 0.002, 0.23, 0.22, 0.03, chrome, M.Metal, Z.Front, 0.012);
+    b.block(hx, 0.41, F - 0.012, 0.2, 0.19, 0.012, black, M.Rubber, Z.Front, 0.006);
+    b.ring(hx, 0.41, F - 0.02, 0.09, 0.009, chrome, M.Metal, 'z', Z.Front);
+    b.slot = M.Headlamp;
     b.tag = Z.Front;
     b.push()
-      .translate(hx, 0.42, F - 0.012)
-      .rotate(Math.PI / 2, 0, 0);
-    b.geometry(new THREE.CylinderGeometry(0.098, 0.098, 0.012, 28), black);
-    b.pop();
-    b.ring(hx, 0.42, F - 0.02, 0.09, 0.009, chrome, M.Metal, 'z', Z.Front);
-    b.slot = M.Headlamp;
-    b.push()
-      .translate(hx, 0.42, F - 0.02)
+      .translate(hx, 0.41, F - 0.02)
       .scale(1, 1, 0.3);
     b.geometry(new THREE.SphereGeometry(0.086, 24, 12), lens);
     b.pop();
-    // Side indicator on the wing behind the bumper.
-    b.block(side * (SIDE + 0.004), 0.32, -1.98, 0.012, 0.035, 0.08, amber, M.Amber, Z.Front, 0.006);
+    // Tall clear parking lamp at the corner, wrapping round onto the wing (front-34-right.jpg,
+    // front-utility-2wd.jpg).
+    b.block(side * 0.77, 0.41, F - 0.004, 0.09, 0.22, 0.02, chrome, M.Metal, Z.Front, 0.008);
+    b.block(side * 0.77, 0.41, F - 0.014, 0.07, 0.2, 0.01, lens, M.Lamp, Z.Front, 0.005);
+    b.block(side * (SIDE + 0.004), 0.41, F + 0.05, 0.012, 0.2, 0.08, lens, M.Lamp, Z.Front, 0.005);
+    // Amber side lamp on the wing ahead of the wheel opening.
+    b.block(side * (SIDE + 0.004), 0.48, -1.98, 0.012, 0.035, 0.08, amber, M.Amber, Z.Front, 0.006);
   }
-  // Full-width black grille taking in the headlamps: a chrome frame, five bright bars
-  // between the headlamps, and a small plain badge (Toyota's oval came only in 1989).
-  b.block(0, 0.42, F + 0.02, 1.66, 0.3, 0.04, paint, M.Paint, Z.Front, 0.012);
-  b.block(0, 0.42, F + 0.004, 1.6, 0.26, 0.03, black, M.Rubber, Z.Front, 0.006);
-  for (const y of [0.29, 0.55]) b.block(0, y, F - 0.008, 1.62, 0.016, 0.02, chrome, M.Metal, Z.Front, 0.006);
+  // Grille between the lamp bezels: a chrome frame round six horizontal bright bars, and a
+  // small plain badge at its left-hand end (Toyota's oval came only in 1989).
+  const gw = 0.94;
+  b.block(0, 0.41, F + 0.004, gw, 0.22, 0.03, black, M.Rubber, Z.Front, 0.006);
+  for (const y of [0.295, 0.525])
+    b.block(0, y, F - 0.008, gw + 0.03, 0.018, 0.02, chrome, M.Metal, Z.Front, 0.006);
   for (const side of [-1, 1])
-    b.block(side * 0.802, 0.42, F - 0.008, 0.016, 0.276, 0.02, chrome, M.Metal, Z.Front, 0.006);
-  for (let i = 0; i < 5; i++)
-    b.block(0, 0.346 + i * 0.037, F - 0.01, 1.06, 0.01, 0.012, chrome, M.Metal, Z.Front, 0.003);
-  b.block(0, 0.42, F - 0.02, 0.13, 0.055, 0.014, chrome, M.Metal, Z.Front, 0.01);
-  b.block(0, 0.42, F - 0.026, 0.11, 0.035, 0.006, black, M.Rubber, Z.Front, 0.004);
+    b.block((side * (gw + 0.012)) / 2, 0.41, F - 0.008, 0.018, 0.248, 0.02, chrome, M.Metal, Z.Front, 0.006);
+  for (let i = 0; i < 6; i++)
+    b.block(0, 0.33 + i * 0.032, F - 0.01, gw - 0.02, 0.012, 0.012, chrome, M.Metal, Z.Front, 0.003);
+  b.block(-0.33, 0.47, F - 0.02, 0.13, 0.04, 0.014, chrome, M.Metal, Z.Front, 0.008);
+  b.block(-0.33, 0.47, F - 0.026, 0.11, 0.024, 0.006, black, M.Rubber, Z.Front, 0.004);
   // Valance under the grille and the bumper brackets (the bull bar takes the bumper's place).
   b.block(0, 0.21, F + 0.03, 1.66, 0.16, 0.04, paint, M.Paint, Z.Front, 0.01);
   for (const x of [-0.42, 0.42]) b.block(x, 0.04, F + 0.05, 0.06, 0.06, 0.14, black, M.Metal, Z.Trim);
