@@ -74,11 +74,13 @@ describe('graphics geometry regression', () => {
     const mesh = new TerrainMesh(terrain, 1);
     const geometry = mesh.buildGeometry(120, 120, 8, 1);
     const p = geometry.getAttribute('position');
+    const index = geometry.getIndex()!;
     // Surface triangles precede the skirts. Their barycentres must meet physics exactly.
-    for (let i = 0; i < 8 * 8 * 6; i += 3) {
-      const x = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3;
-      const z = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3;
-      const y = (p.getY(i) + p.getY(i + 1) + p.getY(i + 2)) / 3;
+    for (let k = 0; k < 8 * 8 * 6; k += 3) {
+      const [a, b, c] = [index.getX(k), index.getX(k + 1), index.getX(k + 2)];
+      const x = (p.getX(a) + p.getX(b) + p.getX(c)) / 3;
+      const z = (p.getZ(a) + p.getZ(b) + p.getZ(c)) / 3;
+      const y = (p.getY(a) + p.getY(b) + p.getY(c)) / 3;
       expect(y).toBeCloseTo(terrain.heightAt(x, z), 5);
     }
     geometry.dispose();
