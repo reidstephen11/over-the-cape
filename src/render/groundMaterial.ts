@@ -12,6 +12,9 @@ export interface TrackEdgeStyle {
   bandBlend: number;
   /** Colour of that band. */
   band: THREE.Color;
+  /** Half-widths (m) of the blends at a ground patch's edge and into its rim. */
+  patchBlend: number;
+  rimBlend: number;
   /** Colours rut floors darken and hump crests pale towards. */
   rut: THREE.Color;
   crest: THREE.Color;
@@ -20,26 +23,36 @@ export interface TrackEdgeStyle {
 const glslColor = (c: THREE.Color) => `vec3(${c.r.toFixed(5)}, ${c.g.toFixed(5)}, ${c.b.toFixed(5)})`;
 
 /**
- * World-space detail stays aligned across terrain chunks and every LOD. A track's edge is
- * blended per pixel from the distance to it, so it doesn't follow the triangles.
+ * World-space detail stays aligned across terrain chunks and every LOD. The edges of tracks
+ * and ground patches are blended per pixel from the distance to them, so they don't follow
+ * the triangles.
  */
 export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMaterial {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.93 });
   material.onBeforeCompile = (shader) => {
     shader.uniforms.groundWetness = groundUniforms.groundWetness;
     shader.vertexShader = `attribute vec2 ground; attribute vec3 trackColor; attribute vec4 trackEdge;
-      varying vec2 vGround; varying vec3 vGroundPosition; varying vec3 vTrackColor; varying vec4 vTrackEdge;
+      attribute vec3 patchInner; attribute vec3 patchRim; attribute vec2 patchEdge;
+      attribute vec4 patchCircle; attribute float clayBank;
+      varying vec4 vGround; varying vec4 vGroundPosition; varying vec3 vTrackColor; varying vec4 vTrackEdge;
+      varying vec3 vPatchInner; varying vec3 vPatchRim; varying vec4 vPatchCircle;
       ${shader.vertexShader}`.replace(
       '#include <begin_vertex>',
       `#include <begin_vertex>
-        vGround = ground; vGroundPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-        vTrackColor = trackColor; vTrackEdge = trackEdge;`,
+        vGround = vec4(ground, patchEdge); vGroundPosition = vec4((modelMatrix * vec4(position, 1.0)).xyz, clayBank);
+        vTrackColor = trackColor; vTrackEdge = trackEdge;
+        vPatchInner = patchInner; vPatchRim = patchRim; vPatchCircle = patchCircle;`,
     );
     shader.fragmentShader = /* glsl */ `
-      varying vec2 vGround;
-      varying vec3 vGroundPosition;
+      // xy: rockiness and wetness; zw: a ground patch's edge distance and rim width.
+      varying vec4 vGround;
+      // w: the distance out from a clay bank beside a track.
+      varying vec4 vGroundPosition;
       varying vec3 vTrackColor;
       varying vec4 vTrackEdge;
+      varying vec3 vPatchInner;
+      varying vec3 vPatchRim;
+      varying vec4 vPatchCircle;
       uniform float groundWetness;
       float groundHash(vec2 p) {
         return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -56,6 +69,10 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
         /* glsl */ `
         #include <color_fragment>
         vec2 groundP = vGroundPosition.xz;
+        // A clay bank beside the track, under the track's paint so only its outer edge shows.
+        float bankDist = vGroundPosition.w + (groundNoise(groundP * 1.1 - 31.0) - 0.5) * 0.3;
+        diffuseColor.rgb = mix(diffuseColor.rgb, ${glslColor(edge.band)},
+          1.0 - smoothstep(-${edge.patchBlend.toFixed(3)}, ${edge.patchBlend.toFixed(3)}, bankDist));
         // Track paint: x is the distance out from the track's edge, a little ragged so the
         // line isn't ruled; y where the paint ends; z the darker band's width (0: none).
         float edgeDist = vTrackEdge.x + (groundNoise(groundP * 0.8) - 0.5) * 0.3;
@@ -65,6 +82,17 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
           smoothstep(-vTrackEdge.z - ${edge.bandBlend.toFixed(3)}, -vTrackEdge.z + ${edge.bandBlend.toFixed(3)}, edgeDist) *
           clamp(vTrackEdge.z * 10.0, 0.0, 1.0);
         diffuseColor.rgb = mix(diffuseColor.rgb, mix(vTrackColor, ${glslColor(edge.band)}, paintBand), paintCover);
+        // A ground patch over that (a washout, a bog, a creek bank): the distance out from
+        // its edge and its rim's width. A round one gives its centre and radius instead, as
+        // the 1 m samples would draw a circle as a diamond.
+        float circleDist = length(groundP - vPatchCircle.xy) - vPatchCircle.z;
+        float patchDist = mix(vGround.z, circleDist, vPatchCircle.w) +
+          (groundNoise(groundP * 1.3 + 17.0) - 0.5) * 0.25;
+        float patchCover = 1.0 - smoothstep(-${edge.patchBlend.toFixed(3)}, ${edge.patchBlend.toFixed(3)}, patchDist);
+        float patchRim =
+          smoothstep(-vGround.w - ${edge.rimBlend.toFixed(3)}, -vGround.w + ${edge.rimBlend.toFixed(3)}, patchDist) *
+          clamp(vGround.w * 10.0, 0.0, 1.0);
+        diffuseColor.rgb = mix(diffuseColor.rgb, mix(vPatchInner, vPatchRim, patchRim), patchCover);
         // w: rut floors darker, hump crests paler.
         diffuseColor.rgb = mix(diffuseColor.rgb, ${glslColor(edge.rut)}, max(0.0, -vTrackEdge.w) * 0.7);
         diffuseColor.rgb = mix(diffuseColor.rgb, ${glslColor(edge.crest)}, max(0.0, vTrackEdge.w) * 0.35);
@@ -100,5 +128,5 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
       `,
       );
   };
-  return patchFog(material, 'ground-detail-v3');
+  return patchFog(material, 'ground-detail-v4');
 }

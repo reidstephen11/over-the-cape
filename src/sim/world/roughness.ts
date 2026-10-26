@@ -129,22 +129,35 @@ export function roughHole(
 const MARKED_DEPTH = 0.2;
 const MARK_RIM = 1.7;
 
-/** Whether a point is in a marked pothole or washout (1), on its pale rim (2), or neither (0). */
-export function roughMark(rough: TrackRoughness, s: number, l: number): 0 | 1 | 2 {
-  let mark: 0 | 1 | 2 = 0;
+/** How the ground shows a pothole or washout near a point (see `roughPatch`). */
+export interface RoughPatch {
+  /** Distance (m) out from its painted edge, negative inside. */
+  edge: number;
+  kind: 'pothole' | 'washout';
+  /** Width (m) of the pale rim of a marked one; 0 when unmarked. */
+  rim: number;
+  /** A pothole's centre: metres along the track and left of the point. */
+  centre?: readonly [number, number];
+}
+
+/** The pothole or washout nearest a point, or null when none comes within `reach` (m). */
+export function roughPatch(rough: TrackRoughness, s: number, l: number, reach: number): RoughPatch | null {
+  let best: RoughPatch | null = null;
+  const consider = (dist: number, size: number, depth: number, patch: Omit<RoughPatch, 'edge' | 'rim'>) => {
+    const marked = depth >= MARKED_DEPTH;
+    const edge = dist - size * (marked ? MARK_RIM : INNER);
+    if (edge < reach && edge < (best?.edge ?? Infinity))
+      best = { ...patch, edge, rim: marked ? size * (MARK_RIM - 0.9) : 0 };
+  };
   for (const p of rough.potholes) {
-    if (p.depth < MARKED_DEPTH || Math.abs(s - p.s) > p.radius * MARK_RIM) continue;
-    const q = Math.hypot(s - p.s, l - p.l) / p.radius;
-    if (q < 0.9) return 1;
-    if (q < MARK_RIM) mark = 2;
+    if (Math.abs(s - p.s) > p.radius * MARK_RIM + reach) continue;
+    consider(Math.hypot(s - p.s, l - p.l), p.radius, p.depth, {
+      kind: 'pothole',
+      centre: [p.s - s, p.l - l],
+    });
   }
-  for (const w of rough.washouts) {
-    if (w.depth < MARKED_DEPTH) continue;
-    const q = washoutDistance(w, s, l) / w.half;
-    if (q < 0.9) return 1;
-    if (q < MARK_RIM) mark = 2;
-  }
-  return mark;
+  for (const w of rough.washouts) consider(washoutDistance(w, s, l), w.half, w.depth, { kind: 'washout' });
+  return best;
 }
 
 /** Mud holes stretch this far along the track (m)... */

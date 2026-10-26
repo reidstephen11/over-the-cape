@@ -55,6 +55,69 @@ export interface TrackPaint {
 }
 
 /**
+ * A patch of ground painted over whatever is there (a washout, a bog, a creek bank), so
+ * its edge can be drawn smooth instead of in 1 m steps. `edge` is the distance (m) out
+ * from the patch's edge, negative inside; within `rimWidth` (m) of the edge it shows
+ * `rim`, deeper in `inner`. `under` is the tint the ground had before the patch. A round
+ * patch (a pothole) also gives its centre, east and south of the sample (m), so it can
+ * be drawn round where the 1 m samples alone would draw it as a diamond.
+ */
+export interface GroundPatch {
+  edge: number;
+  inner: GroundTint;
+  rim: GroundTint;
+  rimWidth: number;
+  under: GroundTint;
+  centre?: readonly [number, number];
+}
+
+/** Ground patches are kept this far (m) out from their edge, so the edge blends true. */
+export const PATCH_REACH = 2;
+
+const tenths = (m: number) => Math.max(-127, Math.min(127, Math.round(m * 10))) + 128;
+
+/**
+ * A ground patch packed into one number: edge, rim width and centre in tenths of a metre.
+ * The tints and widths take the low 28 bits; the centre sits above them.
+ */
+export function packPatch(p: GroundPatch): number {
+  const rim = Math.max(0, Math.min(255, Math.round(p.rimWidth * 10)));
+  const low = tenths(p.edge) | (rim << 8) | (p.inner << 16) | (p.rim << 20) | (p.under << 24);
+  const high = p.centre ? 1 | (tenths(p.centre[0]) << 1) | (tenths(p.centre[1]) << 9) : 0;
+  return low + high * 2 ** 28;
+}
+
+export function unpackPatch(v: number): GroundPatch {
+  const high = Math.floor(v / 2 ** 28);
+  return {
+    edge: ((v & 255) - 128) / 10,
+    rimWidth: ((v >> 8) & 255) / 10,
+    inner: ((v >> 16) & 15) as GroundTint,
+    rim: ((v >> 20) & 15) as GroundTint,
+    under: ((v >> 24) & 15) as GroundTint,
+    centre: high & 1 ? [(((high >> 1) & 255) - 128) / 10, (((high >> 9) & 255) - 128) / 10] : undefined,
+  };
+}
+
+/**
+ * A bare clay bank beside a track, packed into one number: how far (tenths of a metre,
+ * roughly) the sample is outside the bank, negative on it, and the tint the ground would
+ * have without it. Banks are drawn under the track paint, so only their outer edge shows.
+ */
+export function packBank(edge: number, under: GroundTint): number {
+  return tenths(edge) | (under << 8);
+}
+
+export function unpackBank(v: number): { edge: number; under: GroundTint } {
+  return { edge: ((v & 255) - 128) / 10, under: ((v >> 8) & 15) as GroundTint };
+}
+
+/** The tint a ground patch gives the 1 m sample it is at. */
+export function patchTint(p: GroundPatch): GroundTint {
+  return p.edge > 0 ? p.under : p.edge < -p.rimWidth ? p.inner : p.rim;
+}
+
+/**
  * Terrain grid: 1 m samples, `resX` × `resZ`, centred on the origin. Sample (ix, iz)
  * sits at x = ix - halfX, z = iz - halfZ, at index iz * resX + ix. Each cell is split into
  * two triangles along the (ix, iz)–(ix+1, iz+1) diagonal, matching the physics heightfield.
@@ -74,6 +137,10 @@ export class Terrain {
   holes = new Map<number, number>();
   /** Smooth track edges for drawing (null: draw the tint grid as it is). */
   trackPaint: TrackPaint | null = null;
+  /** Ground patches near each 1 m sample they cover or come within `PATCH_REACH` of (packed). */
+  groundPatches = new Map<number, number>();
+  /** Clay banks beside the tracks near each 1 m sample they cover or come within `PATCH_REACH` of (packed). */
+  clayBanks = new Map<number, number>();
   private readonly detailCells = new Map<number, DetailPatch>();
 
   /** `sizeX` × `sizeZ` cells of 1 m: the map's width (east–west) and length (north–south). */
