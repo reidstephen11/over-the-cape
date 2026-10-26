@@ -247,6 +247,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 ## What to test
 
 - [ ] It loads from the Pages link in current Chrome, Firefox and Edge, and on a phone.
+- [ ] **v0.41 smoother play:** the loading screen and pause menu show v0.41. The map should load a few seconds sooner. Drive the CREB at road speed on your laptop: are the short freezes as you drive into new ground gone, or much rarer? Does it feel smoother overall, especially looking along the map through the trees? Nothing should look different: trees, road edges, potholes and the light at dusk as before. If a tree pops in or out at the edge of the screen, note where.
 - [ ] **v0.40:** the loading screen and pause menu show v0.40. Starting the CREB at Daintree Village, does the car sit in the middle of the road, facing along it, and pull away cleanly without the wheels in the mud edge?
 - [ ] **v0.39:** the loading screen and pause menu show v0.39. Nothing in the game changes: a merged update now goes live about a minute after merging, without waiting for the unit tests.
 - [ ] **v0.38:** the loading screen and pause menu show v0.38. Nothing else changes: this update fixes a test so v0.37's muddy edges could go live.
