@@ -91,7 +91,8 @@ describe('the CREB, stretch by stretch', () => {
       expect(crawl.roll, tuning.name).toBeLessThan(30);
       expect(crawl.deviation, tuning.name).toBeLessThan(1.2);
       const fast = await stretch('range-top', 140, 240, 'high', tuning, { speed: 9, limit: 120 });
-      expect(fast.roll, tuning.name).toBeGreaterThan(crawl.roll + 3);
+      // The muddy edge (v0.37) lets it slide more than it digs in, so it leans less than on dry dirt.
+      expect(fast.roll, tuning.name).toBeGreaterThan(crawl.roll + 1);
       expect(fast.deviation, tuning.name).toBeGreaterThan(2);
     }
   }, 600_000);
