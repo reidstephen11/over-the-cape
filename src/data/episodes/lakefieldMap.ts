@@ -379,5 +379,6 @@ export const lakefieldMap: MapDef = {
     sand: '#D8C8A2',
   },
   blackSoil: { margin: 4, maxSlopeDeg: 10, firmAbove: 0.6 },
+  muddyEdges: true,
   spawnCampsite: 'laura',
 };

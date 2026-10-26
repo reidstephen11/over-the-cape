@@ -636,6 +636,8 @@ export interface MapDef {
   palette?: PaletteOverrides;
   /** Steep cuttings and fill beside the tracks are bare clay, not scree. */
   clayBanks?: boolean;
+  /** After rain the edges of dirt, clay and gravel tracks, and any clay banks, are mud. */
+  muddyEdges?: boolean;
   /** Boggy black soil over most of the ground off the tracks (none when absent). */
   blackSoil?: BlackSoilDef;
   /** POI id of the spawn campsite. */

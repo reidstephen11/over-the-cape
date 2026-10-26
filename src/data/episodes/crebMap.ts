@@ -838,6 +838,7 @@ export const crebMap: MapDef = {
     mud: '#6A3E2A',
   },
   clayBanks: true,
+  muddyEdges: true,
   // After the wet, the flatter ground off the tracks is boggy black soil: stay on the track.
   blackSoil: { margin: 4, maxSlopeDeg: 16, firmAbove: 0.55 },
   spawnCampsite: 'daintree-village',
