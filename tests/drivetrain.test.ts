@@ -47,6 +47,26 @@ describe('drivetrain', () => {
     const s = createDrivetrainState();
     s.engineRunning = false;
     expect(updateDrivetrain(t, s, { throttle: 1, reverse: false, speed: 0, enginePower: 1 }, 1 / 60)).toBe(0);
+    expect(s.fuelRate).toBe(0);
+  });
+
+  it('tank capacity does not change consumption or power, and a stationary hard pull burns more than idle', () => {
+    const largerTank = {
+      ...t,
+      engine: { ...t.engine, fuel: { ...t.engine.fuel, tankLitres: 180 } },
+    };
+    const normal = createDrivetrainState();
+    const large = createDrivetrainState();
+    const idle = createDrivetrainState();
+    for (let i = 0; i < 300; i++) {
+      const pull = { throttle: 1, reverse: false, speed: 0, enginePower: 1 };
+      expect(updateDrivetrain(t, normal, pull, 1 / 60)).toBe(
+        updateDrivetrain(largerTank, large, pull, 1 / 60),
+      );
+      updateDrivetrain(t, idle, { ...pull, throttle: 0 }, 1 / 60);
+    }
+    expect(large.fuelRate).toBe(normal.fuelRate);
+    expect(normal.fuelRate).toBeGreaterThan(idle.fuelRate * 8);
   });
 });
 

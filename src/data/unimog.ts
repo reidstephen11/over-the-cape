@@ -92,9 +92,8 @@ export const unimogTuning: VehicleTuning = {
     friction: { base: 30, perRpm: 0.025, pumpingPerRpm: 0.01 },
     inertia: 1.2,
     engineBrake: 320,
-    // A turbo-diesel with direct injection: a little more of its fuel turns the crank than
-    // in the Land Rover's diesel. A 160 L tank.
-    fuel: { tankLitres: 160, efficiency: 0.46, energyMJPerLitre: 38.6 },
+    // Army user handbook: 160 L. Efficiency is independent of episode balancing.
+    fuel: { tankLitres: 160, idleLitresPerHour: 1.8, efficiency: 0.38, energyMJPerLitre: 38.6 },
   },
   // The game drives the gears itself; this coupling stands in for the clutch.
   converter: { capacity: 56, stallRatio: 1.2, couplingPoint: 0.8 },

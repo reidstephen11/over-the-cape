@@ -4,7 +4,7 @@ import { DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 'three';
 import { engineSynthTunings } from '../src/data/audio';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { hiluxTuning } from '../src/data/hilux';
-import { troopyTuning as t, TROOPY_SUB_TANK } from '../src/data/troopy';
+import { troopyTuning as t, TROOPY_SUB_TANK, TROOPY_START_FUEL } from '../src/data/troopy';
 import { vehicleTuning, type VehicleTuning } from '../src/data/vehicle';
 import { vehicleLoadout, vehicleOrder, vehicles } from '../src/data/vehicles';
 import { DIAL_START, DIAL_SWEEP } from '../src/render/vehicleInstruments';
@@ -34,8 +34,9 @@ describe('Troop Carrier', () => {
     expect(t.wheelRadius * 2).toBeCloseTo(0.8, 2);
     expect(t.gearbox.ratios).toHaveLength(5);
     expect([t.gearbox.finalDrive, t.ranges.low.ratio]).toEqual([4.111, 2.488]);
-    // The main tank and the sub-tank hold 150 L between them.
-    expect(t.engine.fuel.tankLitres).toBe(150);
+    // Two factory 90 L tanks. The episode may start with less in them.
+    expect(TROOPY_SUB_TANK).toBe(90);
+    expect(t.engine.fuel.tankLitres).toBe(180);
     // A diesel six: its engine sound fires six cylinders and knocks.
     expect(engineSynthTunings.troopy.firingOrder).toHaveLength(6);
     expect(engineSynthTunings.troopy.knock).toBeDefined();
@@ -46,22 +47,22 @@ describe('Troop Carrier', () => {
     expect(idleCreep).toBeLessThan(2.5);
   });
 
-  it('starts an episode with its sub-tank full on top of the episode load, and two spares like every vehicle', () => {
+  it('starts with 60 L extra, independently of its 90 L sub-tank capacity, and two spares', () => {
     const l = crebEpisode.loadout;
     expect(vehicleLoadout(l, 'troopy')).toEqual({
       ...l,
-      fuel: l.fuel + TROOPY_SUB_TANK,
+      fuel: l.fuel + TROOPY_START_FUEL,
     });
     for (const id of vehicleOrder.filter((v) => v !== 'troopy')) expect(vehicleLoadout(l, id)).toEqual(l);
     const start = startCheckpoint(crebEpisode, 'start', 'troopy');
-    expect([start.fuel, start.spares]).toEqual([l.fuel + TROOPY_SUB_TANK, 2]);
+    expect([start.fuel, start.spares]).toEqual([l.fuel + TROOPY_START_FUEL, 2]);
   });
 
   it('fills both tanks from the checkpoint; in a smaller vehicle the fuel that will not fit stays behind', async () => {
     const start = startCheckpoint(crebEpisode, 'start', 'troopy');
     const s = await makeScene({ tuning: t });
     applyCheckpoint(s.vehicle, start);
-    expect(s.vehicle.condition.fuel).toBe(crebEpisode.loadout.fuel + TROOPY_SUB_TANK);
+    expect(s.vehicle.condition.fuel).toBe(crebEpisode.loadout.fuel + TROOPY_START_FUEL);
     s.physics.world.free();
     const h = await makeScene({ tuning: hiluxTuning });
     applyCheckpoint(h.vehicle, start);

@@ -3,7 +3,7 @@ import { hiluxTuning } from './hilux';
 import { LC79_CAB_LIFT, lc79Tuning } from './lc79';
 import { patrolTuning } from './patrol';
 import { perentieTuning } from './perentie';
-import { TROOPY_SUB_TANK, troopyTuning } from './troopy';
+import { TROOPY_START_FUEL, troopyTuning } from './troopy';
 import { unimogTuning } from './unimog';
 import type { EpisodeLoadout } from './episodes';
 import { vehicleTuning, type VehicleId, type VehicleTuning } from './vehicle';
@@ -256,8 +256,8 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     tuning: troopyTuning,
     blurb: '1990s LandCruiser 75 Series Troop Carrier, 4.2 L diesel six, five-speed, with a sub-tank.',
     cameraScale: 1.12,
-    // The full sub-tank.
-    extraLoad: { fuel: TROOPY_SUB_TANK },
+    // Starting fill for the game, separate from the sub-tank's 90 L capacity.
+    extraLoad: { fuel: TROOPY_START_FUEL },
     cabin: seventyCabin,
   },
   patrol: {
@@ -306,7 +306,10 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
 /** What a vehicle carries at the start of an episode: the episode's load and its own extras. */
 export function vehicleLoadout(load: EpisodeLoadout, id: VehicleId): EpisodeLoadout {
   const extra = vehicles[id].extraLoad;
-  return extra ? { ...load, fuel: load.fuel + extra.fuel } : load;
+  return {
+    ...load,
+    fuel: Math.min(vehicles[id].tuning.engine.fuel.tankLitres, load.fuel + (extra?.fuel ?? 0)),
+  };
 }
 
 export const vehicleOrder: readonly VehicleId[] = [

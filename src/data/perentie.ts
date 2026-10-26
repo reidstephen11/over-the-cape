@@ -86,8 +86,8 @@ export const perentieTuning: VehicleTuning = {
     friction: { base: 18, perRpm: 0.012, pumpingPerRpm: 0.006 },
     inertia: 0.45,
     engineBrake: 140,
-    // Diesel: more of its fuel's energy turns the crank.
-    fuel: { tankLitres: 79, efficiency: 0.38, energyMJPerLitre: 38.6 },
+    // Army EMEI G 100: 65 L for the 4x4 GS. Sources: docs/FUEL.md.
+    fuel: { tankLitres: 65, idleLitresPerHour: 0.8, efficiency: 0.38, energyMJPerLitre: 38.6 },
   },
   // The game drives the gears itself; this coupling stands in for the clutch.
   converter: { capacity: 90, stallRatio: 1.25, couplingPoint: 0.8 },

@@ -87,7 +87,7 @@ export const patrolTuning: VehicleTuning = {
     inertia: 0.55,
     engineBrake: 150,
     // The GQ wagon's 95 L tank.
-    fuel: { tankLitres: 95, efficiency: 0.38, energyMJPerLitre: 38.6 },
+    fuel: { tankLitres: 95, idleLitresPerHour: 1.1, efficiency: 0.38, energyMJPerLitre: 38.6 },
   },
   // The game drives the gears itself; this coupling stands in for the clutch.
   converter: { capacity: 95, stallRatio: 1.25, couplingPoint: 0.8 },

@@ -5,7 +5,7 @@ import type { VehicleTuning } from './vehicle';
  * wagon that is a common sight on Cape York trips. 2.98 m wheelbase, 1.42 m
  * front and 1.40 m rear track, 7.50R16 tyres, leaf springs on both solid axles, the
  * 4.2 L 1HZ diesel six (96 kW, 285 Nm), the H55F five-speed, a 2.488 low range and
- * 4.111 axles. Two fuel tanks: the 90 L main tank and a 60 L sub-tank. Same local frame
+ * 4.111 axles. Two fuel tanks: the 90 L main tank and a 90 L sub-tank. Same local frame
  * as the other vehicles: x right, y up, z back, origin 0.12 m above the parked hubs, so
  * the ground is about 0.52 m below it.
  */
@@ -15,8 +15,11 @@ const REAR_TRACK = 0.7;
 const HALF_BASE = 1.49;
 const MOUNT_Y = 0.32;
 
-/** The 60 L sub-tank: full at the start of an episode, on top of the episode's fuel. */
-export const TROOPY_SUB_TANK = 60;
+/** Physical capacity, independent of the episode's starting fill. Sources: docs/FUEL.md. */
+export const TROOPY_SUB_TANK = 90;
+
+/** Extra starting fuel for the game; the sub-tank need not start full. */
+export const TROOPY_START_FUEL = 60;
 
 export const troopyTuning: VehicleTuning = {
   id: 'troopy',
@@ -93,8 +96,13 @@ export const troopyTuning: VehicleTuning = {
     friction: { base: 22, perRpm: 0.014, pumpingPerRpm: 0.007 },
     inertia: 0.55,
     engineBrake: 150,
-    // The 90 L main tank and the 60 L sub-tank, counted as one.
-    fuel: { tankLitres: 90 + TROOPY_SUB_TANK, efficiency: 0.38, energyMJPerLitre: 38.6 },
+    // Two factory 90 L tanks, counted as one by the fuel gauge.
+    fuel: {
+      tankLitres: 90 + TROOPY_SUB_TANK,
+      idleLitresPerHour: 1.1,
+      efficiency: 0.38,
+      energyMJPerLitre: 38.6,
+    },
   },
   // The game changes gear itself; this coupling stands in for the clutch.
   converter: { capacity: 85, stallRatio: 1.25, couplingPoint: 0.8 },

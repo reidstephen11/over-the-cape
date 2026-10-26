@@ -211,6 +211,27 @@ describe('fuel', () => {
     expect(sim.refuelOption('p')).toBeNull();
     sim.physics.free();
   });
+
+  it('applies the episode multiplier to real engine use exactly once', async () => {
+    const sim = new Simulation(await loadRapier(), testWorld(), lateAfternoon);
+    const v = sim.addVehicle('p', sim.campsitePose(sim.world.map.spawnCampsite), vehicleTuning);
+    try {
+      for (const scale of [1, 8.5]) {
+        sim.fuelScale = scale;
+        v.condition.fuel = 10;
+        let realLitres = 0;
+        const inputs = new Map([['p', { ...emptyInput(), throttle: 0.5, brake: 1 }]]);
+        for (let i = 0; i < 120; i++) {
+          sim.step(inputs, 1 / 60);
+          realLitres += v.drivetrain.fuelRate / 60;
+        }
+        expect(realLitres).toBeGreaterThan(0);
+        expect(10 - v.condition.fuel).toBeCloseTo(realLitres * scale, 8);
+      }
+    } finally {
+      sim.physics.free();
+    }
+  });
 });
 
 describe('tyres', () => {
