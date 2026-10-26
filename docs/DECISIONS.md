@@ -1047,3 +1047,13 @@ The first vehicle compared with the v0.30 photographs. Compared: `front-34-right
 - **Wheel openings.** Radius 0.47 m to 0.52 m, with a thicker flared lip. The 4WD's openings in `front-34-right.jpg` and `side-1980-4wd.jpg` leave a wide gap round the tyre; the model's sat tight on it.
 - **Unchanged:** wheelbase, width, height, tuning, collision boxes, the bull bar, winch, rack and spares. About 900 more triangles.
 - **Still disagrees.** The tyre is 0.75 m across against about 0.80 m for a 7.00-16; changing it changes the tuning and the physics tests, so it is left for its own update. The skin length is unchanged. There is no straight front or rear photograph of a 4WD to check the front against square-on.
+
+## v0.33: road edges drawn per pixel
+
+**What the owner asked.** The road edges were softened in v0.25 but still showed a zig-zag where a road runs at an angle to the 1 m ground grid.
+
+**Why it was still jagged.** v0.25 worked out the blend from the distance to the track's edge, but only once at each 1 m ground sample, and the resulting colour was then spread straight across each triangle. The blend is under a metre wide, so most triangles on the edge had one sample on the road and one off it, and the colour change still followed the triangles' diagonals.
+
+**What changed.** Each ground vertex now carries the colour beside the track, the track's own colour and the distance to the track's edge (with where its paint ends and how wide its darker edge band is). The ground shader blends them per pixel from that distance (`src/render/groundMaterial.ts`). The distance changes in a straight line across a triangle, so the edge follows the real line of the track wherever it runs. A little noise (±0.15 m) keeps the edge from looking ruled. The shading values sit in one interleaved buffer (`SHADE` in `src/render/terrainMesh.ts`); the fine rut patches use the same values and the shader applies their darker floors and paler crests after the edge blend. Samples more than 2 m from a painted track are now marked with `NO_TRACK_EDGE` instead of 0, so a washout or pothole painted right on a track's edge keeps its real distance and doesn't draw green wedges into the road. The darker band inside the edge fades out with its width instead of stopping at a line. The physics surface, the tint grid and the colours are unchanged.
+
+**Checked.** Screenshots at the start of the CREB, before and after, from the chase camera and from just above the track: the grass and dirt now meet in a smooth line, and the washout near Daintree Village has no hard patches.

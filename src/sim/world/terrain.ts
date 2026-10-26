@@ -43,9 +43,12 @@ export function trackTint(kind: number): GroundTint {
 /**
  * Track paint near the edge of each painted track, per 1 m sample, so the edge can be
  * drawn smooth instead of in 1 m steps. `edge` is the distance from the track's edge in
- * tenths of a metre (negative on the track). `paint` is the kind in its low 3 bits and,
- * above them, the tint the ground has beside the track. 0 = no track paint here.
+ * tenths of a metre (negative on the track), or `NO_TRACK_EDGE` more than 2 m from any
+ * painted track. It is kept where something was painted over the track afterwards.
+ * `paint` is the kind in its low 3 bits and, above them, the tint the ground has beside
+ * the track. 0 = no track paint here.
  */
+export const NO_TRACK_EDGE = -128;
 export interface TrackPaint {
   edge: Int8Array;
   paint: Uint8Array;

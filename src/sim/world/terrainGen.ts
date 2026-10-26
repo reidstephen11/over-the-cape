@@ -2,7 +2,7 @@ import { SurfaceId } from '../../data/surfaces';
 import type { FlatDef, MapDef, ScarpDef, HillDef, TrackDef } from './mapTypes';
 import { Noise2D, clamp, smoothstep } from './noise';
 import { attrAt, densify, locate, type DensePolyline } from './polyline';
-import { GroundTint, NO_WATER, Terrain, TrackPaintKind, trackTint } from './terrain';
+import { GroundTint, NO_TRACK_EDGE, NO_WATER, Terrain, TrackPaintKind, trackTint } from './terrain';
 import type { CreekInfo, GullyInfo, StaticBox, TerrainFeatures, TrackInfo } from './features';
 import { buildDetailPatch, type DetailPatch } from './detail';
 import { onBridge } from './bridges';
@@ -882,7 +882,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   }
 
   const trackDistance = new Uint8Array(n).fill(255);
-  const paintEdge = new Int8Array(n);
+  const paintEdge = new Int8Array(n).fill(NO_TRACK_EDGE);
   const paint = new Uint8Array(n);
   for (let i = 0; i < n; i++) {
     const id = trackOwner[i];
