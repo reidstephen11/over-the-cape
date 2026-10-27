@@ -75,6 +75,11 @@ The history in the game is kept to what these sources say. Where they disagree, 
 
 ## Episode 2: the Old Coach Road
 
+### The compact range chapter (v0.52)
+
+- **Game choice:** the playable chapter now concentrates on the Conglomerate Range between Maytown and Laura. Maytown, the rivers and the connecting road to Laura are covered by the diary rather than additional driving. The three climb lines, big step and north-face descent remain in that order, with shorter ridge sections, an authored leaning traverse and small rock shelves.
+- **Fiction:** the 26 November 1986 diary entry, its pencil sketch, stops and dialogue are invented. The south-face, hotel-site and north-face camps serve gameplay; the unnamed hotel site does not identify a surveyed historical location. The clear conditions are not a claim about that historical day's weather.
+
 ### The road (briefing)
 
 - **Claim:** Gold was found on the Palmer River in 1873 and a rush followed. Maytown became the centre of the field. The road between Maytown and Laura was built from about 1877 to about 1895, over the Conglomerate Range; Maytown had no road directly to it until 1877. Cobb & Co began regular coach services on it in 1880.

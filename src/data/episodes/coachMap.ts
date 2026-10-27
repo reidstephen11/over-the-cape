@@ -5,34 +5,18 @@ import {
   climbBypass,
   climbMiddle,
   climbOldCoach,
-  coachRoadNorth,
-  coachRoadSouth,
   eastBypass,
-  lauraRoad,
-  littleLauraCrossing,
-  maytownRoad,
-  northPalmerRocky,
-  northPalmerSand,
-  palmerCampRoad,
-  palmerCrossing,
   rangeDescent,
+  rangeExit,
   rangeFoot,
   rangeTopNorth,
   rangeTopSouth,
 } from './coachRoute';
 
 /**
- * Episode 2, the Old Coach Road: from a camp on the Palmer River across to the ruins of
- * Maytown, then north on the coach road over the North Palmer River and the Conglomerate
- * Range, and down through the woodland to the Little Laura River and Laura. Distances are
- * shortened; the obstacles are full size. Coordinates in metres: x = east, z = south.
- *
- * The map is a long strip, 1.3 km wide and 7.2 km from south to north:
- *   south  – the Palmer River's sand, Maytown, the coach road to the North Palmer
- *   middle – the Conglomerate Range: its south face (three ways up), the sandstone top with
- *            the hotel site and the big rock step, and the descent of its north face
- *   north  – open woodland and termite mounds to the Little Laura River and Laura
- * It is the dry season: the rivers are low over wide sand, and the road is dust and rock.
+ * A compact chapter on the Conglomerate Range, on the Old Coach Road between
+ * Maytown and Laura. River crossings and connecting travel belong to the diary.
+ * The full-size technical obstacles sit in a 1.3 by 2 km strip of dry woodland.
  */
 // Cuttings and fill laid back to an average 1 in 2, as on the CREB.
 const BATTER = 0.5;
@@ -64,46 +48,18 @@ const road = {
   pinMode: 'follow',
   rough: roadRough,
 } as const;
-const sand = {
-  shoulder: 3,
-  batter: BATTER,
-  smooth: 10,
-  surface: 'sand',
-  ruts: 0.1,
-  camber: 0.3,
-  pinMode: 'follow',
-} as const;
 
 const tracks: TrackDef[] = [
   {
-    id: 'palmer-camp-road',
-    name: 'Track to the river',
-    points: palmerCampRoad,
+    id: 'range-foot',
+    name: 'Track to the range',
+    points: rangeFoot,
     width: 3.8,
     surface: 'dirt',
     ...road,
-  },
-  { id: 'palmer-crossing', name: 'Palmer River crossing', points: palmerCrossing, width: 4.2, ...sand },
-  { id: 'maytown-road', name: 'Leslie Street', points: maytownRoad, width: 4.6, surface: 'dirt', ...road },
-  {
-    id: 'coach-road-south',
-    name: 'Old Coach Road',
-    points: coachRoadSouth,
-    width: 3.8,
-    surface: 'dirt',
-    ...road,
-  },
-  { id: 'north-palmer-sand', name: 'North Palmer crossing', points: northPalmerSand, width: 3.8, ...sand },
-  {
-    id: 'north-palmer-rocky',
-    name: 'Rocky crossing',
-    points: northPalmerRocky,
-    width: 3.6,
-    surface: 'gravel',
-    ...road,
+    pinMode: 'linear',
     rough: undefined,
   },
-  { id: 'range-foot', name: 'Old Coach Road', points: rangeFoot, width: 3.8, surface: 'dirt', ...road },
   {
     id: 'climb-middle',
     name: 'The middle line',
@@ -166,9 +122,20 @@ const tracks: TrackDef[] = [
     name: 'Old Coach Road',
     points: rangeTopSouth,
     width: 3.6,
-    surface: 'dirt',
+    surface: 'rock',
     ...road,
     rough: rockRough,
+    // Low shelves under alternate wheels reward line choice on the short traverse.
+    rockySteps: [
+      { at: 110, rise: 0.3 },
+      { at: 218, rise: 0.35 },
+    ],
+    stones: [boulder(132, -0.7, 0.32, 1), boulder(164, 0.7, 0.32, 1)],
+    cant: [
+      [0, 0],
+      [160, 6],
+      [220, 0],
+    ],
   },
   {
     id: 'big-step-line',
@@ -224,38 +191,15 @@ const tracks: TrackDef[] = [
     ],
   },
   {
-    id: 'coach-road-north',
-    name: 'Old Coach Road',
-    points: coachRoadNorth,
+    id: 'range-exit-road',
+    name: 'Track to camp',
+    points: rangeExit,
     width: 3.8,
     surface: 'dirt',
     ...road,
-    // Two dry creeks: dips with soft sand in the bottom.
-    sand: [
-      [690, 738],
-      [1334, 1372],
-    ],
-    cut: [
-      [672, 0],
-      [698, 0.7],
-      [730, 0.7],
-      [756, 0],
-      [1316, 0],
-      [1342, 0.6],
-      [1364, 0.6],
-      [1390, 0],
-    ],
-  },
-  {
-    id: 'little-laura-crossing',
-    name: 'Little Laura crossing',
-    points: littleLauraCrossing,
-    width: 4,
-    ...sand,
-    // Graded straight down each bank to the bed, pinned where it meets the water.
     pinMode: 'linear',
+    rough: undefined,
   },
-  { id: 'laura-road', name: 'Road to Laura', points: lauraRoad, width: 5, surface: 'gravel', ...road },
 ];
 
 /**
@@ -308,47 +252,20 @@ const horizon: HorizonDef = {
   woodland: [{ x: 0, z: 0, radius: 40000 }],
 };
 
-/** Headstones in Maytown's cemetery, east of the town, in two rows facing the street. */
-const cemetery: PropDef[] = [
-  [52, 2858],
-  [56, 2858],
-  [61, 2859],
-  [66, 2860],
-  [53, 2851],
-  [59, 2852],
-  [64, 2852],
-].map(([x, z]) => ({ kind: 'headstone', x, z, headingDeg: 260 }));
-
 const props: PropDef[] = [
-  // The camp on the Palmer.
-  { kind: 'fireRing', x: -56, z: 3404, headingDeg: 0, flatten: 3 },
-  { kind: 'logSeat', x: -58, z: 3412, headingDeg: 20 },
-  { kind: 'signpost', x: -30, z: 3384, headingDeg: 190, text: 'Maytown' },
-  // Maytown: the baker's oven, chimneys where buildings stood, the kerbing along Leslie
-  // Street, the replica hut in Duff Street and the cemetery.
-  { kind: 'bakerOven', x: -100, z: 2896, headingDeg: 90, flatten: 3 },
-  { kind: 'chimney', x: 16, z: 2930, headingDeg: 270, flatten: 2 },
-  { kind: 'chimney', x: -122, z: 2842, headingDeg: 10, flatten: 2 },
-  { kind: 'stoneKerb', x: -26.4, z: 2933, headingDeg: 258 },
-  { kind: 'stoneKerb', x: -33.6, z: 2934.6, headingDeg: 258 },
-  { kind: 'hut', x: -112, z: 2930, headingDeg: 90, flatten: 8 },
-  { kind: 'signpost', x: -6, z: 2990, headingDeg: 190, text: 'Maytown' },
-  { kind: 'signpost', x: -8, z: 2836, headingDeg: 190, text: 'Laura' },
-  ...cemetery,
-  // The forks: a sign at each split, facing the driver coming north.
-  { kind: 'signpost', x: 12, z: 1968, headingDeg: 190, text: 'Rocky crossing' },
-  { kind: 'signpost', x: -11, z: 1270, headingDeg: 200, text: 'Old coach road' },
-  { kind: 'signpost', x: 10, z: 1270, headingDeg: 165, text: 'Bypass' },
-  { kind: 'signpost', x: -8, z: -16, headingDeg: 160, text: 'Eastern track' },
-  // The hotel site on the range.
-  { kind: 'chimney', x: 60, z: 174, headingDeg: 250, flatten: 2 },
-  { kind: 'fireRing', x: 38, z: 168, headingDeg: 0, flatten: 3 },
-  { kind: 'logSeat', x: 34, z: 176, headingDeg: 70 },
-  { kind: 'signpost', x: 20, z: 196, headingDeg: 190, text: 'Hotel site' },
-  // Laura.
-  { kind: 'hut', x: 58, z: -3380, headingDeg: 200, flatten: 8 },
-  { kind: 'waterTank', x: 70, z: -3366, headingDeg: 0 },
-  { kind: 'signpost', x: 6, z: -3300, headingDeg: 190, text: 'Laura' },
+  { kind: 'fireRing', x: -42, z: 606, headingDeg: 0, flatten: 3 },
+  { kind: 'logSeat', x: -44, z: 614, headingDeg: 20 },
+  { kind: 'signpost', x: -9, z: 606, headingDeg: 190, text: 'Conglomerate Range' },
+  { kind: 'signpost', x: -11, z: 520, headingDeg: 200, text: 'Old coach road' },
+  { kind: 'signpost', x: 10, z: 520, headingDeg: 165, text: 'Bypass' },
+  { kind: 'signpost', x: -8, z: 44, headingDeg: 160, text: 'Eastern track' },
+  { kind: 'chimney', x: 28, z: 216, headingDeg: 250, flatten: 2 },
+  { kind: 'fireRing', x: 12, z: 214, headingDeg: 0, flatten: 3 },
+  { kind: 'logSeat', x: 16, z: 222, headingDeg: 70 },
+  { kind: 'signpost', x: 2, z: 232, headingDeg: 190, text: 'Hotel site' },
+  { kind: 'fireRing', x: 36, z: -548, headingDeg: 0, flatten: 3 },
+  { kind: 'logSeat', x: 38, z: -540, headingDeg: 20 },
+  { kind: 'signpost', x: 28, z: -526, headingDeg: 190, text: 'Camp below the range' },
 ];
 
 export const coachMap: MapDef = {
@@ -356,16 +273,11 @@ export const coachMap: MapDef = {
   name: 'The Old Coach Road',
   seed: 1877,
   width: 1280,
-  length: 7168,
-  wall: [534, 3478],
+  length: 2048,
+  wall: [534, 918],
   floor: [
-    [-3584, 9],
-    [-2600, 13],
-    [-900, 22],
-    [1250, 22],
-    [1850, 18],
-    [2850, 14],
-    [3584, 9],
+    [-1024, 22],
+    [1024, 22],
   ],
   floorAlong: 'z',
   noise: {
@@ -382,31 +294,22 @@ export const coachMap: MapDef = {
     height: 60,
     forested: true,
     gaps: [
-      { x: 640, z: 3150, radius: 100 },
-      { x: -640, z: 3150, radius: 100 },
-      { x: 640, z: 1860, radius: 80 },
-      { x: -640, z: 1860, radius: 80 },
-      { x: 640, z: -2860, radius: 80 },
-      { x: -640, z: -2860, radius: 80 },
-      // North of Laura, where the road runs on.
-      { x: 0, z: -3584, radius: 200 },
+      { x: -22, z: 1024, radius: 140 },
+      { x: 14, z: -1024, radius: 140 },
     ],
   },
   horizon,
   scarps: [
-    // The Conglomerate Range: a sandstone plateau the road climbs onto and comes down off.
     {
       id: 'range-south-face',
       raise: 'north',
       wobble: 20,
-      // Steep where the middle line goes straight up; laid back to the east, where the
-      // bypass winds up it.
       points: [
-        { x: -640, z: 1170, width: 70, height: 40 },
-        { x: 0, z: 1150, width: 70, height: 40 },
-        { x: 110, z: 1155, width: 80, height: 40 },
-        { x: 260, z: 1165, width: 190, height: 40 },
-        { x: 640, z: 1180, width: 190, height: 40 },
+        { x: -640, z: 420, width: 70, height: 40 },
+        { x: 0, z: 400, width: 70, height: 40 },
+        { x: 110, z: 405, width: 80, height: 40 },
+        { x: 260, z: 415, width: 190, height: 40 },
+        { x: 640, z: 430, width: 190, height: 40 },
       ],
     },
     {
@@ -414,141 +317,60 @@ export const coachMap: MapDef = {
       raise: 'south',
       wobble: 20,
       points: [
-        { x: -640, z: -820, width: 90, height: 42 },
-        { x: 0, z: -800, width: 90, height: 42 },
-        { x: 640, z: -780, width: 90, height: 42 },
+        { x: -640, z: -380, width: 90, height: 42 },
+        { x: 0, z: -360, width: 90, height: 42 },
+        { x: 640, z: -340, width: 90, height: 42 },
       ],
     },
   ],
-  hills: [
-    // Maytown stands on a low rise north of the Palmer.
-    { id: 'maytown-rise', x: -30, z: 2880, radius: 260, height: 6, shape: 'dome' },
-    { id: 'goldfield-hill-west', x: -330, z: 2500, radius: 260, height: 26, shape: 'dome' },
-    { id: 'goldfield-hill-east', x: 300, z: 2300, radius: 280, height: 30, shape: 'dome' },
-    { id: 'laura-hill', x: 260, z: -2300, radius: 300, height: 18, shape: 'dome' },
-  ],
+  hills: [],
   ridges: [],
   flats: [
-    { id: 'palmer-camp', x: -44, z: 3400, radius: 16, blend: 14 },
-    { id: 'maytown', x: -70, z: 2872, radius: 18, blend: 16 },
-    { id: 'hotel-site', x: 46, z: 160, radius: 14, blend: 12 },
-    { id: 'laura', x: 40, z: -3360, radius: 20, blend: 16 },
+    { id: 'range-camp', x: -22, z: 600, radius: 18, blend: 14, height: 65.4 },
+    { id: 'hotel-site', x: 10, z: 200, radius: 14, blend: 10, height: 102.5 },
+    { id: 'range-exit', x: 14, z: -544, radius: 20, blend: 14, height: 60.3 },
   ],
-  creeks: [
-    {
-      id: 'palmer',
-      name: 'Palmer River',
-      // Low in the dry: a shallow channel wandering across a wide bed of soft sand.
-      valley: 120,
-      flow: 0.4,
-      sandBank: 26,
-      points: [
-        { x: 640, z: 3170, water: 50.6, halfWidth: 7, depth: 0.35, bankSlope: 0.05, bed: 'sand' },
-        { x: 320, z: 3140, water: 50.3, halfWidth: 8, depth: 0.35, bankSlope: 0.05, bed: 'sand' },
-        { x: 30, z: 3150, water: 50.0, halfWidth: 7, depth: 0.35, bankSlope: 0.05, bed: 'sand' },
-        { x: -300, z: 3165, water: 49.7, halfWidth: 8, depth: 0.35, bankSlope: 0.05, bed: 'sand' },
-        { x: -640, z: 3150, water: 49.4, halfWidth: 7, depth: 0.35, bankSlope: 0.05, bed: 'sand' },
-      ],
-    },
-    {
-      id: 'north-palmer',
-      name: 'North Palmer River',
-      valley: 80,
-      flow: 0.3,
-      sandBank: 14,
-      points: [
-        { x: 640, z: 1850, water: 56.4, halfWidth: 4.5, depth: 0.3, bankSlope: 0.12, bed: 'sand' },
-        { x: 300, z: 1870, water: 56.1, halfWidth: 4.5, depth: 0.3, bankSlope: 0.12, bed: 'sand' },
-        // Upstream of the main crossing the bed narrows over a bar of rock and gravel.
-        { x: 140, z: 1866, water: 55.9, halfWidth: 3.4, depth: 0.25, bankSlope: 0.3, bed: 'gravel' },
-        { x: 0, z: 1860, water: 55.6, halfWidth: 4.5, depth: 0.3, bankSlope: 0.12, bed: 'sand' },
-        { x: -300, z: 1850, water: 55.2, halfWidth: 4.5, depth: 0.3, bankSlope: 0.12, bed: 'sand' },
-        { x: -640, z: 1860, water: 54.8, halfWidth: 4.5, depth: 0.3, bankSlope: 0.12, bed: 'sand' },
-      ],
-    },
-    {
-      id: 'little-laura',
-      name: 'Little Laura River',
-      valley: 80,
-      flow: 0.4,
-      sandBank: 14,
-      points: [
-        { x: -640, z: -2850, water: 49.2, halfWidth: 5, depth: 0.4, bankSlope: 0.1, bed: 'sand' },
-        { x: -300, z: -2870, water: 48.4, halfWidth: 5, depth: 0.4, bankSlope: 0.1, bed: 'sand' },
-        { x: 10, z: -2860, water: 47.6, halfWidth: 5, depth: 0.4, bankSlope: 0.1, bed: 'sand' },
-        { x: 320, z: -2850, water: 46.6, halfWidth: 5, depth: 0.4, bankSlope: 0.1, bed: 'sand' },
-        { x: 640, z: -2870, water: 45.4, halfWidth: 5, depth: 0.4, bankSlope: 0.1, bed: 'sand' },
-      ],
-    },
-  ],
+  creeks: [],
   tracks,
   patches: [],
   bogs: [],
   gullies: [],
   pois: [
     {
-      id: 'palmer-camp',
-      name: 'Palmer River camp',
+      id: 'range-camp',
+      name: 'Camp below the south face',
       kind: 'campsite',
-      x: -44,
-      z: 3400,
+      x: -22,
+      z: 600,
       radius: 26,
-      reset: { x: -44, z: 3392, headingDeg: 10 },
-      note: 'Beside the Palmer River, across from Maytown',
-    },
-    {
-      id: 'maytown',
-      name: 'Maytown',
-      kind: 'campsite',
-      x: -70,
-      z: 2872,
-      radius: 30,
-      reset: { x: -58, z: 2866, headingDeg: 10 },
-      note: 'The ruins of the goldfield’s town',
-    },
-    {
-      id: 'hotel-site',
-      name: 'Hotel site',
-      kind: 'campsite',
-      x: 46,
-      z: 160,
-      radius: 22,
-      reset: { x: 40, z: 150, headingDeg: 340 },
-      note: 'A coaching stop on the range',
-    },
-    {
-      id: 'palmer-crossing',
-      name: 'Palmer River',
-      kind: 'feature',
-      x: 28,
-      z: 3150,
-      radius: 40,
-      note: 'Wide and sandy: keep moving',
-    },
-    {
-      id: 'north-palmer',
-      name: 'North Palmer River',
-      kind: 'feature',
-      x: 0,
-      z: 1862,
-      radius: 30,
-      note: 'Soft sand straight across; a rocky bar upstream',
+      reset: { x: -22, z: 600, headingDeg: 16 },
+      note: 'Maytown behind you; the range ahead',
     },
     {
       id: 'range-face',
       name: 'Conglomerate Range',
       kind: 'feature',
       x: 0,
-      z: 1170,
-      radius: 40,
-      note: 'Three ways up: the middle, the old coach road, the bypass',
+      z: 532,
+      radius: 30,
+      note: 'Choose the middle line, old coach road or bypass',
+    },
+    {
+      id: 'hotel-site',
+      name: 'Hotel site',
+      kind: 'campsite',
+      x: 0,
+      z: 220,
+      radius: 30,
+      reset: { x: 10, z: 200, headingDeg: 270 },
+      note: 'A breather on the ridge; progress saved',
     },
     {
       id: 'big-step',
       name: 'The big step',
       kind: 'feature',
-      x: -22,
-      z: -100,
+      x: -20,
+      z: 55,
       radius: 26,
       note: 'A metre of rock; the eastern track goes round',
     },
@@ -556,29 +378,20 @@ export const coachMap: MapDef = {
       id: 'range-descent',
       name: 'The descent',
       kind: 'feature',
-      x: 0,
-      z: -800,
-      radius: 34,
-      note: 'Down the north face through the sandstone',
-    },
-    {
-      id: 'little-laura',
-      name: 'Little Laura River',
-      kind: 'feature',
-      x: 10,
-      z: -2860,
+      x: -8,
+      z: -244,
       radius: 30,
-      note: 'Sand and a little water',
+      note: 'Low range and engine braking down the north face',
     },
     {
-      id: 'laura',
-      name: 'Laura',
+      id: 'range-exit',
+      name: 'Camp below the north face',
       kind: 'campsite',
-      x: 40,
-      z: -3360,
-      radius: 28,
-      reset: { x: 34, z: -3350, headingDeg: 0 },
-      note: 'The end of the coach road',
+      x: 14,
+      z: -544,
+      radius: 24,
+      reset: { x: 14, z: -544, headingDeg: 0 },
+      note: 'The range is behind you; Laura is the next diary entry',
     },
   ],
   props,
@@ -587,7 +400,6 @@ export const coachMap: MapDef = {
   fallenTrees: [],
   vegetation: {
     flora: 'tropical',
-    // Open eucalypt woodland everywhere: no rainforest this far inland.
     woodland: [{ x: 0, z: 0, radius: 6000 }],
     maxTreeDensity: 0.7,
     ashBelow: 0,
@@ -597,14 +409,12 @@ export const coachMap: MapDef = {
     boulderDensity: 0.01,
     termiteMounds: 6,
     clearings: [
-      { x: -44, z: 3400, radius: 40 },
-      { x: -50, z: 2890, radius: 120 },
-      { x: 46, z: 160, radius: 30 },
-      { x: 40, z: -3360, radius: 60 },
+      { x: -22, z: 600, radius: 40 },
+      { x: 0, z: 220, radius: 40 },
+      { x: 14, z: -544, radius: 40 },
     ],
   },
   palette: {
-    // Orange gravelly soil, sandstone, and grass dried to straw.
     dirtTrack: '#B37448',
     dirtDark: '#86573A',
     grassDry: '#C8B377',
@@ -613,5 +423,5 @@ export const coachMap: MapDef = {
     rockDark: '#86735E',
     sand: '#D8C7A0',
   },
-  spawnCampsite: 'palmer-camp',
+  spawnCampsite: 'range-camp',
 };
