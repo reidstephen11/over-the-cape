@@ -46,6 +46,7 @@ export class ToolMenu {
     this.sticky = sticky;
     this.selected = -1;
     this.isOpen = true;
+    this.el.classList.remove('tool-grid');
     this.el.innerHTML = '<div class="tool-ring"></div><div class="tool-centre paper">Tools</div>';
     this.el.classList.remove('hidden');
     const n = options.length;
@@ -75,6 +76,9 @@ export class ToolMenu {
       b.style.left = `calc(50% + ${p.x}px)`;
       b.style.top = `calc(50% + ${p.y}px)`;
     });
+    // Long cargo labels cannot always fit on a phone's oval. Touch menus can use
+    // a grid instead; every action stays visible and has its own full tap target.
+    this.el.classList.toggle('tool-grid', sticky && ringOverlaps(n, rx, ry, w, h));
     const ring = this.el.querySelector('.tool-ring') as HTMLElement;
     ring.style.width = `${rx * 2}px`;
     ring.style.height = `${ry * 2}px`;

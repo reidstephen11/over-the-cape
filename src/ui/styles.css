@@ -824,6 +824,34 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
   cursor: default;
 }
 
+.tool-menu.tool-grid:not(.hidden) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 8px;
+  align-content: center;
+  padding: 48px 12px 16px;
+  overflow-y: auto;
+}
+
+.tool-grid .tool-ring {
+  display: none;
+}
+
+.tool-grid .tool-centre {
+  top: 8px;
+  transform: translateX(-50%);
+}
+
+.touch-mode .tool-grid .tool-option {
+  position: relative;
+  left: auto !important;
+  top: auto !important;
+  transform: none;
+  width: 100%;
+  min-height: 76px;
+  height: 100%;
+}
+
 .tool-icon {
   width: 32px;
   height: 32px;
