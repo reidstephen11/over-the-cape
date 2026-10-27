@@ -75,6 +75,8 @@ export interface SimEvents extends Record<string, unknown> {
   rescued: { id: string };
   /** A trailer was hitched or unhitched, came round against the car, tipped over or was put back up. */
   trailer: { id: string; vehicle: string | null; event: TrailerEvent | { type: 'hitched' | 'unhitched' } };
+  /** A trailer's wheel hit something hard (spring compression speed, m/s). */
+  trailerBump: { id: string; vehicle: string | null; speed: number };
 }
 
 /** Plain-data snapshot of the simulation (SPEC §11: sim state must be serialisable). */
@@ -543,9 +545,12 @@ export class Simulation {
         this.events.emit('surprise', e);
     for (const t of this.trailers.values()) t.step(dt);
     this.physics.step();
-    for (const t of this.trailers.values())
-      for (const event of t.postStep())
+    for (const t of this.trailers.values()) {
+      for (const event of t.postStep(dt))
         this.events.emit('trailer', { id: t.id, vehicle: t.hitchedTo?.id ?? null, event });
+      if (t.bump > 0)
+        this.events.emit('trailerBump', { id: t.id, vehicle: t.hitchedTo?.id ?? null, speed: t.bump });
+    }
     for (const [id, v] of this.vehicles) {
       v.postStep(dt);
       for (let i = 0; i < v.wheelImpacts.length; i++)

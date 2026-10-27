@@ -86,6 +86,8 @@ export const trailerTuning = {
   tippedDeg: 60,
   /** Unhitched, the wheels are chocked: brake force at each (N). */
   chockForce: 6000,
+  /** A wheel's spring compressing this fast (m/s) is a hit the box bangs on. */
+  bumpSpeed: 1.2,
 };
 
 /** A 200 L steel drum: 585 mm across and 880 mm tall, 18 kg empty. */

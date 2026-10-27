@@ -3,11 +3,12 @@ import { floodTuning } from '../data/tools';
 import type { Device } from '../sim/input/inputManager';
 import type { VehicleTools } from '../sim/tools/tools';
 import type { Vehicle } from '../sim/vehicle/vehicle';
+import type { Trailer } from '../sim/trailer';
 import type { CrawlCourseDef, CrawlTrailDef, PoiDef } from '../sim/world/mapTypes';
 import type { TrackInfo } from '../sim/world/features';
 import { trailProgress } from '../sim/world/crawlTrail';
 import { headingOf } from '../sim/vehicle/math';
-import type { CompassPoi, EpisodeHud, GateState, HudState, Prompt } from '../ui/hud';
+import type { CompassPoi, EpisodeHud, GateState, HudState, Prompt, TrailerHud } from '../ui/hud';
 import type { RepairKind } from '../sim/tools/tools';
 import type { GaugeState } from '../ui/crawlGauges';
 import { penaltyPoints, type CrawlRun } from '../sim/crawlRuns';
@@ -44,8 +45,35 @@ export interface HudInputs {
   supplies?: boolean;
   /** A trailer to hitch or unhitch, and whether it can be done now. */
   hitch?: { kind: 'hitch' | 'unhitch'; possible: boolean } | null;
-  /** The trailer on the back has come round against the car, or tipped over. */
-  trailer?: { jackknifed: boolean; tipped: boolean } | null;
+  /** The trailer on the back: its load, and whether it has come round against the car or tipped over. */
+  trailer?: Pick<Trailer, 'jackknifed' | 'tipped' | 'drums' | 'mass' | 'load' | 'tuning'> | null;
+  /** Not towing: the nearest trailer standing unhitched, how far away (m) and whether it's over. */
+  trailerLeft?: { distance: number; tipped: boolean } | null;
+}
+
+/** The HUD's trailer line: what's on the back and how it's going, or where it was left. */
+export function trailerHud(towing: HudInputs['trailer'], left: HudInputs['trailerLeft']): TrailerHud | null {
+  if (towing)
+    return {
+      name: towing.tuning.name,
+      drums: towing.drums,
+      kg: Math.round(towing.mass),
+      limit: towing.tuning.mass + towing.tuning.payload,
+      overloaded: towing.load.mass > towing.tuning.payload + 0.5,
+      state: towing.tipped ? 'tipped' : towing.jackknifed ? 'jackknifed' : 'towing',
+      distance: 0,
+    };
+  if (left)
+    return {
+      name: 'Trailer',
+      drums: 0,
+      kg: 0,
+      limit: 0,
+      overloaded: false,
+      state: left.tipped ? 'tipped' : 'left',
+      distance: left.distance,
+    };
+  return null;
 }
 
 /** What each roadside job says while it's under way, and as a prompt beforehand. */
@@ -219,6 +247,7 @@ export function buildHudState(i: HudInputs): HudState {
   return {
     gauges: gaugeState(v),
     episode: i.episode ?? null,
+    trailer: trailerHud(i.trailer, i.trailerLeft),
     supplies: i.supplies
       ? {
           fuel: cond.fuel,

@@ -27,7 +27,7 @@ import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
 import { TrailerView } from '../render/trailerView';
-import { boxTrailer, drumLoad } from '../data/trailers';
+import { boxTrailer } from '../data/trailers';
 import { trailerMessage } from './trailerMessages';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
 import { planDuration, planSurprises } from '../sim/world/surprisePlan';
@@ -342,7 +342,14 @@ export class Game {
     sim.events.on('trailer', (e) => {
       const text = trailerMessage(e.event);
       if (text) this.hud.toast(text, 2600);
+      if (e.event.type !== 'righted')
+        this.audio.trailerEvent(e.event.type, sim.trailers.get(e.id)?.drums ?? 0);
     });
+    sim.events.on(
+      'trailerBump',
+      (e) =>
+        e.vehicle === LOCAL_VEHICLE && this.audio.trailerBump(e.speed, sim.trailers.get(e.id)?.drums ?? 0),
+    );
     sim.events.on('rescued', () => {
       this.run.rescued = true;
       const r = this.episode.rescue;
@@ -757,14 +764,25 @@ export class Game {
     }
     if (drums === null) return;
     const t = this.sim.addTrailer('box', boxTrailer, LOCAL_VEHICLE);
-    if (drums > 0) {
-      const load = drumLoad(drums, boxTrailer.bed);
-      t.setLoad(load.mass, load.com, load.half);
-    }
+    t.loadDrums(drums);
     const view = new TrailerView(t);
-    view.setDrums(drums);
+    view.setDrums(t.drums);
     this.trailerViews.set(t.id, view);
     this.view.scene.add(view.root);
+  }
+
+  /** The nearest trailer standing unhitched, while the car isn't towing one: how far back it is. */
+  private trailerLeft(): { distance: number; tipped: boolean } | null {
+    if (this.sim.trailerOf(LOCAL_VEHICLE)) return null;
+    const p = this.vehicle.body.translation();
+    let best: { distance: number; tipped: boolean } | null = null;
+    for (const t of this.sim.trailers.values()) {
+      if (t.hitchedTo) continue;
+      const q = t.body.translation();
+      const distance = Math.hypot(q.x - p.x, q.z - p.z);
+      if (!best || distance < best.distance) best = { distance, tipped: t.tipped };
+    }
+    return best;
   }
 
   teleportToPoi(p: PoiDef): void {
@@ -1321,6 +1339,7 @@ export class Game {
         this.hud.cockpitView,
         this.sim.env.rain,
         this.replay ? this.replay.time === 'night' : this.run.hour >= 19 || this.run.hour < 6,
+        this.sim.trailerOf(LOCAL_VEHICLE),
       ),
     );
     this.touch.update({
@@ -1362,6 +1381,7 @@ export class Game {
         find: this.findNearby(),
         hitch: this.sim.hitchOption(LOCAL_VEHICLE),
         trailer: this.sim.trailerOf(LOCAL_VEHICLE),
+        trailerLeft: this.trailerLeft(),
         episode: {
           title: `Episode ${this.episode.number} · ${this.episode.title}`,
           mission: this.run.missionLine(),
@@ -1397,5 +1417,5 @@ function audioLine(audio: AudioSystem): string {
   const tyres = Object.entries(a.tyres)
     .map(([k, w]) => `${k} ${w.toFixed(2)}`)
     .join(' ');
-  return `audio ${(20 * Math.log10(a.level + 1e-6)).toFixed(0)} dB  engine ${a.engineHz.toFixed(0)} Hz (${a.engineVoice})  scrape ${a.scrape.toFixed(2)}  wind ${a.wind.toFixed(2)}  water ${a.water.toFixed(2)}  ${tyres}${a.winchHz ? `  winch ${a.winchHz.toFixed(0)} Hz` : ''}`;
+  return `audio ${(20 * Math.log10(a.level + 1e-6)).toFixed(0)} dB  engine ${a.engineHz.toFixed(0)} Hz (${a.engineVoice})  scrape ${a.scrape.toFixed(2)}  wind ${a.wind.toFixed(2)}  water ${a.water.toFixed(2)}  ${tyres}${a.winchHz ? `  winch ${a.winchHz.toFixed(0)} Hz` : ''}${a.trailer ? `  trailer ${a.trailer.toFixed(2)}` : ''}`;
 }

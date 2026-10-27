@@ -9,7 +9,9 @@ import type { AmbienceFrame } from './ambience';
 import type { CrawlFrame } from './crawlSounds';
 import type { EngineFrame } from './engineSound';
 import type { WheelSound } from './mix';
+import type { TrailerFrame } from './trailerSound';
 import type { WinchFrame } from './winchSound';
+import type { Trailer } from '../sim/trailer';
 
 /** Everything the audio layer reads from the game each frame. */
 export interface AudioFrame {
@@ -26,6 +28,8 @@ export interface AudioFrame {
   crawl: CrawlFrame;
   horn: boolean;
   winch: WinchFrame;
+  /** The trailer on the back, if any. */
+  trailer: TrailerFrame | null;
   ambience: AmbienceFrame;
 }
 
@@ -39,6 +43,7 @@ export function buildAudioFrame(
   interior = false,
   rain = 0,
   night = false,
+  trailer: Trailer | null = null,
 ): AudioFrame {
   const p = v.body.translation();
   const d = v.drivetrain;
@@ -84,6 +89,13 @@ export function buildAudioFrame(
     },
     horn: v.horn,
     winch: { attached: winch.attached, motor: winch.motor, load: winch.tension / maxPull },
+    trailer: trailer
+      ? {
+          speed: v.speed,
+          roughness: trailer.wheels.reduce((sum, w) => sum + (w.contact ? Math.abs(w.compression) : 0), 0),
+          drums: trailer.drums,
+        }
+      : null,
     ambience: {
       dt,
       altitude: p.y,

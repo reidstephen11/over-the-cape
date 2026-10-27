@@ -6,7 +6,7 @@ import { CrawlSounds } from './crawlSounds';
 import { createNoiseBank, type NoiseBank } from './buffers';
 import { EngineSound, HornSound } from './engineSound';
 import type { AudioFrame } from './frame';
-import { knockLevel, thumpLevel } from './mix';
+import { knockLevel, thumpLevel, trailerBumpLevel } from './mix';
 import {
   clunk,
   dentCrunch,
@@ -19,6 +19,7 @@ import {
   thump,
   treeFall,
 } from './oneShots';
+import { TrailerSound } from './trailerSound';
 import { TyreSound } from './tyreSound';
 import { UiSounds } from './uiSounds';
 import { WinchSound } from './winchSound';
@@ -43,6 +44,7 @@ interface Graph {
   tyres: TyreSound;
   crawl: CrawlSounds;
   winch: WinchSound;
+  trailer: TrailerSound;
   ambience: Ambience;
   ui: UiSounds;
 }
@@ -62,6 +64,8 @@ export interface AudioInfo {
   /** 'synth' (AudioWorklet engine), 'oscillator' (fallback) or 'loading'. */
   engineVoice: string;
   winchHz: number;
+  /** The trailer's rattle (0..1). */
+  trailer: number;
   wind: number;
   water: number;
   tyres: Partial<Record<TyreLayer, number>>;
@@ -191,6 +195,7 @@ export class AudioSystem {
       tyres: new TyreSound(ctx, fxBus, noise),
       crawl: new CrawlSounds(ctx, fxBus, noise),
       winch: new WinchSound(ctx, fxBus, noise),
+      trailer: new TrailerSound(ctx, fxBus, noise),
       ambience: new Ambience(ctx, ambienceBus, noise),
       ui: new UiSounds(ctx, uiBus, noise),
     };
@@ -245,6 +250,7 @@ export class AudioSystem {
       clunk(g.ctx, g.fxBus, g.noise, 'gear');
     this.lastGear = f.gear;
     g.winch.update(f.winch);
+    g.trailer.update(f.paused ? null : f.trailer);
     g.ambience.update(f.ambience);
   }
 
@@ -262,6 +268,22 @@ export class AudioSystem {
     const g = this.live();
     const level = thumpLevel(speed);
     if (g && level > 0) thump(g.ctx, g.fxBus, g.noise, level);
+  }
+
+  /** A trailer wheel hit something (spring compression speed, m/s), with this many drums on board. */
+  trailerBump(speed: number, drums: number): void {
+    const g = this.live();
+    const level = trailerBumpLevel(speed);
+    if (g && level > 0) g.trailer.bump(level, drums);
+  }
+
+  /** The trailer hitched or unhitched, came round against the car, or went over. */
+  trailerEvent(kind: 'hitched' | 'unhitched' | 'jackknifed' | 'tipped', drums: number): void {
+    const t = this.live()?.trailer;
+    if (!t) return;
+    if (kind === 'hitched' || kind === 'unhitched') t.coupling(kind === 'hitched');
+    else if (kind === 'jackknifed') t.jackknifed();
+    else t.tipped(drums);
   }
 
   /** The chassis knocked a rock (impulse, N·s). */
@@ -377,6 +399,7 @@ export class AudioSystem {
       scrape: g?.crawl.scrape ?? 0,
       engineVoice: g?.engine.kind ?? 'off',
       winchHz: g?.winch.hz ?? 0,
+      trailer: g?.trailer.level ?? 0,
       wind: g?.ambience.wind ?? 0,
       water: g?.ambience.water ?? 0,
       tyres,

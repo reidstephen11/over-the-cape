@@ -62,8 +62,23 @@ export interface SuppliesHud {
   plugs: number;
 }
 
+/** The trailer line beside the supplies. */
+export interface TrailerHud {
+  name: string;
+  /** Drums of diesel on board, the trailer's mass with its load (kg) and the most it may weigh. */
+  drums: number;
+  kg: number;
+  limit: number;
+  overloaded: boolean;
+  /** On the back, over on its side, come round against the car, or standing unhitched `distance` m away. */
+  state: 'towing' | 'tipped' | 'jackknifed' | 'left';
+  distance: number;
+}
+
 export interface HudState {
   gauges: GaugeState;
+  /** A trailer on the back, or one left standing (null: none). */
+  trailer?: TrailerHud | null;
   episode: EpisodeHud | null;
   supplies: SuppliesHud | null;
   /** Gates on a gate trail: the next one to drive (0 before the first), and the lap so far. */
@@ -142,6 +157,8 @@ export class Hud {
   private readonly suppliesPanel: HTMLElement;
   private readonly fuelEl: HTMLElement;
   private readonly suppliesEl: HTMLElement;
+  private readonly trailerEl: HTMLElement;
+  private lastTrailerKey = '';
   private lastMissionKey = '';
   private lastSuppliesKey = '';
   /** Crawl gauges: 'auto' shows them in low range, precision crawl or the driver's seat. */
@@ -181,6 +198,7 @@ export class Hud {
       <div class="supplies paper hidden">
         <div class="status-item status-fuel" title="Fuel in the tank">${icons.fuel}<span class="fuel-bar"><span></span></span><span class="fuel-litres"></span></div>
         <div class="status-item status-supplies"></div>
+        <div class="status-item status-trailer hidden">${icons.trailer}<span class="trailer-text"></span><span class="trailer-kg"></span></div>
       </div>
       <div class="mission paper hidden"><small></small><strong></strong><span class="mission-clock"></span></div>
       <div class="course-hint paper hidden"><strong></strong><span></span><small></small></div>
@@ -202,6 +220,7 @@ export class Hud {
     this.suppliesPanel = this.el.querySelector('.supplies') as HTMLElement;
     this.fuelEl = this.el.querySelector('.status-fuel') as HTMLElement;
     this.suppliesEl = this.el.querySelector('.status-supplies') as HTMLElement;
+    this.trailerEl = this.el.querySelector('.status-trailer') as HTMLElement;
     this.gateEl = this.el.querySelector('.gate-count') as HTMLElement;
     this.compass = this.el.querySelector('.compass canvas') as HTMLCanvasElement;
     this.cctx = this.compass.getContext('2d') as CanvasRenderingContext2D;
@@ -336,6 +355,7 @@ export class Hud {
     this.planksEl.textContent = `${s.planksCarried}/${s.planksTotal}`;
     this.drawMission(s.episode);
     this.drawSupplies(s.supplies);
+    this.drawTrailer(s.trailer ?? null);
     this.winchEl.classList.toggle('shown', s.winchAttached);
     this.engineEl.classList.toggle('shown', s.engine > 0);
     this.engineEl.classList.toggle('stalled', s.engine === 2);
@@ -420,6 +440,35 @@ export class Hud {
     this.fuelEl.classList.toggle('low', share < 0.15);
     this.fuelEl.title = `Fuel: ${s.fuel.toFixed(1)} of ${s.tank} L`;
     this.suppliesEl.innerHTML = `<span title="Jerry cans (20 L each)">${icons.fuel}×${s.jerryCans}</span><span title="Spare wheels">${icons.tyre}×${s.spares}</span><span title="Tyre plugs">${icons.plug}×${s.plugs}</span>`;
+  }
+
+  private drawTrailer(t: TrailerHud | null): void {
+    // Left standing, the distance moves in 5 m steps so the line doesn't flicker.
+    const far = t ? Math.max(5, Math.round(t.distance / 5) * 5) : 0;
+    const key = t ? `${t.state}|${t.drums}|${t.kg}|${t.overloaded}|${far}` : '';
+    if (key === this.lastTrailerKey) return;
+    this.lastTrailerKey = key;
+    this.trailerEl.classList.toggle('hidden', !t);
+    if (!t) return;
+    const load = t.drums > 0 ? `${t.drums} drum${t.drums === 1 ? '' : 's'}` : 'Empty';
+    const text: Record<TrailerHud['state'], string> = {
+      towing: load,
+      jackknifed: 'Jackknifed',
+      tipped: 'On its side',
+      left: `Left ${far} m away`,
+    };
+    this.trailerEl.querySelector('.trailer-text')!.textContent = text[t.state];
+    this.trailerEl.querySelector('.trailer-kg')!.textContent = t.state === 'towing' ? `· ${t.kg} kg` : '';
+    this.trailerEl.classList.toggle(
+      'warn',
+      t.state === 'jackknifed' || (t.state === 'towing' && t.overloaded),
+    );
+    this.trailerEl.classList.toggle('bad', t.state === 'tipped');
+    this.trailerEl.classList.toggle('left', t.state === 'left');
+    this.trailerEl.title =
+      t.state === 'left'
+        ? 'Trailer standing unhitched: back up to its coupling to hitch it'
+        : `${t.name}: ${t.drums > 0 ? `${load.toLowerCase()} of diesel, ` : 'empty, '}${t.kg} of ${t.limit} kg${t.overloaded ? ' (overloaded)' : ''}`;
   }
 
   /** A small car seen from above: each corner and the engine coloured by its health. */

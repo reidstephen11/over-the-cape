@@ -1,6 +1,6 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { SurfaceId, surfaceGrip, surfaces } from '../data/surfaces';
-import { hitchPoint, trailerTuning, type TrailerTuning } from '../data/trailers';
+import { drumLoad, hitchPoint, trailerTuning, type TrailerTuning } from '../data/trailers';
 import { Groups, groups, type Physics } from './physics';
 import { type Quat, type Vec3, rotate, v3 } from './vehicle/math';
 import type { Vehicle, VehicleEnv } from './vehicle/vehicle';
@@ -15,6 +15,8 @@ export interface TrailerWheel {
   /** Normal load (N). */
   load: number;
   contactPoint: Vec3;
+  /** How fast the spring is compressing (m/s, negative extending). */
+  compression: number;
 }
 
 /** Something that happened to a trailer this step. */
@@ -38,6 +40,11 @@ export class Trailer {
   hitchedTo: Vehicle | null = null;
   /** The load on board (kg) and where its centre sits (local). */
   readonly load = { mass: 0, com: v3(), half: v3() };
+  /** 200 L drums of diesel standing in it (part of `load`). */
+  drums = 0;
+  /** The hardest a wheel hit something this step (spring compression speed, m/s), 0 if none. */
+  bump = 0;
+  private bumpCooldown = 0;
   /** Over on its side. */
   tipped = false;
   /** The drawbar has come round against the back of the towing vehicle. */
@@ -118,6 +125,7 @@ export class Trailer {
       rotation: 0,
       load: 0,
       contactPoint: v3(),
+      compression: 0,
     }));
     this.applyMass();
     this.snapshot();
@@ -137,6 +145,13 @@ export class Trailer {
     Object.assign(this.load.com, com);
     Object.assign(this.load.half, half);
     this.applyMass();
+  }
+
+  /** Stand `count` full drums of diesel in it (0 empties it). */
+  loadDrums(count: number): void {
+    const l = drumLoad(count, this.tuning.bed);
+    this.setLoad(count > 0 ? l.mass : 0, l.com, l.half);
+    this.drums = count;
   }
 
   /** Mass properties of the trailer and its load together, and springs to suit. */
@@ -343,12 +358,18 @@ export class Trailer {
   }
 
   /** Read back the wheels and see what happened. Call after the physics world steps. */
-  postStep(): TrailerEvent[] {
+  postStep(dt: number): TrailerEvent[] {
     const c = this.controller;
+    this.bump = 0;
+    this.bumpCooldown = Math.max(0, this.bumpCooldown - dt);
     for (let i = 0; i < this.wheels.length; i++) {
       const w = this.wheels[i];
       w.contact = c.wheelIsInContact(i);
-      w.suspension = c.wheelSuspensionLength(i) ?? w.suspension;
+      const susp = c.wheelSuspensionLength(i) ?? w.suspension;
+      w.compression = (w.suspension - susp) / dt;
+      w.suspension = susp;
+      if (w.contact && w.compression > trailerTuning.bumpSpeed && this.bumpCooldown === 0)
+        this.bump = Math.max(this.bump, w.compression);
       w.load = w.contact ? (c.wheelSuspensionForce(i) ?? 0) : 0;
       const cp = c.wheelContactPoint(i);
       if (cp) Object.assign(w.contactPoint, { x: cp.x, y: cp.y, z: cp.z });
@@ -358,6 +379,7 @@ export class Trailer {
       w.rotation += r - this.rawRotation[i];
       this.rawRotation[i] = r;
     }
+    if (this.bump > 0) this.bumpCooldown = 0.12;
     const events: TrailerEvent[] = [];
     const tilt = this.tiltDeg();
     if (!this.tipped && tilt > trailerTuning.tippedDeg) {
