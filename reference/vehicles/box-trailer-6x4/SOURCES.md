@@ -20,6 +20,8 @@ A 6×4's box is its name; the rest is the game's choice, checked against the pho
 
 ## Gaps
 
+**The photograph isn't in this folder yet.** In v0.49 Wikimedia rate-limited every attempt to download the original (`upload.wikimedia.org` answered 429), so the model was matched to Commons' 960-pixel preview of it. Download the original from its Commons page below into `rear-34-galvanised.jpg` and check it is 4032×3024.
+
 Only one photograph: no side-on, front or top view of a plain box trailer with a free licence was found on Commons in October 2026.
 
 ## Photographs
