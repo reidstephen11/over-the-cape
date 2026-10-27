@@ -1,6 +1,6 @@
 # Working on this repo
 
-**Next job:** trailers and towing missions. Read `docs/NEXT.md` before starting.
+Episode 4 is the first towing mission. Follow-up work is recorded in `docs/ROADMAP.md`.
 
 ## Modelling a vehicle
 

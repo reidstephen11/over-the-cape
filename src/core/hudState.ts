@@ -46,7 +46,10 @@ export interface HudInputs {
   /** A trailer to hitch or unhitch, and whether it can be done now. */
   hitch?: { kind: 'hitch' | 'unhitch'; possible: boolean } | null;
   /** The trailer on the back: its load, and whether it has come round against the car or tipped over. */
-  trailer?: Pick<Trailer, 'jackknifed' | 'tipped' | 'drums' | 'mass' | 'load' | 'tuning'> | null;
+  trailer?:
+    | (Pick<Trailer, 'jackknifed' | 'tipped' | 'drums' | 'mass' | 'load' | 'tuning'> &
+        Partial<Pick<Trailer, 'strain' | 'tyres'>>)
+    | null;
   /** Not towing: the nearest trailer standing unhitched, how far away (m) and whether it's over. */
   trailerLeft?: { distance: number; tipped: boolean } | null;
 }
@@ -146,6 +149,10 @@ export function buildHudState(i: HudInputs): HudState {
           ? `Stop here to load the ${i.find.name.toLowerCase()}`
           : `${i.find.name} by the hut — pull up beside it`,
       });
+    if (i.trailer?.tyres?.some((h) => h < 1))
+      prompts.push({ keys: '!', text: 'Trailer tyre flat — stop and repair it in Tools' });
+    if ((i.trailer?.strain ?? 0) >= 0.55)
+      prompts.push({ keys: '!', text: 'Load straps loose — stop and tighten them in Tools' });
     if (i.trailer?.tipped) prompts.push({ keys: '!', text: 'The trailer has tipped over' });
     else if (i.trailer?.jackknifed)
       prompts.push({ keys: '!', text: 'Jackknifed — pull forward to straighten the trailer' });

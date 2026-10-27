@@ -34,7 +34,9 @@ import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } 
 import type { SurprisePlan } from './world/surprisePlan';
 import { StuckVehicle, type StuckVehicleDef } from './stuckVehicle';
 import { poseBehind, Trailer, type TrailerEvent } from './trailer';
-import { canCouple, trailerTuning, type TrailerTuning } from '../data/trailers';
+import { DRUM, canCouple, trailers, trailerTuning, type TrailerTuning } from '../data/trailers';
+import { CargoDrum } from './cargoDrum';
+import type { DeliveryState } from './trailerState';
 
 /** Rotation that lays a +y capsule flat (90° about x) and then turns it `yaw` about y. */
 export function quatYawX(yaw: number): { x: number; y: number; z: number; w: number } {
@@ -125,6 +127,8 @@ export class Simulation {
   readonly stuck = new Map<string, StuckVehicle>();
   /** Trailers, hitched or standing on their jockey wheels, by id. */
   readonly trailers = new Map<string, Trailer>();
+  readonly looseDrums = new Map<string, CargoDrum>();
+  private drumSerial = 0;
   time = 0;
   /** How harsh mechanical damage is (the settings choice; off unless the game sets it). */
   damage: DamageMode = 'off';
@@ -315,6 +319,156 @@ export class Simulation {
   removeTrailer(id: string): void {
     this.trailers.get(id)?.remove();
     this.trailers.delete(id);
+  }
+
+  /** Cargo comes out beyond the box's side, with the trailer's current velocity. */
+  spillDrum(t: Trailer): CargoDrum | null {
+    if (t.drums <= 0) return null;
+    const up = rotate(t.body.rotation(), 0, 1, 0);
+    const side = up.x >= 0 ? -1 : 1;
+    const p = t.localToWorld(
+      side * (t.tuning.bed.hx + DRUM.radius + 0.12),
+      t.tuning.bed.y + DRUM.height / 2,
+      t.tuning.bed.cz,
+    );
+    p.y = Math.max(p.y, this.world.terrain.heightAt(p.x, p.z) + DRUM.height / 2 + 0.05);
+    let id: string;
+    do {
+      id = `drum-${++this.drumSerial}`;
+    } while (this.looseDrums.has(id));
+    const d = new CargoDrum(id, this.physics, p, t.body.rotation());
+    d.body.setLinvel(t.body.linvel(), true);
+    this.looseDrums.set(id, d);
+    t.loadDrums(t.drums - 1);
+    t.secureLoad();
+    return d;
+  }
+
+  /** The nearest trailer alongside the car, including while it is slowing to a stop. */
+  nearbyTrailer(id: string): Trailer | null {
+    const v = this.vehicleOf(id);
+    const p = v.body.translation();
+    let best: Trailer | null = null;
+    let distance = 12;
+    for (const t of this.trailers.values()) {
+      const q = t.body.translation();
+      const d = Math.hypot(q.x - p.x, q.z - p.z);
+      if (d <= distance) {
+        best = t;
+        distance = d;
+      }
+    }
+    return best;
+  }
+
+  /** Actions still require both the car and the trailer to be stopped and upright. */
+  workTrailer(id: string): Trailer | null {
+    const v = this.vehicleOf(id);
+    if (Math.abs(v.speed) > 0.5 || v.tiltDeg() > 25) return null;
+    const t = this.nearbyTrailer(id);
+    if (!t || t.tiltDeg() >= 25) return null;
+    const speed = t.body.linvel();
+    return Math.hypot(speed.x, speed.y, speed.z) < 0.6 ? t : null;
+  }
+
+  secureTrailerLoad(id: string): boolean {
+    const t = this.workTrailer(id);
+    if (!t) return false;
+    t.secureLoad();
+    return true;
+  }
+
+  /** A loose delivery drum beside an upright trailer, close enough to load by hand. */
+  drumToLoad(id: string, stopped = true): CargoDrum | null {
+    const t = stopped ? this.workTrailer(id) : this.nearbyTrailer(id);
+    if (!t || t.drums >= 2) return null;
+    const p = t.body.translation();
+    const v = this.vehicleOf(id).body.translation();
+    for (const d of this.looseDrums.values()) {
+      const q = d.body.translation();
+      const speed = d.body.linvel();
+      if (
+        Math.hypot(p.x - q.x, p.z - q.z) < 8 &&
+        Math.hypot(v.x - q.x, v.z - q.z) < 12 &&
+        Math.abs(p.y - q.y) < 2 &&
+        (!stopped || Math.hypot(speed.x, speed.y, speed.z) < 1.2)
+      )
+        return d;
+    }
+    return null;
+  }
+
+  recoverDrum(id: string): boolean {
+    const d = this.drumToLoad(id);
+    const t = this.workTrailer(id);
+    if (!d || !t) return false;
+    d.remove();
+    this.looseDrums.delete(d.id);
+    t.loadDrums(t.drums + 1);
+    t.secureLoad();
+    return true;
+  }
+
+  repairTrailerTyre(id: string): boolean {
+    const t = this.workTrailer(id);
+    if (!t) return false;
+    const i = t.tyres.findIndex((h) => h < 1);
+    const c = this.vehicleOf(id).condition;
+    if (i < 0 || (c.plugs <= 0 && c.spares <= 0)) return false;
+    if (c.plugs > 0) c.plugs--;
+    else c.spares--;
+    t.tyres[i] = 1;
+    return true;
+  }
+
+  deliveryState(): DeliveryState {
+    const pose = (d: Trailer | CargoDrum) => ({
+      id: d.id,
+      position: { ...d.body.translation() },
+      rotation: { ...d.body.rotation() },
+    });
+    return {
+      trailers: [...this.trailers.values()].map((t) => ({
+        ...pose(t),
+        kind: t.tuning.id,
+        hitched: t.hitchedTo !== null,
+        drums: t.drums,
+        strain: t.strain,
+        tyres: [...t.tyres],
+      })),
+      looseDrums: [...this.looseDrums.values()].map(pose),
+    };
+  }
+
+  /** Restore the actual cargo, including trailers left behind; never refill from a mission definition. */
+  restoreDelivery(state: DeliveryState, vehicle: string): void {
+    for (const id of [...this.trailers.keys()]) this.removeTrailer(id);
+    for (const d of this.looseDrums.values()) d.remove();
+    this.looseDrums.clear();
+    let coupled = false;
+    for (const saved of state.trailers) {
+      const tuning = trailers[saved.kind];
+      const hitch: boolean = saved.hitched && !coupled && canCouple(tuning, this.vehicleOf(vehicle).tuning);
+      const t = this.addTrailer(
+        saved.id,
+        tuning,
+        hitch
+          ? vehicle
+          : {
+              ...saved.position,
+              rotation: saved.rotation,
+            },
+      );
+      coupled ||= hitch;
+      t.loadDrums(saved.drums);
+      t.strain = saved.strain;
+      t.tyres.splice(0, 2, ...saved.tyres);
+      t.tipped = t.tiltDeg() > trailerTuning.tippedDeg;
+    }
+    for (const d of state.looseDrums)
+      this.looseDrums.set(d.id, new CargoDrum(d.id, this.physics, d.position, d.rotation));
+    // Initialise Rapier's new bodies before a restart can move them again.
+    this.physics.step();
   }
 
   /** The trailer a vehicle is towing, if any. */
@@ -552,11 +706,14 @@ export class Simulation {
     if (this.surprises)
       for (const e of this.surprises.update(this.vehicles.values().next().value, dt))
         this.events.emit('surprise', e);
+    for (const d of this.looseDrums.values()) d.step(dt, this.env.waterLevelOffset);
     for (const t of this.trailers.values()) t.step(dt);
     this.physics.step();
     for (const t of this.trailers.values()) {
-      for (const event of t.postStep(dt))
+      for (const event of t.postStep(dt, this.damage)) {
+        if (event.type === 'drumLoose') this.spillDrum(t);
         this.events.emit('trailer', { id: t.id, vehicle: t.hitchedTo?.id ?? null, event });
+      }
       if (t.bump > 0)
         this.events.emit('trailerBump', { id: t.id, vehicle: t.hitchedTo?.id ?? null, speed: t.bump });
     }
@@ -779,6 +936,7 @@ export class Simulation {
   setDamage(mode: DamageMode): void {
     this.damage = mode;
     for (const v of this.vehicles.values()) limitDamage(v.condition, mode);
+    if (mode !== 'realistic') for (const t of this.trailers.values()) t.tyres.fill(1);
   }
 
   /**
@@ -884,6 +1042,15 @@ export class Simulation {
         mended = true;
       }
     if (mended) this.events.emit('repaired', { id, kind: 'camp' });
+    // Arrival is recorded as soon as the car enters camp. Patch a nearby trailer before
+    // that checkpoint is taken, including when the driver is still rolling to a stop.
+    const p = this.vehicleOf(id).body.translation();
+    for (const trailer of this.trailers.values()) {
+      const q = trailer.body.translation();
+      if (Math.hypot(p.x - q.x, p.z - q.z) > 12) continue;
+      trailer.tyres.fill(1);
+      if (trailer.tiltDeg() < 25) trailer.secureLoad();
+    }
   }
 
   // --- Campsites ---------------------------------------------------------

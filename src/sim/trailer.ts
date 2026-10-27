@@ -1,6 +1,8 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { SurfaceId, surfaceGrip, surfaces } from '../data/surfaces';
-import { drumLoad, hitchPoint, trailerTuning, type TrailerTuning } from '../data/trailers';
+import { DRUM, drumLoad, drumSpots, hitchPoint, trailerTuning, type TrailerTuning } from '../data/trailers';
+import type { DamageMode } from '../data/damage';
+import { waterForce } from './trailerWater';
 import { Groups, groups, type Physics } from './physics';
 import { type Quat, type Vec3, rotate, v3 } from './vehicle/math';
 import type { Vehicle, VehicleEnv } from './vehicle/vehicle';
@@ -21,7 +23,12 @@ export interface TrailerWheel {
 
 /** Something that happened to a trailer this step. */
 export type TrailerEvent =
-  { type: 'jackknifed'; angleDeg: number } | { type: 'tipped' } | { type: 'righted' };
+  | { type: 'jackknifed'; angleDeg: number }
+  | { type: 'tipped' }
+  | { type: 'righted' }
+  | { type: 'loadWarning' }
+  | { type: 'drumLoose' }
+  | { type: 'tyreCut'; wheel: number };
 
 /** Its rays find the ground, rocks, logs and planks, never the vehicle towing it. */
 const WHEEL_FILTER = groups(Groups.DYNAMIC, Groups.TERRAIN | Groups.STATIC | Groups.DYNAMIC);
@@ -42,6 +49,11 @@ export class Trailer {
   readonly load = { mass: 0, com: v3(), half: v3() };
   /** 200 L drums of diesel standing in it (part of `load`). */
   drums = 0;
+  /** Load lashings working loose (0 secure, 1 a drum comes out). */
+  strain = 0;
+  readonly tyres = [1, 1];
+  private spillCooldown = 0;
+  private loadWarned = false;
   /** The hardest a wheel hit something this step (spring compression speed, m/s), 0 if none. */
   bump = 0;
   private bumpCooldown = 0;
@@ -293,11 +305,49 @@ export class Trailer {
     for (let i = 0; i < this.wheels.length; i++) {
       const w = this.wheels[i];
       c.setWheelFrictionSlip(i, this.tuning.lateralGrip * surfaceGrip(w.surface, this.env.wetness));
+      c.setWheelRadius(i, this.tuning.wheelRadius * (this.tyres[i] > 0 ? 1 : 0.65));
       const rolling = w.contact ? surfaces[w.surface].rollingResistance * w.load : 0;
-      c.setWheelBrake(i, (chocked ? trailerTuning.chockForce : rolling) * dt);
+      c.setWheelBrake(
+        i,
+        (chocked ? trailerTuning.chockForce : rolling + (1 - this.tyres[i]) * w.load * 0.1) * dt,
+      );
     }
     c.updateVehicle(dt, this.physics.R.QueryFilterFlags.EXCLUDE_SENSORS, WHEEL_FILTER);
     this.addRollTorque();
+    this.water(dt);
+  }
+
+  /** Open steel box: little trapped air; sealed tyres and drums provide most of the lift. */
+  private water(dt: number): void {
+    const t = this.tuning;
+    const p = this.localToWorld(0, t.bed.y + 0.1, t.bed.cz);
+    waterForce(this.physics, this.body, p, 0.2, 0.035, 1.2, this.env.waterLevelOffset, dt);
+    for (let i = 0; i < t.wheels.length; i++) {
+      const w = t.wheels[i];
+      waterForce(
+        this.physics,
+        this.body,
+        this.localToWorld(w.x, w.y - this.wheels[i].suspension, w.z),
+        t.wheelRadius,
+        Math.PI * t.wheelRadius ** 2 * t.wheelWidth * (this.tyres[i] > 0 ? 1 : 0.1),
+        0.15,
+        this.env.waterLevelOffset,
+        dt,
+      );
+    }
+    const up = rotate(this.body.rotation(), 0, 1, 0);
+    const half = (Math.abs(up.y) * DRUM.height) / 2 + Math.hypot(up.x, up.z) * DRUM.radius;
+    for (const [x, z] of drumSpots(this.drums, t.bed))
+      waterForce(
+        this.physics,
+        this.body,
+        this.localToWorld(x, t.bed.y + DRUM.height / 2, z),
+        half,
+        Math.PI * DRUM.radius ** 2 * DRUM.height,
+        0.45,
+        this.env.waterLevelOffset,
+        dt,
+      );
   }
 
   /**
@@ -358,7 +408,7 @@ export class Trailer {
   }
 
   /** Read back the wheels and see what happened. Call after the physics world steps. */
-  postStep(dt: number): TrailerEvent[] {
+  postStep(dt: number, damage: DamageMode = 'off'): TrailerEvent[] {
     const c = this.controller;
     this.bump = 0;
     this.bumpCooldown = Math.max(0, this.bumpCooldown - dt);
@@ -381,6 +431,23 @@ export class Trailer {
     }
     if (this.bump > 0) this.bumpCooldown = 0.12;
     const events: TrailerEvent[] = [];
+    const velocity = this.body.linvel();
+    const speed = Math.hypot(velocity.x, velocity.z);
+    if (damage === 'realistic' && speed > 6) {
+      for (let i = 0; i < this.wheels.length; i++) {
+        const w = this.wheels[i];
+        const hole = this.physics.ground.holeAt?.(w.contactPoint.x, w.contactPoint.z) ?? 0;
+        if (
+          this.tyres[i] > 0 &&
+          w.contact &&
+          w.compression > 4.5 &&
+          (w.surface === SurfaceId.Rock || hole > 0.12)
+        ) {
+          this.tyres[i] = 0;
+          events.push({ type: 'tyreCut', wheel: i });
+        }
+      }
+    }
     const tilt = this.tiltDeg();
     if (!this.tipped && tilt > trailerTuning.tippedDeg) {
       this.tipped = true;
@@ -394,7 +461,27 @@ export class Trailer {
       this.jackknifed = true;
       events.push({ type: 'jackknifed', angleDeg: angle });
     } else if (this.jackknifed && angle < trailerTuning.jackknifeDeg - 20) this.jackknifed = false;
+    this.spillCooldown = Math.max(0, this.spillCooldown - dt);
+    if (this.drums > 0) {
+      // Repeated hard hits at speed loosen lashings; ordinary crawling does not.
+      if (this.bump > 3.5 && speed > 5)
+        this.strain = Math.min(1, this.strain + (this.bump - 3.5) * (speed - 4) * 0.003);
+      if (this.strain >= 0.55 && !this.loadWarned) {
+        this.loadWarned = true;
+        events.push({ type: 'loadWarning' });
+      }
+      if ((tilt > 70 || this.strain >= 1) && this.spillCooldown === 0) {
+        // Simulation creates a loose body before reducing the cargo count.
+        events.push({ type: 'drumLoose' });
+        this.spillCooldown = 0.8;
+      }
+    }
     return events;
+  }
+
+  secureLoad(): void {
+    this.strain = 0;
+    this.loadWarned = false;
   }
 
   /** Move it (and stop it) where it stands now: a camp, a restart, a teleport. */

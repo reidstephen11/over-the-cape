@@ -4,6 +4,7 @@ import type { WeatherTimeline } from './weatherTimeline';
 import { coachEpisode } from './episodes/coach';
 import { crebEpisode } from './episodes/creb';
 import { lakefieldEpisode } from './episodes/lakefield';
+import { frenchmansEpisode } from './episodes/frenchmans';
 import type { SurpriseSetDef } from '../sim/world/surprisePlan';
 import type { StuckVehicleDef } from '../sim/stuckVehicle';
 import type { VehicleId } from './vehicle';
@@ -12,7 +13,7 @@ import type { VehicleId } from './vehicle';
  * Episodes, south to north up Cape York. Each has its own map, a core mission, the
  * conditions the story sets and a fixed load of fuel and spares. They unlock in order.
  */
-export type EpisodeId = 'creb' | 'coach' | 'lakefield';
+export type EpisodeId = 'creb' | 'coach' | 'lakefield' | 'frenchmans';
 
 /** Why an episode can end early. */
 export type FailReason = 'time' | 'fuel' | 'tyre' | 'engine' | 'swept';
@@ -63,6 +64,8 @@ export interface EpisodeDef {
   deadline?: { hour: number; label: string; until?: string; mission?: string };
   /** Someone to winch out of a bog on the way: the goal doesn't count until they're free. */
   rescue?: RescueDef;
+  /** Park an upright trailer at the goal with this many delivery drums still aboard. */
+  delivery?: { drums: number };
   /** The HUD's mission line once the rescue and the deadline are behind (the mission when absent). */
   lastLeg?: string;
   /** Game seconds per real second while driving. */
@@ -92,12 +95,12 @@ export const episodes: Record<EpisodeId, EpisodeDef> = {
   creb: crebEpisode,
   coach: coachEpisode,
   lakefield: lakefieldEpisode,
+  frenchmans: frenchmansEpisode,
 };
 
-export const episodeOrder: readonly EpisodeId[] = ['creb', 'coach', 'lakefield'];
+export const episodeOrder: readonly EpisodeId[] = ['creb', 'coach', 'lakefield', 'frenchmans'];
 
 export const upcomingEpisodes: readonly UpcomingEpisode[] = [
-  { number: 4, title: 'The Frenchmans Track', route: 'Across the Pascoe and Wenlock rivers' },
   { number: 5, title: 'Telegraph Track South', route: 'Bramwell Junction to Gunshot Creek' },
   { number: 6, title: 'Telegraph Track North', route: 'The waterfalls, the creeks and Nolans Brook' },
   { number: 7, title: 'The Tip', route: 'Over the Jardine to the northernmost point' },

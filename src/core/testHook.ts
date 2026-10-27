@@ -50,6 +50,9 @@ export interface GameHook {
     tilt: number;
     jackknifed: boolean;
     tipped: boolean;
+    drums: number;
+    kind: string;
+    tyres: number[];
   } | null;
   vehicle(): {
     x: number;
@@ -71,7 +74,21 @@ export interface GameHook {
   /** Park the vehicle on the approach to a POI and frame it with the free camera. */
   showPoi(id: string): void;
   tool(
-    action: 'planks' | 'winch' | 'confirm' | 'cancel' | 'detach' | 'recall' | 'quick' | 'repair' | 'refuel',
+    action:
+      | 'planks'
+      | 'winch'
+      | 'confirm'
+      | 'cancel'
+      | 'detach'
+      | 'recall'
+      | 'quick'
+      | 'repair'
+      | 'refuel'
+      | 'hitch'
+      | 'unhitch'
+      | 'loadDrum'
+      | 'secureLoad'
+      | 'trailerTyre',
   ): boolean;
   /** Plain-data simulation snapshot. */
   state(): unknown;
@@ -319,6 +336,16 @@ export function installHook(game: Game): void {
           return g.sim.startRepair(LOCAL);
         case 'refuel':
           return g.sim.startRepair(LOCAL, true);
+        case 'hitch':
+          return g.sim.hitchTrailer(LOCAL);
+        case 'unhitch':
+          return g.sim.unhitchTrailer(LOCAL);
+        case 'loadDrum':
+          return g.sim.recoverDrum(LOCAL);
+        case 'secureLoad':
+          return g.sim.secureTrailerLoad(LOCAL);
+        case 'trailerTyre':
+          return g.sim.repairTrailerTyre(LOCAL);
       }
       return false;
     },
@@ -456,6 +483,9 @@ export function installHook(game: Game): void {
         tilt: t.tiltDeg(),
         jackknifed: t.jackknifed,
         tipped: t.tipped,
+        drums: t.drums,
+        kind: t.tuning.id,
+        tyres: [...t.tyres],
       };
     },
     vehicle: () => {

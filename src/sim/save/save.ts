@@ -7,6 +7,7 @@ import { isVehicleId } from '../../data/vehicles';
 import { episodeOrder, isEpisodeId, type EpisodeId } from '../../data/episodes';
 import { isTimeOfDay, isWeather, type Conditions } from '../../data/environment';
 import { isDamageMode, type DamageMode } from '../../data/damage';
+import { readDeliveryState } from '../trailerState';
 
 export interface Settings {
   quality: 'low' | 'medium' | 'high';
@@ -146,6 +147,7 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     surprises: strings(c.surprises),
     // Saves from before rescues: nobody had been pulled out.
     rescued: c.rescued === true,
+    ...(c.delivery ? { delivery: readDeliveryState(c.delivery) } : {}),
   };
 }
 

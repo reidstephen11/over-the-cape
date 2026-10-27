@@ -6,6 +6,8 @@ import { vehicleLoadout } from '../data/vehicles';
 import type { TyreFault } from './vehicle/condition';
 import type { Vehicle } from './vehicle/vehicle';
 import type { PoiDef } from './world/mapTypes';
+import type { Trailer } from './trailer';
+import type { DeliveryState } from './trailerState';
 
 /**
  * Where an episode restarts from: the last camp reached, the clock when you got there,
@@ -32,6 +34,8 @@ export interface Checkpoint {
   surprises: string[];
   /** The episode's bogged vehicle had been winched out by the camp. */
   rescued: boolean;
+  /** Trailer poses, cargo and loose drums as they were at this camp (absent in older saves). */
+  delivery?: DeliveryState;
 }
 
 export type EpisodeStatus = 'driving' | 'complete' | 'failed';
@@ -109,10 +113,15 @@ export class EpisodeRun {
   }
 
   /** Check the goal and the ways the episode can end. Returns the new status when it changes. */
-  check(v: Vehicle, mode: DamageMode, goal: PoiDef): EpisodeStatus | null {
+  check(v: Vehicle, mode: DamageMode, goal: PoiDef, trailers: Iterable<Trailer> = []): EpisodeStatus | null {
     if (this.status !== 'driving') return null;
     const p = v.body.translation();
-    if (this.rescued && Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius) {
+    const delivery =
+      !this.def.delivery ||
+      (this.hoursLeft() > 0 &&
+        Math.abs(v.speed) < 0.5 &&
+        [...trailers].some((t) => deliveryArrived(t, goal, this.def.delivery!.drums)));
+    if (this.rescued && delivery && Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius) {
       this.status = 'complete';
       return this.status;
     }
@@ -161,6 +170,7 @@ export function checkpointAt(
   discovered: Iterable<string>,
   taken: Iterable<string> = [],
   surprises: Iterable<string> = [],
+  delivery?: DeliveryState,
 ): Checkpoint {
   const c = v.condition;
   return {
@@ -178,7 +188,20 @@ export function checkpointAt(
     seed: run.seed,
     surprises: [...surprises],
     rescued: run.rescued && !!run.def.rescue,
+    ...(delivery ? { delivery } : {}),
   };
+}
+
+/** Parking the car alone, an empty trailer or a trailer on its side does not deliver anything. */
+export function deliveryArrived(t: Trailer, goal: PoiDef, drums: number): boolean {
+  const p = t.body.translation();
+  const speed = t.body.linvel();
+  return (
+    t.drums >= drums &&
+    t.tiltDeg() < 25 &&
+    Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius &&
+    Math.hypot(speed.x, speed.y, speed.z) < 0.6
+  );
 }
 
 /** A fresh seed for a new run's surprises. */

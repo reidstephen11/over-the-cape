@@ -27,6 +27,7 @@ import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
 import { TrailerView } from '../render/trailerView';
+import { CargoDrumView } from '../render/cargoDrumView';
 import { canCouple, trailers, type TrailerTuning } from '../data/trailers';
 import { trailerMessage } from './trailerMessages';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
@@ -109,6 +110,7 @@ export class Game {
   private readonly stuckViews: StuckVehicleView[] = [];
   /** The trailers drawn, by trailer id. */
   private readonly trailerViews = new Map<string, TrailerView>();
+  private readonly drumViews = new Map<string, CargoDrumView>();
   /** Seconds before the HUD can say again that the stockman is still bogged. */
   private rescueNag = 0;
   /** Which vehicle the player drives (saved). */
@@ -218,6 +220,14 @@ export class Game {
     sim.setDamage(settings.damage);
     sim.fuelScale = setup.def.fuelScale;
     applyCheckpoint(this.vehicle, this.checkpoint);
+    if (this.checkpoint.delivery) sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
+    else if (this.episode.delivery) {
+      const kind = tuning.hitch ? 'no5' : 'box6x4';
+      const trailer = sim.addTrailer('delivery', trailers[kind], LOCAL_VEHICLE);
+      trailer.loadDrums(this.episode.delivery.drums);
+      this.checkpoint.delivery = sim.deliveryState();
+    }
+    this.syncDeliveryViews();
 
     // Arriving at dusk or night, the headlights are already on.
     if (sim.env.lampBeams) this.vehicle.lights = 'low';
@@ -342,7 +352,12 @@ export class Game {
     sim.events.on('trailer', (e) => {
       const text = trailerMessage(e.event);
       if (text) this.hud.toast(text, 2600);
-      if (e.event.type !== 'righted')
+      if (
+        e.event.type === 'hitched' ||
+        e.event.type === 'unhitched' ||
+        e.event.type === 'jackknifed' ||
+        e.event.type === 'tipped'
+      )
         this.audio.trailerEvent(e.event.type, sim.trailers.get(e.id)?.drums ?? 0);
     });
     sim.events.on(
@@ -691,6 +706,8 @@ export class Game {
       this.sim.surprises?.reset(this.checkpoint.surprises);
       for (const s of this.sim.stuck.values()) s.reset(this.checkpoint.rescued);
       applyCheckpoint(this.vehicle, this.checkpoint);
+      if (this.checkpoint.delivery) this.sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
+      this.syncDeliveryViews();
       // What was taken after the camp is back where it was found.
       this.finds.reset(this.checkpoint.taken);
       this.findMarkers.show(this.finds.defs, this.finds.taken);
@@ -777,6 +794,34 @@ export class Game {
     this.view.scene.add(view.root);
   }
 
+  /** Spilled drums and restored trailers get their own views; retired physics bodies lose theirs. */
+  private syncDeliveryViews(): void {
+    for (const [id, view] of this.trailerViews) {
+      if (view.trailer === this.sim.trailers.get(id)) continue;
+      this.view.scene.remove(view.root);
+      view.dispose();
+      this.trailerViews.delete(id);
+    }
+    for (const [id, t] of this.sim.trailers) {
+      if (this.trailerViews.has(id)) continue;
+      const view = new TrailerView(t);
+      this.trailerViews.set(id, view);
+      this.view.scene.add(view.root);
+    }
+    for (const [id, view] of this.drumViews) {
+      if (view.drum === this.sim.looseDrums.get(id)) continue;
+      this.view.scene.remove(view.root);
+      view.dispose();
+      this.drumViews.delete(id);
+    }
+    for (const [id, d] of this.sim.looseDrums) {
+      if (this.drumViews.has(id)) continue;
+      const view = new CargoDrumView(d);
+      this.drumViews.set(id, view);
+      this.view.scene.add(view.root);
+    }
+  }
+
   /** The nearest trailer standing unhitched, while the car isn't towing one: how far back it is. */
   private trailerLeft(): { distance: number; tipped: boolean } | null {
     if (this.sim.trailerOf(LOCAL_VEHICLE)) return null;
@@ -851,11 +896,20 @@ export class Game {
           ? { id: 'recall', label: 'Recall planks', icon: 'planks', enabled: true }
           : { id: 'planks', label: 'Planks are out', icon: 'planks', enabled: false };
     const hitch = this.sim.hitchOption(LOCAL_VEHICLE);
+    const nearbyTrailer = this.sim.nearbyTrailer(LOCAL_VEHICLE);
+    const cargo: ToolOption[] = [];
+    if (nearbyTrailer?.drums)
+      cargo.push({ id: 'secureLoad', label: 'Tighten load straps', icon: 'wrench', enabled: true });
+    if (this.sim.drumToLoad(LOCAL_VEHICLE, false))
+      cargo.push({ id: 'loadDrum', label: 'Load loose drum', icon: 'fuel', enabled: true });
+    if (nearbyTrailer?.tyres.some((h) => h < 1))
+      cargo.push({ id: 'trailerTyre', label: 'Repair trailer tyre', icon: 'wrench', enabled: true });
     const trailer: ToolOption[] =
       hitch?.kind === 'unhitch'
         ? [{ id: 'unhitch', label: 'Unhitch the trailer', icon: 'detach', enabled: true }]
         : [];
     return [
+      ...cargo,
       ...trailer,
       t.winch.attached
         ? { id: 'detach', label: 'Detach winch', icon: 'detach', enabled: true }
@@ -904,7 +958,25 @@ export class Game {
   }
 
   private pickTool(id: string): void {
-    if (id === 'winch' && !this.tool.startWinchTarget()) this.hud.toast('No anchor in reach');
+    if (id === 'secureLoad')
+      this.hud.toast(
+        this.sim.secureTrailerLoad(LOCAL_VEHICLE)
+          ? 'Load straps tightened'
+          : 'Stop alongside the upright trailer first',
+      );
+    else if (id === 'loadDrum')
+      this.hud.toast(
+        this.sim.recoverDrum(LOCAL_VEHICLE)
+          ? 'Drum loaded and secured'
+          : 'Bring the stopped trailer alongside the drum',
+      );
+    else if (id === 'trailerTyre')
+      this.hud.toast(
+        this.sim.repairTrailerTyre(LOCAL_VEHICLE)
+          ? 'Trailer tyre repaired'
+          : 'Stop alongside it with a plug or spare left',
+      );
+    else if (id === 'winch' && !this.tool.startWinchTarget()) this.hud.toast('No anchor in reach');
     else if (id === 'planks') this.tool.startPlanks();
     else if (id === 'recall') this.sim.recallPlanks(LOCAL_VEHICLE);
     else if (id === 'detach') this.sim.detachWinch(LOCAL_VEHICLE);
@@ -1115,22 +1187,31 @@ export class Game {
         this.exploration.discovered,
         this.finds.taken,
         this.sim.surprises?.happened(),
+        this.sim.deliveryState(),
       );
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();
     const goal = this.world.pois.find((q) => q.id === this.episode.goal);
-    const status = goal ? this.run.check(this.vehicle, this.sim.damage, goal) : null;
+    const status = goal
+      ? this.run.check(this.vehicle, this.sim.damage, goal, this.sim.trailers.values())
+      : null;
     // At the goal with the stockman still bogged: the job isn't done.
     this.rescueNag -= dt;
     if (
       goal &&
-      !this.run.rescued &&
+      (!this.run.rescued || !!this.episode.delivery) &&
+      this.run.status === 'driving' &&
       this.rescueNag <= 0 &&
       Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius
     ) {
       this.rescueNag = 8;
-      this.hud.toast('Not without the stockman: go back and winch him out', 3000);
+      this.hud.toast(
+        this.episode.delivery
+          ? 'Park the upright trailer here with both drums aboard to make the delivery'
+          : 'Not without the stockman: go back and winch him out',
+        3000,
+      );
     }
     if (status === 'complete') this.onComplete();
     else if (status === 'failed') this.onFailed();
@@ -1308,8 +1389,10 @@ export class Game {
       this.anchorInReach = this.sim.findAnchors(LOCAL_VEHICLE).length > 0;
     }
     this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
+    this.syncDeliveryViews();
     for (const s of this.stuckViews) s.update();
     for (const t of this.trailerViews.values()) t.update(this.loop.paused ? 1 : alpha);
+    for (const d of this.drumViews.values()) d.update();
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
     this.toolsView.update(v, tools, this.sim.probeGround, this.clock);

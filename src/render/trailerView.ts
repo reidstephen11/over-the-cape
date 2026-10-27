@@ -36,7 +36,7 @@ export class TrailerView {
   private drumCount = -1;
   private readonly tmpQ = { x: 0, y: 0, z: 0, w: 1 };
 
-  constructor(private readonly trailer: Trailer) {
+  constructor(readonly trailer: Trailer) {
     const t = trailer.tuning;
     this.root.name = t.name;
     const metal = () =>
@@ -139,6 +139,7 @@ export class TrailerView {
   /** Follow the trailer between physics steps (`alpha` 0 = the last step, 1 = now). */
   update(alpha: number): void {
     const tr = this.trailer;
+    this.setDrums(tr.drums);
     const p0 = tr.prevPosition;
     const p1 = tr.body.translation();
     this.root.position.set(
@@ -152,6 +153,7 @@ export class TrailerView {
     for (let i = 0; i < this.wheels.length; i++) {
       this.wheels[i].pivot.position.y = t.wheels[i].y - tr.wheels[i].suspension;
       this.wheels[i].spin.rotation.x = -tr.wheels[i].rotation;
+      this.wheels[i].pivot.scale.y = tr.tyres[i] > 0 ? 1 : 0.65;
     }
     // Wound up off the ground while it's on the ball; the No. 5's prop leg swings up forwards
     // along the drawbar.
