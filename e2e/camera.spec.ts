@@ -1,11 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { collectErrors, shot, waitReady } from './helpers';
 
+/** The camera's bearing from the vehicle, relative to its heading (the parked car can creep round). */
 async function bearing(page: Page): Promise<number> {
   return page.evaluate(() => {
     const c = window.__game!.camera().position;
     const v = window.__game!.vehicle();
-    return Math.atan2(c[0] - v.x, c[2] - v.z);
+    return Math.atan2(c[0] - v.x, c[2] - v.z) + (v.heading * Math.PI) / 180;
   });
 }
 
