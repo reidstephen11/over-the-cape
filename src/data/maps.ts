@@ -20,7 +20,7 @@ export const maps: Record<MapId, MapEntry> = {
   },
   coach: {
     def: coachMap,
-    blurb: 'Maytown to Laura on the old coach road over the Conglomerate Range.',
+    blurb: 'A short rock climb and descent across the Conglomerate Range, between Maytown and Laura.',
   },
   lakefield: {
     def: lakefieldMap,

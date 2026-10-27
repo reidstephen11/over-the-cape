@@ -33,15 +33,15 @@ The version number (for example v0.01) is on the loading screen and the pause me
 
 They run south to north and unlock in order: finish one to open the next. A finished episode can be replayed, in the story's conditions or in your choice of time of day and weather.
 
-| #   | Episode               | Route                                                | Status       |
-| --- | --------------------- | ---------------------------------------------------- | ------------ |
-| 1   | The CREB Track        | Daintree Village to the Lions Den Hotel              | Playable     |
-| 2   | The Old Coach Road    | Maytown to Laura through the Palmer River goldfields | Playable     |
-| 3   | Lakefield             | Laura to Musgrave through Lakefield National Park    | Playable     |
-| 4   | The Frenchmans Track  | Telegraph Road to Portland Road, over two rivers     | Playable     |
-| 5   | Telegraph Track South | Bramwell Junction to Gunshot Creek                   | Coming later |
-| 6   | Telegraph Track North | The waterfalls, the creeks and Nolans Brook          | Coming later |
-| 7   | The Tip               | Over the Jardine to the northernmost point           | Coming later |
+| #   | Episode               | Route                                             | Status       |
+| --- | --------------------- | ------------------------------------------------- | ------------ |
+| 1   | The CREB Track        | Daintree Village to the Lions Den Hotel           | Playable     |
+| 2   | The Old Coach Road    | Conglomerate Range, between Maytown and Laura     | Playable     |
+| 3   | Lakefield             | Laura to Musgrave through Lakefield National Park | Playable     |
+| 4   | The Frenchmans Track  | Telegraph Road to Portland Road, over two rivers  | Playable     |
+| 5   | Telegraph Track South | Bramwell Junction to Gunshot Creek                | Coming later |
+| 6   | Telegraph Track North | The waterfalls, the creeks and Nolans Brook       | Coming later |
+| 7   | The Tip               | Over the Jardine to the northernmost point        | Coming later |
 
 ### Episode 1: The CREB Track
 
@@ -70,19 +70,22 @@ Beyond the map's edge the real country carries on to the horizon, brought in clo
 
 ### Episode 2: The Old Coach Road
 
-**Mission: through Maytown to Laura before dark.** August, the middle of the dry season: the rivers are down to shallow runs of water over wide beds of soft sand. You leave the Palmer River at 10:00 am; it's dark at 6:30 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs. There is no fuel on the way.
+**Mission: cross the Conglomerate Range and reach the camp below its north face.** A short rock-driving chapter on the road between Maytown and Laura, still Episode 2 before Lakefield. The fictional diary entry is dated 26 November 1986. Maytown and the road on to Laura frame the chapter in the briefing and closing note.
 
-The map is 1.3 km wide and 7.2 km from south to north, with about 7 km of road on the main line. The real trip is 70-odd km.
+Start at 9 am at the foot of the range, in clear, dry conditions. There is **no deadline**: stop, choose a wheel line and try again. The direct route is about 1.2 km in a 1.3 by 2 km map, targeting a 10–15 minute session. Exploring, bypasses and recovery can take longer. The climb, big step and descent retain their full-size obstacles; the quieter ridge sections are shorter.
 
-1. **Palmer River camp** to the **Palmer River**: a shallow channel across a wide bed of soft sand. Keep moving: stop in the sand and the wheels dig in.
-2. The ruins of **Maytown** (camp), the goldfield's town from the 1870s: the baker's oven, two chimneys, the stone kerbing of Leslie Street, a rebuilt hut and the cemetery.
-3. North on the **old coach road** through open woodland and termite mounds to the **North Palmer River**, where it divides: straight through the sand, or upstream over a bar of rock (signposted "Rocky crossing").
-4. The **Conglomerate Range**, three ways up its face: the **middle line** goes straight up over bands of rock (low range and both lockers, and don't spin the wheels on the rock); the **old coach road** (signposted) slants up to the west in deep ruts; the **bypass** (signposted) winds round to the east, long but easy.
-5. Along the range top past the **Hotel site** (camp) to the **big step**: a sandy gully and a metre of bare sandstone out of it, or the **eastern track** (signposted) round it.
-6. The steep, rocky **descent** off the north face: low range, first gear, and let the engine hold you back.
-7. North through two dry creek beds of sand, across the **Little Laura River**, into **Laura**.
+1. **South-face camp:** a short approach to the fork.
+2. **Three ways up:** the steep **middle line** has sandstone bands and alternating stones; use low range, both lockers and precision crawl. The **old coach line** slants west through ruts. The longer **bypass** winds east over gentler gravel.
+3. **Ridge and hotel site:** a short traverse with low rock shelves, staggered stones and a leaning section. The hotel site saves progress before the second half.
+4. **Big step:** a sandy gully and a metre of sandstone, or the signed **eastern track** around it.
+5. **North-face descent:** select low range before the drop and use engine braking over the descending rock bands.
+6. **Camp below the range:** pull clear of the last ledge to finish. The diary takes the journey onward to Laura, where Episode 3 begins.
 
-The country is dry eucalypt woodland, straw-coloured grass and orange dirt, with termite mounds from knee height to taller than a person (they're solid: don't hit one). Beyond the map's edge, south are the goldfield's hills, the Conglomerate Range runs on east and west, and north round Laura stand the flat-topped sandstone escarpments of Quinkan country.
+The setting remains dry eucalypt woodland, sandstone, orange dirt and termite mounds in the Palmer goldfields. The history notes distinguish the road's documented history from the fictional diary and camps.
+
+Old saves at removed river camps restart at the new south-face camp with a fresh load. A saved hotel-site checkpoint resumes on the ridge. Completed episodes and later unlocks are retained. Choose **Start again** to experience the whole revised chapter.
+
+Check a continuous run with `npx vite-node scripts/coach-drive.ts shortie`; add `oldcoach`, `bypass` or `eastern` to choose the other lines. The driver uses the actual fuel load and reports whether it reached the goal.
 
 ### Episode 3: Lakefield
 
@@ -274,6 +277,8 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 Add `?seed=7` (any number) to start a new run with that run's surprises, to see the same ones again, or `?surprises=off` to drive without them.
 
 ## What to test
+
+- [ ] **v0.52 compact Old Coach Road:** start Episode 2 again. Does the diary clearly place this crossing between Maytown and Laura? Start below the range at 9 am with no deadline. Try the three climb lines, the short rocky ridge and hotel-site save, the big step and eastern track, then the north-face descent. Does careful wheel placement matter, and is there little empty driving? Compare the direct run with the longer bypass. Reload at the hotel site and check Continue, then finish at the lower camp and move on to Lakefield. Check that a pre-update river-camp save starts safely at the new start and that completed episodes stay unlocked.
 
 - [ ] **v0.51 Frenchmans challenge:** start Episode 4 again. Compare the bog shortcut with the firm loop, then try the jump-up in high range and again with low range, lockers and precision crawl on the right-hand line. Crawl the sideling with the loaded No. 5; brake before the gullies. Follow the curved gravel line at the Pascoe and compare its depth with the dark hole on the straight line. Deliver both drums before dusk with a civilian trailer and an Army trailer.
 - [ ] **v0.50 Episode 4:** finish Lakefield to unlock Frenchmans (or use `?dev`). Check that the civilian vehicles start with a box trailer and the Perentie/Unimog with the No. 5, all carrying two drums. Drive both crossings; slow down on the banks and watch the trailer. Leave it behind and visit the goal: the episode must stay open. Park it there upright with both drums: the delivery finishes.
