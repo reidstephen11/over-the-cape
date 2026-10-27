@@ -170,3 +170,12 @@ The sources for this episode were found by web search in October 2026. The pages
 - **Claim:** the park was handed back to its Traditional Owners in 2011 and renamed Rinyirru (Lakefield) National Park; it is managed jointly by the Rinyirru (Lakefield) Aboriginal Corporation and the Queensland Government. Elders had objected that the 1979 declaration was made without consulting them.
 - **Sources:** [Australian Geographic: Biggest park in Cape York handed back (June 2011)](https://www.australiangeographic.com.au/news/2011/06/biggest-park-in-cape-york-handed-back/); [Queensland Parks: Historic Lakefield Homestead day-use area](https://parks.qld.gov.au/parks/rinyirru-lakefield/attractions/historic-lakefield-homestead-day-use-area).
 - **Left out:** the objection to the 1979 declaration. True, but more than a closing line can carry fairly.
+
+## Episode 4: The Frenchmans Track
+
+Checked 27 October 2026. The map goes west to east from Telegraph Road towards Portland Road, crossing the Wenlock before the Pascoe. Distances and precise terrain are shortened and authored for the game.
+
+- **Route and country:** [True North Adventures: Frenchmans Track](https://truenorthadventures.com.au/frenchmans-track/) describes the west–east link, sandy Wenlock approaches, wet ground between the rivers, and the steep rocky western Pascoe bank with a less rocky eastern exit. This is a first-hand trip account rather than a historical source.
+- **Crossings:** [Hema Maps: 4WD Guide to the Frenchmans Track](https://hemamaps.com/blogs/location-guides/frenchmans-track-4wd-guide) describes the testing water crossings, sand tracks and seasonal mud. [Outbackjoe's first-hand crossing account](https://outbackjoe.com/2013/09/25/frenchmans-track-cape-york/) also describes the harder western side of the Pascoe valley. The game does not use guidebook recommendations as a claim that towing this route is advisable in real life.
+- **Game choices:** the 30 November 1986 diary entry, delivery, diesel pump, camps and deadline are fiction. The bars, holes, water depths, current strengths and shower timeline are gameplay choices. No claim is made about what these rivers were doing on that historical date.
+- **Left out:** who first built or named Frenchmans Track; accounts give uncertain explanations. No real person is cast as the delivery recipient.

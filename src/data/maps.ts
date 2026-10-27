@@ -2,9 +2,10 @@ import type { MapDef } from '../sim/world/mapTypes';
 import { coachMap } from './episodes/coachMap';
 import { crebMap } from './episodes/crebMap';
 import { lakefieldMap } from './episodes/lakefieldMap';
+import { frenchmansMap } from './episodes/frenchmansMap';
 
 /** One map per episode, in story order. */
-export type MapId = 'creb' | 'coach' | 'lakefield';
+export type MapId = 'creb' | 'coach' | 'lakefield' | 'frenchmans';
 
 export interface MapEntry {
   def: MapDef;
@@ -25,9 +26,13 @@ export const maps: Record<MapId, MapEntry> = {
     def: lakefieldMap,
     blurb: 'Laura to Musgrave through Lakefield, over the black soil plains and Hann Crossing.',
   },
+  frenchmans: {
+    def: frenchmansMap,
+    blurb: 'Deliver diesel across the Wenlock and Pascoe rivers on a loaded trailer.',
+  },
 };
 
-export const mapOrder: readonly MapId[] = ['creb', 'coach', 'lakefield'];
+export const mapOrder: readonly MapId[] = ['creb', 'coach', 'lakefield', 'frenchmans'];
 
 export function isMapId(x: unknown): x is MapId {
   return typeof x === 'string' && x in maps;

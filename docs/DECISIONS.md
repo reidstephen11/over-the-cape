@@ -1224,3 +1224,34 @@ The full browser run after v0.46 had two failures. Both failed the same way on t
 - **The studio** shows a trailer: `?trailer=no5` on its own, or with `vehicle=perentie` hitched behind it (`&drums=2` loads it). `scripts/studio-shots.ts` takes `trailer:no5` or `perentie+no5`.
 - **Test mode** has **Army No. 5, empty** and **No. 5 with two drums**. Behind a vehicle without a pintle, it says so instead.
 - **Tests.** Only the Perentie and the Unimog take the ring, and every vehicle takes the ball. Loaded, the No. 5 follows behind each of them and corners at a walking pace. It folds against the Perentie's pintle on full lock in reverse without tipping. It climbs 20° loaded in low range. It tips in a turn at 25 km/h across 15°. Unhitched, it stands on its prop leg on an 8° slope. No vehicle with only a ball is offered it, and a swap leaves it standing. The test-mode browser test hitches it behind the Land Rover.
+
+## v0.50: Episode 4 — diesel delivery across Frenchmans Track
+
+**Request.** Build Episode 4, the third step of the approved towing plan. The episode opens after Lakefield and takes a loaded trailer west to east from Telegraph Road, across the Wenlock and Pascoe rivers, to a fictional fuel camp towards Portland Road. Both trailer types are used, the player can unhitch, and tipping, jackknifing, punctures and lost drums are part of the job.
+
+- **Route and story.** About 7.7 km of track on an 8,192 × 1,280 m map: sandy Wenlock approaches, woodland and wet heath, a rocky western descent into the Pascoe, its shallow bar with deep water beside it, the eastern climb and the delivery camp. The diary starts at 10 am on 30 November 1986. Both 200 L drums are needed by 6:15 pm. The story and camps are fictional; route sources and limits are in docs/HISTORY.md. Showers build after lunch; the rivers rise by at most 0.35 m. The clock runs at 12 game minutes per real minute and fuel burns at nine times the engine's real rate. No real tank capacities or engine calibrations change.
+- **Mission cargo.** A civilian vehicle starts with the box trailer; the Perentie and Unimog take the No. 5. Both carry two full drums (372 kg of diesel and steel). The car and an upright trailer must be parked inside the goal radius with both drums aboard. Driving there alone, towing an empty trailer or bringing it in on its side cannot complete the delivery. A late delivery cannot bypass the deadline. The drums cannot refuel the car.
+- **Water.** Drag is relative to the river's current and is applied at wet parts of the trailer. The open box traps little air; the sealed tyres and drums provide most of the lift. Dropped drums are dynamic cylinders: they roll on land, float and drift downstream. The force uses submerged volume and limits each drag impulse so a fast hit cannot reverse a body in one step.
+- **Load straps and recovery.** Repeated hard suspension hits above a careful towing pace loosen the straps. A persistent HUD prompt and a toast warn before the first drum comes out. Stop and choose **Tighten load straps**. A tip above 70° or fully loosened straps spill a drum outside the box; its mass is removed from the trailer and given to a new physical drum. Bring the upright trailer alongside the stopped or slowly drifting drum, stop the car and choose **Load loose drum**. Recovery removes that body and restores one drum and its mass, once. Tools remain visible while the trailer is settling; actions check that both bodies are stopped.
+- **Trailer tyres.** On Realistic, a sufficiently hard wheel impact on rock or a deep hole above 6 m/s punctures that tyre. Its radius drops and it drags at that corner. **Repair trailer tyre** uses a plug, or a spare if no plugs remain, from the car. A nearby trailer's punctures are patched and its upright load secured before the camp checkpoint is taken. Switching damage below Realistic clears trailer punctures, as it does the car's severe damage.
+- **Camps and compatibility.** Checkpoints optionally keep trailer type, pose, hitch state, cargo count, strap strain, tyre health and every loose drum's pose. Old saves load without this field. Continuing or restarting recreates the saved cargo without replenishment: a hitched trailer stands behind the car at camp, an unhitched one stays at its saved position. Repeated restores replace the old bodies and views rather than duplicate them. An Army trailer still needs a pintle if the vehicle is changed.
+- **Route checks.** The first drive exposed a rough approach which tipped a loaded No. 5, and the Wenlock track join could unsettle longer vehicles. Shared heights now meet the banks and the corrugations suit a careful loaded tow. The route driver uses the real starting fuel and cargo, rising water, a slower pace for the Army trailers, and the actual delivery goal. The approach joins also have a regression check for steps and cross-slope.
+- **Verification.** New tests exercise delivery rejection and completion, lateness, tipped cargo, one-time recovery, physical floating/current forces, Realistic-only punctures and repairs, saved unhitched trailers, repeated restore, old saves, unlocking and approach continuity. Browser coverage leaves the trailer behind, saves at another camp, reloads, returns for it and delivers it. The full browser suite runs asynchronously under CLAUDE.md's release policy.
+
+The completed towing handover (`docs/NEXT.md`) and its instruction pointer were retired. Remaining work is in docs/ROADMAP.md; earlier approved choices remain in this decision log.
+
+### Episode 4 route measurements
+
+`npx vite-node scripts/frenchmans-drive.ts all`, default story weather, Mild damage, two full drums. The script uses at most 4.5 m/s on road legs with the No. 5 and 5–6 m/s with the box trailer, slowing further at the crossings. These are careful scripted runs, without detours or roadside jobs; they are a balance check rather than a promised player time. All nine runs complete with the real starting load and both drums intact.
+
+| Vehicle  | Driving minutes | Arrival | Fuel used (L) | Drums delivered |
+| -------- | --------------: | ------- | ------------: | --------------: |
+| shortie  |            26.6 | 3:19 pm |          17.9 |               2 |
+| camel    |            26.6 | 3:19 pm |          17.9 |               2 |
+| perentie |            31.1 | 4:13 pm |          11.8 |               2 |
+| hilux    |            26.8 | 3:22 pm |          12.8 |               2 |
+| unimog   |            30.8 | 4:09 pm |          24.1 |               2 |
+| troopy   |            26.5 | 3:18 pm |          13.7 |               2 |
+| patrol   |            26.8 | 3:22 pm |          13.9 |               2 |
+| lc79     |            26.6 | 3:19 pm |          20.9 |               2 |
+| sooty80  |            26.7 | 3:19 pm |          18.2 |               2 |
