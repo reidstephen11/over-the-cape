@@ -254,7 +254,9 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
-- [ ] **v0.46 trailer, first look:** the loading screen and pause menu show v0.46. Open the game with `?dev`, drive an episode and press **With two drums of diesel** in the Test mode panel. Does the trailer sit right behind the car, and does the camera show both? Drive, corner and brake: does it follow believably and make the car feel heavier? Reverse with the wheel turned until it jackknifes, then pull forward. Stop, unhitch it from the tool menu (Q), drive off, come back, back up to it and press E: was it easy to line up? Try it behind the Land Rover and the Unimog too. The trailer's look is a first draft: the next update draws it properly, with the Army trailer.
+- [ ] **v0.47 test fixes:** the loading screen and pause menu show v0.47. Nothing in the game changed; the browser tests for the camera and damage were brought up to date.
+
+- [ ] **v0.46 trailer, first look:** Open the game with `?dev`, drive an episode and press **With two drums of diesel** in the Test mode panel. Does the trailer sit right behind the car, and does the camera show both? Drive, corner and brake: does it follow believably and make the car feel heavier? Reverse with the wheel turned until it jackknifes, then pull forward. Stop, unhitch it from the tool menu (Q), drive off, come back, back up to it and press E: was it easy to line up? Try it behind the Land Rover and the Unimog too. The trailer's look is a first draft: the next update draws it properly, with the Army trailer.
 
 - [ ] **v0.45 80 Series:** choose **80 Series — Sooty MkII** on the welcome screen or in Pause → Vehicle. Drive, brake, engage low range and lockers, try the winch and high beam, and switch to the cockpit. Check that the saved vehicle is selected after reloading, that its menu button fits on a phone, and that fuel starts at the episode amount with a 145 L capacity. Check the lifted wheels and body on rough terrain. The photo-based visual revision is still pending.
 

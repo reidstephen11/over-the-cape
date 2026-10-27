@@ -35,21 +35,21 @@ test('damage: a setting, shown on the HUD; fit a spare for a torn sidewall, camp
   await expect(page.locator('.prompts')).toContainText('Fit a spare');
   await shot(page, 'damage', 'torn-sidewall');
 
-  // Tool menu → Fit a spare: the tyre is mended, the engine isn't, the spare is used.
+  // Tool menu → Fit a spare: the tyre is mended, the engine isn't, one of the two spares is used.
   await page.keyboard.down('KeyQ');
   await page.locator('.tool-option', { hasText: 'Fit a spare' }).click();
   await page.keyboard.up('KeyQ');
   await expect.poll(() => page.evaluate(() => window.__game!.health().repairing)).toBe(true);
   await expect
     .poll(() => page.evaluate(() => window.__game!.health()), { timeout: 900_000 })
-    .toMatchObject({ tyres: [1, 1, 1, 1], spares: 0, engine: 0.4, repairing: false });
-  await expect(page.locator('.status-supplies')).toContainText('×0');
+    .toMatchObject({ tyres: [1, 1, 1, 1], spares: 1, engine: 0.4, repairing: false });
+  await expect(page.locator('.status-supplies [title="Spare wheels"]')).toHaveText('×1');
 
   // Back at the start camp the engine is put right; the spare stays used.
   await page.evaluate(() => window.__game!.teleportPoi('daintree-village'));
   await expect
     .poll(() => page.evaluate(() => window.__game!.health()), { timeout: 120_000 })
-    .toMatchObject({ engine: 1, spares: 0 });
+    .toMatchObject({ engine: 1, spares: 1 });
   await expect(page.locator('.status-damage')).not.toHaveClass(/shown/);
   expect(errors).toEqual([]);
 });

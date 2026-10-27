@@ -1195,3 +1195,10 @@ The sideways driving HUD folds speed, gear, planks, fuel, supplies and the clock
 - **Drawn for now** (`src/render/trailerView.ts`): a galvanised box with guards, the A-frame drawbar, coupling, safety chains, jockey wheel (wound up while hitched), tail lamps and blue drums. Step 2 redraws it from reference photographs, with the No. 5 trailer, a HUD line and sound.
 - **Tests** (`tests/trailer.test.ts`): tows on the flat and stays on the ball; the load slows the car; corners; climbs 20° in low range loaded; reverses straight and jackknifes on full lock; stands across a 30° side slope; tips in a hard turn at 30 km/h across a 15° slope; follows each of the nine vehicles forwards, round a full-lock turn and reversed hard into a fold without tipping; stands chocked on an 8° slope when unhitched; hitches again with the use key, not on the move; comes back to camp hitched. The test-mode browser test hitches one and drives.
 - **Not yet:** water (the trailer has no buoyancy or drag in a river, needed for the Frenchmans Track), trailer tyre damage, drums coming loose, saving the trailer at camps, and the delivery goal. They come with steps 2 and 3.
+
+## v0.47: browser test fixes
+
+The full browser run after v0.46 had two failures. Both failed the same way on the code from before v0.46, and neither is a game fault. No game change.
+
+- **Damage test.** It expected no spares left after fitting one, but since v0.29 every vehicle starts with two, so one is left. It now expects one, and checks the spare-wheel count on the HUD rather than any "×0" in the supplies line.
+- **Camera test.** Parked on the handbrake at the start, the car slowly swings round (about 10° a minute): only the rear wheels are held, and the front ones roll down the slope. The camera follows it back behind the car as it should, but the test measured the camera's bearing against the world, from where the car first pointed, so after a minute the car's own turn counted as the camera being off-centre. It now measures the bearing against the car's heading.
