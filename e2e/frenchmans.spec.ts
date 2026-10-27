@@ -81,3 +81,54 @@ test('Episode 4: the trailer carries the delivery, camps retain a trailer left b
   await shot(page, 'frenchmans', 'delivered');
   expect(errors).toEqual([]);
 });
+
+test('Episode 4 shows the fork, rutted climb, sideling and curved Pascoe line', async ({ page }) => {
+  test.setTimeout(600_000);
+  const errors = collectErrors(page);
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'overthecape.save.v1',
+      JSON.stringify({
+        version: 1,
+        settings: { quality: 'low', masterVolume: 0 },
+        vehicle: 'perentie',
+        episode: 'frenchmans',
+        episodes: { creb: { completed: true }, coach: { completed: true }, lakefield: { completed: true } },
+      }),
+    ),
+  );
+  await page.goto('/?dev');
+  await page.locator('[data-welcome-drive]').click();
+  await driveFromBriefing(page);
+  await page.evaluate(() => {
+    window.__game!.setStepsPerFrame(1);
+    window.__game!.setInput({ handbrake: true });
+  });
+  for (const [name, parkX, parkZ, heading, x, z, tx, tz] of [
+    ['fork', -1800, -35, 145, -1800, -90, -1700, 55],
+    ['jump-up', -1590, -35, 35, -1620, -10, -1490, -95],
+    ['sideling', -1280, 50, 140, -1300, 240, -1195, 135],
+    ['pascoe', -85, 115, 120, -70, 190, 100, 8],
+  ] as const) {
+    await page.evaluate(
+      ({ parkX, parkZ, heading, x, z, tx, tz }) => {
+        const g = window.__game!;
+        g.setTrailer(null);
+        g.teleport(parkX, parkZ, heading);
+        g.setTrailer(2, 'no5');
+        g.setCamera(
+          x,
+          Math.max(g.heightAt(x, z), g.heightAt(tx, tz)) + 35,
+          z,
+          tx,
+          g.heightAt(tx, tz) + 1,
+          tz,
+        );
+      },
+      { parkX, parkZ, heading, x, z, tx, tz },
+    );
+    await page.waitForTimeout(500);
+    await shot(page, 'frenchmans-v51', name);
+  }
+  expect(errors).toEqual([]);
+});

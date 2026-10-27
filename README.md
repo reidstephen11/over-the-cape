@@ -102,7 +102,15 @@ Beyond the map's edge the country stays flat, with the sandstone of Quinkan coun
 
 ### Episode 4: The Frenchmans Track
 
-**Mission: deliver two 200 L drums of diesel to the Portland Road fuel camp before 6:15 pm.** Leave the Telegraph Road camp at 10 am, cross the sandy Wenlock, tow through wet heath and woodland, then descend the rocky western bank of the Pascoe, cross its shallow bar and climb out towards Portland Road. The map is 8.2 km wide and 1.3 km deep, with about 7.7 km of track. Showers build during the afternoon. The diary, delivery and camps are fictional; route sources are in [docs/HISTORY.md](docs/HISTORY.md).
+**Mission: deliver two 200 L drums of diesel to the Portland Road fuel camp before 6:15 pm.** Leave the Telegraph Road camp at 10 am, cross the sandy Wenlock, tow through wet heath and woodland, then descend the rocky western bank of the Pascoe, cross its shallow bar and climb out towards Portland Road. From v0.51 the active route is about 5.9 km, with narrower winding tracks and less empty driving. Showers build during the afternoon. The diary, delivery, camps and individual obstacles are fictional; route sources are in [docs/HISTORY.md](docs/HISTORY.md).
+
+- **Washout bends and Wenlock:** brake before the drainage lips, then follow the curved sandy bar through the river. Allow for the trailer cutting inside each bend.
+- **Bog or firm loop:** the short line drops into deep sticky mud, with winch anchors nearby. The signed gravel loop goes around it, with tight turns to negotiate while towing.
+- **Rutted jump-up:** select **low range (L)**, **both lockers (Z, X)** and **precision crawl (P)**. Keep right past the loose rocks and watch the trailer wheels through the erosion channels.
+- **Sideling and gullies:** crawl the leaning bend; sharp steering can throw the loaded trailer sideways. Brake before each gully, carry momentum through the soft sand and use low range up the far bank.
+- **Pascoe:** switchbacks lead down to the ford. Follow the shallow gravel line around the dark scour hole, with the trailer following the same curve, then climb the eastern bank.
+
+Start Episode 4 again to drive the whole revised route. Existing checkpoints still load, but the start, Pascoe camp and delivery camp have moved; an unhitched trailer stays at its saved position.
 
 The civilian vehicles start with the **6×4 box trailer**; the Perentie and Unimog take the **Army No. 5**. Both carry the same two drums. The loaded No. 5 is narrower and more prone to tipping: take the rough stretches slowly. The trailers have no brakes. Low range and both lockers help on the river banks; reversing hard can jackknife the trailer.
 
@@ -115,7 +123,7 @@ Check the route with `npx vite-node scripts/frenchmans-drive.ts all`; it uses th
 
 ## How an episode works
 
-- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The mission line moves on as you do each part (in Lakefield: the stockman, then the crossing, then Musgrave), and a deadline that only holds until a place (Hann Crossing) drops off the panel once you're there. The clock runs while you drive (eight game minutes a real minute on the CREB, 17 on the Old Coach Road, 14 in Lakefield and 12 on Frenchmans) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
+- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The mission line moves on as you do each part (in Lakefield: the stockman, then the crossing, then Musgrave), and a deadline that only holds until a place (Hann Crossing) drops off the panel once you're there. The clock runs while you drive (eight game minutes a real minute on the CREB, 17 on the Old Coach Road, 14 in Lakefield and 10 on Frenchmans) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
 - **Camps save the run.** Reaching a camp saves where you are, the clock, what's on board and whether you've pulled the stockman out. It also keeps trailer loads, punctures and loose delivery drums, including trailers left unhitched. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs. It keeps what you'd found by then: restart from it and anything picked up after it is back where it was. A tree or rocks that came down before the camp stay down; those still to come happen again the same way.
 - **History notes** appear in the top right as you reach a place. Click one to close it.
 - **The episode ends early** when, with the difficulty that allows it:
@@ -267,6 +275,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v0.51 Frenchmans challenge:** start Episode 4 again. Compare the bog shortcut with the firm loop, then try the jump-up in high range and again with low range, lockers and precision crawl on the right-hand line. Crawl the sideling with the loaded No. 5; brake before the gullies. Follow the curved gravel line at the Pascoe and compare its depth with the dark hole on the straight line. Deliver both drums before dusk with a civilian trailer and an Army trailer.
 - [ ] **v0.50 Episode 4:** finish Lakefield to unlock Frenchmans (or use `?dev`). Check that the civilian vehicles start with a box trailer and the Perentie/Unimog with the No. 5, all carrying two drums. Drive both crossings; slow down on the banks and watch the trailer. Leave it behind and visit the goal: the episode must stay open. Park it there upright with both drums: the delivery finishes.
 - [ ] **v0.50 cargo and camp saves:** tip the trailer or rush rough ground until a drum comes off. Find it beside the track or drifting downstream; bring the stopped trailer alongside and use **Load loose drum**. Tighten loose straps from Tools. On Realistic, repair a trailer puncture using a plug or spare. Save at a camp with the trailer unhitched elsewhere; reload and check that the trailer, load, tyre state and loose drums match the camp. Check the Tools menu and trailer warnings on phones upright and sideways.
 

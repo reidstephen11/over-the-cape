@@ -29,13 +29,14 @@ export const frenchmansEpisode: EpisodeDef = {
   weather: 'clear',
   storm: frenchmansStorm,
   deadline: { hour: 18.25, label: 'The camp needs its diesel before 6:15 pm' },
-  clockRate: 12,
+  clockRate: 10,
   fuelScale: 9,
   loadout: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
   briefing: [
     'From the diary, Sunday 30 November 1986: “Two drums of diesel for a camp out towards Portland Road. They need the pump running by this evening. We’ve got the trailer loaded, but there are two rivers and a fair bit of rough country between us and them.”',
     'Take Frenchmans Track east from Telegraph Road, cross the Wenlock, then the Pascoe, and park the trailer at the fuel camp with both 200 L drums still aboard before 6:15 pm. The camp and this delivery are part of the story.',
     'The 6×4 box trailer is on the civilian vehicles; the Land Rover and Unimog take the Army No. 5. It is heavy and has no brakes. Use low range on the banks and leave room to straighten up before reversing.',
+    'At the heath fork, the short line drops into a deep bog; the signed firm loop takes tight bends around it. Beyond the fork, use low range, lockers and precision crawl on the rutted jump-up, keeping right of the loose rocks. Crawl the sideling and brake before the washout gullies. At the Pascoe, the shallow line curves around a dark scour hole.',
     'Corrugations at speed loosen the load. Stop and use Tools to tighten the straps when warned. A tip can spill the drums: stop beside a loose drum with the upright trailer nearby and choose Load loose drum. Sealed drums float and drift in the rivers.',
     'On Realistic a hard hit can puncture a trailer tyre. Stop alongside it and use Repair trailer tyre; it uses a plug or a spare from the car. Camps patch punctures. Camps keep the trailer, its load and loose drums where you left them, including an unhitched trailer.',
   ],
@@ -45,12 +46,24 @@ export const frenchmansEpisode: EpisodeDef = {
       text: 'The first of the two river crossings heading east. Stay on the sandy bar, keep a steady pace, and allow for the trailer following behind. The deep water beside the line can lift a trailer and carry it downstream.',
     },
     heath: {
-      title: 'The wet heath',
-      text: 'The track crosses sand, mud and rough woodland. A loaded trailer can tip if you rush a turn. Slow down over the corrugations and check the load straps before they work loose.',
+      title: 'Bog or firm loop',
+      text: 'Straight on is shorter, but the deep bog can stop a loaded rig: use the trees ahead to winch through. The signed loop to the right is firm, with tight bends. Allow for the trailer cutting inside the car’s line.',
+    },
+    'jump-up': {
+      title: 'The rutted jump-up',
+      text: 'Low range and lockers before the climb. Use precision crawl and keep to the right of the loose rocks; watch where the trailer wheels will follow. A wheel in the eroded rut can throw the load sideways.',
+    },
+    sideling: {
+      title: 'The loaded sideling',
+      text: 'Slow to walking pace for the leaning bend. The loaded trailer sits high, and cuts inside the car’s turn. Leave room on the track for its wheels and ease the steering rather than making a sharp correction.',
+    },
+    gullies: {
+      title: 'The washout gullies',
+      text: 'Brake before dropping into the gully. Keep moving through the soft sand, then use low range for the far bank. Rushing the drainage lips throws the loaded trailer about.',
     },
     pascoe: {
       title: 'The Pascoe River',
-      text: 'The western bank is steep and rocky. Select low range before the descent, line up with the shallow bar and keep away from the dark water downstream. The trailer needs the same careful line as the car.',
+      text: 'The western bank is steep and rocky, with tight bends before the ford. Select low range before the descent. The shallow gravel line curves around the dark scour hole in the middle; the trailer needs to follow that line too. Keep moving through the current, then climb the eastern bank.',
     },
     'pascoe-camp': {
       title: 'Before the Pascoe',
