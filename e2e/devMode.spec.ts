@@ -48,6 +48,9 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   await panel.getByRole('button', { name: 'With two drums of diesel' }).click();
   const hitched = await page.evaluate(() => window.__game!.trailer());
   expect(hitched?.hitched).toBe(true);
+  // The HUD says what's on the back.
+  await expect(page.locator('.status-trailer')).toBeVisible();
+  await expect(page.locator('.status-trailer')).toContainText('2 drums');
   const start = await page.evaluate(() => window.__game!.vehicle());
   await page.evaluate(() => window.__game!.setInput({ throttle: 0.5 }));
   await expect
@@ -63,6 +66,7 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   await shot(page, 'dev', 'trailer');
   await panel.getByRole('button', { name: 'No trailer' }).click();
   expect(await page.evaluate(() => window.__game!.trailer())).toBeNull();
+  await expect(page.locator('.status-trailer')).toBeHidden();
 
   // Nothing is saved in test mode.
   const saved = await page.evaluate(() => localStorage.getItem('overthecape.save.v1'));

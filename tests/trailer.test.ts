@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { lateAfternoon } from '../src/data/environment';
-import { boxTrailer, drumLoad, hitchPoint } from '../src/data/trailers';
-import { loadRapier } from '../src/sim/physics';
+import { boxTrailer, hitchPoint } from '../src/data/trailers';
+import { Groups, groups, loadRapier } from '../src/sim/physics';
+import { trailerHud } from '../src/core/hudState';
 import { Simulation } from '../src/sim/sim';
 import { emptyInput, type VehicleInput } from '../src/sim/input/vehicleInput';
 import { poseBehind, Trailer, type TrailerEvent } from '../src/sim/trailer';
@@ -26,14 +27,11 @@ async function towScene(opts: Parameters<typeof makeScene>[0], drums = DRUMS) {
     boxTrailer,
     poseBehind(v, boxTrailer, (x, z) => -pitch * z - roll * x),
   );
-  if (drums > 0) {
-    const load = drumLoad(drums, boxTrailer.bed);
-    t.setLoad(load.mass, load.com, load.half);
-  }
+  if (drums > 0) t.loadDrums(drums);
   t.hitch(v);
   const events: TrailerEvent[] = [];
   s.beforeStep = (dt) => t.step(dt);
-  s.afterStep = () => events.push(...t.postStep());
+  s.afterStep = (dt) => events.push(...t.postStep(dt));
   s.run(1, {});
   return { s, v, t, events };
 }
@@ -141,6 +139,67 @@ describe('towing a trailer', () => {
     expect(Math.hypot(p1.x - p0.x, p1.z - p0.z)).toBeLessThan(0.1);
     expect(gap(v, t)).toBeGreaterThan(10);
     expect(t.tiltDeg()).toBeLessThan(15);
+  });
+});
+
+describe('what the player hears and sees of it', () => {
+  it('bangs over a bump in the track, and runs quietly on the flat', async () => {
+    const { s, t } = await towScene({}, 0);
+    let flat = 0;
+    s.afterStep = (dt) => {
+      t.postStep(dt);
+      flat = Math.max(flat, t.bump);
+    };
+    s.run(4, { throttle: 0.7 });
+    expect(flat).toBe(0);
+    // A 15 cm log across the track ahead.
+    const R = s.physics.R;
+    const z = s.vehicle.position.z - 12;
+    s.physics.world.createCollider(
+      R.ColliderDesc.cuboid(4, 0.075, 0.12)
+        .setTranslation(0, 0.075, z)
+        .setCollisionGroups(groups(Groups.STATIC, 0xffff)),
+    );
+    let bump = 0;
+    let rough = 0;
+    s.afterStep = (dt) => {
+      t.postStep(dt);
+      bump = Math.max(bump, t.bump);
+      rough = Math.max(
+        rough,
+        t.wheels.reduce((a, w) => a + Math.abs(w.compression), 0),
+      );
+    };
+    s.run(4, { throttle: 0.7 });
+    expect(t.body.translation().z).toBeLessThan(z);
+    expect(bump).toBeGreaterThan(1.2);
+    expect(rough).toBeGreaterThan(1);
+  });
+
+  it('loads drums: their count, mass and where they sit', async () => {
+    const { t } = await towScene({}, 0);
+    expect(t.drums).toBe(0);
+    expect(t.mass).toBe(boxTrailer.mass);
+    t.loadDrums(2);
+    expect(t.drums).toBe(2);
+    expect(t.mass).toBeCloseTo(boxTrailer.mass + 2 * 186, 0);
+    t.loadDrums(0);
+    expect(t.mass).toBe(boxTrailer.mass);
+  });
+
+  it('the HUD line says what is on the back, or where it was left', async () => {
+    const { t } = await towScene({});
+    const line = trailerHud(t, null)!;
+    expect(line).toMatchObject({ state: 'towing', drums: 2, overloaded: false, limit: 750 });
+    expect(line.kg).toBe(Math.round(boxTrailer.mass + 2 * 186));
+    t.loadDrums(3);
+    expect(trailerHud(t, null)!.overloaded).toBe(true);
+    t.jackknifed = true;
+    expect(trailerHud(t, null)!.state).toBe('jackknifed');
+    t.tipped = true;
+    expect(trailerHud(t, null)!.state).toBe('tipped');
+    expect(trailerHud(null, { distance: 42, tipped: false })).toMatchObject({ state: 'left', distance: 42 });
+    expect(trailerHud(null, null)).toBeNull();
   });
 });
 

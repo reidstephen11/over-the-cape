@@ -1851,6 +1851,28 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   height: 20px;
 }
 
+.status-trailer {
+  gap: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.status-trailer.hidden {
+  display: none;
+}
+
+.status-trailer.left {
+  opacity: 0.7;
+}
+
+.status-trailer.warn {
+  color: #a8650f;
+}
+
+.status-trailer.bad {
+  color: #a3311f;
+}
+
 .history-card {
   position: absolute;
   z-index: 3;
@@ -2234,7 +2256,8 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   }
 
   .touch-mode .hud-readout .supplies {
-    gap: 6px;
+    flex-wrap: wrap;
+    gap: 2px 6px;
     font-size: 11px;
   }
 
@@ -2285,6 +2308,11 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
 @media (orientation: portrait) {
   .touch-mode .supplies {
     top: 150px;
+  }
+
+  /* One line, clear of the mission under it: the trailer's weight is in its tooltip. */
+  .touch-mode .trailer-kg {
+    display: none;
   }
 
   .touch-mode .mission {

@@ -97,6 +97,22 @@ export const audioTuning = {
   /** Surprises up ahead: a dead tree cracking and crashing down, rocks coming off a bank. */
   surprise: { treeGain: 0.8, rockGain: 0.6 },
 
+  /** A trailer on the back (docs/NEXT.md). */
+  trailer: {
+    /** Summed spring movement of its wheels (m/s) and speed (m/s) for the loudest rattle. */
+    fullRoughness: 0.8,
+    rattleSpeed: 6,
+    rattleGain: 0.22,
+    /** Full drums sit the box down and damp the rattle to this share. */
+    loadedRattle: 0.55,
+    /** Spring compression speed (m/s) from a faint bang to a full one. */
+    bumpFrom: 1.2,
+    bumpFull: 4,
+    bumpGain: 0.5,
+    /** The coupling dropping onto the ball or lifted off it, and the jockey wheel's handle. */
+    couplingGain: 0.4,
+  },
+
   winch: {
     /** Motor whine pitch (Hz) with no load and at the pull limit. */
     freeHz: 560,
