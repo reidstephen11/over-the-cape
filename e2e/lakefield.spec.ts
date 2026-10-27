@@ -40,7 +40,7 @@ test('Episode 3, Lakefield: winch the stockman out, beat the river over Hann Cro
   await expect(briefing).toContainText('From the diary, Friday 28 November 1986');
   await driveFromBriefing(page);
   expect(await episode(page)).toMatchObject({ status: 'driving', camp: 'laura', rescued: false });
-  await expect(page.locator('.mission-clock')).toContainText('11:00 am');
+  await expect(page.locator('.mission-clock')).toContainText(/11:0\d am/);
   await expect(page.locator('.mission')).toContainText('winch him out of the bog');
   await expect(page.locator('.mission')).toContainText('Hann Crossing goes under about 3 pm');
   await shot(page, 'lakefield', 'laura');

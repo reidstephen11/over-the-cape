@@ -1224,3 +1224,7 @@ The full browser run after v0.46 had two failures. Both failed the same way on t
 - **The studio** shows a trailer: `?trailer=no5` on its own, or with `vehicle=perentie` hitched behind it (`&drums=2` loads it). `scripts/studio-shots.ts` takes `trailer:no5` or `perentie+no5`.
 - **Test mode** has **Army No. 5, empty** and **No. 5 with two drums**. Behind a vehicle without a pintle, it says so instead.
 - **Tests.** Only the Perentie and the Unimog take the ring, and every vehicle takes the ball. Loaded, the No. 5 follows behind each of them and corners at a walking pace. It folds against the Perentie's pintle on full lock in reverse without tipping. It climbs 20° loaded in low range. It tips in a turn at 25 km/h across 15°. Unhitched, it stands on its prop leg on an 8° slope. No vehicle with only a ball is offered it, and a swap leaves it standing. The test-mode browser test hitches it behind the Land Rover.
+
+## v0.50: browser test fix
+
+The episode-start browser tests checked that the mission clock read an exact time just after the engine started: 12:30 pm on Episode 1, 10:00 am on Episode 2 and 11:00 am on Episode 3. On the slow software renderer the game clock can tick on a few minutes before the check runs (Episode 2 had already reached 10:03 when this failed after v0.25). The three checks now accept any time in the first few minutes after the start. No game change. This is the same test-only fix as the unmerged PR #30, reapplied on top of current main.

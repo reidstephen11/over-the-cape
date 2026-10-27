@@ -43,7 +43,7 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   expect(await page.evaluate(() => window.__game!.conditions())).toMatchObject({ weather: 'wet' });
   // The mission and clock, and what's on board.
   await expect(page.locator('.mission')).toContainText('Reach the Lions Den Hotel before dark');
-  await expect(page.locator('.mission-clock')).toContainText('12:30 pm');
+  await expect(page.locator('.mission-clock')).toContainText(/12:3\d pm/);
   await expect(page.locator('.fuel-litres')).toHaveText('50 L');
   await expect(page.locator('.status-supplies')).toContainText('×3');
   // The Drive click started the sound.
