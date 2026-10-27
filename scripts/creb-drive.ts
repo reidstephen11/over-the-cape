@@ -19,7 +19,7 @@ import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { buildWorld, campsite } from '../src/sim/world/world';
 import { addPuddles } from '../src/sim/world/puddles';
 import { prepareFlood } from '../src/sim/world/flood';
-import { crawlStretches, crebWashout } from '../src/data/episodes/crebStretches';
+import { crawlStretches } from '../src/data/episodes/crebStretches';
 import { PlankCrossing, pathFor, WinchRecovery } from '../tests/helpers/drive';
 
 const id = process.argv[2] ?? 'shortie';
@@ -130,8 +130,18 @@ for (const [trackId, mode] of legs) {
   const track4: { x: number; z: number }[] = [];
   // Bogged, the driver winches out to a tree ahead.
   const recovery = new WinchRecovery(sim, v, path);
-  // The washout on the ridge is bridged with the planks.
-  const planks = trackId === 'creb-ridge' ? new PlankCrossing(sim, v, crebWashout) : null;
+  // Every plank gap on this leg: the ridge washout, and the ones cut across the roads.
+  const gaps = world.map.gullies
+    .map((g) => ({ g, at: trailProgress(track, g.x, g.z) }))
+    .filter(
+      (h) => h.at.distance < track.def.width / 2 + 2 && h.at.along > 8 && h.at.along < track.poly.length - 8,
+    )
+    .sort((a, b) => a.at.along - b.at.along)
+    .map((h) => h.g);
+  let gapAt = 0;
+  // Armed from the start of the leg, so it can stop short. Creating it only once the
+  // car is close lets a crawl fall into the cut before the boards go down.
+  let planks: PlankCrossing | null = gaps.length ? new PlankCrossing(sim, v, gaps[0]) : null;
   for (; time < 900; time += DT) {
     followStorm(hourAt(total + time));
     // Slow right down for the creeks and the like, and crawl through them in low range.
@@ -154,7 +164,18 @@ for (const [trackId, mode] of legs) {
       cmd.throttle = 1;
       cmd.brake = 0;
     }
-    if (planks) cmd = planks.update(cmd, DT);
+    if (planks) {
+      cmd = planks.update(cmd, DT);
+      if (planks.placed) {
+        const at = trailProgress(track, gaps[gapAt].x, gaps[gapAt].z).along;
+        const along = trailProgress(track, v.position.x, v.position.z).along;
+        if (along > at + 8) {
+          sim.recallPlanks(v.id);
+          gapAt++;
+          planks = gapAt < gaps.length ? new PlankCrossing(sim, v, gaps[gapAt]) : null;
+        }
+      }
+    }
     for (const axle of ['front', 'rear'] as const) {
       const want = crawl || stuck > 4;
       if (v.differentials[axle] !== want && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
@@ -178,7 +199,7 @@ for (const [trackId, mode] of legs) {
   const q = v.body.rotation();
   const pitch = Math.asin(Math.max(-1, Math.min(1, 2 * (q.w * q.x - q.y * q.z)))) * deg;
   console.log(
-    `${trackId.padEnd(22)} ${startedAt.padStart(8)} ${(1000 - v.condition.fuel).toFixed(1).padStart(5)} L ${pilot.done ? 'done ' : 'STUCK'} ${time.toFixed(0).padStart(4)} s  winched ${recovery.uses}  tilt ${tilt.toFixed(0)}° at ${tiltAt}  water ${water.toFixed(2)} m  ${pilot.done ? '' : `${pilot.remaining(v).toFixed(0)} m short, pitch ${pitch.toFixed(0)}°`}  flood ${v.condition.flood.stalled ? 'STALLED' : 'ok'}`,
+    `${trackId.padEnd(22)} ${startedAt.padStart(8)} ${(1000 - v.condition.fuel).toFixed(1).padStart(5)} L ${pilot.done ? 'done ' : 'STUCK'} ${time.toFixed(0).padStart(4)} s  winched ${recovery.uses}  tilt ${tilt.toFixed(0)}° at ${tiltAt}  water ${water.toFixed(2)} m  ${pilot.done ? '' : `${pilot.remaining(v).toFixed(0)} m short at ${v.position.x.toFixed(0)},${v.position.z.toFixed(0)}, pitch ${pitch.toFixed(0)}°`}  flood ${v.condition.flood.stalled ? 'STALLED' : 'ok'}`,
   );
   if (!pilot.done) break;
 }

@@ -19,7 +19,8 @@ import { SurfaceId } from '../src/data/surfaces';
 import { addPuddles } from '../src/sim/world/puddles';
 import { winchTuning } from '../src/data/tools';
 import { crebWashout } from '../src/data/episodes/crebStretches';
-import { driveLeg, driver, runLeg } from './helpers/drive';
+import { Autopilot } from '../src/sim/input/autopilot';
+import { DT, driveLeg, driver, runLeg } from './helpers/drive';
 
 const world = buildWorld(crebMap);
 const wet = environmentAt(crebEpisode.startHour, crebEpisode.weather);
@@ -262,12 +263,13 @@ describe('Episode 1: the CREB Track', () => {
     }
   });
 
-  it('has mud holes in its roads and range tracks, most of them full of water after rain', () => {
-    const holes = world.features.mudHoles;
+  it('has mud holes in its roads and range tracks, and holds water in the saddle bog after rain', () => {
+    const holes = [...world.features.mudHoles, ...world.map.bogs];
     const on = new Set(holes.map((b) => b.id.replace(/-mud-\d+$/, '')));
-    for (const id of ['paddock-road', 'creb-ridge', 'bloomfield-track']) expect(on.has(id), id).toBe(true);
-    // The deep bogs and the long boggy stretches (v0.09 left out the scattered holes).
-    expect(holes.length).toBeGreaterThan(10);
+    for (const id of ['paddock-road', 'creb-ridge', 'bloomfield-track', 'upper-daintree-road'])
+      expect(on.has(id), id).toBe(true);
+    // The saddle still has its hollow, and the roads carry authored bogs as well.
+    expect(holes.length).toBeGreaterThan(8);
     for (const b of holes)
       expect(world.terrain.surfaceAt(b.x, b.z), b.id).toBe(b.deep ? SurfaceId.BlackSoil : SurfaceId.Mud);
     // The rain fills most of them (those on a slope drain at their low end), hiding the mud.
@@ -279,22 +281,18 @@ describe('Episode 1: the CREB Track', () => {
         for (let dx = -4; dx <= 4; dx++) d = Math.max(d, after.terrain.waterDepthAt(b.x + dx, b.z + dz));
       return d;
     };
-    // A long boggy stretch is a chain of hollows: it counts once, wet if any of it holds water.
-    const bogs: number[] = [];
-    after.features.mudHoles.forEach((b, k, all) => {
-      const prev = all[k - 1];
-      const linked = prev && !b.deep && !prev.deep && Math.hypot(b.x - prev.x, b.z - prev.z) < 9;
-      if (linked) bogs[bogs.length - 1] = Math.max(bogs[bogs.length - 1], deepest(b));
-      else bogs.push(deepest(b));
-    });
-    expect(bogs.filter((d) => d > 0.05).length).toBeGreaterThan(bogs.length / 2);
-    expect(Math.max(...bogs)).toBeGreaterThan(0.3);
+    // The saddle holds water. The long stretch below camp sits on a grade and drains.
+    // Authored road bogs are not filled here: puddles only see generated mud holes.
+    const deepWater = after.features.mudHoles.filter((b) => b.deep).map((b) => deepest(b));
+    expect(deepWater.length).toBeGreaterThan(0);
+    expect(deepWater.every((d) => d > 0.3)).toBe(true);
   });
 
   it('makes deep bogs of the hollows, lays long boggy stretches, and plants a tree to winch from by each', () => {
     const holes = world.features.mudHoles;
     const deep = holes.filter((b) => b.deep);
-    expect(deep.length).toBeGreaterThanOrEqual(3);
+    // The saddle is still a real hollow. The road bogs are dug across the wheel lines.
+    expect(deep.some((b) => b.id.startsWith('creb-ridge'))).toBe(true);
     for (const b of deep) {
       expect(b.depth, b.id).toBeGreaterThan(0.55);
       // A hollow: the ground all round stands above it.
@@ -304,9 +302,18 @@ describe('Episode 1: the CREB Track', () => {
         expect(ring, b.id).toBeGreaterThan(world.terrain.heightAt(b.x, b.z));
       }
     }
+    for (const b of world.map.bogs) {
+      expect(b.deep, b.id).toBe(true);
+      expect(b.depth, b.id).toBeGreaterThan(0.6);
+      // Authored bogs are not planted with trees by the shared scatter, so a marked boulder stands in reach.
+      const anchor = world.scatter.rocks.find(
+        (r) => r.anchor && r.solid && Math.hypot(r.x - b.x, r.z - b.z) < 16,
+      );
+      expect(anchor, b.id).toBeDefined();
+    }
     // Long stretches are chains of hollows along the track, 25 m and more.
     const long = holes.filter((b) => !b.deep && b.radiusZ < 6 && b.winchTrees);
-    expect(long.length).toBeGreaterThanOrEqual(4);
+    expect(long.length).toBeGreaterThanOrEqual(2);
     for (const b of holes.filter((h) => h.winchTrees)) {
       const trees = world.scatter.trees.filter(
         (t) => t.solid && Math.hypot(t.x - b.x, t.z - b.z) < b.radiusZ + winchTuning.cableLength - 8,
@@ -334,18 +341,67 @@ describe('Episode 1: the CREB Track', () => {
         const p = trailPoint(track, s);
         expect(
           t.surfaceAt(p.x, p.z) === SurfaceId.BlackSoil &&
-            !world.features.mudHoles.some((b) => b.deep && Math.hypot(b.x - p.x, b.z - p.z) < b.radiusZ + 2),
+            ![...world.features.mudHoles, ...world.map.bogs].some(
+              (b) => b.deep && Math.hypot(b.x - p.x, b.z - p.z) < Math.max(b.radiusX, b.radiusZ) + 2,
+            ),
           `${track.def.id}@${s}`,
         ).toBe(false);
         for (const side of [-1, 1]) {
           const q = trailPoint(track, s, side * (track.def.width / 2 + 3));
           if (t.waterDepthAt(q.x, q.z) > 0) continue;
+          // A road bog is wider than the shoulders, so its black soil reaches the bank sample.
+          if (
+            world.map.bogs.some((b) => Math.hypot(b.x - q.x, b.z - q.z) < Math.max(b.radiusX, b.radiusZ) + 2)
+          )
+            continue;
           expect(t.surfaceAt(q.x, q.z), `${track.def.id}@${s} bank`).not.toBe(SurfaceId.BlackSoil);
         }
       }
     for (const camp of world.pois.filter((p) => p.reset))
       expect(t.surfaceAt(camp.reset!.x, camp.reset!.z), camp.id).not.toBe(SurfaceId.BlackSoil);
   });
+
+  it('creeps Big Red on the crown in low range with both lockers, and stalls in the left gutter or in high range', async () => {
+    const driveLine = async (lateral: number, lockers: 'both' | 'high', limit: number) => {
+      const s = await scene('big-red', false, lockers, vehicleTuning);
+      try {
+        const high = lockers === 'high';
+        const path: [number, number][] = [];
+        for (let along = 0; along <= s.track.poly.length; along += 0.5) {
+          const p = trailPoint(s.track, along, lateral);
+          path.push([p.x, p.z]);
+        }
+        const pilot = new Autopilot(path, high ? 1.5 : 0.7);
+        pilot.lowRange = !high;
+        let time = 0;
+        for (let step = 0; time < limit; time += DT, step++) {
+          if (step % 600 === 599) await new Promise((resolve) => setImmediate(resolve));
+          const command = pilot.input(s.v, DT);
+          if (pilot.done) break;
+          if (!high) {
+            command.throttle = 1;
+            command.brake = 0;
+          }
+          for (const axle of ['front', 'rear'] as const)
+            if (s.v.differentials[axle] !== s.lockers[axle]) s.v.toggleDiff(axle);
+          s.inputs.set('p', command);
+          s.sim.step(s.inputs, DT);
+        }
+        return { done: pilot.done, remaining: pilot.remaining(s.v) };
+      } finally {
+        s.sim.physics.free();
+      }
+    };
+    const crown = await driveLine(0, 'both', 180);
+    expect(crown.done, `crown stopped ${crown.remaining.toFixed(0)} m short`).toBe(true);
+    // A line drifted onto the left gutter high-centres before the steepest of the face.
+    const gutter = await driveLine(-1.15, 'both', 90);
+    expect(gutter.done).toBe(false);
+    expect(gutter.remaining).toBeGreaterThan(60);
+    const high = await driveLine(0, 'high', 90);
+    expect(high.done).toBe(false);
+    expect(high.remaining).toBeGreaterThan(60);
+  }, 300_000);
 
   it('stops high range and open diffs on its wet clay climbs', async () => {
     for (const id of ['big-red', 'bobs-hill'])

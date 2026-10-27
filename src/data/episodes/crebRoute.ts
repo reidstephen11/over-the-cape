@@ -7,14 +7,22 @@ import type { XZ } from '../../sim/world/mapTypes';
  */
 export type Waypoint = readonly [number, number] | readonly [number, number, number];
 
-/** Daintree Village north to the south bank of the Daintree River. */
+/**
+ * Daintree Village north to the south bank of the Daintree River.
+ * The heights are the orientation: a low-range ramp, then a steeper locker pinch,
+ * easing down to the crawl step and the winch bog before the river.
+ */
 export const upperDaintreeRoad: Waypoint[] = [
-  [-60, 2630],
-  [-90, 2560],
-  [-50, 2480],
-  [-30, 2410],
-  [-72, 2350],
-  [-70, 2318],
+  [-60, 2630, 8],
+  [-80, 2594, 9],
+  [-90, 2557, 7],
+  [-74, 2520, 19],
+  [-50, 2480, 19.5],
+  [-38, 2446, 14],
+  [-30, 2410, 27],
+  [-48, 2378, 28],
+  [-72, 2350, 16],
+  [-70, 2318, 10],
   [-40, 2300, 6],
 ];
 
@@ -64,15 +72,20 @@ export const bigRed: Waypoint[] = [
   [-11, 1138, 90],
 ];
 
-/** The bypass: leaves the paddock road before Big Red and winds up the spur's west side. */
+/**
+ * The west line round Big Red. It is longer than the face, levels off for a bog,
+ * then climbs a pinch as steep as the face itself.
+ */
 export const bigRedBypass: Waypoint[] = [
   [-9, 1358, 21.9],
-  [-55, 1345],
-  [-91, 1309],
-  [-106, 1268, 41],
-  [-116, 1218, 52],
-  [-101, 1170, 64],
-  [-68, 1144, 77],
+  [-55, 1345, 28],
+  [-91, 1309, 34],
+  [-102, 1284, 36],
+  [-110, 1260, 36],
+  [-114, 1232, 48],
+  [-108, 1204, 58],
+  [-90, 1172, 68],
+  [-60, 1148, 80],
   [-32, 1126, 88],
   [-11, 1138, 90],
 ];
