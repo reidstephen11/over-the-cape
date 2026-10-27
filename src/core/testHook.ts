@@ -39,8 +39,8 @@ export interface GameHook {
   teleportPoi(id: string): void;
   /** Override driver input. Pass null to give control back to the devices. */
   setInput(input: Partial<VehicleInput> | null): void;
-  /** Test mode's trailer: hitch a box trailer with this many drums, or take it away (null). */
-  setTrailer(drums: number | null): void;
+  /** Test mode's trailer: hitch a trailer (the box trailer unless named) with this many drums, or take it away (null). */
+  setTrailer(drums: number | null, kind?: 'box6x4' | 'no5'): void;
   /** The trailer, if there is one: where it is and how it sits. */
   trailer(): {
     x: number;
@@ -443,7 +443,7 @@ export function installHook(game: Game): void {
         sum += 0.2126 * buf[i] + 0.7152 * buf[i + 1] + 0.0722 * buf[i + 2];
       return sum / (pw * ph);
     },
-    setTrailer: (drums) => g.devTrailer(drums),
+    setTrailer: (drums, kind) => g.devTrailer(drums, kind),
     trailer: () => {
       const t = g.sim.trailers.values().next().value;
       if (!t) return null;

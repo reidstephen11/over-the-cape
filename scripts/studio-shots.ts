@@ -1,7 +1,8 @@
 /**
  * Dev helper: photograph one vehicle from all round in the studio page (no map), in
  * headless Chromium. Usage: npx vite-node scripts/studio-shots.ts <outDir> <vehicleId> [url]
- * Needs the dev server running (npm run dev).
+ * Needs the dev server running (npm run dev). `trailer:no5` (or `trailer:box6x4`) photographs
+ * that trailer on its own; `perentie+no5` the trailer hitched behind the vehicle.
  */
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
@@ -14,7 +15,11 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 page.on('pageerror', (e) => console.log(`[pageerror] ${e.message}`));
 page.on('console', (m) => m.type() === 'error' && console.log(`[error] ${m.text()}`));
-await page.goto(`${url}scripts/studio/?vehicle=${vehicleId}`);
+const [vehicle, trailer] = vehicleId.startsWith('trailer:')
+  ? [null, vehicleId.slice(8)]
+  : vehicleId.split('+');
+const query = [vehicle && `vehicle=${vehicle}`, trailer && `trailer=${trailer}`].filter(Boolean).join('&');
+await page.goto(`${url}scripts/studio/?${query}`);
 await page.waitForFunction(() => window.studio?.ready === true, null, { timeout: 120_000 });
 // Camera position and look-at point in the vehicle frame (x right, y up, z back).
 const views: Record<string, number[]> = {
@@ -34,7 +39,9 @@ for (const [name, [x, y, z, tx = 0, ty = 0.3, tz = 0, fov = 45]] of Object.entri
   await page.screenshot({ path: `${outDir}/${name}.png` });
   console.log(`saved ${name}`);
 }
-await page.evaluate(() => window.studio.cockpit());
-await page.screenshot({ path: `${outDir}/cockpit.png` });
-console.log('saved cockpit');
+if (vehicle) {
+  await page.evaluate(() => window.studio.cockpit());
+  await page.screenshot({ path: `${outDir}/cockpit.png` });
+  console.log('saved cockpit');
+}
 await browser.close();

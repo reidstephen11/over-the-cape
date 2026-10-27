@@ -2,16 +2,23 @@
  * Dev-only page: one vehicle on plain ground in the late-afternoon light, for checking a
  * model without loading a map. Open http://localhost:5173/scripts/studio/?vehicle=hilux
  * with the dev server running; scripts/studio-shots.ts photographs it from all round.
+ * `?trailer=no5` (or `box6x4`) shows a trailer on its own at the origin; with `vehicle` as
+ * well, the trailer stands hitched behind the vehicle.
  */
 import * as THREE from 'three';
 import { lateAfternoon } from '../../src/data/environment';
 import { isVehicleId, vehicles } from '../../src/data/vehicles';
+import { hitchPoint, trailers, type TrailerTuning } from '../../src/data/trailers';
+import type { Trailer } from '../../src/sim/trailer';
+import { TrailerView } from '../../src/render/trailerView';
 import { applyFogEnvironment } from '../../src/render/fog';
 import { Lighting } from '../../src/render/lighting';
 import { Sky } from '../../src/render/sky';
 import { VehicleModel } from '../../src/render/vehicleModel';
 
 const params = new URLSearchParams(location.search);
+const trailerId = params.get('trailer') as TrailerTuning['id'] | null;
+const alone = trailerId !== null && !params.has('vehicle');
 const id = params.get('vehicle') ?? 'shortie';
 if (!isVehicleId(id)) throw new Error(`Unknown vehicle ${id}`);
 const tuning = vehicles[id].tuning;
@@ -55,7 +62,44 @@ scene.add(ground);
 const model = new VehicleModel(tuning);
 for (let i = 0; i < 4; i++) model.wheels[i].pivot.position.y = tuning.wheels[i].y - rest;
 model.suspension.update(model.wheels.map((w) => w.pivot.position.y));
-scene.add(model.root);
+if (!alone) scene.add(model.root);
+
+/** A trailer standing still: on its own with its ground under the origin, or on the vehicle's hitch. */
+if (trailerId) {
+  const t = trailers[trailerId];
+  if (!t) throw new Error(`Unknown trailer ${trailerId}`);
+  const sag = (t.mass * 9.81) / (t.wheels.length * t.springRate);
+  const susp = t.suspensionRestLength - sag;
+  const groundBelowMount = susp + t.wheelRadius;
+  let pos = new THREE.Vector3(0, ground.position.y + groundBelowMount, 0);
+  let pitch = 0;
+  if (!alone) {
+    const h = hitchPoint(tuning);
+    const axleY = ground.position.y + groundBelowMount;
+    pitch = Math.atan2(h.y - (axleY + t.coupling.y), -t.coupling.z);
+    // Coupling on the hitch: the axle sits `reach` behind it along the drawbar.
+    const k = new THREE.Vector3(t.coupling.x, t.coupling.y, t.coupling.z).applyAxisAngle(
+      new THREE.Vector3(1, 0, 0),
+      pitch,
+    );
+    pos = new THREE.Vector3(h.x - k.x, h.y - k.y, h.z - k.z);
+  }
+  const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitch);
+  const fake = {
+    tuning: t,
+    prevPosition: { x: pos.x, y: pos.y, z: pos.z },
+    prevRotation: { x: q.x, y: q.y, z: q.z, w: q.w },
+    body: { translation: () => pos, rotation: () => q },
+    wheels: t.wheels.map(() => ({ suspension: susp, rotation: 0 })),
+    hitchedTo: alone ? null : {},
+  } as unknown as Trailer;
+  const view = new TrailerView(fake);
+  view.setDrums(Number(params.get('drums') ?? 0));
+  view.root.traverse((o) => {
+    if (o instanceof THREE.Mesh) o.receiveShadow = true;
+  });
+  scene.add(view.root);
+}
 
 function view(x: number, y: number, z: number, tx = 0, ty = 0.3, tz = 0, fov = 45): void {
   camera.fov = fov;

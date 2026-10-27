@@ -64,6 +64,11 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   expect(towed?.hitched).toBe(true);
   expect(Math.hypot(towed!.x - hitched!.x, towed!.z - hitched!.z)).toBeGreaterThan(5);
   await shot(page, 'dev', 'trailer');
+  // Behind the Land Rover, the Army's No. 5 goes on the pintle hook by its ring.
+  await panel.getByRole('button', { name: 'No. 5 with two drums' }).click();
+  expect((await page.evaluate(() => window.__game!.trailer()))?.hitched).toBe(true);
+  await expect(page.locator('.status-trailer')).toContainText('2 drums');
+  await shot(page, 'dev', 'trailer-no5');
   await panel.getByRole('button', { name: 'No trailer' }).click();
   expect(await page.evaluate(() => window.__game!.trailer())).toBeNull();
   await expect(page.locator('.status-trailer')).toBeHidden();
