@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { lateAfternoon } from '../src/data/environment';
-import { boxTrailer, hitchPoint } from '../src/data/trailers';
+import { boxTrailer, canCouple, hitchPoint, no5Trailer, type TrailerTuning } from '../src/data/trailers';
 import { Groups, groups, loadRapier } from '../src/sim/physics';
 import { trailerHud } from '../src/core/hudState';
 import { Simulation } from '../src/sim/sim';
@@ -14,8 +14,12 @@ import { testWorld } from './world';
 /** Two 200 L drums of diesel standing in the box: a full load. */
 const DRUMS = 2;
 
-/** A scene on flat or tilted ground with the box trailer hitched behind, loaded or empty. */
-async function towScene(opts: Parameters<typeof makeScene>[0], drums = DRUMS) {
+/** A scene on flat or tilted ground with a trailer (the box trailer unless named) hitched behind, loaded or empty. */
+async function towScene(
+  opts: Parameters<typeof makeScene>[0],
+  drums = DRUMS,
+  trailer: TrailerTuning = boxTrailer,
+) {
   const s = await makeScene(opts);
   const v = s.vehicle;
   const pitch = Math.tan(((opts.pitchDeg ?? 0) * Math.PI) / 180);
@@ -24,8 +28,8 @@ async function towScene(opts: Parameters<typeof makeScene>[0], drums = DRUMS) {
   const t = new Trailer(
     't',
     s.physics,
-    boxTrailer,
-    poseBehind(v, boxTrailer, (x, z) => -pitch * z - roll * x),
+    trailer,
+    poseBehind(v, trailer, (x, z) => -pitch * z - roll * x),
   );
   if (drums > 0) t.loadDrums(drums);
   t.hitch(v);
@@ -131,6 +135,70 @@ describe('towing a trailer', () => {
 
   it('unhitched, stands chocked on an 8° slope while the car drives away', async () => {
     const { s, v, t } = await towScene({ pitchDeg: 8 });
+    t.unhitch();
+    s.run(1, {});
+    const p0 = { ...t.body.translation() };
+    s.run(6, { throttle: 0.5 });
+    const p1 = t.body.translation();
+    expect(Math.hypot(p1.x - p0.x, p1.z - p0.z)).toBeLessThan(0.1);
+    expect(gap(v, t)).toBeGreaterThan(10);
+    expect(t.tiltDeg()).toBeLessThan(15);
+  });
+});
+
+describe('the Army No. 5 trailer', () => {
+  const pintle = [vehicles.perentie.tuning, vehicles.unimog.tuning];
+
+  it('its ring goes only on a pintle hook: the Land Rover and the Unimog', () => {
+    for (const id of vehicleOrder)
+      expect(canCouple(no5Trailer, vehicles[id].tuning)).toBe(id === 'perentie' || id === 'unimog');
+    for (const id of vehicleOrder) expect(canCouple(boxTrailer, vehicles[id].tuning)).toBe(true);
+  });
+
+  it.each(pintle)('loaded, follows behind the $name and takes a corner at a walking pace', async (tuning) => {
+    const { s, v, t, events } = await towScene({ tuning }, DRUMS, no5Trailer);
+    s.run(4, { throttle: 0.5 });
+    expect(gap(v, t)).toBeLessThan(0.02);
+    expect(Math.abs(t.hitchAngleDeg())).toBeLessThan(3);
+    expect(t.body.translation().z - v.position.z).toBeGreaterThan(3);
+    s.run(2, {});
+    s.run(4, { throttle: 0.25, steer: 1 });
+    expect(gap(v, t)).toBeLessThan(0.02);
+    expect(Math.abs(t.hitchAngleDeg())).toBeGreaterThan(5);
+    expect(events.map((e) => e.type)).not.toContain('tipped');
+  });
+
+  it('reversed on full lock behind the Land Rover, folds against the pintle without tipping', async () => {
+    const { s, v, t, events } = await towScene({ tuning: vehicles.perentie.tuning }, DRUMS, no5Trailer);
+    s.run(3, { brake: 0.5 });
+    s.run(6, { brake: 0.7, steer: 1 });
+    expect(events.map((e) => e.type)).toContain('jackknifed');
+    expect(Math.abs(t.hitchAngleDeg())).toBeLessThan(75);
+    expect(gap(v, t)).toBeLessThan(0.02);
+    expect(events.map((e) => e.type)).not.toContain('tipped');
+  });
+
+  it('climbs a 20° slope behind the Land Rover in low range, loaded', async () => {
+    const { s, v, t } = await towScene({ pitchDeg: 20, tuning: vehicles.perentie.tuning }, DRUMS, no5Trailer);
+    v.toggleRange();
+    const y0 = v.position.y;
+    s.run(10, { throttle: 1 });
+    expect(v.position.y - y0).toBeGreaterThan(6);
+    expect(gap(v, t)).toBeLessThan(0.02);
+  });
+
+  it('loaded, tips in a hard turn across a slope at a lower speed than the box trailer', async () => {
+    // At 25 km/h across 15°, the No. 5 (narrow track, high floor) goes over.
+    const { s, v, t } = await towScene({ rollDeg: 15, tuning: vehicles.perentie.tuning }, DRUMS, no5Trailer);
+    const f = v.forward();
+    const sp = 25 / 3.6;
+    for (const b of [v.body, t.body]) b.setLinvel({ x: f.x * sp, y: f.y * sp, z: f.z * sp }, true);
+    s.run(4, (time) => ({ throttle: 0.4, steer: time > 2.5 ? 1 : 0 }));
+    expect(t.tipped).toBe(true);
+  });
+
+  it('unhitched, stands on its prop leg on an 8° slope while the Land Rover drives away', async () => {
+    const { s, v, t } = await towScene({ pitchDeg: 8, tuning: vehicles.perentie.tuning }, DRUMS, no5Trailer);
     t.unhitch();
     s.run(1, {});
     const p0 = { ...t.body.translation() };
@@ -258,6 +326,35 @@ describe('hitching in the game', () => {
     expect(sim.hitchOption('p')).toMatchObject({ kind: 'unhitch', possible: false, reason: 'Stop first' });
     expect(sim.unhitchTrailer('p')).toBe(false);
     expect(sim.trailerOf('p')).not.toBeNull();
+  });
+
+  it('a No. 5 can’t go on a car with only a tow ball, and is left standing when the Land Rover is swapped for one', async () => {
+    const R = await loadRapier();
+    const sim = new Simulation(R, testWorld(), lateAfternoon);
+    sim.addVehicle('p', sim.campsitePose('river-flat-camp'));
+    run(sim, 1, {});
+    expect(() => sim.addTrailer('no5', no5Trailer, 'p')).toThrow(/pintle/);
+    sim.replaceVehicle('p', vehicles.perentie.tuning);
+    run(sim, 1, {});
+    const t = sim.addTrailer('no5', no5Trailer, 'p');
+    run(sim, 1, {});
+    expect(sim.trailerOf('p')).toBe(t);
+    sim.unhitchTrailer('p');
+    run(sim, 0.5, {});
+    // Back on the short 4WD, it isn't offered the No. 5 even with the ball right there.
+    sim.replaceVehicle('p', vehicles.shortie.tuning);
+    run(sim, 1, {});
+    expect(sim.trailerOf('p')).toBeNull();
+    expect(sim.hitchOption('p')).toBeNull();
+    // Swapping vehicles while towing it leaves it standing behind.
+    sim.replaceVehicle('p', vehicles.perentie.tuning);
+    run(sim, 1, {});
+    expect(sim.hitchOption('p')).toMatchObject({ kind: 'hitch', possible: true });
+    sim.hitchTrailer('p');
+    sim.replaceVehicle('p', vehicles.lc79.tuning);
+    run(sim, 1, {});
+    expect(sim.trailerOf('p')).toBeNull();
+    expect(t.hitchedTo).toBeNull();
   });
 
   it('comes back to camp hitched behind the car', async () => {

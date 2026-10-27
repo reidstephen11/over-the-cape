@@ -34,7 +34,7 @@ import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } 
 import type { SurprisePlan } from './world/surprisePlan';
 import { StuckVehicle, type StuckVehicleDef } from './stuckVehicle';
 import { poseBehind, Trailer, type TrailerEvent } from './trailer';
-import { trailerTuning, type TrailerTuning } from '../data/trailers';
+import { canCouple, trailerTuning, type TrailerTuning } from '../data/trailers';
 
 /** Rotation that lays a +y capsule flat (90° about x) and then turns it `yaw` about y. */
 export function quatYawX(yaw: number): { x: number; y: number; z: number; w: number } {
@@ -287,6 +287,10 @@ export class Simulation {
       string | { x: number; y: number; z: number; rotation: { x: number; y: number; z: number; w: number } },
   ): Trailer {
     const behind = typeof at === 'string' ? this.vehicleOf(at) : null;
+    if (behind && !canCouple(tuning, behind.tuning))
+      throw new Error(
+        `The ${tuning.name}'s ring needs a pintle hook, and the ${behind.tuning.name} has none`,
+      );
     const pose = behind
       ? poseBehind(behind, tuning, (x, z) => this.world.terrain.heightAt(x, z))
       : (at as Exclude<typeof at, string>);
@@ -340,7 +344,7 @@ export class Simulation {
     let best: Trailer | null = null;
     let near = trailerTuning.hitchReach;
     for (const t of this.trailers.values()) {
-      if (t.hitchedTo || t.tipped) continue;
+      if (t.hitchedTo || t.tipped || !canCouple(t.tuning, v.tuning)) continue;
       const d = t.distanceToHitch(v);
       if (d <= near) {
         near = d;
@@ -369,14 +373,19 @@ export class Simulation {
     return true;
   }
 
-  /** Bring a vehicle's trailer along after the vehicle has been moved: hitched straight behind it. */
+  /**
+   * Bring a vehicle's trailer along after the vehicle has been moved: hitched straight behind
+   * it, or, if the vehicle has nothing it can couple to (a No. 5's ring behind a car with only
+   * a tow ball), standing unhitched behind it.
+   */
   bringTrailer(id: string, trailer: Trailer | null = this.trailerOf(id)): void {
     if (!trailer) return;
     const v = this.vehicleOf(id);
     trailer.unhitch();
     const p = poseBehind(v, trailer.tuning, (x, z) => this.world.terrain.heightAt(x, z));
     trailer.teleport(p.x, p.y, p.z, p.rotation);
-    trailer.hitch(v);
+    if (canCouple(trailer.tuning, v.tuning)) trailer.hitch(v);
+    else this.events.emit('trailer', { id: trailer.id, vehicle: null, event: { type: 'unhitched' } });
   }
 
   /**

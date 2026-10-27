@@ -17,9 +17,15 @@ Each modelled vehicle has a folder. `SOURCES.md` in that folder names the real v
 | `patrol`   | GQ Patrol               | Nissan Patrol Y60 (GQ) long-wheelbase wagon, 1987–97, 4.2 L TD42                                                 | `nissan-gq-patrol/`                                      |
 | `lc79`     | LC79 V8                 | Toyota Land Cruiser 79 single cab with the 2024 front clip, then the game's lift, 37 inch tyres, tray and canopy | `landcruiser-79-2024/`                                   |
 
+The trailers (`src/data/trailers.ts`, drawn in `src/render/trailerView.ts`) have folders too. The studio shows one with `?trailer=no5` (or `box6x4`), on its own or hitched behind `vehicle`; `npx vite-node scripts/studio-shots.ts /tmp/shots trailer:no5` photographs it.
+
+| Game id  | In the game        | Real trailer                                                        | Folder                                                    |
+| -------- | ------------------ | ------------------------------------------------------------------- | --------------------------------------------------------- |
+| `box6x4` | 6×4 box trailer    | A galvanised 6 × 4 ft single-axle box trailer with a ball coupling  | `box-trailer-6x4/`                                        |
+| `no5`    | Army No. 5 trailer | Australian Army Trailer, Cargo, ½ tonne, No. 5, with a lunette ring | `army-no5-trailer/` (figures only: no photograph to keep) |
+
 Not modelled yet, so there is no folder. Collect photographs the same way before building one:
 
-- A 1980s 6x4 box trailer, and the Australian Army No. 5 trailer, for the towing work in `docs/NEXT.md`. The Perentie and the Unimog already draw a pintle for the No. 5.
 - A Suzuki Sierra, and a 1950s vehicle, were offered for later episodes and not chosen. Do not start either until the owner picks it.
 
 The `sooty80` addition uses the recovered MkII-inspired 80 Series review draft; see [`landcruiser-80-sooty/SOURCES.md`](landcruiser-80-sooty/SOURCES.md) for sources, dimensions and the outstanding photo comparison.

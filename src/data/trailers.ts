@@ -5,8 +5,13 @@ import type { VehicleTuning } from './vehicle';
  * (the drawbar points to -z). The origin is on the axle line at the springs' top mounts.
  */
 export interface TrailerTuning {
-  id: 'box6x4';
+  id: 'box6x4' | 'no5';
   name: string;
+  /**
+   * How it couples: a ball coupling goes on a tow ball (or, for now, a pintle hook); a
+   * lunette ring drops over a pintle hook, so it needs a vehicle that has one.
+   */
+  couplingKind: 'ball' | 'ring';
   /** Empty (tare) mass (kg), centre of mass and principal inertia: pitch (x), yaw (y), roll (z). */
   mass: number;
   com: { x: number; y: number; z: number };
@@ -33,12 +38,17 @@ export interface TrailerTuning {
   bed: { y: number; hx: number; hz: number; cz: number; sides: number };
   /** Most it may carry (kg): its ATM less its tare. */
   payload: number;
+  /** Wheel arches standing up inside the box (local centre and half extents of the right one). */
+  arch?: { x: number; y: number; z: number; hx: number; hy: number; hz: number };
+  /** A spare wheel standing on the drawbar in front of the box (its centre, local). */
+  spare?: { x: number; y: number; z: number };
 }
 
 /** A 6×4 box trailer of the 1980s: steel box on leaf springs, 13-inch wheels, no brakes. */
 export const boxTrailer: TrailerTuning = {
   id: 'box6x4',
   name: '6×4 box trailer',
+  couplingKind: 'ball',
   mass: 240,
   com: { x: 0, y: -0.05, z: -0.3 },
   inertia: { x: 190, y: 230, z: 65 },
@@ -70,6 +80,63 @@ export const boxTrailer: TrailerTuning = {
   bed: { y: 0.21, hx: 0.6, hz: 0.9, cz: -0.2, sides: 0.42 },
   payload: 510,
 };
+
+/**
+ * The Australian Army's No. 5 trailer (Trailer, Cargo, ½ tonne, No. 5), the steel box trailer
+ * built for towing behind the Army's Land Rovers from the mid-1960s and still behind the
+ * Perentie: 3.18 × 1.55 m overall, an inside box of 1.85 × 1.32 m and 475 mm deep with the
+ * wheel arches 0.98 m apart inside it, about 360 kg empty, 500 kg of cargo, no brakes, and a
+ * lunette ring on its single-tube drawbar for the pintle hook (reference/vehicles/army-no5-trailer).
+ */
+export const no5Trailer: TrailerTuning = {
+  id: 'no5',
+  name: 'Army No. 5 trailer',
+  couplingKind: 'ring',
+  mass: 360,
+  com: { x: 0, y: 0.14, z: -0.22 },
+  inertia: { x: 150, y: 190, z: 80 },
+  // 7.50-16 bar tyres on Land Rover rims, tucked under the box between the arches: a
+  // 1.24 m track.
+  wheelRadius: 0.38,
+  wheelWidth: 0.19,
+  wheels: [
+    { x: -0.62, y: 0, z: 0 },
+    { x: 0.62, y: 0, z: 0 },
+  ],
+  suspensionRestLength: 0.2,
+  suspensionTravel: 0.12,
+  springRate: 60000,
+  damperCompression: 2.6,
+  damperRelaxation: 3.4,
+  // Loaded, it tips at about 0.64 g sideways (centre of mass about 0.97 m up on a 1.24 m
+  // track). Its tyres grip sideways well under that, so shoved sideways at a fold it skids
+  // rather than bouncing over (at 0.6 it still rolled); across a slope, or in a hard turn on
+  // one, it still goes over (the Army found the same).
+  lateralGrip: 0.5,
+  // 3.18 m from the ring to the back of the box.
+  coupling: { x: 0, y: -0.05, z: -2.35 },
+  // The prop leg under the front of the drawbar.
+  jockey: { x: 0, y: -0.52, z: -1.98, r: 0.05 },
+  boxes: [
+    // Floor, sides, front and back.
+    { cx: 0, cy: 0.19, cz: -0.12, hx: 0.69, hy: 0.04, hz: 0.96 },
+    { cx: -0.675, cy: 0.445, cz: -0.12, hx: 0.015, hy: 0.275, hz: 0.96 },
+    { cx: 0.675, cy: 0.445, cz: -0.12, hx: 0.015, hy: 0.275, hz: 0.96 },
+    { cx: 0, cy: 0.445, cz: -1.065, hx: 0.69, hy: 0.275, hz: 0.015 },
+    { cx: 0, cy: 0.445, cz: 0.825, hx: 0.69, hy: 0.275, hz: 0.015 },
+    // The spare wheel on the drawbar.
+    { cx: 0, cy: 0.43, cz: -1.32, hx: 0.1, hy: 0.38, hz: 0.38 },
+    // The drawbar, stopping short of the ring so the pintle never touches it.
+    { cx: 0, cy: 0.03, cz: -1.6, hx: 0.05, hy: 0.05, hz: 0.45 },
+  ],
+  bed: { y: 0.21, hx: 0.66, hz: 0.925, cz: -0.12, sides: 0.475 },
+  payload: 500,
+  arch: { x: 0.575, y: 0.33, z: 0, hx: 0.085, hy: 0.12, hz: 0.42 },
+  spare: { x: 0, y: 0.43, z: -1.32 },
+};
+
+/** The trailers by id. */
+export const trailers: Record<TrailerTuning['id'], TrailerTuning> = { box6x4: boxTrailer, no5: no5Trailer };
 
 export const trailerTuning = {
   /** The coupling hitches when it is this close to the tow ball (m): near enough to wheel it on by hand. */
@@ -136,4 +203,9 @@ export function drumLoad(
 export function hitchPoint(t: VehicleTuning): { x: number; y: number; z: number } {
   if (t.hitch) return t.hitch;
   return { x: t.towPoint.x, y: t.towPoint.y + 0.1, z: t.towPoint.z + 0.13 };
+}
+
+/** Can this trailer go on this vehicle? A lunette ring needs a pintle hook (the vehicle's `hitch`). */
+export function canCouple(trailer: TrailerTuning, vehicle: VehicleTuning): boolean {
+  return trailer.couplingKind === 'ball' || vehicle.hitch !== undefined;
 }

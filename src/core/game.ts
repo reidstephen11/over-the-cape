@@ -27,7 +27,7 @@ import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
 import { TrailerView } from '../render/trailerView';
-import { boxTrailer } from '../data/trailers';
+import { canCouple, trailers, type TrailerTuning } from '../data/trailers';
 import { trailerMessage } from './trailerMessages';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
 import { planDuration, planSurprises } from '../sim/world/surprisePlan';
@@ -325,7 +325,7 @@ export class Game {
             this.hud.toast(vehicles[id].tuning.name, 1800);
           },
           mainMenu: () => void this.toMainMenu(),
-          trailer: (drums) => this.devTrailer(drums),
+          trailer: (drums, kind) => this.devTrailer(drums, kind),
         })
       : null;
     window.addEventListener('keydown', (e) => {
@@ -749,10 +749,16 @@ export class Game {
   }
 
   /**
-   * Test mode: hitch a box trailer behind the car, with this many 200 L drums of diesel in
-   * it, or take the trailer away (null).
+   * Test mode: hitch a trailer behind the car (the box trailer, or the Army's No. 5 behind a
+   * vehicle with a pintle hook), with this many 200 L drums of diesel in it, or take the
+   * trailer away (null).
    */
-  devTrailer(drums: number | null): void {
+  devTrailer(drums: number | null, kind: TrailerTuning['id'] = 'box6x4'): void {
+    const tuning = trailers[kind];
+    if (drums !== null && !canCouple(tuning, this.vehicle.tuning)) {
+      this.hud.toast(`The ${tuning.name}'s ring needs a pintle hook: the Land Rover or the Unimog`, 3000);
+      return;
+    }
     for (const id of [...this.sim.trailers.keys()]) {
       this.sim.removeTrailer(id);
       const view = this.trailerViews.get(id);
@@ -763,7 +769,7 @@ export class Game {
       this.trailerViews.delete(id);
     }
     if (drums === null) return;
-    const t = this.sim.addTrailer('box', boxTrailer, LOCAL_VEHICLE);
+    const t = this.sim.addTrailer(kind, tuning, LOCAL_VEHICLE);
     t.loadDrums(drums);
     const view = new TrailerView(t);
     view.setDrums(t.drums);

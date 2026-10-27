@@ -33,8 +33,8 @@ Asked when they said "build out next episode":
 
 - **v0.46, step 1 done:** trailer physics, hitching and unhitching, tipping and jackknifing, the box trailer in test mode (DECISIONS v0.46).
 - **v0.48, step 2a done:** the HUD line for the trailer and its load, and the trailer's sound (DECISIONS v0.48).
-- **Next, step 2b:** the box trailer and the No. 5 drawn from reference photographs (add them to `reference/`), and the No. 5's ring on the pintle. The v0.48 session couldn't reach Wikimedia Commons: its network policy refused `commons.wikimedia.org` and `upload.wikimedia.org`. Check that first (`curl -sI https://commons.wikimedia.org`); if it's still refused, ask the owner to add both hosts under Allowed domains in the environment's network settings.
-- **Then step 3:** Episode 4 itself: the map, the delivery goal, water for the trailer (buoyancy and drag; drums float), a trailer tyre cut on Realistic, drums coming loose, and camps saving the trailer and its load.
+- **v0.49, step 2b done:** the box trailer redrawn from a Commons photograph, and the Army No. 5 built from published figures and the owner's photographs, with its lunette ring on the pintle hook (DECISIONS v0.49). The No. 5 has no photograph that can be kept in the repo; `reference/vehicles/army-no5-trailer/SOURCES.md` lists what still disagrees. The box trailer's Commons photograph still needs downloading into its folder (Wikimedia rate-limited the v0.49 session).
+- **Next, step 3:** Episode 4 itself: the map, the delivery goal, water for the trailer (buoyancy and drag; drums float), a trailer tyre cut on Realistic, drums coming loose, and camps saving the trailer and its load.
 
 ## The questions that were asked
 
