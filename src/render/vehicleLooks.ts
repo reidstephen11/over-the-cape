@@ -98,8 +98,8 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'leaf',
     lamps: {
       head: [
-        { x: -0.66, y: 0.42, z: -2.17 },
-        { x: 0.66, y: 0.42, z: -2.17 },
+        { x: -0.6, y: 0.416, z: -2.21 },
+        { x: 0.6, y: 0.416, z: -2.21 },
       ],
     },
   },

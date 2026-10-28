@@ -1,3 +1,6 @@
+export { buildVehicleWheel } from './vehicleWheel';
+export { buildRackPlank } from './vehicleEquipment';
+import { cleanGeometry, subdivideSurface } from './bodyRefinement';
 import * as THREE from 'three';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { VehicleTuning } from '../data/vehicle';
@@ -22,7 +25,7 @@ const GUARD_TOP = 0.78;
 export const NOSE = -1.8;
 export const TAIL = 1.86;
 const ROOF = 1.64;
-const LAMP_Y = 0.5;
+const LAMP_Y = 0.55;
 /** Top face of the flat bonnet. */
 export const BONNET_TOP = 0.865;
 
@@ -42,7 +45,10 @@ export interface Livery {
   roof: THREE.Color;
 }
 
-export const standardLivery: Livery = { body: pal('vehicleBody'), roof: pal('vehicleRoof') };
+export const standardLivery: Livery = {
+  body: pal('vehicleBody'),
+  roof: pal('vehicleRoof'),
+};
 
 type P =
   | [number, number]
@@ -150,9 +156,24 @@ function planProfile(
     bevelSegments: 4,
     curveSegments: 20,
   });
-  const g = toCreasedNormals(raw, Math.PI / 5);
+  let g = toCreasedNormals(raw, Math.PI / 5);
   g.rotateX(-Math.PI / 2);
   b.slot = M.Paint;
+  if (zone === Z.Roof) {
+    g = subdivideSurface(g, (_c, n) => Math.abs(n.y) > 0.999, 2);
+    const pos = g.getAttribute('position'),
+      norm = g.getAttribute('normal');
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      pos.setY(i, pos.getY(i) + 0.035 * Math.max(0, 1 - (x / HW) ** 2));
+      const n = new THREE.Vector3(
+        norm.getX(i) + ((0.07 * x) / (HW * HW)) * norm.getY(i),
+        norm.getY(i),
+        norm.getZ(i),
+      ).normalize();
+      norm.setXYZ(i, n.x, n.y, n.z);
+    }
+  }
   b.tag = zone;
   b.push().translate(0, y0 + bevel, 0);
   b.geometry(g, color);
@@ -245,28 +266,9 @@ function front(b: VehicleBuilder, livery: Livery): void {
       [[-AXLE, ARCH_Y, ARCH]],
     );
     // Inner wheelhouse beside the engine, so the arch doesn't show daylight.
-    b.block(side * 0.5, 0.36, -AXLE, 0.02, 0.62, 1.04, well, M.Rubber, Z.Trim);
+    b.block(side * 0.37, 0.36, -AXLE, 0.02, 0.62, 1.04, well, M.Rubber, Z.Trim);
     const lx = side * 0.683;
     headlamp(b, lx, LAMP_Y, NOSE);
-    // Square chrome bezel round the lamp, as fitted from 1979.
-    const bezel = new THREE.Shape();
-    const h = 0.118,
-      r = 0.03;
-    bezel.moveTo(-h + r, -h);
-    bezel.lineTo(h - r, -h);
-    bezel.quadraticCurveTo(h, -h, h, -h + r);
-    bezel.lineTo(h, h - r);
-    bezel.quadraticCurveTo(h, h, h - r, h);
-    bezel.lineTo(-h + r, h);
-    bezel.quadraticCurveTo(-h, h, -h, h - r);
-    bezel.lineTo(-h, -h + r);
-    bezel.quadraticCurveTo(-h, -h, -h + r, -h);
-    const hole = new THREE.Path();
-    hole.absarc(0, 0, 0.1, 0, Math.PI * 2, true);
-    bezel.holes.push(hole);
-    b.push().translate(lx, LAMP_Y, 0);
-    extrudeZ(b, bezel, NOSE - 0.03, NOSE + 0.004, chrome, M.Metal, Z.Front, 0.008);
-    b.pop();
     // Side lamp over an indicator, under the headlamp.
     b.block(lx, 0.315, NOSE - 0.008, 0.15, 0.085, 0.02, rubber, M.Rubber, Z.Front, 0.01);
     b.block(lx - side * 0.035, 0.315, NOSE - 0.02, 0.06, 0.055, 0.012, lamp, M.Headlamp, Z.Front, 0.006);
@@ -276,18 +278,77 @@ function front(b: VehicleBuilder, livery: Livery): void {
   b.block(0, 0.825, -1.19, 1.06, 0.08, 1.15, body, M.Paint, Z.Front, 0.035);
   b.block(0, 0.8, -1.755, 1.04, 0.05, 0.03, body, M.Paint, Z.Front, 0.012);
   for (const side of [-1, 1]) b.block(side * 0.44, 0.868, -0.7, 0.07, 0.012, 0.12, steel, M.Metal, Z.Front);
+  for (const side of [-1, 1]) {
+    // Rolled bonnet shoulder and its visible rubber seam, external over-centre catches.
+    b.block(side * 0.52, 0.79, -1.19, 0.018, 0.015, 1.1, rubber, M.Rubber, Z.Front, 0.006);
+    b.block(side * 0.538, 0.745, -1.58, 0.018, 0.105, 0.042, steel, M.Metal, Z.Front, 0.005);
+    b.rod(
+      { x: side * 0.55, y: 0.72, z: -1.6 },
+      { x: side * 0.55, y: 0.79, z: -1.6 },
+      0.009,
+      rubber,
+      M.Rubber,
+      Z.Front,
+    );
+  }
   // Dark engine bay behind the grille and under the bonnet.
-  b.block(0, 0.47, -1.19, 1.0, 0.62, 1.08, dark, M.Rubber, Z.Trim);
-  // Pressed grille panel between the guards: a cream frame round a fine mesh, a plain top
-  // bar and a small generic badge (no maker's artwork).
-  b.block(0, 0.49, NOSE + 0.03, 1.035, 0.58, 0.04, cream, M.Paint, Z.Front, 0.014);
-  b.block(0, 0.46, NOSE + 0.005, 0.86, 0.4, 0.02, dark, M.Rubber, Z.Front);
-  for (let i = 0; i < 7; i++)
-    b.block(0, 0.285 + i * 0.058, NOSE, 0.86, 0.011, 0.012, cream, M.Paint, Z.Front);
-  for (let i = 0; i < 15; i++)
-    b.block(-0.406 + i * 0.058, 0.46, NOSE, 0.011, 0.4, 0.012, cream, M.Paint, Z.Front);
-  for (const x of [-0.03, 0.03])
-    b.block(x, 0.71, NOSE - 0.002, 0.014, 0.05, 0.008, rubber, M.Rubber, Z.Front);
+  b.block(0, 0.47, -1.19, 0.72, 0.62, 1.08, dark, M.Rubber, Z.Trim);
+  // 1979–84 rectangular bezel: one pressed surround spanning both round lamps.
+  const rectangle = (x0: number, y0: number, x1: number, y1: number, r: number) => {
+    const s = new THREE.Shape();
+    s.moveTo(x0 + r, y0);
+    s.lineTo(x1 - r, y0);
+    s.quadraticCurveTo(x1, y0, x1, y0 + r);
+    s.lineTo(x1, y1 - r);
+    s.quadraticCurveTo(x1, y1, x1 - r, y1);
+    s.lineTo(x0 + r, y1);
+    s.quadraticCurveTo(x0, y1, x0, y1 - r);
+    s.lineTo(x0, y0 + r);
+    s.quadraticCurveTo(x0, y0, x0 + r, y0);
+    return s;
+  };
+  const outer = rectangle(-0.81, 0.385, 0.81, 0.745, 0.045);
+  const inner = rectangle(-0.795, 0.4, 0.795, 0.73, 0.035);
+  outer.holes.push(new THREE.Path(inner.getPoints(24).reverse()));
+  extrudeZ(b, outer, NOSE - 0.04, NOSE - 0.022, chrome, M.Metal, Z.Front, 0);
+  const panel = rectangle(-0.795, 0.4, 0.795, 0.73, 0.035);
+  for (const side of [-1, 1]) {
+    const h = new THREE.Path();
+    h.absarc(side * 0.683, LAMP_Y, 0.108, 0, Math.PI * 2, true);
+    panel.holes.push(h);
+  }
+  const opening = rectangle(-0.495, 0.417, 0.495, 0.708, 0.035);
+  panel.holes.push(new THREE.Path(opening.getPoints(24).reverse()));
+  extrudeZ(b, panel, NOSE - 0.034, NOSE - 0.015, cream, M.Paint, Z.Front, 0);
+  b.block(0, 0.561, NOSE + 0.004, 0.985, 0.29, 0.018, dark, M.Rubber, Z.Front, 0.02);
+  // Dark, fine grille mesh behind a legible raised TOYOTA emblem, high enough in the grille
+  // to clear the winch and the bull bar's mid rail.
+  for (let i = 0; i < 11; i++)
+    b.block(0, 0.43 + i * 0.026, NOSE - 0.01, 0.96, 0.005, 0.006, well, M.Metal, Z.Front);
+  for (let i = 0; i < 35; i++)
+    b.block(-0.476 + i * 0.028, 0.56, NOSE - 0.01, 0.004, 0.26, 0.006, well, M.Metal, Z.Front);
+  b.block(0, 0.66, NOSE - 0.025, 0.44, 0.085, 0.012, dark, M.Rubber, Z.Front, 0.007);
+  const glyphs: Record<string, string[]> = {
+    T: ['11111', '00100', '00100', '00100', '00100', '00100', '00100'],
+    O: ['01110', '10001', '10001', '10001', '10001', '10001', '01110'],
+    Y: ['10001', '10001', '01010', '00100', '00100', '00100', '00100'],
+    A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
+  };
+  for (let k = 0; k < 6; k++)
+    for (let row = 0; row < 7; row++)
+      for (let col = 0; col < 5; col++)
+        if (glyphs['TOYOTA'[k]][row][col] === '1')
+          b.block(
+            -(-0.185 + k * 0.063 + col * 0.01),
+            0.69 - row * 0.01,
+            NOSE - 0.036,
+            0.0102,
+            0.0102,
+            0.008,
+            cream,
+            M.Paint,
+            Z.Front,
+          );
   // Cowl in front of the screen, and a louvred vent on each side panel behind the guard.
   b.block(0, 0.83, -0.565, 1.66, 0.1, 0.12, body, M.Paint, Z.Front, 0.02);
   for (const side of [-1, 1]) {
@@ -365,7 +426,7 @@ function sides(b: VehicleBuilder, livery: Livery): void {
       .rotate(0, Math.PI / 2, 0);
     b.geometry(new THREE.TorusGeometry(ARCH + 0.012, 0.02, 6, 36, Math.PI - 2 * a).rotateZ(a), body);
     b.pop();
-    b.block(side * 0.585, 0.33, AXLE, 0.02, 0.58, 1.04, well, M.Rubber, Z.Trim);
+    b.block(side * 0.52, 0.33, AXLE, 0.02, 0.58, 1.04, well, M.Rubber, Z.Trim);
     b.block(side * 0.7, 0.6, AXLE, 0.25, 0.02, 1.04, well, M.Rubber, Z.Trim);
     // Pressed crease along the side, below the belt.
     b.block(side * (HW + 0.004), 0.66, 0.6, 0.012, 0.022, 2.4, body, M.Paint, Z.Sides, 0.006);
@@ -439,7 +500,11 @@ function rear(b: VehicleBuilder, livery: Livery): void {
     ledge.lineTo(sx * HW, -(TAIL - 0.1));
     ledge.absarc(sx * (HW - 0.1), -(TAIL - 0.1), 0.1, side > 0 ? 0 : Math.PI, -Math.PI / 2, side > 0);
     ledge.lineTo(sx * (HW - R), -TAIL);
-    const lg = new THREE.ExtrudeGeometry(ledge, { depth: 0.012, bevelEnabled: false, curveSegments: 8 });
+    const lg = new THREE.ExtrudeGeometry(ledge, {
+      depth: 0.012,
+      bevelEnabled: false,
+      curveSegments: 8,
+    });
     lg.rotateX(-Math.PI / 2);
     b.slot = M.Paint;
     b.tag = Z.Rear;
@@ -498,7 +563,18 @@ function roof(b: VehicleBuilder, livery: Livery): void {
   for (const side of [-1, 1])
     b.block(side * (HW + 0.008), 1.535, 0.6, 0.016, 0.018, 2.2, cream, M.Paint, Z.Roof, 0.006);
   for (const x of [-0.5, -0.25, 0.25, 0.5])
-    b.block(x, ROOF + 0.005, 0.66, 0.035, 0.014, 2.25, cream, M.Paint, Z.Roof, 0.006);
+    b.block(
+      x,
+      ROOF + 0.005 + 0.035 * (1 - (x / HW) ** 2),
+      0.66,
+      0.035,
+      0.014,
+      2.25,
+      cream,
+      M.Paint,
+      Z.Roof,
+      0.006,
+    );
 }
 
 /** The short-wheelbase body in a livery; `extras` adds what that livery carries on top. */
@@ -509,7 +585,12 @@ export function buildVehicleBody(
   extras?: { aerialSide: -1 | 1; add(b: VehicleBuilder): void },
 ): THREE.BufferGeometry {
   const b = new VehicleBuilder();
-  b.block(0, 0.11, 0.55, 1.5, 0.06, 2.5, rubber, M.Rubber, Z.Trim);
+  for (const [z0, z1, w] of [
+    [-0.7, 0.64, 1.5],
+    [0.64, 1.68, 1.04],
+    [1.68, 1.8, 1.5],
+  ])
+    b.block(0, 0.11, (z0 + z1) / 2, w, 0.06, z1 - z0, rubber, M.Rubber, Z.Trim);
   front(b, livery);
   windscreen(b, livery);
   sides(b, livery);
@@ -518,5 +599,5 @@ export function buildVehicleBody(
   addVehicleInterior(b, tuning.engine.redlineRpm);
   addVehicleEquipment(b, tuning, wheel, extras?.aerialSide);
   extras?.add(b);
-  return b.build();
+  return cleanGeometry(subdivideSurface(b.build(), (c, n) => n.y > 0.95 && c.y > 0.7, 1));
 }

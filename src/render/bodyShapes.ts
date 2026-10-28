@@ -102,6 +102,29 @@ export function sideShape(outline: Vtx[], holes: Vtx[][] = []): THREE.Shape {
 }
 
 /**
+ * Creased normals for an extrusion, with its flat end caps kept flat: creasing alone lets
+ * the bevel bend the normals at a cap's edge, which shades a flat panel unevenly.
+ */
+function capNormals(raw: THREE.ExtrudeGeometry): THREE.BufferGeometry {
+  const g = toCreasedNormals(raw, Math.PI / 5);
+  const caps = new Map<string, number>();
+  const rp = raw.getAttribute('position'),
+    rn = raw.getAttribute('normal');
+  const key = (p: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, i: number) =>
+    [p.getX(i), p.getY(i), p.getZ(i)].map((n) => n.toFixed(6)).join(',');
+  for (let i = 0; i < rp.count; i++)
+    if (Math.abs(rn.getZ(i)) > 0.9999) caps.set(key(rp, i), Math.sign(rn.getZ(i)));
+  const gp = g.getAttribute('position'),
+    gn = g.getAttribute('normal');
+  for (let i = 0; i < gp.count; i++) {
+    const sign = caps.get(key(gp, i));
+    if (sign && gn.getZ(i) * sign > 0.5) gn.setXYZ(i, 0, 0, sign);
+  }
+  raw.dispose();
+  return g;
+}
+
+/**
  * Extrude a side-view shape across the car from x0 to x1 with rounded edges that keep the
  * outline: each edge rounds over `bevel` across the car and `bevel * ratio` within the
  * outline. Walls facing a wheel opening (centres in `wells`, as z, y) are painted dark.
@@ -132,7 +155,7 @@ export function extrudeX(
     bevelSegments: segments,
     curveSegments: 12,
   });
-  let g = toCreasedNormals(raw, Math.PI / 5);
+  let g = capNormals(raw);
   if (wells.length) {
     const pos = g.getAttribute('position'),
       nrm = g.getAttribute('normal');
@@ -198,7 +221,7 @@ export function extrudeZ(
     bevelSegments: 3,
     curveSegments: 12,
   });
-  const g = toCreasedNormals(raw, Math.PI / 5);
+  const g = capNormals(raw);
   b.slot = slot as typeof b.slot;
   b.tag = zone;
   b.push().translate(0, 0, z0 + bevel);

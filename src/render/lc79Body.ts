@@ -7,6 +7,7 @@ import { addTroopyInterior } from './troopyInterior';
 import { lc79Colors } from './lc79Paint';
 import { extrudeX, extrudeZ, frontPane, inset, rounded, sidePane, sideShape, type Vtx } from './bodyShapes';
 import { mirrorHead } from './mirrors';
+import { cleanGeometry, continuousTube, subdivideSurface } from './bodyRefinement';
 
 /**
  * LandCruiser 79 single cab, built up: the 70 Series cab and front clip on a 4 inch lift,
@@ -58,7 +59,12 @@ const TRAY = { deck: 0.64, front: 0.56, back: 2.98, half: 0.95 };
  * The canopy on the tray, from the headboard to short of the tail, so the spare on its
  * rear door stays inside the tray.
  */
-const CAN = { front: TRAY.front + 0.06, back: 2.58, top: ROOF + 0.02, half: 0.93 };
+const CAN = {
+  front: TRAY.front + 0.06,
+  back: 2.58,
+  top: ROOF + 0.02,
+  half: 0.93,
+};
 const RACK = { y: CAN.top + 0.1 };
 /** Where the second spare lies on the roof rack (its centre along the rack). */
 const LC79_ROOF_SPARE_Z = (CAN.front + CAN.back) / 2;
@@ -279,12 +285,43 @@ function headlamp(b: VehicleBuilder, x: number, y: number): void {
   b.geometry(new THREE.SphereGeometry(0.038, 20, 8), lens);
   b.pop();
   b.ring(x, y + 0.01, F - 0.027, 0.042, 0.005, chrome, M.Metal, 'z', Z.Front);
-  b.slot = M.Headlamp;
+  b.slot = M.Glass;
   b.push()
     .translate(x, y, F - 0.03)
     .scale(1, 1, 0.12);
   b.geometry(new THREE.SphereGeometry(r - 0.004, 28, 8), lens.clone().multiplyScalar(0.9));
   b.pop();
+}
+
+/**
+ * Raise an 18 mm crown on the bonnet top, highest on the centre line halfway along and
+ * fading out towards the guards, the cowl and the nose. `x0` is where the panel will sit
+ * across the car, so x can be measured from the centre line.
+ */
+function crownBonnet(geometry: THREE.BufferGeometry, x0: number): THREE.BufferGeometry {
+  const g = subdivideSurface(geometry, (p, n) => p.y > 0.8 && n.y > 0.6, 2);
+  const p = g.getAttribute('position'),
+    n = g.getAttribute('normal');
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i) + x0,
+      z = p.getZ(i),
+      y = p.getY(i),
+      u = THREE.MathUtils.clamp((z + 2.36) / 1.39, 0, 1),
+      a = Math.max(0, 1 - (x / 0.73) ** 2),
+      q = Math.sin(Math.PI * u) ** 2,
+      t = THREE.MathUtils.clamp((y - 0.78) / 0.07, 0, 1),
+      fade = t * t * (3 - 2 * t),
+      df = t > 0 && t < 1 ? (6 * t * (1 - t)) / 0.07 : 0;
+    const h = 0.018 * a * a * q * fade,
+      dx = ((-0.072 * x) / (0.73 * 0.73)) * a * q * fade,
+      dz = ((0.018 * a * a * Math.PI * Math.sin(2 * Math.PI * u)) / 1.39) * fade,
+      dy = 0.018 * a * a * q * df;
+    p.setY(i, y + h);
+    const ny = n.getY(i) / (1 + dy),
+      normal = new THREE.Vector3(n.getX(i) - dx * ny, ny, n.getZ(i) - dz * ny).normalize();
+    n.setXYZ(i, normal.x, normal.y, normal.z);
+  }
+  return g;
 }
 
 function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
@@ -309,28 +346,50 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
     [[-AXLE, ARCH.cy]],
     6,
     CLIP.ratio,
+    (g) => crownBonnet(g, -SIDE - 0.02 + R),
   );
-  // The V8's bonnet scoop: a wide, low hood over the intercooler, open at the front.
+  // A hollow scoop: separate crown and cheeks, recessed dark throat, no front cap.
   const z0 = F + 0.32,
-    z1 = F + 0.86;
+    z1 = F + 0.9,
+    y0 = clipTop(z0),
+    y1 = clipTop(z1);
   extrudeX(
     b,
     sideShape([
-      [z0, clipTop(z0) - 0.01],
-      [z0, clipTop(z0) + 0.075, 0.02],
-      [z1 - 0.12, clipTop(z1) + 0.06, 0.08],
-      [z1, clipTop(z1) - 0.01],
+      [z0, y0 + 0.055],
+      [z0, y0 + 0.078, 0.014],
+      [z1 - 0.14, y1 + 0.056, 0.06],
+      [z1, y1 - 0.006],
+      [z1 - 0.06, y1 - 0.008],
+      [z1 - 0.18, y1 + 0.034],
+      [z0 + 0.04, y0 + 0.055],
     ]),
     -0.3,
     0.3,
     paint,
     M.Paint,
     Z.Front,
-    0.02,
+    0.008,
   );
-  b.block(0, clipTop(z0) + 0.035, z0 - 0.003, 0.5, 0.05, 0.01, black, M.Rubber, Z.Front, 0.008);
-  for (let i = 0; i < 3; i++)
-    b.block(0, clipTop(z0) + 0.02 + i * 0.016, z0 - 0.006, 0.48, 0.005, 0.006, trim, M.Rubber, Z.Front);
+  for (const side of [-1, 1])
+    extrudeX(
+      b,
+      sideShape([
+        [z0, y0 - 0.005],
+        [z0, y0 + 0.063],
+        [z1 - 0.15, y1 + 0.044],
+        [z1, y1 - 0.008],
+      ]),
+      side > 0 ? 0.278 : -0.3,
+      side > 0 ? 0.3 : -0.278,
+      paint,
+      M.Paint,
+      Z.Front,
+      0.005,
+    );
+  b.block(0, y0 + 0.025, z0 + 0.12, 0.552, 0.065, 0.012, black, M.Rubber, Z.Front);
+  for (const y of [0.012, 0.035])
+    b.block(0, y0 + y, z0 + 0.045, 0.548, 0.006, 0.008, trim, M.Rubber, Z.Front);
   // Shut lines between the bonnet and the guards.
   for (const side of [-1, 1])
     b.rod(
@@ -354,22 +413,77 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
     gh = 0.3;
   b.block(0, gy, F - 0.004, gw + 0.04, gh + 0.04, 0.02, trim, M.Rubber, Z.Front, 0.03);
   b.block(0, gy, F - 0.008, gw, gh, 0.02, black, M.Rubber, Z.Front, 0.025);
-  const mesh = trim.clone().multiplyScalar(1.6);
-  for (let row = 0; row < 8; row++)
-    for (let col = 0; col < 34; col++) {
-      const x = -gw / 2 + 0.03 + col * 0.04 + (row % 2) * 0.02,
-        y = gy - gh / 2 + 0.03 + row * 0.034;
-      if (Math.abs(x) > gw / 2 - 0.03) continue;
-      if (Math.hypot(Math.abs(x) - 0.58, y - gy) < 0.13) continue;
-      if (Math.hypot(x, y - gy) < 0.07) continue;
-      b.block(x, y, F - 0.02, 0.026, 0.022, 0.006, mesh, M.Rubber, Z.Front);
+  // Open hexagonal ribs over a recessed backing; keep lamp and lettering zones clear.
+  const mesh = trim.clone().multiplyScalar(1.7),
+    radius = 0.02,
+    inner = 0.0168;
+  b.slot = M.Rubber;
+  b.tag = Z.Front;
+  for (let row = 0; row < 9; row++)
+    for (let col = 0; col < 42; col++) {
+      const x = -0.7 + col * Math.sqrt(3) * radius + ((row % 2) * Math.sqrt(3) * radius) / 2;
+      const y = gy - 0.12 + row * 0.03;
+      if (
+        Math.abs(x) > 0.69 ||
+        Math.hypot(Math.abs(x) - 0.58, y - gy) < 0.125 ||
+        (Math.abs(x) < 0.315 && Math.abs(y - gy) < 0.043)
+      )
+        continue;
+      for (let k = 0; k < 6; k++) {
+        const a = Math.PI / 6 + (k * Math.PI) / 3,
+          c = a + Math.PI / 3;
+        b.quad(
+          v(x + radius * Math.cos(a), y + radius * Math.sin(a), F - 0.022),
+          v(x + inner * Math.cos(a), y + inner * Math.sin(a), F - 0.022),
+          v(x + inner * Math.cos(c), y + inner * Math.sin(c), F - 0.022),
+          v(x + radius * Math.cos(c), y + radius * Math.sin(c), F - 0.022),
+          mesh,
+        );
+      }
     }
-  b.ring(0, gy, F - 0.024, 0.05, 0.008, chrome, M.Metal, 'z', Z.Front);
-  b.block(0, gy, F - 0.02, 0.07, 0.035, 0.006, chrome, M.Metal, Z.Front, 0.008);
+  b.block(0, gy, F - 0.023, 0.63, 0.087, 0.012, black, M.Rubber, Z.Front, 0.006);
+  const letters: Record<string, number[][]> = {
+    T: [
+      [0, 1, 1, 1],
+      [0.5, 1, 0.5, 0],
+    ],
+    O: [
+      [0, 0, 0, 1],
+      [0, 1, 1, 1],
+      [1, 1, 1, 0],
+      [1, 0, 0, 0],
+    ],
+    Y: [
+      [0, 1, 0.5, 0.5],
+      [1, 1, 0.5, 0.5],
+      [0.5, 0.5, 0.5, 0],
+    ],
+    A: [
+      [0, 0, 0.5, 1],
+      [0.5, 1, 1, 0],
+      [0.22, 0.42, 0.78, 0.42],
+    ],
+  };
+  [...'TOYOTA'].forEach((ch, i) => {
+    for (const [x0, y0, x1, y1] of letters[ch])
+      b.rod(
+        v(0.284 - i * 0.098 - x0 * 0.07, gy - 0.025 + y0 * 0.05, F - 0.033),
+        v(0.284 - i * 0.098 - x1 * 0.07, gy - 0.025 + y1 * 0.05, F - 0.033),
+        0.004,
+        plateWhite,
+        M.Metal,
+        Z.Front,
+      );
+  });
   for (const side of [-1, 1]) {
     headlamp(b, side * 0.58, gy);
-    b.block(side * 0.62, gy - gh / 2 + 0.03, F - 0.022, 0.1, 0.03, 0.008, amber, M.Amber, Z.Front, 0.008);
+    b.block(side * 0.655, 0.535, F - 0.035, 0.145, 0.069, 0.055, black, M.Rubber, Z.Front, 0.009);
+    b.block(side * 0.655, 0.535, F - 0.066, 0.121, 0.045, 0.009, amber, M.Amber, Z.Front, 0.006);
   }
+  // Three lower cooling slots and the narrow upper hood vent of the updated fascia.
+  for (const x of [-0.235, 0, 0.235])
+    b.block(x, 0.475, F - 0.012, 0.19, 0.032, 0.014, black, M.Rubber, Z.Front, 0.008);
+  b.block(0, 0.85, F - 0.006, 0.49, 0.014, 0.012, black, M.Rubber, Z.Front, 0.004);
   // Sump guard, steering box and the front diff's breather.
   b.block(0, -0.02, -1.78, 0.6, 0.03, 0.7, bar, M.Metal, Z.Trim, 0.01);
   b.block(0.38, 0.06, -2.05, 0.14, 0.16, 0.16, black, M.Metal, Z.Trim, 0.02);
@@ -415,7 +529,7 @@ function roof(b: VehicleBuilder, paint: THREE.Color): void {
       [-SIDE, -CAB_BACK, CORNER * 1.6],
     ]),
   );
-  const g = new THREE.ExtrudeGeometry(s, {
+  let g: THREE.BufferGeometry = new THREE.ExtrudeGeometry(s, {
     depth: 0.02,
     bevelEnabled: true,
     bevelThickness: 0.02,
@@ -425,13 +539,39 @@ function roof(b: VehicleBuilder, paint: THREE.Color): void {
     curveSegments: 10,
   });
   g.rotateX(-Math.PI / 2);
+  g = subdivideSurface(g, (_p, n) => Math.abs(n.y) > 0.7, 3);
+  const p = g.getAttribute('position'),
+    n = g.getAttribute('normal');
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i),
+      z = p.getZ(i),
+      a = Math.max(0, 1 - (x / SIDE) ** 2),
+      t = THREE.MathUtils.clamp((z - front) / (CAB_BACK - front), 0, 1),
+      q = Math.sin(Math.PI * t) ** 2;
+    const h = 0.035 * a * a * q,
+      dx = ((-0.14 * x) / (SIDE * SIDE)) * a * q,
+      dz = (0.035 * a * a * Math.PI * Math.sin(2 * Math.PI * t)) / (CAB_BACK - front);
+    p.setY(i, p.getY(i) + h);
+    const normal = new THREE.Vector3(
+      n.getX(i) - dx * n.getY(i),
+      n.getY(i),
+      n.getZ(i) - dz * n.getY(i),
+    ).normalize();
+    n.setXYZ(i, normal.x, normal.y, normal.z);
+  }
   b.slot = M.Paint;
   b.tag = Z.Roof;
   b.push().translate(0, ROOF - 0.04, 0);
   b.geometry(g, paint);
   b.pop();
-  for (let i = 0; i < 3; i++)
-    b.block(0, ROOF + 0.002, -0.45 + i * 0.4, 1.5, 0.012, 0.06, paint, M.Paint, Z.Roof, 0.006);
+  for (const z of [-0.45, -0.05, 0.35]) {
+    const t = (z - front) / (CAB_BACK - front),
+      q = Math.sin(Math.PI * t) ** 2;
+    for (let i = 0; i < 20; i++) {
+      const point = (x: number) => v(x, ROOF + 0.004 + 0.035 * (1 - (x / SIDE) ** 2) ** 2 * q, z);
+      b.rod(point(-0.75 + i * 0.075), point(-0.75 + (i + 1) * 0.075), 0.006, paint, M.Paint, Z.Roof);
+    }
+  }
 }
 
 /** Wide black flares round the front openings and over the tray's rear wheel cut-outs. */
@@ -452,7 +592,7 @@ function flares(b: VehicleBuilder): void {
       0.02,
     );
     // Dark wheelhouse: an inner wall and a roof over the tyre.
-    b.block(side * 0.5, 0.2, -AXLE, 0.03, 0.6, ARCH.r * 2, well, M.Rubber, Z.Trim);
+    b.block(side * 0.35, 0.2, -AXLE, 0.03, 0.6, ARCH.r * 2, well, M.Rubber, Z.Trim);
     b.block(side * 0.69, ARCH.cy + ARCH.r + 0.005, -AXLE, 0.36, 0.02, ARCH.r * 1.5, well, M.Rubber, Z.Trim);
   }
 }
@@ -514,17 +654,6 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: 1 | -
   b.pop();
 }
 
-function tubePath(b: VehicleBuilder, pts: ReturnType<typeof v>[], r: number, color: THREE.Color): void {
-  for (let i = 0; i + 1 < pts.length; i++) b.rod(pts[i], pts[i + 1], r, color, M.Metal, Z.Front);
-  b.slot = M.Metal;
-  b.tag = Z.Front;
-  for (const p of pts.slice(1, -1)) {
-    b.push().translate(p.x, p.y, p.z);
-    b.geometry(new THREE.SphereGeometry(r, 12, 8), color);
-    b.pop();
-  }
-}
-
 /** A round driving lamp facing forward: black can, chrome rim and lens. */
 function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: number): void {
   b.slot = M.Metal;
@@ -546,7 +675,11 @@ function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: numb
 export const LC79_SPARE = { y: 1.13, z: 2.8 };
 
 /** Driving lamp lens centres, for the high-beam glow. */
-export const LC79_DRIVING_LAMPS = [-0.21, 0.21].map((x) => ({ x, y: 0.86, z: -2.51 }));
+export const LC79_DRIVING_LAMPS = [-0.21, 0.21].map((x) => ({
+  x,
+  y: 0.86,
+  z: -2.51,
+}));
 
 /** Steel bar: a deep pan with swept wings, a centre hoop with a light bar, loops over the lamps. */
 function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
@@ -556,44 +689,67 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     depth = back - face;
   const panY = 0.28,
     panH = 0.34;
-  b.block(0, panY, zc, 1.26, panH, depth, bar, M.Metal, Z.Front, 0.025);
+  const panShape = new THREE.Shape();
+  panShape.moveTo(-0.61, -face);
+  panShape.lineTo(0.61, -face);
+  panShape.lineTo(0.98, -face - 0.16);
+  panShape.lineTo(0.94, -back - 0.15);
+  panShape.lineTo(0.58, -back);
+  panShape.lineTo(-0.58, -back);
+  panShape.lineTo(-0.94, -back - 0.15);
+  panShape.lineTo(-0.98, -face - 0.16);
+  panShape.closePath();
+  const pan = new THREE.ExtrudeGeometry(panShape, {
+    depth: panH - 0.03,
+    bevelEnabled: true,
+    bevelSize: 0.015,
+    bevelThickness: 0.015,
+    bevelSegments: 3,
+    steps: 1,
+  });
+  pan.rotateX(-Math.PI / 2);
+  pan.translate(0, panY - panH / 2 + 0.015, 0);
+  b.slot = M.Metal;
+  b.tag = Z.Front;
+  b.geometry(pan, bar);
   for (const side of [-1, 1]) {
     b.push()
-      .translate(side * 0.79, panY, zc + 0.05)
+      .translate(side * 0.79, panY + 0.06, face + 0.08)
       .rotate(0, -side * 0.42, 0);
-    b.block(0, 0, 0, 0.38, panH, depth, bar, M.Metal, Z.Front, 0.025);
-    b.block(0.0, 0.06, -depth / 2 - 0.004, 0.14, 0.06, 0.012, amber, M.Amber, Z.Front, 0.008);
+    b.block(0, 0, -0.012, 0.14, 0.06, 0.025, black, M.Rubber, Z.Front, 0.008);
+    b.block(0, 0, -0.027, 0.12, 0.04, 0.009, amber, M.Amber, Z.Front, 0.005);
     b.pop();
   }
   const top = panY + panH / 2;
   b.block(0, top, zc + 0.01, 1.28, 0.03, depth + 0.03, bar, M.Metal, Z.Front, 0.012);
   for (const x of [-0.43, 0.43]) b.block(x, 0.16, back + 0.12, 0.08, 0.12, 0.28, bar, M.Metal, Z.Trim);
   const zt = F - 0.06;
-  // Centre hoop over the grille, its mid rail, and the light bar along its top.
-  for (const side of [-1, 1])
-    tubePath(
+  // Continuous bent hoops. Every tube end enters a welded post or a foot plate.
+  const tube = (points: { x: number; y: number; z: number }[], r: number) =>
+    continuousTube(
       b,
-      [v(side * 0.4, top, zc + 0.01), v(side * 0.4, 0.94, zt), v(side * 0.34, 1.0, zt)],
-      0.032,
+      points.map((p) => new THREE.Vector3(p.x, p.y, p.z)),
+      r,
       bar,
     );
-  b.rod(v(-0.34, 1.0, zt), v(0.34, 1.0, zt), 0.032, bar, M.Metal, Z.Front);
+  tube(
+    [v(-0.4, top - 0.015, zc + 0.01), v(-0.4, 1.0, zt), v(0.4, 1.0, zt), v(0.4, top - 0.015, zc + 0.01)],
+    0.032,
+  );
   b.rod(v(-0.4, 0.74, (zc + zt) / 2), v(0.4, 0.74, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
+  for (const side of [-1, 1]) {
+    const foot = v(side * 0.88, top, zc + 0.1);
+    b.block(foot.x, top, foot.z, 0.1, 0.025, 0.1, bar, M.Metal, Z.Front, 0.006);
+    tube(
+      [v(foot.x, top - 0.01, foot.z), v(side * 0.88, 0.86, zt + 0.04), v(side * 0.4, 0.88, zt - 0.016)],
+      0.028,
+    );
+    b.rod(v(side * 0.24, 1.0, zt), v(side * 0.24, 1.035, zt), 0.013, bar, M.Metal, Z.Front);
+    // Lamp stem meets the middle rail rather than hanging ahead of it.
+    b.rod(v(side * 0.21, 0.74, (zc + zt) / 2), v(side * 0.21, 0.775, -2.51), 0.013, bar, M.Metal, Z.Front);
+  }
   b.block(0, 1.06, zt, 0.62, 0.07, 0.07, black, M.Metal, Z.Front, 0.012);
   b.block(0, 1.06, zt - 0.037, 0.58, 0.045, 0.006, lens, M.DrivingLamp, Z.Front, 0.004);
-  // Loops over the headlamps out to the wings.
-  for (const side of [-1, 1])
-    tubePath(
-      b,
-      [
-        v(side * 0.9, top, zc + 0.14),
-        v(side * 0.9, 0.78, zt + 0.08),
-        v(side * 0.84, 0.86, zt + 0.04),
-        v(side * 0.4, 0.88, zt),
-      ],
-      0.028,
-      bar,
-    );
   // Driving lamps on the hoop's mid rail, in front of the grille.
   for (const p of LC79_DRIVING_LAMPS) drivingLamp(b, p.x, p.y, p.z, 0.085);
   // Winch drum behind the pan, the roller fairlead and the hook.
@@ -626,14 +782,14 @@ function snorkel(b: VehicleBuilder): void {
     v(x, WAIST + 0.02, pillarZ(WAIST) - 0.07),
     v(x, ROOF + 0.06, pillarZ(ROOF + 0.06) - 0.07),
   ];
-  for (let i = 0; i + 1 < pts.length; i++) b.rod(pts[i], pts[i + 1], 0.05, black, M.Rubber, Z.Front);
-  b.slot = M.Rubber;
-  b.tag = Z.Front;
-  for (const p of pts.slice(1)) {
-    b.push().translate(p.x, p.y, p.z);
-    b.geometry(new THREE.SphereGeometry(0.05, 12, 8), black);
-    b.pop();
-  }
+  continuousTube(
+    b,
+    pts.map((p) => new THREE.Vector3(p.x, p.y, p.z)),
+    0.05,
+    black,
+    Z.Front,
+    M.Rubber,
+  );
   // Flat body plate against the guard, the pillar brackets and the ram head.
   b.block(SIDE + 0.03, clipTop(-1.15) - 0.06, -1.16, 0.06, 0.2, 0.3, black, M.Rubber, Z.Front, 0.03);
   for (const y of [WAIST + 0.2, ROOF - 0.15])
@@ -655,7 +811,29 @@ function tray(b: VehicleBuilder): void {
   b.block(0, deck - 0.02, mid, half * 2, 0.04, len, alloy, M.Metal, Z.Rear, 0.006);
   // Deep side and rear rails under the deck edge, and the subframe on the chassis.
   for (const side of [-1, 1])
-    b.block(side * (half - 0.02), deck - 0.1, mid, 0.04, 0.16, len, alloy, M.Metal, Z.Sides, 0.008);
+    extrudeX(
+      b,
+      sideShape([
+        [front, deck - 0.18],
+        [AXLE - 0.42, deck - 0.18],
+        [AXLE - 0.27, deck - 0.06],
+        [AXLE + 0.27, deck - 0.06],
+        [AXLE + 0.42, deck - 0.18],
+        [back, deck - 0.18],
+        [back, deck - 0.02],
+        [front, deck - 0.02],
+      ]),
+      side > 0 ? half - 0.04 : -half,
+      side > 0 ? half : -half + 0.04,
+      alloy,
+      M.Metal,
+      Z.Sides,
+      0.004,
+    );
+  // Dark wheelhouse walls behind the rails' raised arches, so the gap over each rear tyre
+  // doesn't show daylight through to the other side.
+  for (const side of [-1, 1])
+    b.block(side * (half - 0.06), deck - 0.11, AXLE, 0.02, 0.14, 0.86, well, M.Rubber, Z.Trim);
   b.block(0, deck - 0.1, back - 0.02, half * 2, 0.16, 0.04, alloy, M.Metal, Z.Rear, 0.008);
   for (const z of [0.7, 1.1, 2.1, 2.55, 2.9])
     b.block(
@@ -677,7 +855,7 @@ function tray(b: VehicleBuilder): void {
   // and a back face with a rubber flap hanging below it.
   for (const side of [-1, 1]) {
     const x = side * 0.8,
-      top = deck - 0.17,
+      top = deck - 0.04,
       half = 0.58;
     b.block(x, top, AXLE, 0.38, 0.02, half * 2, flare, M.Rubber, Z.Trim, 0.006);
     b.block(x, top - 0.09, AXLE - half, 0.38, 0.18, 0.02, flare, M.Rubber, Z.Trim, 0.006);
@@ -744,8 +922,10 @@ function canopyBox(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
     rounded([
       [-half, base],
       [half, base],
-      [half, top, 0.05],
-      [-half, top, 0.05],
+      [half, top - 0.09, 0.02],
+      [half - 0.08, top, 0.02],
+      [-half + 0.08, top, 0.02],
+      [-half, top - 0.09, 0.02],
     ]),
   );
   extrudeZ(b, s, front, back, canopy, M.Paint, Z.Rear, 0.02);
@@ -753,49 +933,104 @@ function canopyBox(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
     [front + 0.04, (front + back) / 2 - 0.01],
     [(front + back) / 2 + 0.01, back - 0.04],
   ];
-  for (const side of [-1, 1]) {
-    const x = side * (half + 0.002);
+  const panel = canopy.clone().multiplyScalar(1.26);
+  for (const side of [-1, 1])
     for (const [z0, z1] of doors) {
-      // Gullwing door: shut lines round it, the hinge along its top and a T-handle.
-      b.block(x, base + 0.08, (z0 + z1) / 2, 0.006, 0.006, z1 - z0, black, M.Rubber, Z.Sides);
-      b.block(x, top - 0.07, (z0 + z1) / 2, 0.012, 0.02, z1 - z0, black, M.Metal, Z.Sides);
-      for (const z of [z0, z1])
-        b.block(x, (base + top) / 2 + 0.005, z, 0.006, top - base - 0.15, 0.006, black, M.Rubber, Z.Sides);
+      const mid = (z0 + z1) / 2,
+        low = base + 0.075,
+        high = top - 0.125,
+        cy = (low + high) / 2;
       b.block(
-        side * (half + 0.008),
-        base + 0.3,
-        (z0 + z1) / 2,
-        0.016,
-        0.04,
-        0.16,
-        steel,
-        M.Metal,
+        side * (half + 0.004),
+        cy,
+        mid,
+        0.018,
+        high - low + 0.018,
+        z1 - z0 + 0.012,
+        black,
+        M.Rubber,
         Z.Sides,
         0.008,
       );
-      // Louvred vent near the top.
+      b.block(
+        side * (half + 0.015),
+        cy,
+        mid,
+        0.016,
+        high - low - 0.008,
+        z1 - z0 - 0.016,
+        panel,
+        M.Paint,
+        Z.Sides,
+        0.012,
+      );
+      for (const z of [z0 + 0.13, z1 - 0.13]) {
+        b.block(side * (half + 0.026), high - 0.012, z, 0.026, 0.024, 0.11, bar, M.Metal, Z.Sides, 0.005);
+        b.rod(
+          v(side * (half + 0.032), high - 0.012, z - 0.05),
+          v(side * (half + 0.032), high - 0.012, z + 0.05),
+          0.012,
+          steel,
+          M.Metal,
+          Z.Sides,
+        );
+      }
+      b.block(side * (half + 0.026), base + 0.3, mid, 0.012, 0.085, 0.19, black, M.Rubber, Z.Sides, 0.012);
+      b.block(side * (half + 0.036), base + 0.3, mid, 0.018, 0.025, 0.12, steel, M.Metal, Z.Sides, 0.006);
+      b.block(
+        side * (half + 0.035),
+        high - 0.17,
+        z0 + 0.2,
+        0.012,
+        0.13,
+        0.22,
+        black,
+        M.Rubber,
+        Z.Sides,
+        0.008,
+      );
       for (let i = 0; i < 3; i++)
-        b.block(x, top - 0.18 - i * 0.03, z0 + 0.2, 0.008, 0.012, 0.18, black, M.Rubber, Z.Sides);
+        b.block(
+          side * (half + 0.045),
+          high - 0.13 - i * 0.033,
+          z0 + 0.2,
+          0.016,
+          0.014,
+          0.19,
+          trim.clone().multiplyScalar(1.8),
+          M.Metal,
+          Z.Sides,
+          0.004,
+        );
     }
-  }
-  // Rear door: shut line, hinge and handle; a high stop lamp over it.
-  b.block(0, (base + top) / 2, back + 0.002, half * 2 - 0.08, 0.006, 0.006, black, M.Rubber, Z.Rear);
-  b.block(0, top - 0.07, back + 0.004, half * 2 - 0.1, 0.02, 0.012, black, M.Metal, Z.Rear);
-  b.block(0.6, base + 0.3, back + 0.008, 0.12, 0.04, 0.016, steel, M.Metal, Z.Rear, 0.008);
+  // Rear hatch gasket, raised skin, actual hinge knuckles and latch surround.
+  b.block(0, base + 0.46, back + 0.008, 1.72, 0.79, 0.018, black, M.Rubber, Z.Rear, 0.02);
+  b.block(0, base + 0.46, back + 0.02, 1.695, 0.765, 0.016, panel, M.Paint, Z.Rear, 0.018);
+  for (const x of [-0.61, 0.61])
+    b.rod(
+      v(x - 0.08, top - 0.105, back + 0.036),
+      v(x + 0.08, top - 0.105, back + 0.036),
+      0.012,
+      steel,
+      M.Metal,
+      Z.Rear,
+    );
+  b.block(0.63, base + 0.3, back + 0.035, 0.18, 0.085, 0.015, black, M.Rubber, Z.Rear, 0.01);
+  b.block(0.63, base + 0.3, back + 0.048, 0.12, 0.025, 0.018, steel, M.Metal, Z.Rear, 0.006);
   for (const side of [-1, 1])
-    b.block(side * 0.68, top - 0.05, back + 0.008, 0.16, 0.025, 0.012, red, M.Red, Z.Rear, 0.006);
+    b.block(side * 0.68, top - 0.05, back + 0.01, 0.16, 0.025, 0.016, red, M.Red, Z.Rear, 0.006);
   // The spare on the rear door: a carrier frame bolted through the door, a hub plate and
   // the wheel, its outer face just inside the end of the tray.
   const sp = LC79_SPARE;
   for (const y of [sp.y - 0.3, sp.y + 0.3])
-    b.block(0, y, back + 0.02, 0.7, 0.05, 0.04, bar, M.Metal, Z.Rear, 0.008);
-  for (const x of [-0.3, 0.3]) b.block(x, sp.y, back + 0.02, 0.05, 0.65, 0.04, bar, M.Metal, Z.Rear, 0.008);
-  b.block(0, sp.y, back + 0.05, 0.24, 0.24, 0.04, bar, M.Metal, Z.Rear, 0.01);
+    b.block(0, y, back + 0.048, 0.7, 0.05, 0.04, bar, M.Metal, Z.Rear, 0.008);
+  for (const x of [-0.3, 0.3]) b.block(x, sp.y, back + 0.048, 0.05, 0.65, 0.04, bar, M.Metal, Z.Rear, 0.008);
+  b.block(0, sp.y, back + 0.075, 0.24, 0.24, 0.04, bar, M.Metal, Z.Rear, 0.01);
   spare(b, wheel, 0, sp.y, sp.z, false);
   // Roof rack: two rails on low feet and cross bars, the platform for the recovery boards.
   for (const side of [-1, 1]) {
     b.block(
-      side * 0.86,
+      side * 0.8,
       RACK.y,
       (front + back) / 2,
       0.05,
@@ -807,14 +1042,14 @@ function canopyBox(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
       0.01,
     );
     for (const z of [front + 0.15, (front + back) / 2, back - 0.15])
-      b.block(side * 0.86, (top + RACK.y) / 2, z, 0.05, RACK.y - top, 0.05, bar, M.Metal, Z.Roof);
+      b.block(side * 0.8, (top + RACK.y) / 2, z, 0.05, RACK.y - top, 0.05, bar, M.Metal, Z.Roof);
   }
   for (let i = 0; i <= 6; i++)
     b.block(
       0,
       RACK.y,
       front + 0.1 + ((back - front - 0.2) * i) / 6,
-      1.72,
+      1.6,
       0.03,
       0.04,
       bar,
@@ -834,7 +1069,11 @@ function canopyBox(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
 }
 
 function chassis(b: VehicleBuilder): void {
-  for (const x of [-0.43, 0.43]) b.block(x, 0.0, 0.2, 0.09, 0.16, 5.1, black, M.Metal, Z.Trim);
+  for (const side of [-1, 1]) {
+    b.block(side * 0.32, 0, -1.74, 0.09, 0.16, 1.22, black, M.Metal, Z.Trim);
+    b.rod(v(side * 0.32, 0, -1.15), v(side * 0.43, 0, -0.9), 0.045, black, M.Metal, Z.Trim);
+    b.block(side * 0.43, 0, 1.075, 0.09, 0.16, 3.55, black, M.Metal, Z.Trim);
+  }
   for (const z of [-2.1, -0.95, 0.5, 1.9, 2.8]) b.block(0, 0.0, z, 0.86, 0.08, 0.08, black, M.Metal, Z.Trim);
   b.block(0.04, -0.02, -0.45, 0.4, 0.17, 0.7, black, M.Metal, Z.Trim, 0.03);
   const shaft = steel.clone().multiplyScalar(0.6);
@@ -874,7 +1113,7 @@ export function buildLc79Body(
   b.push().translate(0, DY, 0);
   addTroopyInterior(b, tuning.engine.redlineRpm, paint, true);
   b.pop();
-  return b.build();
+  return cleanGeometry(b.build());
 }
 
 /** A 37×12.5R17 mud-terrain tyre with big shoulder lugs on a black beadlock-style wheel. */
@@ -970,7 +1209,7 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.geometry(new THREE.CylinderGeometry(0.04, 0.045, 0.02, 20), steel.clone().multiplyScalar(0.9));
     b.pop();
   }
-  return b.build();
+  return cleanGeometry(b.build());
 }
 
 /** A recovery board strapped to the canopy's roof rack (index 0 on the left). */
@@ -997,10 +1236,11 @@ export function buildLc79Plank(index: number): THREE.BufferGeometry {
       M.Fabric,
       Z.Roof,
     );
-  for (const dz of [-0.6, 0.6]) {
+  for (const dz of [-0.5866666667, 0.5866666667]) {
     b.block(x, y + 0.03, z + dz, W + 0.01, 0.012, 0.045, black, M.Rubber, Z.Roof);
     for (const s of [-1, 1])
-      b.block(x + (s * (W + 0.02)) / 2, y - 0.015, z + dz, 0.012, 0.075, 0.045, black, M.Rubber, Z.Roof);
+      b.block(x + (s * (W + 0.02)) / 2, y - 0.025, z + dz, 0.012, 0.11, 0.045, black, M.Rubber, Z.Roof);
+    b.block(x, y - 0.074, z + dz, W + 0.03, 0.012, 0.045, black, M.Rubber, Z.Roof);
   }
-  return b.build();
+  return cleanGeometry(b.build());
 }
