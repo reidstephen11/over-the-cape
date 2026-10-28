@@ -77,17 +77,28 @@ export const damageTuning = {
   },
   engine: {
     /**
-     * Engine heat (src/sim/vehicle/damage.ts) sits at 0.5 until the load (pedal × a quarter to
-     * all of the revs, times `lowRangeHeat` in low range) times `heatGain`, less `airflowCool` per
-     * m/s, pushes it higher. It climbs over `heatSeconds` and cools over `coolSeconds`.
-     * High revs flat out in low range boil it in about half a minute; 60% throttle at
-     * mid revs in about two and a half minutes; a gentle crawl and high-range driving stay under the warning.
+     * Engine heat (src/sim/vehicle/damage.ts). Load is the pedal × (a quarter plus three
+     * quarters of the rev share), times `lowRangeHeat` in low range, times extra `bogHeat`
+     * when the wheels are spinning at high revs with little ground speed. Airflow subtracts
+     * `airflowCool` per m/s; water subtracts up to `waterCool` (full at `waterFull` metres
+     * at the tyres, plus `submergedCool` if the intake is under). It climbs over
+     * `heatSeconds` and cools over `coolSeconds` (faster in water). Bogged in low range
+     * warns in about half a minute; the same revs while moving take about a minute; a
+     * gentle crawl and high-range driving stay under the warning.
      */
-    heatGain: 1,
-    lowRangeHeat: 1.6,
-    airflowCool: 0.03,
-    heatSeconds: 60,
-    coolSeconds: 150,
+    heatGain: 0.85,
+    lowRangeHeat: 1.3,
+    airflowCool: 0.035,
+    bogHeat: 0.85,
+    /** Below this speed (m/s), spinning wheels count as bogged. */
+    bogSpeed: 2.5,
+    waterCool: 0.9,
+    waterFull: 0.5,
+    submergedCool: 0.35,
+    heatSeconds: 150,
+    coolSeconds: 200,
+    /** Share of `coolSeconds` dropped when fully wet (0.45 → cooling about twice as fast). */
+    waterCoolFactor: 0.45,
     /** Heat stops rising here (the dial's end stop is 1.2). */
     maxHeat: 1.3,
     /** Above full heat the engine loses power, down to this share at `maxHeat`. */

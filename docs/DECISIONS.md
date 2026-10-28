@@ -1550,3 +1550,10 @@ Phone driving now starts on **Joystick only**. Steer and pedals is still there. 
 
 - **Findable.** The setting sits under Graphics on both title and pause Settings, not below the volume sliders. The title Settings page scrolls if the screen is short (landscape phones were clipping it). The row is not gated on touch-detection, so a coarse pointer still shows it.
 - **Cache.** Opening the installed app asks the service worker for an update immediately, so a phone that installed v0.82/v0.83 does not keep the old Settings page.
+
+## v0.85: the engine takes longer to overheat
+
+v0.78 boiled a low-range climb in about half a minute, which was too fast on the CREB. Heat is still load (pedal × revs), but it climbs more slowly, moving air cools more with speed, water at the tyres cools (deeper is stronger, and the intake being under adds more), and the worst case is now bogged: wheels spinning at high revs with almost no ground speed.
+
+- **Before** (v0.78–v0.84, default short-wheelbase redline 4300 rpm): full throttle at redline in low range at 1 m/s warned at 15 s and boiled at 23 s; the old climb probe (4000 rpm at 6 m/s) was 18 s / 28 s; 80% at 3000 rpm boiled at 44 s; 60% at 2400 rpm boiled at 142 s; a gentle crawl settled at 0.69.
+- **After:** the same full-throttle crawl is 60 s / 95 s. Bogged (spin 1, 0.4 m/s) is the fastest at 31 s / 46 s. A 6 m/s climb is 81 s / 136 s. 80% at 3000 rpm boils at 221 s. 60% at 2400 rpm stays at 0.82, under the warning. A gentle crawl settles at 0.61. High-range cruise stays at 0.5. Axle-deep water (0.3 m) on that crawl delays the warning to 162 s; hub-deep (0.5 m) stays under it. Gauge bands (HIGH 0.85, HOT 1.0), power loss and overheat damage are unchanged.

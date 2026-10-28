@@ -109,25 +109,46 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
 
 /**
  * Engine temperature (0.5 normal). The thermostat holds it at normal until the work outruns
- * the radiator: heavy throttle, worst in low range at a crawl with little air through the
- * core. It climbs in about `heatSeconds` and cools back over the slower `coolSeconds`, so
- * burst after burst up a climb adds up. Returns the warning when it reaches `heatWarn`.
+ * the radiator. Heat follows load (pedal × revs), more in low range, and most of all when
+ * bogged — wheels spinning at high revs with little ground speed. Moving air and water
+ * pull it back. It climbs over `heatSeconds` and cools over the slower `coolSeconds`
+ * (faster in water). Returns the warning when it reaches `heatWarn`.
  */
 function updateEngineHeat(v: Vehicle, dt: number): DamageEvent | null {
   const E = D.engine;
   const c = v.condition;
   const d = v.drivetrain;
   const heat = c.engineHeat ?? 0.5;
+  const rpmShare = Math.min(1, d.rpm / v.tuning.engine.redlineRpm);
   // Load: the pedal times the revs, with a quarter of the work even when lugging at low revs.
-  const load = d.engineRunning
-    ? Math.abs(v.throttle) *
-      (0.25 + 0.75 * Math.min(1, d.rpm / v.tuning.engine.redlineRpm)) *
-      (d.range === 'low' ? E.lowRangeHeat : 1)
-    : 0;
-  const target = d.engineRunning
-    ? Math.max(0.5, 0.5 + load * E.heatGain - E.airflowCool * Math.abs(v.speed))
-    : 0.3;
-  const seconds = target > heat ? E.heatSeconds : E.coolSeconds;
+  const load = d.engineRunning ? Math.abs(v.throttle) * (0.25 + 0.75 * rpmShare) : 0;
+  let spin = 0;
+  let water = 0;
+  const wheels = v.wheels;
+  const n = wheels.length || 1;
+  for (const w of wheels) {
+    spin += w.spin ?? 0;
+    water += w.water ?? 0;
+  }
+  spin /= n;
+  water /= n;
+  const speed = Math.abs(v.speed);
+  const still = 1 - Math.min(1, speed / E.bogSpeed);
+  const bog = spin * still * rpmShare;
+  const rangeMul = d.range === 'low' ? E.lowRangeHeat : 1;
+  const work = load * rangeMul * (1 + E.bogHeat * bog);
+  const airflow = E.airflowCool * speed;
+  const wet = Math.min(1, water / E.waterFull);
+  const waterDrop = E.waterCool * wet + (c.flood?.submerged ? E.submergedCool : 0);
+  let target: number;
+  if (!d.engineRunning) target = Math.max(0.15, 0.3 - 0.5 * waterDrop);
+  else {
+    target = 0.5 + work * E.heatGain - airflow - waterDrop;
+    target = waterDrop <= 0 ? Math.max(0.5, target) : Math.max(0.2, target);
+  }
+  const heating = target > heat;
+  let seconds = heating ? E.heatSeconds : E.coolSeconds;
+  if (!heating) seconds *= 1 - E.waterCoolFactor * Math.min(1, wet + (c.flood?.submerged ? 0.5 : 0));
   c.engineHeat = Math.min(E.maxHeat, heat + ((target - heat) * dt) / seconds);
   return heat < E.heatWarn && c.engineHeat >= E.heatWarn
     ? { part: 'engine', wheel: -1, health: c.engine, cause: 'overheat' }
