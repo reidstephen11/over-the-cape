@@ -4,7 +4,12 @@ import './ui/title.css';
 import { choiceFromSave } from './core/launch';
 
 if (import.meta.env.PROD && location.pathname.startsWith('/over-the-cape')) {
-  registerSW({ immediate: true });
+  registerSW({
+    immediate: true,
+    onRegisteredSW(_url, registration) {
+      void registration?.update();
+    },
+  });
 }
 import { episodes } from './data/episodes';
 import { maps } from './data/maps';

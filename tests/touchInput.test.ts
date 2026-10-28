@@ -67,6 +67,7 @@ describe('joystick-only drive axis', () => {
 
   it('the input manager uses the stick for throttle and brake only in Joystick only', () => {
     const { input } = touchInput();
+    input.setTouchDrive('pedals');
     input.touchJoystick(0, -1);
     let inp = input.vehicleInput(DT);
     expect([inp.throttle, inp.brake, inp.steer]).toEqual([0, 0, 0]);
@@ -94,7 +95,8 @@ describe('joystick-only drive axis', () => {
   });
 
   it('HUD glyphs and the Controls table follow the scheme', () => {
-    expect(glyphsFor('touch').accelerate).toBe('GAS');
+    expect(glyphsFor('touch', undefined, 'pedals').accelerate).toBe('GAS');
+    expect(glyphsFor('touch').accelerate).toBe('Stick ↑');
     expect(glyphsFor('touch', undefined, 'stick').accelerate).toBe('Stick ↑');
     expect(glyphsFor('touch', undefined, 'stick').brake).toBe('Stick ↓');
     expect(glyphsFor('keyboard', undefined, 'stick').accelerate).toBe('W');

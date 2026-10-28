@@ -89,19 +89,19 @@ test.describe('phone', () => {
     await expect(controls).toBeVisible();
     // No saved settings: a phone starts on the low graphics preset.
     expect(await page.evaluate(() => window.__game!.quality())).toBe('low');
+    await expect(page.locator('.touch-controls')).toHaveClass(/stick-drive/);
+    await expect(page.locator('.touch-pedals.touch-drive')).toBeHidden();
     await shot(page, 'touch', 'landscape');
 
     const f = await fingers(page);
-    // Thumb on the stick pushed right, other thumb on GAS.
+    // Thumb on the stick: right to steer, forward to drive (Joystick only is the default).
     await f.press(1, '.touch-stick-base');
-    await f.move(1, '.touch-stick-base', 80, 0);
-    await f.press(2, '[data-hold="accelerate"]');
+    await f.move(1, '.touch-stick-base', 80, -80);
     await waitSim(page, 2);
     const moving = await page.evaluate(() => window.__game!.vehicle());
-    expect(moving.throttle).toBeGreaterThan(0.9);
+    expect(moving.throttle).toBeGreaterThan(0.5);
     expect(moving.speed).toBeGreaterThan(1);
     await shot(page, 'touch', 'landscape-driving');
-    await f.lift(2);
     await f.lift(1);
     await waitSim(page, 0.2);
     expect((await page.evaluate(() => window.__game!.vehicle())).throttle).toBe(0);
@@ -218,22 +218,26 @@ test.describe('phone', () => {
     expect(errors).toEqual([]);
   });
 
-  test('Joystick only hides the pedals and drives from the stick', async ({ page }) => {
+  test('Joystick only is the default; Steer and pedals still shows GAS and BRAKE', async ({ page }) => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
     await lowGraphics(page);
     await page.goto('/?surprises=off');
     await waitReady(page);
+    await expect(page.locator('.touch-controls')).toHaveClass(/stick-drive/);
+    await expect(page.locator('.touch-pedals.touch-drive')).toBeHidden();
+    await expect(page.locator('.touch-stick-axis')).toBeVisible();
+    await shot(page, 'touch', 'stick-drive');
+
+    await page.evaluate(() => window.__game!.setTouchDrive('pedals'));
+    await expect(page.locator('.touch-controls')).not.toHaveClass(/stick-drive/);
     await expect(page.locator('[data-hold="accelerate"]')).toBeVisible();
     await expect(page.locator('.touch-stick-axis')).toBeHidden();
     await shot(page, 'touch', 'pedals-drive');
 
     await page.evaluate(() => window.__game!.setTouchDrive('stick'));
     await expect(page.locator('.touch-controls')).toHaveClass(/stick-drive/);
-    await expect(page.locator('.touch-pedals.touch-drive')).toBeHidden();
-    await expect(page.locator('.touch-stick-axis')).toBeVisible();
     await expect(page.locator('.touch-stick')).toHaveAttribute('aria-label', 'Steer, throttle and brake');
-    await shot(page, 'touch', 'stick-drive');
 
     const f = await fingers(page);
     await f.press(1, '.touch-stick-base');

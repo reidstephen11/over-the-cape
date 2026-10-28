@@ -90,14 +90,15 @@ test('title Settings persist sound and graphics without replacing a saved journe
   await expect(page.locator('.title-settings')).toBeVisible();
   await page.locator('[data-group="quality"][data-value="high"]').click();
   await page.locator('#title-volume').fill('0.3');
-  await page.locator('[data-group="touchDrive"][data-value="stick"]').click();
+  await expect(page.getByRole('heading', { name: 'Phone driving' })).toBeVisible();
+  await page.locator('[data-group="touchDrive"][data-value="pedals"]').click();
   await page.locator('[data-group="units"][data-value="mph"]').click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('overthecape.save.v1')!));
   expect(saved.settings).toMatchObject({
     quality: 'high',
     masterVolume: 0.3,
     units: 'mph',
-    touchDrive: 'stick',
+    touchDrive: 'pedals',
   });
   expect(saved.episodes.creb.checkpoint.camp).toBe('roaring-meg-camp');
   expect(saved.vehicle).toBe('perentie');
@@ -107,7 +108,7 @@ test('title Settings persist sound and graphics without replacing a saved journe
   await page.keyboard.press('Enter');
   await page.locator('[data-value="settings"]').click();
   await expect(page.locator('#title-volume')).toHaveValue('0.3');
-  await expect(page.locator('[data-group="touchDrive"][data-value="stick"]')).toHaveClass(/\bon\b/);
+  await expect(page.locator('[data-group="touchDrive"][data-value="pedals"]')).toHaveClass(/\bon\b/);
 });
 
 test('New Journey starts fresh without deleting the existing checkpoint while browsing', async ({ page }) => {
@@ -206,4 +207,17 @@ test('test mode keeps title settings and journey browsing out of the real save',
   await page.locator('[data-title-journey]').click();
   await expect(page.locator('[data-group="episode"][disabled]')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('overthecape.save.v1'))).toBe(saved);
+});
+
+test.describe('title Settings on a phone', () => {
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+
+  test('Phone driving sits on the Settings page in view', async ({ page }) => {
+    await page.goto('/?touch');
+    await page.locator('[data-title-begin]').click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(page.locator('.phone-driving-setting')).toBeVisible();
+    await expect(page.locator('[data-group="touchDrive"][data-value="stick"]')).toBeInViewport();
+    await expect(page.locator('[data-group="touchDrive"][data-value="stick"]')).toHaveClass(/\bon\b/);
+  });
 });

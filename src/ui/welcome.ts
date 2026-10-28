@@ -181,12 +181,13 @@ export class WelcomeScreen {
         `<button type="button" class="welcome-option ${on ? 'on' : ''}" aria-pressed="${on}" data-group="${group}" data-value="${value}">${label}</button>`;
       this.el.innerHTML = `<div class="title-settings title-panel"><button class="title-back" data-group="back">‹ Back</button><p class="title-eyebrow">Over the Cape</p><h2>Settings</h2>
         <section class="title-setting"><h3>Graphics</h3><div class="welcome-options seg">${(['low', 'medium', 'high'] as const).map((q) => setting('quality', q, q[0].toUpperCase() + q.slice(1), this.settings.quality === q)).join('')}</div></section>
+        <section class="title-setting phone-driving-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
-        <section class="title-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
+        <p class="title-settings-version" title="Build ${BUILD_LABEL}">${GAME_VERSION}</p>
       </div><p class="title-input-hint">${hint}</p>`;
-      this.setRows(['back', 'quality', 'volume', 'controller', 'touchDrive', 'units'], focusGroup ?? 'back');
+      this.setRows(['back', 'quality', 'touchDrive', 'volume', 'controller', 'units'], focusGroup ?? 'back');
       return;
     }
     this.el.innerHTML = `<div class="title-home">${this.logo}${
