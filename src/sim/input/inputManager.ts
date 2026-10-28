@@ -1,4 +1,5 @@
 import { keyBindings, padBindings, padTuning, Pad, type Action } from '../../data/controls';
+import { defaultTouchDrive, throttleBrakeFromStick, type TouchDriveScheme } from '../../data/touch';
 import { vehicleTuning, type VehicleTuning } from '../../data/vehicle';
 import { emptyInput, SteeringSmoother, type VehicleInput } from './vehicleInput';
 
@@ -31,6 +32,7 @@ export class InputManager {
   /** Touch buttons held down, and the touch joystick (-1..1, y down). */
   private readonly touchHeld = new Set<Action>();
   private touchStick = { x: 0, y: 0 };
+  private touchDriveScheme: TouchDriveScheme = defaultTouchDrive;
   private deviceListeners: Array<(d: Device) => void> = [];
 
   constructor(target: Window = window) {
@@ -88,6 +90,11 @@ export class InputManager {
       this.touchHeld.add(a);
       this.touchPress(a);
     } else this.touchHeld.delete(a);
+  }
+
+  /** Pedals (GAS/BRAKE buttons) or Joystick only (forward/back on the stick). */
+  setTouchDrive(scheme: TouchDriveScheme): void {
+    this.touchDriveScheme = scheme;
   }
 
   /** The touch joystick moved (-1..1, y down); `presses` are menu steps it crossed. */
@@ -176,8 +183,15 @@ export class InputManager {
       inp.brake = 0;
       return inp;
     }
-    inp.throttle = Math.max(this.keyDown('accelerate') ? 1 : 0, this.padTriggers.rt);
-    inp.brake = Math.max(this.keyDown('brake') ? 1 : 0, this.padTriggers.lt);
+    let throttle = Math.max(this.keyDown('accelerate') ? 1 : 0, this.padTriggers.rt);
+    let brake = Math.max(this.keyDown('brake') ? 1 : 0, this.padTriggers.lt);
+    if (this.touchDriveScheme === 'stick') {
+      const drive = throttleBrakeFromStick(this.touchStick.y);
+      throttle = Math.max(throttle, drive.throttle);
+      brake = Math.max(brake, drive.brake);
+    }
+    inp.throttle = throttle;
+    inp.brake = brake;
     const keySteer = (this.keyDown('steerRight') ? 1 : 0) - (this.keyDown('steerLeft') ? 1 : 0);
     const kb = this.steering.update(keySteer, dt);
     const padTarget =

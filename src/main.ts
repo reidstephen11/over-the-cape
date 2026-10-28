@@ -16,7 +16,12 @@ import { WelcomeScreen, type WelcomeChoice } from './ui/welcome';
 async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> {
   const appEl = document.getElementById('app') as HTMLElement;
   const uiEl = document.getElementById('ui') as HTMLElement;
-  const loading = new LoadingScreen(uiEl, choice.inputDevice, choice.settings?.controller);
+  const loading = new LoadingScreen(
+    uiEl,
+    choice.inputDevice,
+    choice.settings?.controller,
+    choice.settings?.touchDrive,
+  );
   const def = episodes[choice.episode];
   const map = maps[def.mapId].def;
   const save = loadSave();

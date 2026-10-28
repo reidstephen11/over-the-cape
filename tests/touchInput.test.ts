@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CameraDrag } from '../src/render/cameraDrag';
 import { InputManager } from '../src/sim/input/inputManager';
 import { TouchStick } from '../src/sim/input/touchStick';
-import { touchTuning } from '../src/data/touch';
+import { glyphsFor, touchControlsTable } from '../src/data/controls';
+import { throttleBrakeFromStick, touchTuning } from '../src/data/touch';
 import { cameraTuning } from '../src/data/camera';
 
 const DT = 1 / 60;
@@ -40,6 +41,66 @@ describe('touch joystick', () => {
     expect(s.move(R, 0)).toEqual(['menuRight']);
     s.release();
     expect(s.move(0, -R)).toEqual(['menuUp']);
+  });
+});
+
+describe('joystick-only drive axis', () => {
+  it('ignores a small forward nudge, eases in light throttle and reaches full at the rim', () => {
+    expect(throttleBrakeFromStick(0)).toEqual({ throttle: 0, brake: 0 });
+    expect(throttleBrakeFromStick(-touchTuning.driveDeadzone)).toEqual({ throttle: 0, brake: 0 });
+    const light = throttleBrakeFromStick(-0.4);
+    expect(light.brake).toBe(0);
+    expect(light.throttle).toBeGreaterThan(0.05);
+    expect(light.throttle).toBeLessThan(0.2);
+    const mid = throttleBrakeFromStick(-0.7);
+    expect(mid.throttle).toBeGreaterThan(light.throttle);
+    expect(mid.throttle).toBeLessThan(0.6);
+    expect(throttleBrakeFromStick(-1).throttle).toBeCloseTo(1);
+  });
+
+  it('pulls back to brake, and so to reverse once stopped', () => {
+    const brake = throttleBrakeFromStick(0.8);
+    expect(brake.throttle).toBe(0);
+    expect(brake.brake).toBeGreaterThan(0.4);
+    expect(throttleBrakeFromStick(1).brake).toBeCloseTo(1);
+  });
+
+  it('the input manager uses the stick for throttle and brake only in Joystick only', () => {
+    const { input } = touchInput();
+    input.touchJoystick(0, -1);
+    let inp = input.vehicleInput(DT);
+    expect([inp.throttle, inp.brake, inp.steer]).toEqual([0, 0, 0]);
+    input.setTouchDrive('stick');
+    inp = input.vehicleInput(DT);
+    expect(inp.throttle).toBeCloseTo(1);
+    expect(inp.brake).toBe(0);
+    input.touchJoystick(-0.5, 0.9);
+    for (let i = 0; i < 30; i++) inp = input.vehicleInput(DT);
+    expect(inp.throttle).toBe(0);
+    expect(inp.brake).toBeGreaterThan(0.4);
+    expect(inp.steer).toBeCloseTo(-0.5);
+    input.setTouchDrive('pedals');
+    input.touchJoystick(0, -1);
+    inp = input.vehicleInput(DT);
+    expect(inp.throttle).toBe(0);
+  });
+
+  it('keyboard throttle still works in Joystick only', () => {
+    const target = new EventTarget();
+    const input = new InputManager(target as unknown as Window);
+    input.setTouchDrive('stick');
+    target.dispatchEvent(Object.assign(new Event('keydown'), { code: 'KeyW', repeat: false }));
+    expect(input.vehicleInput(DT).throttle).toBe(1);
+  });
+
+  it('HUD glyphs and the Controls table follow the scheme', () => {
+    expect(glyphsFor('touch').accelerate).toBe('GAS');
+    expect(glyphsFor('touch', undefined, 'stick').accelerate).toBe('Stick ↑');
+    expect(glyphsFor('touch', undefined, 'stick').brake).toBe('Stick ↓');
+    expect(glyphsFor('keyboard', undefined, 'stick').accelerate).toBe('W');
+    expect(touchControlsTable('pedals')[1][1]).toMatch(/GAS \/ BRAKE/);
+    expect(touchControlsTable('stick')[0][1]).toMatch(/left \/ right/);
+    expect(touchControlsTable('stick')[1][1]).toMatch(/forward \/ back/);
   });
 });
 

@@ -1,4 +1,5 @@
 import { controllers, defaultController, type ControllerType } from './controllers';
+import { defaultTouchDrive, type TouchDriveScheme } from './touch';
 
 /** Controls (SPEC §10). Key codes are KeyboardEvent.code; pad indices follow the W3C standard mapping. */
 export type Action =
@@ -195,8 +196,13 @@ export const glyphs: Record<'keyboard' | 'gamepad' | 'touch', Partial<Record<Act
 export function glyphsFor(
   device: 'keyboard' | 'gamepad' | 'touch',
   controller = defaultController,
+  touchDrive: TouchDriveScheme = defaultTouchDrive,
 ): Partial<Record<Action, string>> {
-  return device === 'gamepad' ? controllerGlyphs[controller] : glyphs[device];
+  if (device === 'gamepad') return controllerGlyphs[controller];
+  if (device === 'touch' && touchDrive === 'stick') {
+    return { ...glyphs.touch, accelerate: 'Stick ↑', brake: 'Stick ↓' };
+  }
+  return glyphs[device];
 }
 
 /** Rows for the controls table (pause menu and README). */
@@ -234,21 +240,37 @@ export function controlsTable(
 }
 
 /** Action → touch control, for the Controls page on phones and tablets (README "Phones and tablets"). */
-export const touchControlsTable: ReadonlyArray<readonly [string, string]> = [
-  ['Steer', 'Joystick, bottom left (push part way for part lock)'],
-  ['Accelerate / brake and reverse', 'GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse)'],
-  ['Handbrake on / off', 'HAND'],
-  ['High / low range', '4WD, then LOW'],
-  ['Precision crawl, diff locks', '4WD, then CRAWL, F LOCK, R LOCK (tap 4WD again to tuck them away)'],
-  ['Winch attach / detach, pick up planks', 'USE'],
-  ['Winch in / out', 'Hold IN / OUT (shown while the winch is attached)'],
-  ['Right vehicle', 'Hold UPRIGHT (shown when needed)'],
-  ['Tool menu', 'TOOLS, then tap an option (tap the space around it to close)'],
-  ['Placing planks / choosing anchor', 'Joystick, then USE to confirm or BACK to cancel'],
-  ['Orbit camera', 'Drag a finger on the view'],
-  ['Camera distance', 'Pinch with two fingers on the view'],
-  ['Cycle views / recenter camera', 'View and ⟲ (Reset view), top right'],
-  ['Map / pause', 'MAP and II, top left (tap outside the map to close it)'],
-  ['Full screen', '⛶, top left, where the browser allows it'],
-  ['Headlights', 'LIGHTS, top left: off, low beam, high beam'],
-];
+export function touchControlsTable(
+  scheme: TouchDriveScheme = defaultTouchDrive,
+): ReadonlyArray<readonly [string, string]> {
+  const drive: readonly [string, string] =
+    scheme === 'stick'
+      ? [
+          'Accelerate / brake and reverse',
+          'Joystick forward / back (part way for part throttle; back when stopped to reverse)',
+        ]
+      : ['Accelerate / brake and reverse', 'GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse)'];
+  return [
+    [
+      'Steer',
+      scheme === 'stick'
+        ? 'Joystick left / right (push part way for part lock)'
+        : 'Joystick, bottom left (push part way for part lock)',
+    ],
+    drive,
+    ['Handbrake on / off', 'HAND'],
+    ['High / low range', '4WD, then LOW'],
+    ['Precision crawl, diff locks', '4WD, then CRAWL, F LOCK, R LOCK (tap 4WD again to tuck them away)'],
+    ['Winch attach / detach, pick up planks', 'USE'],
+    ['Winch in / out', 'Hold IN / OUT (shown while the winch is attached)'],
+    ['Right vehicle', 'Hold UPRIGHT (shown when needed)'],
+    ['Tool menu', 'TOOLS, then tap an option (tap the space around it to close)'],
+    ['Placing planks / choosing anchor', 'Joystick, then USE to confirm or BACK to cancel'],
+    ['Orbit camera', 'Drag a finger on the view'],
+    ['Camera distance', 'Pinch with two fingers on the view'],
+    ['Cycle views / recenter camera', 'View and ⟲ (Reset view), top right'],
+    ['Map / pause', 'MAP and II, top left (tap outside the map to close it)'],
+    ['Full screen', '⛶, top left, where the browser allows it'],
+    ['Headlights', 'LIGHTS, top left: off, low beam, high beam'],
+  ];
+}

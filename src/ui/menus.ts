@@ -1,6 +1,7 @@
 import { controllers, controllerTypes, type ControllerType } from '../data/controllers';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import { controlsTable, touchControlsTable } from '../data/controls';
+import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
 import type { Settings } from '../sim/save/save';
 import type { VehicleId } from '../data/vehicle';
 import { vehicleOrder, vehicles } from '../data/vehicles';
@@ -156,6 +157,7 @@ export class PauseMenu {
         ${slider('engineVolume', 'Engine volume')}
         ${slider('ambienceVolume', 'Ambience volume')}
         <div class="setting-row controller-setting">Controller type<div class="seg">${controllerTypes.map((c) => `<button data-focus data-controller="${c}" class="${s.controller === c ? 'on' : ''}" aria-pressed="${s.controller === c}">${controllers[c].label}</button>`).join('')}</div></div>
+        <div class="setting-row controller-setting">Phone driving<div class="seg">${touchDriveSchemes.map((c) => `<button data-focus data-touch-drive="${c}" class="${s.touchDrive === c ? 'on' : ''}" aria-pressed="${s.touchDrive === c}">${touchDriveLabels[c]}</button>`).join('')}</div></div>
         <div class="setting-row">Units<div class="seg"><button data-focus data-units="kmh" class="${s.units === 'kmh' ? 'on' : ''}">km/h</button><button data-focus data-units="mph" class="${s.units === 'mph' ? 'on' : ''}">mph</button></div></div>
         <div class="setting-row">Damage<div class="seg">${damageModes
           .map(
@@ -167,7 +169,9 @@ export class PauseMenu {
         <button data-focus data-act="back">Back</button>`;
     } else {
       const table = this.touch
-        ? `<thead><tr><th>Action</th><th>Touch</th></tr></thead><tbody>${touchControlsTable
+        ? `<thead><tr><th>Action</th><th>Touch</th></tr></thead><tbody>${touchControlsTable(
+            this.settings.touchDrive,
+          )
             .map(([a, t]) => `<tr><td>${a}</td><td>${t}</td></tr>`)
             .join('')}</tbody>`
         : `<thead><tr><th>Action</th><th>Keyboard</th><th>${controllers[this.settings.controller].label}</th></tr></thead><tbody>${controlsTable(
@@ -221,6 +225,10 @@ export class PauseMenu {
     } else if (t.dataset.controller) {
       this.settings.controller = t.dataset.controller as ControllerType;
       this.actions.changeSettings({ controller: this.settings.controller });
+      this.show('settings');
+    } else if (t.dataset.touchDrive) {
+      this.settings.touchDrive = t.dataset.touchDrive as TouchDriveScheme;
+      this.actions.changeSettings({ touchDrive: this.settings.touchDrive });
       this.show('settings');
     } else if (t.dataset.units) {
       this.settings.units = t.dataset.units as Settings['units'];
