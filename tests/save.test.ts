@@ -4,6 +4,7 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { Exploration } from '../src/sim/exploration';
 import { startCheckpoint } from '../src/sim/episode';
 import { defaultSettings, loadSave, unlocked, writeSave, type KeyValueStore } from '../src/sim/save/save';
+import { SAVE_KEY } from '../src/core/config';
 import { MemoryStore, saveData } from './helpers/saves';
 
 describe('exploration and saving', () => {
@@ -117,12 +118,25 @@ describe('exploration and saving', () => {
     expect(c.checkpoint!.tyreFault).toEqual(['none', 'none', 'none', 'none']);
   });
 
-  it('opens the first episode, and each later one once the one before it is finished', () => {
+  it('always opens the CREB', () => {
     expect(unlocked(null, 'creb')).toBe(true);
     expect(unlocked(saveData(), 'creb')).toBe(true);
-    expect(unlocked(null, 'coach')).toBe(false);
-    expect(unlocked(saveData({ episodes: { creb: { completed: false } } }), 'coach')).toBe(false);
-    expect(unlocked(saveData({ episodes: { creb: { completed: true } } }), 'coach')).toBe(true);
+  });
+
+  it('sends a save from a removed episode back to the CREB, keeping the CREB progress', () => {
+    const s = new MemoryStore();
+    s.setItem(
+      SAVE_KEY,
+      JSON.stringify({
+        ...saveData({ episodes: { creb: { completed: true } } }),
+        episode: 'lakefield',
+        episodes: { creb: { completed: true }, coach: { completed: true }, lakefield: { completed: false } },
+      }),
+    );
+    const loaded = loadSave(s)!;
+    expect(loaded.episode).toBe('creb');
+    expect(Object.keys(loaded.episodes)).toEqual(['creb']);
+    expect(loaded.episodes.creb!.completed).toBe(true);
   });
 
   it('never throws when storage is blocked or the save is junk', () => {

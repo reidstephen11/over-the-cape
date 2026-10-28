@@ -5,7 +5,7 @@ import type { LaunchChoice } from '../core/game';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
 import { isDevMode } from '../data/devWeather';
 import { timeLabels, timesOfDay, weatherLabels, weathers, type TimeOfDay } from '../data/environment';
-import { clockTime, episodeOrder, episodes, upcomingEpisodes, type EpisodeId } from '../data/episodes';
+import { clockTime, episodeOrder, episodes, type EpisodeId } from '../data/episodes';
 import { maps } from '../data/maps';
 import { vehicleOrder, vehicles } from '../data/vehicles';
 import {
@@ -243,7 +243,6 @@ export class WelcomeScreen {
         );
       }),
     ].join('');
-    const upcoming = upcomingEpisodes.map((u) => `<li>${u.number}. ${u.title}</li>`).join('');
     const story = `${weatherLabels[def.weather]}${def.storm ? `, ${def.storm.forecast}` : ''}, from ${clockTime(def.startHour)}${def.deadline ? ` · ${def.deadline.label.toLowerCase()}` : ''}`;
     this.el.innerHTML = `
       <div class="welcome-card title-panel">
@@ -254,7 +253,6 @@ export class WelcomeScreen {
           <section class="welcome-section welcome-episodes">
             <h2>Choose an episode</h2>
             <div class="welcome-options">${episodeButtons}</div>
-            <details class="welcome-later"><summary>Further north · coming soon</summary><ul class="welcome-upcoming">${upcoming}</ul></details>
           </section>
           <section class="welcome-section welcome-trip">
             <p class="welcome-kicker">Episode ${def.number}</p>

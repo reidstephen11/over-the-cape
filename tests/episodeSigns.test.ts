@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { coachMap } from '../src/data/episodes/coachMap';
 import { crebMap } from '../src/data/episodes/crebMap';
-import { lakefieldMap } from '../src/data/episodes/lakefieldMap';
 import { segmentDistance } from '../src/sim/world/polyline';
 import { buildWorld } from '../src/sim/world/world';
 
 describe('episode signposts', () => {
-  for (const map of [crebMap, coachMap, lakefieldMap])
+  for (const map of [crebMap])
     it(`stand beside the tracks on ${map.name}, not on them`, () => {
       const { features } = buildWorld(map);
       for (const sign of map.props.filter((p) => p.kind === 'signpost')) {

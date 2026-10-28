@@ -35,21 +35,9 @@ For a new run, the loading **briefing** shows the mission, weather and deadline.
 
 The version number (for example v0.01) is on the loading screen and the pause menu, and goes up by 0.01 with every update merged into `main`. Hover over it to see the exact build.
 
-## Episodes
+## The CREB Track
 
-They run south to north and unlock in order: finish one to open the next. A finished episode can be replayed, in the story's conditions or in your choice of time of day and weather.
-
-| #   | Episode               | Route                                             | Status       |
-| --- | --------------------- | ------------------------------------------------- | ------------ |
-| 1   | The CREB Track        | Daintree Village to the Lions Den Hotel           | Playable     |
-| 2   | The Old Coach Road    | Conglomerate Range, between Maytown and Laura     | Playable     |
-| 3   | Lakefield             | Laura to Musgrave through Lakefield National Park | Playable     |
-| 4   | The Frenchmans Track  | Telegraph Road to Portland Road, over two rivers  | Playable     |
-| 5   | Telegraph Track South | Bramwell Junction to Gunshot Creek                | Coming later |
-| 6   | Telegraph Track North | The waterfalls, the creeks and Nolans Brook       | Coming later |
-| 7   | The Tip               | Over the Jardine to the northernmost point        | Coming later |
-
-### Episode 1: The CREB Track
+The game is one episode, the CREB Track, made hard. Episodes 2–4 (the Old Coach Road, Lakefield and the Frenchmans Track) were removed in v0.73. A finished run can be replayed, in the story's conditions or in your choice of time of day and weather.
 
 **Mission: reach the Lions Den Hotel before dark.** Watch the engine temperature gauge: high revs in low range overheat it, and once it's hot it starts to get damaged. Let the tyres down (tools menu, while stopped) for more grip on clay and rock, and pump them up again for the potholed gravel, where soft tyres cut more easily; the compressor takes a minute, about 4½ minutes on the clock. Wet clay and mud cut up where the wheels spin, and the churned ground shows as dark wet patches, so each failed attempt at a climb makes the next one slipperier: back off before you dig it in. Two drivers are bogged beside the track, a Patrol on the ridge and a LandCruiser towards Donovan's Creek: you don't have to stop, but winch them out and they'll give you a jerry can or tyre plugs. Take deep crossings slowly: above about 9 km/h the bow wave climbs the bonnet to the air intake. On the narrow CREB Track you'll meet other 4WDs coming the other way: they stop for you, so pull off to one side and let them past. If dark catches you, carry on by headlights: the run only ends at 8 pm, but a finish after dark scores nothing for time. June, the track has just reopened after the wet, and it rained overnight. You leave Daintree Village at 12:30 pm; it's dark at 6:15 pm. Storms are forecast from 3 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs.
 
@@ -76,66 +64,10 @@ The map is rainforest (canopy trees on buttress roots, fan palms and tree ferns)
 
 Beyond the map's edge the real country carries on to the horizon, brought in closer and lower in step with the map. East, between the range and the Coral Sea, stand Thornton Peak, Mt Pieter Botte, Mt Sorrow behind Cape Tribulation, and Mt Finnigan's granite tops, and the Daintree and the Bloomfield run out to the sea. West, rainforest ranges rise to the flat-topped tablelands of the Great Dividing Range. North of the Lions Den the country dries out to open woodland round the black boulder heaps of Black Mountain. South are the Daintree's cane and cattle flats and the ranges towards Mossman. Far land fades into the sky with distance, as it does on a humid day.
 
-### Episode 2: The Old Coach Road
-
-**Mission: cross the Conglomerate Range and reach the camp below its north face.** A short rock-driving chapter on the road between Maytown and Laura, still Episode 2 before Lakefield. The fictional diary entry is dated 26 November 1986. Maytown and the road on to Laura frame the chapter in the briefing and closing note.
-
-Start at 9 am at the foot of the range, in clear, dry conditions. There is **no deadline**: stop, choose a wheel line and try again. The direct route is about 1.2 km in a 1.3 by 2 km map, targeting a 10–15 minute session. Exploring, bypasses and recovery can take longer. The climb, big step and descent retain their full-size obstacles; the quieter ridge sections are shorter.
-
-1. **South-face camp:** a short approach to the fork.
-2. **Three ways up:** the steep **middle line** has sandstone bands and alternating stones; use low range, both lockers and precision crawl. The **old coach line** slants west through ruts. The longer **bypass** winds east over gentler gravel.
-3. **Ridge and hotel site:** a short traverse with low rock shelves, staggered stones and a leaning section. The hotel site saves progress before the second half.
-4. **Big step:** a sandy gully and a metre of sandstone, or the signed **eastern track** around it.
-5. **North-face descent:** select low range before the drop and use engine braking over the descending rock bands.
-6. **Camp below the range:** pull clear of the last ledge to finish. The diary takes the journey onward to Laura, where Episode 3 begins.
-
-The setting remains dry eucalypt woodland, sandstone, orange dirt and termite mounds in the Palmer goldfields. The history notes distinguish the road's documented history from the fictional diary and camps.
-
-Old saves at removed river camps restart at the new south-face camp with a fresh load. A saved hotel-site checkpoint resumes on the ridge. Completed episodes and later unlocks are retained. Choose **Start again** to experience the whole revised chapter.
-
-Check a continuous run with `npx vite-node scripts/coach-drive.ts shortie`; add `oldcoach`, `bypass` or `eastern` to choose the other lines. The driver uses the actual fuel load and reports whether it reached the goal.
-
-### Episode 3: Lakefield
-
-**Mission: winch the stockman out of the bog, then get over Hann Crossing before the river covers the bar, and on to Musgrave.** The first episode told from the grandparent's diary: Friday 28 November 1986, the first storm of the wet came through Laura last night, and a stockman who set out north yesterday hasn't turned up. You leave Laura at 11:00 am. Storms come in from about 1 pm, and rain up in the ranges brings the North Kennedy River up over the bar at Hann Crossing by about 3 pm: that's the deadline. Once you're over it and at the camp on the north bank, there's no hurry. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs.
-
-The map is 1.3 km wide and 7.2 km from south to north, with about 6.8 km of road. The real trip is about 200 km.
-
-1. **Laura** (camp) north to the **Laura River**: sand on both banks and a shallow run of water.
-2. **Old Laura homestead** (camp) above the river: the old station house, a shed and a tank.
-3. North through open woodland and termite mounds, then out onto **the plains**: open grass with the odd tree, and off the road it's all **black soil**. Keep to the road. Its holes fill with water once it rains.
-4. **Lakefield** (camp), the old homestead on the plains.
-5. **The stockman**: his old Land Cruiser is down to its axles in black soil just off the road's east side, nose towards it. Stop on the road facing him, hook the winch to his bull bar (E) and winch in (R). Your brakes hold your car on the road while the winch does the work (light cars still get dragged a little towards him). Once he's out, his driver unhooks the line and has a word. The episode can't be finished without him.
-6. **Hann Crossing** on the North Kennedy River: a bar across the river where the water runs about 40 cm deep in the morning. Either side of it the river is deep. It comes up once the rain sets in, and by 3 pm it's too deep to drive.
-7. **Hann Crossing camp** on the north bank, then north through the woodland to **Musgrave**, the old telegraph station.
-
-Beyond the map's edge the country stays flat, with the sandstone of Quinkan country behind Laura to the south and low ranges far off to the east.
-
-### Episode 4: The Frenchmans Track
-
-**Mission: deliver two 200 L drums of diesel to the Portland Road fuel camp before 6:15 pm.** Leave the Telegraph Road camp at 10 am, cross the sandy Wenlock, tow through wet heath and woodland, then descend the rocky western bank of the Pascoe, cross its shallow bar and climb out towards Portland Road. From v0.51 the active route is about 5.9 km, with narrower winding tracks and less empty driving. Showers build during the afternoon. The diary, delivery, camps and individual obstacles are fictional; route sources are in [docs/HISTORY.md](docs/HISTORY.md).
-
-- **Washout bends and Wenlock:** brake before the drainage lips, then follow the curved sandy bar through the river. Allow for the trailer cutting inside each bend.
-- **Bog or firm loop:** the short line drops into deep sticky mud, with winch anchors nearby. The signed gravel loop goes around it, with tight turns to negotiate while towing.
-- **Rutted jump-up:** select **low range (L)**, **both lockers (Z, X)** and **precision crawl (P)**. Keep right past the loose rocks and watch the trailer wheels through the erosion channels.
-- **Sideling and gullies:** crawl the leaning bend; sharp steering can throw the loaded trailer sideways. Brake before each gully, carry momentum through the soft sand and use low range up the far bank.
-- **Pascoe:** switchbacks lead down to the ford. Follow the shallow gravel line around the dark scour hole, with the trailer following the same curve, then climb the eastern bank.
-
-Start Episode 4 again to drive the whole revised route. Existing checkpoints still load, but the start, Pascoe camp and delivery camp have moved; an unhitched trailer stays at its saved position.
-
-The civilian vehicles start with the **6×4 box trailer**; the Perentie and Unimog take the **Army No. 5**. Both carry the same two drums. The loaded No. 5 is narrower and more prone to tipping: take the rough stretches slowly. The trailers have no brakes. Low range and both lockers help on the river banks; reversing hard can jackknife the trailer.
-
-- **Deliver the cargo:** stop the car and park the upright trailer inside the fuel camp with both drums aboard. Arriving in the car alone, with an empty trailer or on its side does not finish the job.
-- **Look after the load:** hard hits at speed loosen the straps. The HUD warns you; stop and choose **Tools → Tighten load straps**. A tip or a loose load can spill a drum. It becomes a physical object that rolls, floats and drifts in the current. Stop with the upright trailer alongside it and choose **Load loose drum**. The delivery drums cannot be used to refuel the car.
-- **Trailer punctures on Realistic:** hitting rock or a deep hole hard enough at speed can flatten a trailer tyre. Stop alongside it and choose **Repair trailer tyre**, using a plug or a spare from the car. The flat corner sits low and drags. Camps patch punctures when the trailer is alongside.
-- **Unhitch and return:** the existing tool-menu unhitch action and E / ✕ / USE to hitch work in this episode. A trailer left behind stays there, with its load and damage. Camps save trailer state and loose drums. Restarting or continuing reloads that state; it does not replace lost cargo. A hitched trailer restarts behind the car at camp, while an unhitched one stays at its saved position.
-
-Check the route with `npx vite-node scripts/frenchmans-drive.ts all`; it uses the actual starting fuel, trailer load, rising water and delivery goal.
-
 ## How an episode works
 
-- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The mission line moves on as you do each part (in Lakefield: the stockman, then the crossing, then Musgrave), and a deadline that only holds until a place (Hann Crossing) drops off the panel once you're there. The clock runs while you drive (four and a half game minutes a real minute on the CREB, 17 on the Old Coach Road, 14 in Lakefield and 10 on Frenchmans) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
-- **Camps save the run.** Reaching a camp saves where you are, the clock, what's on board and whether you've pulled the stockman out. It also keeps trailer loads, punctures and loose delivery drums, including trailers left unhitched. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs. It keeps what you'd found by then: restart from it and anything picked up after it is back where it was. A tree or rocks that came down before the camp stay down; those still to come happen again the same way.
+- **The mission and the clock** sit in the top left: what to do, the time of day and the deadline. The clock runs while you drive (four and a half game minutes a real minute) and stops while paused. The sun moves with it, through late afternoon to dusk, when the headlights come on by themselves.
+- **Camps save the run.** Reaching a camp saves where you are, the clock, what's on board and any test-mode trailer, its load and loose drums. Pause menu → **Restart from last camp** goes back to it as things were then. A camp also mends the engine and suspension and patches punctures; it doesn't hand out fuel, spares or plugs. It keeps what you'd found by then: restart from it and anything picked up after it is back where it was. A tree or rocks that came down before the camp stay down; those still to come happen again the same way.
 - **History notes** appear in the top right as you reach a place. Click one to close it.
 - **The episode ends early** when, with the difficulty that allows it:
   - the tank is empty, you have no jerry cans left and the car has rolled to a stop (any difficulty);
@@ -146,11 +78,11 @@ Check the route with `npx vite-node scripts/frenchmans-drive.ts all`; it uses th
 
   The "Episode over" card says why and offers **Restart from camp** or **Main menu**.
 
-- **Reaching the goal** shows the closing history and how the run went (time driven, arrival time, fuel and spares left), with **Next episode** (or Main menu) and **Keep driving**.
+- **Reaching the goal** shows the closing history and how the run went (time driven, arrival time, fuel and spares left), with **Main menu** and **Keep driving**.
 
 ## Fuel, spares and plugs
 
-- **Fuel** uses each vehicle's real tank capacity, separately from how much the episode puts in it. Most vehicles start with 50 L; the Troop Carrier starts with 110 L in its two 90 L tanks. Consumption follows engine work, with an idle allowance for each engine: climbing, accelerating and wheelspin use more than gentle driving. The episode speeds up the burn to suit the shortened trip (6 times on the CREB, 13 on the Old Coach Road and 18 through Lakefield and 9 on Frenchmans). On a clean autopilot run of the CREB in the storm, the short-wheelbase 4WD uses about 30 L and the Unimog about 40 L, so both finish on the 50 L in the tank. The jerry can is for a recovery. The gauge reads litres against the vehicle's full capacity, even when it starts partly filled. Tank sources, consumption checks and their limits are in [docs/FUEL.md](docs/FUEL.md).
+- **Fuel** uses each vehicle's real tank capacity, separately from how much the episode puts in it. Most vehicles start with 50 L; the Troop Carrier starts with 110 L in its two 90 L tanks. Consumption follows engine work, with an idle allowance for each engine: climbing, accelerating and wheelspin use more than gentle driving. The episode speeds up the burn to suit the shortened trip (6 times on the CREB). On a clean autopilot run of the CREB in the storm, the short-wheelbase 4WD uses about 30 L and the Unimog about 40 L, so both finish on the 50 L in the tank. The jerry can is for a recovery. The gauge reads litres against the vehicle's full capacity, even when it starts partly filled. Tank sources, consumption checks and their limits are in [docs/FUEL.md](docs/FUEL.md).
 - **Jerry cans** hold 20 L. Tool menu → **Pour in a jerry can**, stopped, about 12 s. If the engine ran dry it restarts on the starter afterwards.
 - **Tyres** can be hurt two ways with Realistic damage: a **puncture** leaks down over about 40 s and takes a **plug** from the kit (tool menu → Plug the tyre, about 10 s); a **torn sidewall** goes flat in a few seconds and needs a **spare** (tool menu → Fit a spare, about 8 s). A landing of about a metre onto rock punctures a tyre; about one and a half metres tears the sidewall. Spinning a wheel hard on rock for several seconds wears through the tread. Crawling in low range barely spins. Dropping into a pothole or washout at speed pinches the tyre (a puncture): a deep one from about 40 km/h, and the faster the likelier; from about 55 km/h it can bend that corner's suspension too. A tyre going down squashes flat at the bottom; flat, its corner sits low, it thumps once a turn at speed, it grips poorly in corners and drags, and a flat front tyre pulls the car hard towards its side.
 - **Finds off the main line.** Two side tracks on the range lead to huts with something to load: two tyre plugs at the Old line camp (a short level spur off the ridge, signposted "Line camp") and a full 20 L jerry can at the Linesman's hut (about 110 m down the range top's west flank along the old poles, signposted "Old line", with a greasy climb back up). Drive up to the crate by the hut and stop: it goes on board and the counts go up. Each can be taken once. The trip costs daylight and a little fuel, a few minutes there and back; neither is needed on a clean run, but either can save a run that's gone wrong.
@@ -259,7 +191,6 @@ On a touch screen the game shows on-screen controls, held sideways or upright. H
 - **Winching someone else out:** stop on firm ground facing them, hook on and winch in. The brakes hold your car while you winch; if you're light and it's wet you'll slide a little towards them, so leave some room. Let go of the winch once they're out.
 - The winch reaches any tree within about 30 m. Rainforest trees are everywhere on the range, and a tree stands near each end of every deep or long bog. Bogged in a deep one, hook up to the tree ahead (E), winch in (R) and drive gently with it.
 - **Soft sand** (the pale ground in the dry riverbeds) drags the car and lets the wheels dig in. Take it steadily in a low gear and keep moving: stopped in it, the car has to climb out of its own ruts.
-- On the Old Coach Road's **middle line** and at the **big step**, crawl in low range with both lockers and let the tyres climb the rock rather than spin on it. Going down the **descent**, low range and first gear hold the car back.
 - **Termite mounds** are as hard as rock. Steer round them off the road.
 - At a fork, the sign names the other line. The short line is the quicker one if you drive it well; the long way round is there for when it's going badly, or the river is up.
 - A tree down across the track: stop well short of it, on the side its roots are, and pick **Fallen tree (crown end)** with the tool menu's Winch (E picks the nearest hook, which may not be the one you want). Winch in on the handbrake, holding the brake so the car doesn't creep towards the tree, and the crown swings round towards you; stop once it's round, or the winch drags the whole tree towards you; if it still lies across, back up a few metres and pull again. Then back off and drive past on the other side.
@@ -274,10 +205,10 @@ Add `?dev` to the address: https://reidstephen11.github.io/over-the-cape/?dev. E
 - set the weather: clear, cloudy with wet ground, light rain or a heavy storm, then fine-tune the rain, how wet the ground is and how high the rivers are;
 - start from any place on the map;
 - change vehicle where you are;
-- hitch a 6×4 box trailer behind the car, empty or with two 200 L drums of diesel, or take it away (from v0.46; Episode 4 uses trailers from v0.50); behind the Land Rover or the Unimog, the Army's No. 5 trailer instead (from v0.49);
+- hitch a 6×4 box trailer behind the car, empty or with two 200 L drums of diesel, or take it away (from v0.46; test mode is now the only place trailers appear); behind the Land Rover or the Unimog, the Army's No. 5 trailer instead (from v0.49);
 - go back to the welcome screen to change episode.
 
-**Towing a trailer** (test mode from v0.46; Episode 4 from v0.50). The trailer rides on the tow ball (the pintle hook on the Land Rover and the Unimog) and follows on its own two wheels; it has no brakes, so a loaded one makes the car slower to pull away and to stop. The camera stands further back while it's on. Reverse gently: on full lock it folds round until the drawbar is against the back of the car (the HUD says it has jackknifed), and you pull forward to straighten it. A loaded trailer leans hard in corners and can tip over in a fast turn across a slope. Stopped, **Unhitch the trailer** (tool menu) stands it on its jockey wheel with its wheels chocked, so you can drive or winch a hard bit without it; back up until the ball is under the coupling (within about 0.7 m), stop and press **E** (A on a pad, USE on a phone) to hitch it again. A trailer standing on its own can be winched by its drawbar. From v0.48 the HUD shows it beside the jerry cans: how many drums are on board and what the trailer weighs with them (amber when it's over its 750 kg limit or jackknifed, red when it's over on its side), or how far away you left it. It rattles over rough ground (less with drums in it, which boom instead), bangs on hard hits, and clanks as the coupling goes on or off the ball. From v0.49 there are two trailers, both drawn from photographs: the galvanised 6×4 box trailer, and the Army's No. 5 in flat green, with its spare wheel on the drawbar and a lunette ring that drops over the pintle hook, so it goes only behind the Land Rover or the Unimog (change to another vehicle while towing it and it's left standing). The No. 5 is heavier (360 kg empty, 500 kg of cargo) and sits on a narrow track with a high floor: loaded, it goes over more easily than the box trailer in a turn across a slope, and reversed hard into a jackknife behind the Unimog it can tip.
+**Towing a trailer** (test mode only). The trailer rides on the tow ball (the pintle hook on the Land Rover and the Unimog) and follows on its own two wheels; it has no brakes, so a loaded one makes the car slower to pull away and to stop. The camera stands further back while it's on. Reverse gently: on full lock it folds round until the drawbar is against the back of the car (the HUD says it has jackknifed), and you pull forward to straighten it. A loaded trailer leans hard in corners and can tip over in a fast turn across a slope. Stopped, **Unhitch the trailer** (tool menu) stands it on its jockey wheel with its wheels chocked, so you can drive or winch a hard bit without it; back up until the ball is under the coupling (within about 0.7 m), stop and press **E** (A on a pad, USE on a phone) to hitch it again. A trailer standing on its own can be winched by its drawbar. From v0.48 the HUD shows it beside the jerry cans: how many drums are on board and what the trailer weighs with them (amber when it's over its 750 kg limit or jackknifed, red when it's over on its side), or how far away you left it. It rattles over rough ground (less with drums in it, which boom instead), bangs on hard hits, and clanks as the coupling goes on or off the ball. From v0.49 there are two trailers, both drawn from photographs: the galvanised 6×4 box trailer, and the Army's No. 5 in flat green, with its spare wheel on the drawbar and a lunette ring that drops over the pintle hook, so it goes only behind the Land Rover or the Unimog (change to another vehicle while towing it and it's left standing). The No. 5 is heavier (360 kg empty, 500 kg of cargo) and sits on a narrow track with a high floor: loaded, it goes over more easily than the box trailer in a turn across a slope, and reversed hard into a jackknife behind the Unimog it can tip.
 
 Nothing is saved in test mode, so your real progress is safe. Puddles on the track come from the weather picked on the welcome screen. There is no wind yet.
 
@@ -289,6 +220,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v0.73 the CREB is the whole game:** the loading screen and pause menu show v0.73. Open New Journey: is the CREB Track the only episode, with no "Further north · coming soon" list? Finish a run: the card should offer **Main menu**, not Next episode. If your browser had a save in Episodes 2–4, does it now open on the CREB, keeping your CREB progress? In `?dev`, the trailer buttons should still work.
 - [ ] **v0.72 vehicle gauges:** check the temperature and fuel needles at the bottom left, with litres below the fuel dial. High revs in low range should move TEMP from NORMAL through HIGH to HOT; ease off and watch it cool. Let the tyres down: ROAD should change to TRAIL, with all four healthy tyres still showing 100% air remaining. Puncture a tyre on Realistic: does only that corner show LEAK and lose its air bar, then show FLAT? Repair it and check it recovers. Check the mission, hint card, trailer supplies, crawl gauges and touch buttons remain clear in follow and driver views, upright and sideways.
 
 - [ ] **v0.68 tutorial cards:** using the PS4, reach the Precision crawl sign. Its card should say to hold L1, choose Enable precision crawl and release L1, rather than Press P. Switch to the keyboard while the card is still open: does it change to Press P? Change the controller type to Xbox or Generic and revisit: does it name LB or Button 5? Check the low-range, diff-lock and winch cards too; touch should name the on-screen controls. Historical text should read as before.
@@ -408,9 +340,8 @@ src/
   debug/   overlay, free camera, debug panel
 scripts/   route-check (track grades, heights and creek levels), track-profile (one track's grade against the
            ground), creek-check (creeks standing above their banks) and map-preview (top-down PNG), each for a
-           map id (creb, coach or lakefield); creb-drive, coach-drive and lakefield-drive (autopilot drive of
-           each episode's whole route with fuel, winching and arrival time); rescue-lab (winch the stockman out
-           of his bog in any vehicle); surprise-check (where
+           map id (creb); creb-drive (autopilot drive of the whole route with fuel, winching and arrival
+           time); surprise-check (where
            runs' surprises land on the CREB) and surprise-drive (drive up to them and get past); studio (one vehicle on plain ground; studio-shots
            photographs it); and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
