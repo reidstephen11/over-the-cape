@@ -15,15 +15,18 @@ import type { Waypoint } from './crebRoute';
  * Coordinates in metres: x = east, z = south (north is -z).
  */
 
-/** Round the ridge's deep bog to the west, along the side of the saddle. */
+/**
+ * Round the ridge's deep bog to the west. It drops off the saddle, then climbs
+ * back at about 21°: longer than the bog, and not a way to skip the grade.
+ */
 export const chickenTrack: Waypoint[] = [
   [-36, 1028, 95],
-  [-62, 1012],
-  [-92, 990],
-  [-108, 955],
-  [-104, 918],
-  [-82, 895],
-  [-58, 884],
+  [-62, 1012, 86],
+  [-92, 990, 76],
+  [-108, 955, 72],
+  [-104, 918, 68],
+  [-82, 895, 80],
+  [-58, 884, 86],
   [-40, 890, 86.6],
 ];
 
@@ -61,11 +64,19 @@ export const crebForkTracks: TrackDef[] = [
     smooth: 6,
     surface: 'clay',
     ruts: 0.1,
-    // Across the side of the saddle: it leans with the hill.
+    // Across the side of the saddle: it leans with the hill, harder through the middle.
     camber: 0.55,
     pinMode: 'follow',
+    pinSmooth: 8,
+    routeHint: 'Off-camber, then a steep climb. It avoids the bog and costs the time',
+    cant: [
+      [30, 0],
+      [55, 14],
+      [100, 14],
+      [130, 0],
+    ],
     // Rough and washed out, but no mud: it keeps to the side of the saddle, above the wet.
-    rough: { bumps: 0.16, swells: 0.2, potholes: 5, potholeDepth: 0.3, washouts: 8, washoutDepth: 0.4 },
+    rough: { bumps: 0.16, swells: 0.16, potholes: 4, potholeDepth: 0.28, washouts: 6, washoutDepth: 0.32 },
   },
   {
     id: 'steep-shortcut',
@@ -113,7 +124,7 @@ export const littleAnnanBars: CreekBarDef[] = [
 
 /** A sign at each fork, facing the driver coming north. */
 export const crebForkProps: PropDef[] = [
-  { kind: 'signpost', x: -40, z: 1040, headingDeg: 200, text: 'Chicken track' },
+  { kind: 'signpost', x: -40, z: 1040, headingDeg: 200, text: 'Chicken track — steep' },
   { kind: 'signpost', x: 22, z: -393, headingDeg: 120, text: 'Steep shortcut' },
   { kind: 'signpost', x: -34, z: -2400, headingDeg: 210, text: 'Shallow crossing' },
 ];

@@ -16,7 +16,15 @@ import {
   upperDaintreeRoad,
   wujalFallsTrack,
 } from './crebRoute';
-import { crebWashout, stretchCreeks, stretchPois, stretchProps, stretchTracks } from './crebStretches';
+import {
+  crebRoadBogs,
+  crebRoadGaps,
+  crebWashout,
+  stretchCreeks,
+  stretchPois,
+  stretchProps,
+  stretchTracks,
+} from './crebStretches';
 import { crebFindFlats, crebFindPois, crebFindProps, crebFinds, crebFindTracks } from './crebFinds';
 import { crebForkPois, crebForkProps, crebForkTracks, littleAnnanBars } from './crebForks';
 
@@ -129,14 +137,18 @@ const baseTracks: TrackDef[] = [
   },
   {
     id: 'big-red-bypass',
-    name: 'Big Red bypass',
+    name: 'West line',
     points: bigRedBypass,
-    width: 3.6,
+    width: 3.4,
     surface: 'clay',
     ...bush,
-    // Graded evenly from pin to pin, so it never steepens past about 17°.
+    // Pinned straight from shelf to shelf, so the pinch stays near 23°.
     pinMode: 'linear',
-    pinSmooth: 10,
+    pinSmooth: 8,
+    ruts: 0.08,
+    camber: 0.35,
+    routeHint: 'Longer than the face: winch the bog, then crawl the pinch in low range',
+    rough: { bumps: 0.12, swells: 0.12, washouts: 4, washoutDepth: 0.26 },
   },
   { id: 'creb-ridge', name: 'CREB Track', points: crebRidge, width: 3.6, surface: 'clay', ...bush },
   {
@@ -649,8 +661,8 @@ export const crebMap: MapDef = {
     { id: 'wujal-falls-rock', kind: 'rock', x: -160, z: -669, radius: 30, ragged: 0.6 },
     { id: 'village-dirt', kind: 'dirt', x: -56, z: 2636, radius: 8, ragged: 0.5 },
   ],
-  bogs: [],
-  gullies: [crebWashout],
+  bogs: crebRoadBogs,
+  gullies: [crebWashout, ...crebRoadGaps],
   pois: [
     {
       id: 'daintree-village',
@@ -765,8 +777,8 @@ export const crebMap: MapDef = {
   props: [
     { kind: 'signpost', x: -46, z: 2612, headingDeg: 180, text: 'CREB Track' },
     { kind: 'signpost', x: -54, z: 2312, headingDeg: 160, text: 'Crocodiles' },
-    { kind: 'signpost', x: 1, z: 1310, headingDeg: 160, text: 'Big Red' },
-    { kind: 'signpost', x: 3, z: 1364, headingDeg: 130, text: 'Big Red bypass' },
+    { kind: 'signpost', x: 1, z: 1310, headingDeg: 160, text: 'Big Red — crown' },
+    { kind: 'signpost', x: 3, z: 1364, headingDeg: 130, text: 'West line — bog' },
     { kind: 'signpost', x: 44, z: 470, headingDeg: 40, text: 'Roaring Meg Falls' },
     { kind: 'fireRing', x: -38, z: 660, headingDeg: 0, flatten: 3 },
     { kind: 'logSeat', x: -40, z: 666, headingDeg: 20 },
@@ -799,6 +811,14 @@ export const crebMap: MapDef = {
     { x: 80, z: -621, radius: 1 },
     { x: -136, z: -657, radius: 1.8 },
     { x: -159, z: -685, radius: 1.5 },
+    // Winch anchors beside the authored bogs. map.bogs carve the road but do not
+    // plant the automatic winch trees (those follow features.mudHoles only).
+    { x: -64.16, z: 2318.11, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: 139.38, z: 2007.23, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: -93.62, z: 1715.12, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: -106.06, z: 1257.06, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: 208.02, z: -987.32, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: -32.51, z: -1683.41, radius: 0.85, anchor: true, sink: 0.4 },
   ],
   tors: [],
   fallenTrees: [{ id: 'fallen-tree', x: -5, z: 1048, headingDeg: 50, length: 11, radius: 0.4, mass: 700 }],

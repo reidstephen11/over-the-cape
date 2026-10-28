@@ -20,19 +20,20 @@ export const crebEpisode: EpisodeDef = {
   // A storm comes through in the afternoon (src/data/episodes/crebWeather.ts).
   storm: crebStorm,
   deadline: { hour: 18.25, label: 'Dark at 6:15 pm' },
-  // Game seconds per real second: the afternoon (5¾ hours) passes in 43 minutes of driving,
-  // so a careful run that winches out of the bogs arrives in the last of the light.
-  clockRate: 8,
-  // The map is about 6.6 km of the real trip's 100-odd km; fuel burns to match the real
-  // distance. A clean run uses more than the tank holds, so the jerry can goes in on the way.
-  fuelScale: 10.4,
+  // Game seconds per real second. The afternoon is 5¾ hours, so this leaves time to stop
+  // and winch. Getting stuck or swept is what fails the day, not the clock.
+  clockRate: 4.5,
+  // The map is about 6.6 km of the real trip's 100-odd km. Scaled so a clean run finishes
+  // on the fuel in the tank; the jerry can is there for a recovery, not the plan.
+  fuelScale: 6,
   loadout: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
   // After the wet, dead trees come down and cuttings shed rocks: where, each run decides.
   surprises: crebSurprises,
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
     'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. It rained overnight: the red clay on the climbs will be slippery.',
-    'Storms are forecast from about 3 pm. Once the rain sets in the clay gets greasier and the creeks rise and run faster the longer it rains. The last crossing, the Little Annan just short of the Lions Den, is the one to reach early.',
+    'The road out of the village is an orientation. The signs take the controls one at a time: low range (L) on the first ramp, the diff locks (Z, then X) on the pinch after it, precision crawl (P) over the rock step, then the winch (E to hook, R and F to wind) in the bog before the river. After that the track stops being a lesson.',
+    'Storms are forecast from about 3 pm. Once the rain sets in the clay gets greasier and the creeks rise and run faster the longer it rains. There is time to winch out of a bog. What ends the day is getting stuck for good, or stopping in a crossing and being swept. A clean run finishes on the fuel in the tank.',
     'Cross the Daintree River, climb the range on the old powerline track, come down to the Bloomfield River at Wujal Wujal and follow the Bloomfield Track north to the Lions Den Hotel. Get there before dark.',
   ],
   notes: {
@@ -44,13 +45,37 @@ export const crebEpisode: EpisodeDef = {
       title: 'Daintree River crossing',
       text: 'The river is wide here and can be a metre deep in the middle. Don’t drive straight across: a gravel bar curves downstream and keeps the water shallower. After the wet it is strewn with boulders and scoured into holes, so weave a line between them and take it slowly. Saltwater crocodiles live in this river, so don’t get out to walk the crossing.',
     },
+    'orient-low-range': {
+      title: 'Low range',
+      text: 'Press L. Low range multiplies the gearing so the engine can creep instead of stalling. This first ramp is the place to learn it: high range spins the wheels on the wet clay. Come at it straight, in low range, and let it pull.',
+    },
+    'orient-lockers': {
+      title: 'Diff locks',
+      text: 'Press Z to lock the rear diff, then X for the front. They only engage below a walking pace. An open diff sends the drive to the wheel that slips; locked, both wheels on the axle have to turn together. This pinch needs both.',
+    },
+    'orient-crawl': {
+      title: 'Precision crawl',
+      text: 'Press P. Crawl holds a walking pace: hold the throttle and it creeps, let go and it stops. Walk the wheels up the step. Come at it in high range and you bang the lip.',
+    },
+    'orient-winch': {
+      title: 'The winch',
+      text: 'The bog is across the road. Stop in it, press E and pick the tree ahead, then R to wind in (F winds out). A tree stands at either end. The same winch pulls a fallen tree aside later on the range.',
+    },
     'big-red': {
       title: 'Big Red',
-      text: 'To many drivers the hardest climb on the CREB: straight up red clay that turns to grease in the wet. Low range, both lockers and a steady throttle — or take the bypass round the west side.',
+      text: 'The hardest climb on the CREB: red clay that turns to grease in the wet. Low range, both lockers, precision crawl, and keep the wheels on the crown. The left gutter is dug out — drop a wheel in it and the belly grounds. The west line is longer, with a bog and a pinch as steep as this face.',
+    },
+    'paddock-gap': {
+      title: 'Plank gap',
+      text: 'A channel cut across the road, too wide to drive. Stop short, lay the planks in line with the wheels and crawl over in low range. Recall planks in the tool menu puts them back on the rack for the next gap.',
     },
     'ridge-washout': {
       title: 'Washout',
-      text: 'Water running off the range in the wet has cut a channel across the track, too wide and deep to drive over. Stop short of it, lay the planks across the gap in line with the wheels, and crawl over them in low range. Leave them behind: once you are well past, Recall planks in the tool menu puts them back on the roof rack.',
+      text: 'Water running off the range in the wet has cut a channel across the track, too wide and deep to drive over. The same planks as on the paddock road: stop short, lay them in line with the wheels, and crawl over in low range. Recall planks once you are well past.',
+    },
+    'bloomfield-gap': {
+      title: 'Another gap',
+      text: 'The Bloomfield Track is cut the same way. Planks across, low range, then recall them. The creeks either side of it are the other lesson: slow down before the water and do not stop in it.',
     },
     'roaring-meg-ledge': {
       title: 'Rock ledge',
@@ -66,7 +91,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'ridge-bog': {
       title: 'Bog in the saddle',
-      text: 'The track drops into a hollow the rain drains into and can’t get out of: deep, sticky mud under the water. Push through and you will likely need the winch. The chicken track round the west side is longer and rough, leaning across the hill, but it stays out of the mud.',
+      text: 'The track drops into a hollow the rain drains into and can’t get out of: deep, sticky mud under the water, across the road. The winch is the way through. The chicken track round the west side stays out of the mud, then climbs back up off-camber over a ledge: longer, and not the easy way.',
     },
     'bobs-hill': {
       title: 'Bob’s Hill',

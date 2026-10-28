@@ -1277,3 +1277,30 @@ The completed towing handover (`docs/NEXT.md`) and its instruction pointer were 
 - **Save compatibility.** New start and finish camp IDs let the existing launch validation replace checkpoints at removed river camps with a fresh start. Hotel-site saves remain usable at the relocated ridge camp. Completion and subsequent episode unlocks stay intact.
 - **Driving measurements.** All nine vehicles finish continuous Realistic runs with fuel remaining, taking 9.5–10.1 real minutes on suitable lines. The short-wheelbase 4WD takes 9.8 minutes over the direct obstacles and 10.7 minutes via the rutted old coach line; the Perentie takes 9.9 minutes on the direct route. These are clean scripted runs, excluding exploration and recovery time.
 - **Validation fixtures.** Route topology, forks, grades, full-size steps, camps and signs are checked against the compact map. Continuous Realistic drives use every vehicle's actual episode load; the short-wheelbase 4WD and Perentie use the direct obstacles, with the remaining roster taking the gentler forks. Browser coverage checks unlocking, the diary, camp reload, completion, Lakefield selection and an old river-camp save. The route script uses the actual fuel load and fails if it does not reach the goal.
+
+## v0.53 — CREB obstacles, not the fuel gauge
+
+**Request.** Rebuild Episode 1 so the challenge is short obstacles: steep climbs, bogs, creek crossings and ledges. The opening is an orientation that teaches low range, the diff locks, precision crawl and the winch one at a time. Then the track gets harder. Stephen confirmed Episode 1 first. Shared physics, the HUD and the other episodes stay as they are.
+
+**Layout, going north.**
+
+- **Upper Daintree road.** A low-range ramp, a 0.42 m crawl step, a locker pinch of about 20°, then a bog across the road before the river. Signs and history notes name the keys (L, Z/X, P, E/R/F). The bog is on the descent to the river, so a locked crawl can still creep through it; the paddock bogs cannot.
+- **Paddock road** (about 1.3 km). Potholes remain. On the road: a bog, a 0.58 m step, a bog, a 0.55 m step and a plank gap. Nothing to drive around.
+- **Big Red.** The nine cross-ruts (0.42 m) that stalled a straight locked crawl are gone. The crown is a shallow left-wheel rut (0.24 m, ruts property 0.04, two mild washouts). A low-range crawl with both lockers creeps up. Open diffs and high range stall, and a line 1.15 m left high-centres in the gutter. The west line is no longer a 17° walk: a bog on the shelf, then a pinch of about 23° and a 0.6 m step.
+- **Ridge.** The saddle bog and the plank washout stay. The chicken track is off-camber (14°) and then about 23°, with a 0.65 m step. It still avoids the bog and still takes longer.
+- **Bloomfield Track** (about 2.3 km). A bog, the existing creeks, two rock steps, another bog and a plank gap, then the Little Annan. The empty gravel is gone.
+
+**Pacing.** `clockRate` 4.5 (was 8) and `fuelScale` 6 (was 10.4). A clean run finishes on the 50 L in the tank, and there is time to stop and winch. Getting stuck or swept is what fails the day.
+
+**Scripted storm runs** (`npx vite-node scripts/creb-drive.ts`), Mild damage, the main line, planks recalled after each gap. These are careful autopilot runs, not a promised player time.
+
+| Vehicle | Driving minutes | Arrival | Fuel used (L) |
+| ------- | --------------: | ------- | ------------: |
+| shortie |            43.8 | 3:47 pm |          30.4 |
+| unimog  |            45.8 | 3:55 pm |          39.8 |
+
+Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelbase 4WD winches both paddock bogs; the Unimog's larger wheels cross those and winches once on the Bloomfield Track.
+
+**Tests.** The crown line on Big Red climbs in low range with both lockers; the left gutter and high range do not. Every vehicle still climbs Big Red and Bob's Hill locked, and high range and open diffs still fail. The west line and both fork lines still complete. Potholes on the clear paddock stretches still pinch a tyre taken fast and not at 30 km/h. Surprises still find a legal spot.
+
+**Not in this update.** `map.bogs` are carved and painted black soil, but the shared terrain pass does not add them to `features.mudHoles`, so they get no automatic winch trees and no puddles. Marked boulders stand ahead of them instead. Putting authored bogs through that pass, and a helper for a one-wheel crown rut, are follow-ups in docs/ROADMAP.md. `openDiffLeak` is unchanged.

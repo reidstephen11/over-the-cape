@@ -45,8 +45,8 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   await expect.poll(() => discoveryCards(page), { timeout: 30_000 }).toContain('Daintree Village');
   await shot(page, 'M5', 'hud-and-first-discovery');
 
-  // Drive down to the Daintree River crossing.
-  await page.evaluate(() => window.__game!.teleport(-62, 2312, 60));
+  // Drive down to the Daintree River crossing, from the road just north of the orientation bog.
+  await page.evaluate(() => window.__game!.teleport(-51.8, 2305.5, 65));
   expect(await page.evaluate(() => window.__game!.discovered())).not.toContain('daintree-crossing');
   await page.evaluate(() => window.__game!.setInput({ throttle: 0.7 }));
   await expect
