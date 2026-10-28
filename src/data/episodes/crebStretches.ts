@@ -62,8 +62,10 @@ export const stretchHills: HillDef[] = [
   // Out of the village: a bench the low-range ramp climbs onto, then a knoll above the river.
   { id: 'village-bench', x: -60, z: 2490, radius: 45, height: 13, shape: 'dome', stretch: [1.8, 1, -63.4] },
   { id: 'village-knoll', x: -42, z: 2385, radius: 95, height: 19, shape: 'dome' },
-  // Big Red's face lies back to the line of the climb, so the track is not cut in a trench.
-  { id: 'big-red-face', x: 8, z: 1200, radius: 55, height: -5, shape: 'dome' },
+  // Big Red's spur steps up in shoulders rather than one even dome, so the climb comes in pinches.
+  { id: 'big-red-shoulder', x: 16, z: 1240, radius: 40, height: 5, shape: 'dome' },
+  { id: 'big-red-step', x: 26, z: 1218, radius: 28, height: 3.5, shape: 'dome' },
+  { id: 'big-red-saddle', x: 12, z: 1182, radius: 28, height: -3, shape: 'dome' },
   // North of the Bloomfield the road goes straight over two knolls rather than round them.
   { id: 'rossville-knoll', x: -121, z: -1530, radius: 90, height: 14, shape: 'dome' },
   { id: 'helenvale-knoll', x: 214, z: -1975, radius: 85, height: 18, shape: 'dome' },
@@ -71,8 +73,8 @@ export const stretchHills: HillDef[] = [
 
 /** Changes to the CREB's tracks, by track id, laid over crebMap's own definitions. */
 /**
- * Big Red's crown is a mild rut the locked crawl walks. The left gutter is dug deep
- * enough that a line drifted left high-centres; high range still has no grip on the clay.
+ * Big Red's crown is a mild rut the locked crawl walks. The track is worn into the hill, so
+ * a line drifted left grounds on the bank; high range still has no grip on the clay.
  */
 const bigRedCrown = { bumps: 0.07, swells: 0.05, washouts: 2, washoutDepth: 0.16 } as const;
 
@@ -144,50 +146,24 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'big-red': {
     ruts: 0.04,
     rough: bigRedCrown,
-    routeHint: 'Low range, both lockers, crawl the crown. The left gutter is dug out',
-    // Metres along, metres right of the centreline.
-    // The shallow rut sits under the crown's left wheel only: an open diff spins it,
-    // a locker lets the right wheel pull. The two deeper gutters sit under the wheels
-    // of a line drifted about 1.1 m left, and clear of the crown. They run down the
-    // straight pinches only: through the turns on the easings a good line cuts the corner,
-    // and a locked axle turning on the clay has no grip to spare.
-    erosion: [
-      ...(
-        [
-          [18, 28],
-          [52, 80],
-          [110, 167],
-        ] as const
-      ).flatMap(([from, to]) => [
-        {
-          path: [
-            [from - 2, -0.86],
-            [(from + to) / 2, -0.88],
-            [to, -0.85],
-          ] as [number, number][],
-          width: 0.5,
-          depth: 0.2,
-        },
-        {
-          path: [
-            [from, -1.78],
-            [(from + to) / 2, -1.85],
-            [to, -1.72],
-          ] as [number, number][],
-          width: 0.55,
-          depth: 0.52,
-        },
-        {
-          path: [
-            [from + 3, -0.35],
-            [(from + to) / 2, -0.38],
-            [to - 2, -0.36],
-          ] as [number, number][],
-          width: 0.3,
-          depth: 0.48,
-        },
-      ]),
-    ],
+    routeHint: 'Low range, both lockers, crawl the crown. Keep off the left bank',
+    // Metres along, metres right of the centreline. A rut sits under the crown's left
+    // wheel down each pinch: an open diff spins that wheel, a locker lets the right one pull.
+    // A line drifted left drops onto the cut bank and grounds.
+    erosion: (
+      [
+        [18, 70],
+        [106, 142],
+      ] as const
+    ).map(([from, to]) => ({
+      path: [
+        [from, -0.86],
+        [(from + to) / 2, -0.88],
+        [to, -0.85],
+      ] as [number, number][],
+      width: 0.5,
+      depth: 0.2,
+    })),
   },
 };
 

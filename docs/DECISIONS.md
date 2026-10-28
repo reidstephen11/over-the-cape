@@ -1350,3 +1350,9 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 **Problem.** v0.57's Big Red stopped every vehicle except the Unimog, even locked in low range. The bends sat on the steep clay, the third pinch ran 70 m at 21–22°, and the ruts carried on through the turns, where a good line cuts the corner.
 
 **Fix.** Each pinch is now straight, about 18°, 20° and 19°, and the turns (about 30° right, then 60° left) sit on the easings between them. The track is about 180 m long. The left-wheel rut and the two gutters run down the pinches only, with a break at each turn. The left-wheel rut is 0.2 m deep (was 0.27 m): where the third pinch crosses the spur, the slope leans the car onto it. Every vehicle climbs it locked in low range; high range, open diffs and a line drifted into the gutter still stop.
+
+## v0.59 — Big Red worn into the hill
+
+**Problem.** v0.58's Big Red looked like a built road: its heights were pinned in straight lines between points, so on much of the climb it sat up to a metre above the hillside on a bank, with 3 m of bare clay down each side, and its pinches were dead straight.
+
+**Change.** The track now follows the spur's own ground (`pinMode: 'follow'`) and is worn 0.45 m into it, so it is never built up (no fill; 0.5–1.3 m below the ground either side). Its line wanders, with no long straight. The clay edges are 1.6 m (was 3 m). The spur was reshaped to suit, since its plain dome was about 28° where any line crosses the face: a shoulder low on the face and a step and a saddle higher up give two pinches of about 20–23° with an easier stretch between. The hollow added in v0.54 to lay back the old straight face is gone. One rut under the crown's left wheel runs down each pinch, enough to stop open diffs; the two deep gutters are gone, as a line drifted left now grounds on the cut bank instead.
