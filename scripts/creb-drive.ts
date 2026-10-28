@@ -130,7 +130,7 @@ for (const [trackId, mode] of legs) {
   const track4: { x: number; z: number }[] = [];
   // Bogged, the driver winches out to a tree ahead.
   const recovery = new WinchRecovery(sim, v, path);
-  // Every plank gap on this leg: the ridge washout, and the ones cut across the roads.
+  // Every plank gap on this leg (the ridge washout).
   const gaps = world.map.gullies
     .map((g) => ({ g, at: trailProgress(track, g.x, g.z) }))
     .filter(

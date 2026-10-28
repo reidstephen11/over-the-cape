@@ -171,6 +171,8 @@ export interface TrackDef {
   rockySteps?: ReadonlyArray<{ at: number; rise: number }>;
   /** Stretches [from, to] (metres along) through soft sand: the dry creek beds it crosses. */
   sand?: ReadonlyArray<readonly [number, number]>;
+  /** Stretches [from, to] of a gravel road where the gravel has washed off a steep pinch, leaving red clay. */
+  clay?: ReadonlyArray<readonly [number, number]>;
   /** Rock steps, slabs and boulders set on the track (as on a crawl trail, without its markers and scoring). */
   stones?: readonly TrailStoneDef[];
   /** Lower the graded track: [metres along, depth] pairs, interpolated (a cutting or gully floor). */

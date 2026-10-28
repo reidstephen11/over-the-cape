@@ -1,7 +1,9 @@
+import { boulder } from '../courseKit';
 import type {
   BogDef,
   CreekDef,
   GullyDef,
+  HillDef,
   PoiDef,
   PropDef,
   TrackDef,
@@ -10,12 +12,14 @@ import type {
 
 /**
  * Each stretch of the CREB asks something different of the driver, going north:
- *   the village road  – orientation, one control at a time
- *   the paddock road  – a bog, a step or a plank gap every few hundred metres, plus potholes
- *   the range         – Big Red's crown, the ridge washout, Roaring Meg's ledge, the sideling
- *   the Bloomfield Track – creeks, bogs and steps rather than empty gravel
- * Deep bogs on the roads are authored across the wheel lines. The ridge still keeps the
- * hollow in the saddle and the long wet stretch below Roaring Meg camp.
+ *   the village road  – orientation over a spur, one control at a time
+ *   the paddock road  – bogs in the hollows and creeks with steep banks, plus potholes
+ *   the range         – Big Red's crown, the ridge washout, Roaring Meg's ledge, Bob's Hill's
+ *                       rock bands, the sideling
+ *   the Bloomfield Track – creeks, bogs, a wet clay pinch and a granite pinch
+ * The roads climb real hills (`stretchHills`) rather than embankments on the flat. Deep
+ * bogs lie across the roads in the hollows. The ridge still keeps the hollow in the saddle
+ * and the long wet stretch below Roaring Meg camp.
  */
 
 /** Shared by the gravel roads: corrugated and potholed after the wet. */
@@ -50,6 +54,21 @@ const rangeRough: TrackRoughDef = {
   longBogsKept: 0,
 };
 
+/**
+ * Ground under the climbs, so a road climbs a hill rather than an embankment built on the
+ * flat. Each is shaped to the track's pinned profile over it.
+ */
+export const stretchHills: HillDef[] = [
+  // Out of the village: a bench the low-range ramp climbs onto, then a knoll above the river.
+  { id: 'village-bench', x: -60, z: 2490, radius: 45, height: 13, shape: 'dome', stretch: [1.8, 1, -63.4] },
+  { id: 'village-knoll', x: -42, z: 2385, radius: 95, height: 19, shape: 'dome' },
+  // Big Red's face lies back to the line of the climb, so the track is not cut in a trench.
+  { id: 'big-red-face', x: -2, z: 1195, radius: 55, height: -5, shape: 'dome' },
+  // North of the Bloomfield the road goes straight over two knolls rather than round them.
+  { id: 'rossville-knoll', x: -121, z: -1530, radius: 90, height: 14, shape: 'dome' },
+  { id: 'helenvale-knoll', x: 214, z: -1975, radius: 85, height: 18, shape: 'dome' },
+];
+
 /** Changes to the CREB's tracks, by track id, laid over crebMap's own definitions. */
 /**
  * Big Red's crown is a mild rut the locked crawl walks. The left gutter is dug deep
@@ -61,18 +80,16 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'upper-daintree-road': {
     rough: { ...roadRough, bogs: 0, washouts: 1, washoutDepth: 0.16 },
     pinSmooth: 10,
+    // A band of rock across the bench, with boulders either side.
     rockySteps: [{ at: 175, rise: 0.42 }],
+    stones: [boulder(173, -3.6, 0.8, 1.5), boulder(178, 3.7, 0.7, 1.3)],
     routeHint: 'One control at a time: low range L, locks Z and X, crawl P, then the winch',
   },
-  // Potholes still pinch a tyre taken fast. The bogs are authored across the road, not
-  // scattered in the hollows where a driver can miss them.
+  // Potholes still pinch a tyre taken fast. The bogs lie across the road in the hollows,
+  // and two creeks cut down through the paddocks with steep banks to climb out of.
   'paddock-road': {
     rough: { ...roadRough, potholes: 11, potholeDepth: 0.34, bogs: 0 },
-    rockySteps: [
-      { at: 560, rise: 0.58 },
-      { at: 960, rise: 0.55 },
-    ],
-    routeHint: 'The holes are on the road. Low range for the step; winch or planks for the gaps',
+    routeHint: 'Bogs in the hollows and creeks with steep banks. Low range to climb out',
   },
   // The ridge keeps its deep bog and the long wet stretch below Roaring Meg camp.
   'creb-ridge': {
@@ -80,6 +97,10 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   },
   // Out of Roaring Meg's gorge the track climbs a rock ledge.
   'roaring-meg-climb': { rough: rangeRough, rockySteps: [{ at: 207, rise: 1 }] },
+  // Bob's Hill: boulders beside the steepest of the pinch.
+  'bobs-hill': {
+    stones: [boulder(56, -3.2, 0.7, 1.3), boulder(70, 3.3, 0.8, 1.4), boulder(84, -3.4, 0.6, 1.2)],
+  },
   // Along the top the track sidles round the hill, leaning out towards the drop.
   'range-top': {
     rough: rangeRough,
@@ -93,13 +114,30 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'donovans-creek': { rough: rangeRough },
   'roaring-meg-falls': { rough: rangeRough },
   'wujal-falls': { rough: rangeRough },
+  // Two climbs: the gravel has washed off the pinch over the Rossville knoll, leaving wet
+  // clay at about 21°; on the Helenvale knoll granite ledges stand out of the road.
   'bloomfield-track': {
     rough: { ...roadRough, potholes: 4, bogs: 0 },
+    clay: [[855, 925]],
     rockySteps: [
-      { at: 680, rise: 0.65 },
-      { at: 1620, rise: 0.7 },
+      { at: 1452, rise: 0.4 },
+      { at: 1464, rise: 0.5 },
+      { at: 1477, rise: 0.45 },
+      { at: 1490, rise: 0.55 },
+      { at: 1502, rise: 0.4 },
     ],
-    routeHint: 'A creek, a bog or a step every few hundred metres. Keep moving in the water',
+    stones: [
+      // Granite either side of the ledges, and on the treads under one wheel then the other.
+      boulder(1449, -3.1, 0.8, 1.5),
+      boulder(1460, 3.2, 0.9, 1.6),
+      boulder(1471, -3.3, 0.7, 1.3),
+      boulder(1484, 3.0, 0.85, 1.5),
+      boulder(1497, -3.0, 0.75, 1.4),
+      boulder(1469, 0.8, 0.42, 0.9, 1.1),
+      boulder(1482, -0.8, 0.42, 0.9, 1.1),
+      boulder(1495, 0.8, 0.4, 0.9, 1.1),
+    ],
+    routeHint: 'A creek, a bog or a climb every few hundred metres. Keep moving in the water',
   },
   'big-red-bypass': { rockySteps: [{ at: 190, rise: 0.6 }] },
   'chicken-track': { rockySteps: [{ at: 165, rise: 0.65 }] },
@@ -120,7 +158,7 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
           [145, -0.86],
         ],
         width: 0.5,
-        depth: 0.24,
+        depth: 0.27,
       },
       {
         path: [
@@ -161,11 +199,6 @@ export const crebWashout: GullyDef = {
   depth: 0.5,
 };
 
-/** A plank gap across a road: same lip and depth as the ridge washout, so it is not optional. */
-function plankGap(id: string, x: number, z: number, headingDeg: number): GullyDef {
-  return { id, x, z, headingDeg, length: 18, gap: 1.3, depth: 0.5 };
-}
-
 /**
  * A deep bog centred on the road. radiusX is across the track and wider than the
  * shoulders, so the line cannot slip round it.
@@ -174,24 +207,19 @@ function roadBog(id: string, x: number, z: number, headingDeg: number, radiusX: 
   return { id, x, z, radiusX, radiusZ, rotationDeg: headingDeg, depth: 0.72, deep: true, winchTrees: true };
 }
 
-/** On-road bogs. Ids keep the `-mud-` shape the track surveys already use. */
+/** On-road bogs, in the hollows where the water lies. Ids keep the `-mud-` shape the track surveys already use. */
 export const crebRoadBogs: BogDef[] = [
   roadBog('upper-daintree-road-mud-0', -73.55, 2327.02, 11.8, 6.2, 7),
   roadBog('paddock-road-mud-0', 125.54, 2012.66, 52.7, 7, 8),
-  roadBog('paddock-road-mud-1', -81.3, 1723.12, -75, 7, 8),
+  roadBog('paddock-road-mud-1', -52.39, 1731.12, -73.6, 7, 8),
   roadBog('big-red-bypass-mud-0', -106.66, 1271.54, -19, 5.2, 7),
-  roadBog('bloomfield-track-mud-0', 195.59, -979.36, 40.1, 7.2, 8),
+  roadBog('bloomfield-track-mud-0', 140.13, -908.51, 36.4, 7.2, 8),
   roadBog('bloomfield-track-mud-1', -46.05, -1677.72, 48.9, 7.2, 8),
-];
-
-/** Plank gaps on the two long roads, in addition to the ridge washout. */
-export const crebRoadGaps: GullyDef[] = [
-  plankGap('paddock-gap', -126.98, 1449.91, 128.4),
-  plankGap('bloomfield-gap', -27.08, -2222.2, 42.7),
+  roadBog('bloomfield-track-mud-2', -4.53, -2202.42, -49.6, 7.2, 8),
 ];
 
 /**
- * A small creek straight across the Bloomfield Track at a crossing (x, z, the track's
+ * A small creek straight across a road at a crossing (x, z, the track's
  * heading), laid from `levels`: [metres right of the track, water height] from upstream
  * down, the water kept below the ground beside it all the way.
  */
@@ -227,8 +255,10 @@ function creekAcross(
   };
 }
 
-/** Where the Bloomfield Track's creeks cross it (x, z, the track's heading). */
+/** Where the creeks cross the roads (x, z, the track's heading). */
 const fords = {
+  paddockSouth: [125.49, 1797.42, -61.9],
+  paddockNorth: [-232.5, 1634.35, -18.1],
   south: [148.22, -1229.24, -61.4],
   middle: [-82.83, -1399.01, -35.1],
   north: [175.88, -1846.9, 40.7],
@@ -236,6 +266,36 @@ const fords = {
 
 /** North of the Bloomfield the track crosses a run of small creeks coming off the hills. */
 export const stretchCreeks: CreekDef[] = [
+  // Off the range across the paddocks: the road drops into each and climbs a steep bank out.
+  creekAcross('paddock-creek-south', fords.paddockSouth, [
+    [70, 12.5],
+    [60, 11.8],
+    [50, 10.2],
+    [40, 8.5],
+    [30, 7.6],
+    [20, 7.4],
+    [10, 7.4],
+    [0, 7.3],
+    [-10, 7.2],
+    [-20, 7.0],
+    [-30, 5.6],
+    [-40, 4.6],
+    [-50, 4.6],
+    [-60, 4.6],
+    [-70, 4.5],
+  ]),
+  creekAcross('paddock-creek-north', fords.paddockNorth, [
+    [20, 7.0],
+    [10, 6.6],
+    [0, 5.4],
+    [-10, 4.0],
+    [-20, 3.3],
+    [-30, 3.3],
+    [-40, 3.2],
+    [-50, 2.4],
+    [-60, 1.4],
+    [-70, 1.3],
+  ]),
   creekAcross('bloomfield-creek-south', fords.south, [
     [10, 8.35],
     [0, 7.95],
@@ -289,24 +349,23 @@ export const crawlStretches: Record<string, ReadonlyArray<readonly [number, numb
   ],
   'paddock-road': [
     [210, 280],
-    [520, 600],
-    [690, 760],
-    [920, 1000],
-    [1085, 1160],
+    [480, 530],
+    [660, 730],
+    [880, 930],
   ],
   'big-red-bypass': [
     [110, 160],
     [165, 230],
   ],
   'bloomfield-track': [
-    [170, 240],
+    [80, 150],
     [480, 520],
-    [640, 720],
     [770, 810],
+    [850, 935],
     [1065, 1140],
     [1360, 1400],
-    [1575, 1660],
-    [1845, 1920],
+    [1440, 1515],
+    [1815, 1890],
     // The Little Annan's ford.
     [2150, 2215],
   ],
@@ -350,22 +409,13 @@ export const stretchPois: PoiDef[] = [
     note: 'Fourth lesson: the winch',
   },
   {
-    id: 'paddock-gap',
-    name: 'Paddock gap',
+    id: 'paddock-creeks',
+    name: 'Paddock creeks',
     kind: 'feature',
-    x: -126.98,
-    z: 1449.91,
-    radius: 16,
-    note: 'A plank gap across the paddock road',
-  },
-  {
-    id: 'bloomfield-gap',
-    name: 'Bloomfield gap',
-    kind: 'feature',
-    x: -27.08,
-    z: -2222.2,
-    radius: 16,
-    note: 'A plank gap on the Bloomfield Track',
+    x: fords.paddockSouth[0],
+    z: fords.paddockSouth[1],
+    radius: 20,
+    note: 'Creeks off the range with steep banks to climb out of',
   },
   {
     id: 'ridge-washout',
@@ -403,6 +453,24 @@ export const stretchPois: PoiDef[] = [
     radius: 24,
     note: 'Fast creeks off the hills; a scour hole below the ford',
   },
+  {
+    id: 'rossville-pinch',
+    name: 'Rossville pinch',
+    kind: 'feature',
+    x: -119.58,
+    z: -1490.85,
+    radius: 22,
+    note: 'The gravel has washed off: wet red clay straight up the knoll',
+  },
+  {
+    id: 'helenvale-granite',
+    name: 'Granite pinch',
+    kind: 'feature',
+    x: 219.37,
+    z: -1930.16,
+    radius: 22,
+    note: 'Granite ledges standing out of the climb',
+  },
 ];
 
 /** Signs ahead of the obstacles, facing the traffic coming north. */
@@ -413,16 +481,15 @@ export const stretchProps: PropDef[] = [
   { kind: 'signpost', x: -67.23, z: 2350.4, headingDeg: 151, text: 'Winch — E R F' },
   { kind: 'signpost', x: 163.3, z: 1979.1, headingDeg: 215, text: 'Potholes' },
   { kind: 'signpost', x: 103.49, z: 2033.62, headingDeg: 236, text: 'Bog — winch' },
-  { kind: 'signpost', x: 99.91, z: 1780.72, headingDeg: 112, text: 'Rock step' },
-  { kind: 'signpost', x: -51.08, z: 1726.71, headingDeg: 107, text: 'Bog — winch' },
-  { kind: 'signpost', x: -228.78, z: 1605.73, headingDeg: 192, text: 'Rock step' },
-  { kind: 'signpost', x: -139.7, z: 1477.21, headingDeg: 211, text: 'Plank gap' },
+  { kind: 'signpost', x: 152.97, z: 1811.61, headingDeg: 134, text: 'Creek — steep bank' },
+  { kind: 'signpost', x: -22.44, z: 1736.05, headingDeg: 108, text: 'Bog — winch' },
+  { kind: 'signpost', x: -211.88, z: 1654.97, headingDeg: 133, text: 'Creek — steep bank' },
   { kind: 'signpost', x: -93.52, z: 1296.4, headingDeg: 158, text: 'Bog, then pinch' },
   { kind: 'signpost', x: -12.5, z: 802, headingDeg: 150, text: 'Washout' },
   { kind: 'signpost', x: -101.76, z: 923.41, headingDeg: 198, text: 'Ledge — low range' },
-  { kind: 'signpost', x: 180.36, z: -953.25, headingDeg: 218, text: 'Bog — winch' },
-  { kind: 'signpost', x: 19.96, z: -1305.92, headingDeg: 126, text: 'Rock step' },
+  { kind: 'signpost', x: 128.74, z: -881.05, headingDeg: 205, text: 'Bog — winch' },
+  { kind: 'signpost', x: -99.07, z: -1435.33, headingDeg: 155, text: 'Steep clay — low range' },
   { kind: 'signpost', x: -64.55, z: -1653.92, headingDeg: 224, text: 'Bog — winch' },
-  { kind: 'signpost', x: 202.75, z: -2037.32, headingDeg: 146, text: 'Rock step' },
-  { kind: 'signpost', x: 0.11, z: -2204.78, headingDeg: 130, text: 'Plank gap' },
+  { kind: 'signpost', x: 203.29, z: -1876.87, headingDeg: 211, text: 'Granite — crawl' },
+  { kind: 'signpost', x: 21.18, z: -2186.47, headingDeg: 129, text: 'Bog — winch' },
 ];

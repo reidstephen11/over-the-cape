@@ -1304,3 +1304,26 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 **Tests.** The crown line on Big Red climbs in low range with both lockers; the left gutter and high range do not. Every vehicle still climbs Big Red and Bob's Hill locked, and high range and open diffs still fail. The west line and both fork lines still complete. Potholes on the clear paddock stretches still pinch a tyre taken fast and not at 30 km/h. Surprises still find a legal spot.
 
 **Not in this update.** `map.bogs` are carved and painted black soil, but the shared terrain pass does not add them to `features.mudHoles`, so they get no automatic winch trees and no puddles. Marked boulders stand ahead of them instead. Putting authored bogs through that pass, and a helper for a one-wheel crown rut, are follow-ups in docs/ROADMAP.md. `openDiffLeak` is unchanged.
+
+## v0.54 — CREB terrain that looks like the country, and harder climbs
+
+**Request.** Stephen found v0.53's Episode 1 looked wrong, and asked for it redone: keep the terrain realistic, with more challenging hill climbs. v0.53's own aims stay: short obstacles (climbs, bogs, creeks, ledges), an orientation that teaches low range, the lockers, crawl and the winch one at a time, then a harder track, and a clean run that finishes on the fuel in the tank.
+
+**What looked wrong.** v0.53 pinned the road heights without shaping the ground under them. The village road was a raised embankment up to 17 m above the flat paddocks; the chicken track ran in a 13.6 m trench, Bob's Hill in a 9.6 m one, Big Red in 8 m with a bare teardrop of cutting round it, and the west line on a 7 m bank. Plank gaps and rock steps were set across flat gravel, where no creek or rock would be.
+
+**Ground first.** New hills (`stretchHills` in crebStretches.ts) put real ground under the climbs: a bench and a knoll the village road crosses, a hollow in Big Red's face so the track lies on it, and two knolls on the Bloomfield Track. Bob's knob is lower (12 m, was 20), and the pins on Big Red, the west line, Bob's Hill, the chicken track and the range top were refitted to the ground. A small check (track height against the bare ground) now finds no road more than about 4.5 m above or below it, except a 7.8 m cutting where the west line crosses the spur's shoulder (it was 9.5 m).
+
+**Obstacles that belong there.**
+
+- The two road plank gaps are gone; the planks are for the ridge washout. The flat-road rock steps are gone.
+- The paddock road has two creeks coming off the range in its hollows (`paddock-creek-south`, `paddock-creek-north`), with banks to climb out of. Its second bog moved into the hollow at 690 m.
+- The Bloomfield Track's first bog moved onto the river flat, and a third bog lies in the hollow where the plank gap was.
+- The Bloomfield Track goes straight over two knolls. On the Rossville pinch the gravel has washed off, leaving wet red clay at about 21° for 70 m: a new `clay` stretch on a gravel track (TrackDef) paints it clay. On the granite pinch near Helenvale five rock ledges (0.4–0.55 m) and boulders on the treads stand out of a climb of up to 24°.
+- Bob's Hill now climbs to 22° up its knob, with two bands of rock across the steepest part. Big Red is 18° at the foot and 23° at its steepest, near what wet clay grips (about 23°); steeper clay would stop every vehicle, so the harder climbs use rock.
+- The orientation keeps its four lessons and signs, now on a spur: ramp onto a bench (low range), a rock band with boulders either side (crawl), a 21° pinch (lockers), then the bog in the hollow before the river (winch).
+
+**Kept exactly.** The range-top sideling is pinned to its old heights, within a few centimetres: its fast-slide test is sensitive to small changes in the ground there.
+
+**Tests.** The gap test now counts climbs steeper than 15° as obstacles (paddock road under 450 m between them, was 400). New: the Rossville pinch climbs crawling with the lockers and not in high range; the granite pinch climbs crawling without cutting a tyre. The potholes test uses clear stretches away from the new creeks.
+
+**Not in this update.** Episode 1's other legs, the shared physics and the HUD are unchanged.

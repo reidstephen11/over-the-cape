@@ -209,6 +209,17 @@ function bilinear(src: Float32Array, resX: number, resZ: number, fx: number, fz:
   return a + (b - a) * tz;
 }
 
+/** Whether a dense-point parameter falls in one of a track's [from, to] stretches. */
+function inStretch(
+  stretches: ReadonlyArray<readonly [number, number]> | undefined,
+  s: ArrayLike<number>,
+  param: number,
+): boolean {
+  if (!stretches) return false;
+  const along = atParam(s, param);
+  return stretches.some(([from, to]) => along >= from && along <= to);
+}
+
 /** A track's bank width (m) at a dense-point parameter. */
 /** The x in [0, 1] at which smoothstep(0, 1, x) is y. */
 function inverseSmoothstep(y: number): number {
@@ -981,7 +992,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     trackDistance[i] = Math.min(255, Math.max(0, Math.round(d - hw)));
     const kind = def.faint
       ? TrackPaintKind.Faint
-      : def.surface === 'gravel'
+      : def.surface === 'gravel' && !inStretch(def.clay, tracks[id].poly.s, trackParam[i])
         ? TrackPaintKind.Gravel
         : def.surface === 'concrete'
           ? TrackPaintKind.Concrete
@@ -1022,6 +1033,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         paint[i] = 0;
         continue;
       }
+    }
+    // A steep pinch the gravel has washed off is bare red clay.
+    if (def.surface === 'gravel' && inStretch(def.clay, tracks[id].poly.s, trackParam[i])) {
+      surface[i] = SurfaceId.Clay;
+      tint[i] = d > hw - MUD_EDGE ? edgeTint : GroundTint.DirtTrack;
+      continue;
     }
     if (def.surface === 'concrete') tint[i] = d > hw - 0.3 ? GroundTint.DirtEdge : GroundTint.Concrete;
     else if (def.surface === 'rock') {

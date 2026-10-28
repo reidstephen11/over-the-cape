@@ -18,9 +18,9 @@ import {
 } from './crebRoute';
 import {
   crebRoadBogs,
-  crebRoadGaps,
   crebWashout,
   stretchCreeks,
+  stretchHills,
   stretchPois,
   stretchProps,
   stretchTracks,
@@ -126,7 +126,7 @@ const baseTracks: TrackDef[] = [
     name: 'Big Red',
     points: bigRed,
     width: 3.8,
-    shoulder: 4,
+    shoulder: 3,
     batter: BATTER,
     smooth: 6,
     surface: 'clay',
@@ -526,13 +526,14 @@ export const crebMap: MapDef = {
     // The crest between Bob's Hill and the lookout.
     { id: 'range-crest', x: -12, z: 40, radius: 260, height: 30, shape: 'dome' },
     // Bob's Hill: a steep knob on the crest.
-    { id: 'bobs-knob', x: -20, z: 124, radius: 80, height: 20, shape: 'dome' },
+    { id: 'bobs-knob', x: -20, z: 124, radius: 80, height: 12, shape: 'dome' },
     // Big Red's spur stands out of the range's south foot.
     { id: 'big-red-spur', x: -10, z: 1124, radius: 200, height: 46, shape: 'dome' },
     // Low hills round Rossville and the Lions Den.
     { id: 'rossville-rise', x: -250, z: -1600, radius: 300, height: 30, shape: 'dome' },
     { id: 'helenvale-hill', x: 260, z: -2150, radius: 300, height: 30, shape: 'dome' },
     { id: 'annan-rise', x: -280, z: -2250, radius: 260, height: 26, shape: 'dome' },
+    ...stretchHills,
   ],
   ridges: [],
   flats: [
@@ -662,7 +663,7 @@ export const crebMap: MapDef = {
     { id: 'village-dirt', kind: 'dirt', x: -56, z: 2636, radius: 8, ragged: 0.5 },
   ],
   bogs: crebRoadBogs,
-  gullies: [crebWashout, ...crebRoadGaps],
+  gullies: [crebWashout],
   pois: [
     {
       id: 'daintree-village',
@@ -815,10 +816,11 @@ export const crebMap: MapDef = {
     // plant the automatic winch trees (those follow features.mudHoles only).
     { x: -64.16, z: 2318.11, radius: 0.85, anchor: true, sink: 0.4 },
     { x: 139.38, z: 2007.23, radius: 0.85, anchor: true, sink: 0.4 },
-    { x: -93.62, z: 1715.12, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: -63.96, z: 1724.18, radius: 0.85, anchor: true, sink: 0.4 },
     { x: -106.06, z: 1257.06, radius: 0.85, anchor: true, sink: 0.4 },
-    { x: 208.02, z: -987.32, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: 150.75, z: -916.7, radius: 0.85, anchor: true, sink: 0.4 },
     { x: -32.51, z: -1683.41, radius: 0.85, anchor: true, sink: 0.4 },
+    { x: -12.1, z: -2213.53, radius: 0.85, anchor: true, sink: 0.4 },
   ],
   tors: [],
   fallenTrees: [{ id: 'fallen-tree', x: -5, z: 1048, headingDeg: 50, length: 11, radius: 0.4, mass: 700 }],
