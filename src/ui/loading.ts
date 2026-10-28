@@ -1,3 +1,4 @@
+import { glyphs } from '../data/controls';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import type { DamageMode } from '../data/damage';
 import { timeLabels, weatherLabels, type Conditions } from '../data/environment';
@@ -26,7 +27,11 @@ export class LoadingScreen {
   private padMovePrev = false;
   private raf = 0;
 
-  constructor(root: HTMLElement) {
+  constructor(
+    root: HTMLElement,
+    device: 'keyboard' | 'gamepad' | 'touch' = isTouchDevice() ? 'touch' : 'keyboard',
+  ) {
+    const pad = glyphs.gamepad;
     this.el = document.createElement('div');
     this.el.className = 'loading';
     this.el.innerHTML = `
@@ -39,14 +44,18 @@ export class LoadingScreen {
         <div class="progress"><div class="progress-fill"></div></div>
         <p class="progress-label">Starting…</p>
         <button type="button" class="welcome-drive briefing-drive hidden" data-briefing-drive>Drive</button>
-        <p class="launch-controls">${isTouchDevice() ? 'Stick to steer · GAS to drive · HAND to release brake' : 'WASD to drive · Space to release handbrake'}</p>
+        <p class="launch-controls">${device === 'gamepad' ? `Left stick to steer · ${pad.accelerate} to drive · ${pad.handbrake} to release handbrake` : device === 'touch' ? 'Stick to steer · GAS to drive · HAND to release brake' : 'WASD to drive · Space to release handbrake'}</p>
         <details class="launch-details"><summary>Story & trip details</summary><div class="briefing-text"></div><ul class="briefing-facts"></ul></details>
         <details class="launch-details"><summary>Controls</summary><ul class="controls-reminder">${
-          isTouchDevice()
-            ? `
+          device === 'gamepad'
+            ? `<li><b>Left stick</b> steer · <b>${pad.accelerate} / ${pad.brake}</b> drive, brake and reverse · <b>${pad.handbrake}</b> handbrake</li>
+          <li><b>${pad.range}</b> low range · <b>${pad.winch}</b> winch · <b>${pad.toolMenu}</b> tools</li>
+          <li><b>${pad.map}</b> map · <b>${pad.pause}</b> pause</li>`
+            : device === 'touch'
+              ? `
           <li><b>Stick</b> steer · <b>GAS / BRAKE</b> drive, brake and reverse · <b>HAND</b> handbrake</li>
           <li><b>LOW</b> range · <b>USE</b> winch · <b>TOOLS</b> tools · drag the view to look around</li>`
-            : `
+              : `
           <li><b>W / S</b> drive and brake · <b>A / D</b> steer · <b>Space</b> handbrake</li>
           <li><b>L</b> high / low range · <b>E</b> winch · <b>Q</b> tools</li>
           <li><b>M</b> map · <b>Esc</b> pause</li>`
@@ -111,7 +120,7 @@ export class LoadingScreen {
     }
   }
 
-  /** Loading done: show Drive, and resolve when it's pressed (click, Enter, Space, A or Start). */
+  /** Loading done: show Drive, and resolve when it's pressed (click, Enter, Space, Cross or Options). */
   waitForDrive(): Promise<void> {
     const button = this.el.querySelector('[data-briefing-drive]') as HTMLButtonElement;
     button.classList.remove('hidden');

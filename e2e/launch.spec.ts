@@ -154,6 +154,8 @@ test('a held controller button opens only the menu, with directions to select an
   await setButton(0, true);
   await expect(page.locator('.title-menu')).toBeVisible();
   await expect(page.locator('.welcome')).toHaveAttribute('data-input', 'gamepad');
+  await expect(page.locator('.title-input-hint [aria-label="Cross"]')).toHaveText('✕');
+  await expect(page.locator('.title-input-hint [aria-label="Circle"]')).toHaveText('○');
   await expect(page.locator('[data-welcome-drive]')).toHaveCount(0);
   await setButton(0, false);
   await page.waitForTimeout(60);

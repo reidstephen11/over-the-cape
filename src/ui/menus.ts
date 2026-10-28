@@ -29,7 +29,7 @@ export interface MenuActions {
 /**
  * Pause menu (SPEC §9): Resume, Map, Restart from last camp, Vehicle, Settings, Controls,
  * Main menu.
- * Works with mouse, keyboard (arrows + Enter, Esc) and gamepad (D-pad + A, B).
+ * Works with mouse, keyboard (arrows + Enter, Esc) and gamepad (D-pad + Cross, Circle).
  */
 export class PauseMenu {
   readonly el: HTMLElement;
@@ -141,7 +141,7 @@ export class PauseMenu {
         ? `<thead><tr><th>Action</th><th>Touch</th></tr></thead><tbody>${touchControlsTable
             .map(([a, t]) => `<tr><td>${a}</td><td>${t}</td></tr>`)
             .join('')}</tbody>`
-        : `<thead><tr><th>Action</th><th>Keyboard</th><th>Gamepad</th></tr></thead><tbody>${controlsTable
+        : `<thead><tr><th>Action</th><th>Keyboard</th><th>PS4 controller</th></tr></thead><tbody>${controlsTable
             .map(([a, k, g]) => `<tr><td>${a}</td><td>${k}</td><td>${g}</td></tr>`)
             .join('')}</tbody>`;
       // The table scrolls on its own so Back stays at the bottom of the card.

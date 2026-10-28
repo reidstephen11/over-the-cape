@@ -1376,3 +1376,9 @@ The loading briefing shows the mission, weather and deadline with one basic cont
 **Sound and loading.** The first gesture unlocks quiet synthesised water, wind and fire ambience. It follows master and ambience volume, fades when the page is hidden and releases its sources when driving takes over the same audio context. The driving engine is dynamically imported only after a play choice, so the title does not wait for Three.js and Rapier. The loading briefing uses the camp palette; story and detailed controls stay optional.
 
 **Checks.** Focused browser coverage exercises desktop, portrait and landscape menus; keyboard and held-controller input; Settings persistence without checkpoint loss; New Journey browsing; touch prompts; reduced motion; and test-mode save isolation. The welcome-to-driving check also returns through the title's Continue action and verifies automatic driving and preserved vehicle choice. Existing gameplay checks now enter setup through the title before choosing an episode or vehicle.
+
+## v0.62 — PS4 controller labels
+
+The owner's controller is a PS4 DualShock. Controller prompts now use ✕ Cross, ○ Circle, □ Square, △ Triangle, L1/R1, L2/R2, SHARE and OPTIONS. This covers the title menu, driving and recovery prompts, camera hints, HUD tooltips, map-close hint and pause Controls table. The briefing receives the input device from the title and shows PS4 controls when launched with the controller. Keyboard and touch reminders still follow their own input devices.
+
+The W3C standard button indices and action bindings are unchanged. The title's symbol glyphs have accessible Cross and Circle names. Existing controller navigation coverage verifies the rendered labels and selection/back behavior; the driving-input checks exercise the existing physical bindings.
