@@ -1,6 +1,6 @@
 # Over the Cape
 
-A single-player 4WD adventure up Cape York, told in episodes, that runs in the browser. Each episode is a stage of the trip north, from the Daintree to the tip of Australia, with its own map, a core mission, the weather and time of day the story sets, and a starting load of fuel, spare wheels and tyre plugs, which side trips off the main line can add to. Run out of fuel, get stranded with a flat and nothing to fix it with, wreck the engine or miss the deadline, and the episode ends; you restart from the last camp you reached. History notes at the places you pass tell what happened there.
+A single-player 4WD adventure up Cape York, told in episodes, that runs in the browser and can be installed from Chrome on Android. Each episode is a stage of the trip north, from the Daintree to the tip of Australia, with its own map, a core mission, the weather and time of day the story sets, and a starting load of fuel, spare wheels and tyre plugs, which side trips off the main line can add to. Run out of fuel, get stranded with a flat and nothing to fix it with, wreck the engine or miss the deadline, and the episode ends; you restart from the last camp you reached. History notes at the places you pass tell what happened there.
 
 The story follows a grandparent's 1986 trip up the Cape through their diary, and the vehicles are being rebuilt with more accurate body shapes: see [SPEC.md](SPEC.md) for the game's direction.
 
@@ -8,7 +8,7 @@ It is built on the code of [4WD Simulator](https://github.com/reidstephen11/4wd-
 
 ## Play
 
-**Online:** https://reidstephen11.github.io/over-the-cape/ (deployed from `main` by GitHub Actions).
+**Online:** https://reidstephen11.github.io/over-the-cape/ (deployed from `main` by GitHub Actions). On Android Chrome, Install app / Add to Home screen opens it as a standalone app (v0.82).
 
 **Locally** (Node 20 or newer):
 
@@ -220,6 +220,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v0.82 installable on a phone:** the loading screen shows v0.82. On Android Chrome, open the Pages link and use Install app / Add to Home screen. Does it open on the camp title (not "couldn't open app")? Held upright and sideways, do the phone controls still work? After a later deploy, does a second open pick up the new version?
 - [ ] **v0.81 Camel fixes:** the loading screen shows v0.81. In `?dev`, the Army trailer should only hitch to the Land Rover and the Unimog, not the Camel. Crawl the Camel through a rock garden: it should not hang up on its belly as easily.
 - [ ] **v0.80 Camel Trophy Land Rover 90:** the loading screen shows v0.80. Pick the Camel Trophy car: is it now a yellow Land Rover Ninety? Walk round it close up: front, both sides, back, roof and underneath. Does anything float or cut through the body? From the driver's seat, is the wheel on the left with the dials readable? Drive Big Red and Bob's Hill: does the diesel sound right, and does it feel slower but nimble? Wade a deep creek: does the snorkel keep it running? At night, do the beams start at the round headlamps, and do the four roof lamps light with high beam?
 - [ ] **v0.79 clay churn speed:** the loading screen shows v0.79. In the wet, spin on a clay climb: does it cut up at about the v0.71 pace, while the grass beside it still tears up faster?
