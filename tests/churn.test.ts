@@ -25,4 +25,17 @@ describe('ChurnMap', () => {
     expect(rolled.at(0, 0)).toBeLessThan(wet.at(0, 0) / 10);
     expect(rock.at(0, 0)).toBe(0);
   });
+
+  it('tears wet grass up faster than clay and to less grip, but barely marks dry grass', () => {
+    const clay = new ChurnMap();
+    const wet = new ChurnMap();
+    const dry = new ChurnMap();
+    clay.work(0, 0, SurfaceId.Clay, 1, 0, 1, 1);
+    wet.work(0, 0, SurfaceId.Grass, 1, 0, 1, 1);
+    dry.work(0, 0, SurfaceId.Grass, 1, 0, 0, 1);
+    expect(wet.at(0, 0)).toBeGreaterThan(clay.at(0, 0));
+    expect(dry.at(0, 0)).toBeLessThan(wet.at(0, 0) / 5);
+    for (let t = 0; t < 10; t += 0.1) wet.work(0, 0, SurfaceId.Grass, 1, 0, 1, 0.1);
+    expect(wet.grip(0, 0, SurfaceId.Grass)).toBeLessThan(clay.grip(0, 0, SurfaceId.Clay));
+  });
 });
