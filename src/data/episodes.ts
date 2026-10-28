@@ -8,6 +8,7 @@ import { lakefieldEpisode } from './episodes/lakefield';
 import { frenchmansEpisode } from './episodes/frenchmans';
 import type { SurpriseSetDef } from '../sim/world/surprisePlan';
 import type { StuckVehicleDef } from '../sim/stuckVehicle';
+import type { StrandedDef } from '../sim/stranded';
 import type { VehicleId } from './vehicle';
 
 /**
@@ -38,6 +39,13 @@ export interface RescueDef extends StuckVehicleDef {
   look: VehicleId;
   /** The HUD's mission line until they are out. */
   mission: string;
+  /** Shown as they come free. */
+  freed: { title: string; text: string };
+}
+
+/** Someone bogged off the track who'll give you something for winching them out (src/sim/stranded.ts). */
+export interface StrandedDriverDef extends StrandedDef {
+  look: VehicleId;
   /** Shown as they come free. */
   freed: { title: string; text: string };
 }
@@ -76,6 +84,8 @@ export interface EpisodeDef {
   timedSections?: readonly string[];
   /** Oncoming 4WDs on narrow tracks: one sets off along each the first time you reach its end. */
   traffic?: readonly { track: string; name: string; look: VehicleId }[];
+  /** Drivers bogged off the track who don't have to be helped, but pay in kit if they are. */
+  stranded?: readonly StrandedDriverDef[];
   /** Someone to winch out of a bog on the way: the goal doesn't count until they're free. */
   rescue?: RescueDef;
   /** Park an upright trailer at the goal with this many delivery drums still aboard. */

@@ -45,11 +45,12 @@ describe('Ironbark 4WD Park stations', () => {
       }
     }, 120_000);
 
-    it(`the deep Mud Pits are far slower for the ${tuning.name} with open diffs`, async () => {
+    it(`the deep Mud Pits stop the ${tuning.name} with open diffs, once its wheels have churned the mud`, async () => {
       const locked = await drive('mud-pits-harder', 'both', false, 200, tuning);
       const open = await drive('mud-pits-harder', 'open', false, 200, tuning);
-      expect(open.done).toBe(true);
-      expect(open.time).toBeGreaterThan(1.25 * locked.time);
+      expect(locked.done).toBe(true);
+      // Spinning open diffs dig the mud out from under themselves (v0.70) and never get across.
+      expect(open.done).toBe(false);
     }, 120_000);
   }
 });
