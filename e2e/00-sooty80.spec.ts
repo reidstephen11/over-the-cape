@@ -6,7 +6,8 @@ test('Sooty 80 Series can be selected, driven and restored after reload', async 
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
-  const button = page.getByRole('button', { name: /80 Series — Sooty MkII/ });
+  await page.locator('[data-group="setup"]').click();
+  const button = page.locator('[data-group="vehicle"][data-value="sooty80"]');
   await button.click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',

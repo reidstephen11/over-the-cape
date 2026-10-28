@@ -23,6 +23,7 @@ export class LoadingScreen {
   private readonly subtitle: HTMLElement;
   private onDrive: (() => void) | null = null;
   private padPrev = false;
+  private padMovePrev = false;
   private raf = 0;
 
   constructor(root: HTMLElement) {
@@ -30,13 +31,17 @@ export class LoadingScreen {
     this.el.className = 'loading';
     this.el.innerHTML = `
       <div class="loading-card paper">
-        <h1>Over the Cape</h1>
+        <p class="loading-brand">Over the Cape</p>
         <p class="subtitle"></p>
-        <div class="briefing hidden"><h2></h2><p class="briefing-route"></p><div class="briefing-text"></div><ul class="briefing-facts"></ul></div>
+        <div class="briefing hidden">
+          <h2></h2><p class="briefing-route"></p>
+          <p class="briefing-mission"></p><p class="briefing-conditions"></p><p class="briefing-resume" hidden></p>
         <div class="progress"><div class="progress-fill"></div></div>
         <p class="progress-label">Starting…</p>
         <button type="button" class="welcome-drive briefing-drive hidden" data-briefing-drive>Drive</button>
-        <ul class="controls-reminder">${
+        <p class="launch-controls">${isTouchDevice() ? 'Stick to steer · GAS to drive · HAND to release brake' : 'WASD to drive · Space to release handbrake'}</p>
+        <details class="launch-details"><summary>Story & trip details</summary><div class="briefing-text"></div><ul class="briefing-facts"></ul></details>
+        <details class="launch-details"><summary>Controls</summary><ul class="controls-reminder">${
           isTouchDevice()
             ? `
           <li><b>Stick</b> steer · <b>GAS / BRAKE</b> drive, brake and reverse · <b>HAND</b> handbrake</li>
@@ -46,7 +51,7 @@ export class LoadingScreen {
           <li><b>L</b> high / low range · <b>E</b> winch · <b>Q</b> tools</li>
           <li><b>M</b> map · <b>Esc</b> pause</li>`
         }
-        </ul>
+        </ul></details></div>
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>
       </div>`;
     root.appendChild(this.el);
@@ -73,7 +78,15 @@ export class LoadingScreen {
     this.el.classList.add('with-briefing');
     el.querySelector('h2')!.textContent = `Episode ${def.number} · ${def.title}`;
     el.querySelector('.briefing-route')!.textContent = def.route;
-    const text = el.querySelector('.briefing-text') as HTMLElement;
+    el.querySelector('.briefing-mission')!.textContent = def.mission;
+    el.querySelector('.briefing-conditions')!.textContent = replay
+      ? `${timeLabels[replay.time]} · ${weatherLabels[replay.weather]} · No time limit`
+      : `${weatherLabels[def.weather]}${def.storm ? ` · ${def.storm.forecast}` : ''} · ${def.deadline?.label ?? 'No deadline'}`;
+    const resume = el.querySelector('.briefing-resume') as HTMLElement;
+    resume.hidden = !resumeFrom;
+    resume.textContent = resumeFrom ? `Continuing from ${resumeFrom}` : '';
+    const text = this.el.querySelector('.briefing-text') as HTMLElement;
+    text.replaceChildren();
     for (const p of def.briefing) {
       const para = document.createElement('p');
       para.textContent = p;
@@ -89,7 +102,8 @@ export class LoadingScreen {
       `${endings[damage]} Camps save your progress; you restart from the last one you reached.`,
       ...(resumeFrom ? [`Carrying on from ${resumeFrom}.`] : []),
     ];
-    const list = el.querySelector('.briefing-facts') as HTMLElement;
+    const list = this.el.querySelector('.briefing-facts') as HTMLElement;
+    list.replaceChildren();
     for (const f of facts) {
       const li = document.createElement('li');
       li.textContent = f;
@@ -103,7 +117,8 @@ export class LoadingScreen {
     button.classList.remove('hidden');
     (this.el.querySelector('.progress') as HTMLElement).classList.add('hidden');
     this.label.classList.add('hidden');
-    button.focus({ preventScroll: true });
+    // Loading may finish while someone is reading: preserve their disclosure focus.
+    if (!this.el.contains(document.activeElement)) button.focus({ preventScroll: true });
     return new Promise((resolve) => {
       const go = () => {
         if (!this.onDrive) return;
@@ -113,6 +128,8 @@ export class LoadingScreen {
         resolve();
       };
       const onKey = (e: KeyboardEvent) => {
+        // Enter/Space on an optional disclosure must open it, without starting the game.
+        if ((e.target as HTMLElement).closest('summary')) return;
         if (e.code === 'Enter' || e.code === 'Space' || e.code === 'NumpadEnter') {
           e.preventDefault();
           go();
@@ -124,7 +141,24 @@ export class LoadingScreen {
       const poll = () => {
         const pad = [...(navigator.getGamepads ? navigator.getGamepads() : [])].find((p) => p && p.connected);
         const pressed = !!pad && (pad.buttons[0]?.pressed || pad.buttons[9]?.pressed);
-        if (pressed && !this.padPrev) go();
+        const direction = !pad
+          ? 0
+          : pad.buttons[12]?.pressed || pad.buttons[14]?.pressed
+            ? -1
+            : pad.buttons[13]?.pressed || pad.buttons[15]?.pressed
+              ? 1
+              : 0;
+        if (direction && !this.padMovePrev) {
+          const targets = [...this.el.querySelectorAll<HTMLElement>('[data-briefing-drive], summary')];
+          const current = targets.indexOf(document.activeElement as HTMLElement);
+          targets[(current + direction + targets.length) % targets.length]?.focus();
+        }
+        this.padMovePrev = !!direction;
+        if (pressed && !this.padPrev) {
+          const focused = document.activeElement as HTMLElement;
+          if (focused.matches('summary') && !pad?.buttons[9]?.pressed) focused.click();
+          else go();
+        }
         this.padPrev = pressed;
         if (this.onDrive) this.raf = requestAnimationFrame(poll);
       };
