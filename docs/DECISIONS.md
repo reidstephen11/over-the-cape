@@ -1350,3 +1350,13 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 **Problem.** v0.57's Big Red stopped every vehicle except the Unimog, even locked in low range. The bends sat on the steep clay, the third pinch ran 70 m at 21–22°, and the ruts carried on through the turns, where a good line cuts the corner.
 
 **Fix.** Each pinch is now straight, about 18°, 20° and 19°, and the turns (about 30° right, then 60° left) sit on the easings between them. The track is about 180 m long. The left-wheel rut and the two gutters run down the pinches only, with a break at each turn. The left-wheel rut is 0.2 m deep (was 0.27 m): where the third pinch crosses the spur, the slope leans the car onto it. Every vehicle climbs it locked in low range; high range, open diffs and a line drifted into the gutter still stop.
+
+## v0.59 — a shorter launch
+
+**Problem.** Launching showed every vehicle, difficulty rules, routes for every episode and future chapters, followed by several paragraphs of story and instructions before driving.
+
+**Change.** The welcome screen leads with episode selection, the chosen mission and Drive, or Continue when a camp is saved. Vehicle and difficulty choices are behind an expandable setup summary, alongside replay conditions for finished episodes. Upcoming chapters are collapsed. On phones the chosen mission and Drive appear before the episode list; short landscape screens keep Drive near the top.
+
+The loading briefing shows the mission, weather and deadline with one basic controls reminder. The full story, loadout and episode rules remain under **Story & trip details**, with the full keyboard or touch controls under **Controls**. Both are optional. Drive sits above them, so reading is never required to find the button. Keyboard activation of a disclosure does not launch the game; gamepad directions can focus the disclosures and A opens them. Start still drives.
+
+**Verification.** Browser checks cover desktop, portrait and landscape visibility, changing setup with the keyboard, saved-camp Continue/Start again, episode selection and finished-episode replay settings. The existing welcome-to-driving check also opens the story with Enter while ready and verifies that the game remains stopped until Drive. Vehicle and episode checks open setup before changing their choices.

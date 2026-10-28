@@ -22,6 +22,7 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   // Conditions are the story's until the episode is finished.
   await expect(page.locator('[data-group="time"]')).toHaveCount(0);
 
+  await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /Land Rover 110 Perentie/ }).click();
   await page.locator('[data-group="damage"][data-value="realistic"]').click();
   await expect(page.locator('.damage-note')).toContainText('spare');
@@ -36,6 +37,13 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   await expect(briefing).toContainText('50 L of fuel');
   await expect(briefing).toContainText('a wrecked engine');
   await page.locator('[data-briefing-drive]:not(.hidden)').waitFor({ timeout: 300_000 });
+  await expect(page.locator('.briefing-text')).not.toBeVisible();
+  const story = page.getByText('Story & trip details', { exact: true });
+  await story.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.briefing-text')).toBeVisible();
+  expect(await page.evaluate(() => window.__game?.ready)).not.toBe(true);
+  await story.click();
   await shot(page, 'welcome', 'briefing');
   await driveFromBriefing(page);
   expect(await page.evaluate(() => window.__game!.episodeId())).toBe('creb');

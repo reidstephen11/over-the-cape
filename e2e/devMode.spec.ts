@@ -10,6 +10,7 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   await page.goto('/?dev&surprises=off');
   // Every episode is open, with conditions to pick, before any is finished.
   await expect(page.locator('[data-group="episode"][disabled]')).toHaveCount(0);
+  await page.locator('[data-group="setup"]').click();
   await expect(page.locator('[data-group="time"]').first()).toBeVisible();
   await expect(page.locator('.welcome-card')).toContainText('Test mode');
   await page.locator('[data-welcome-drive]').click();
