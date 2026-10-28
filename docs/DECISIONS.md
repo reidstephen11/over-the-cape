@@ -1491,13 +1491,16 @@ The next three of Codex's model studies (branch `codex/vehicle-model-review`), a
 - **Not done here: the Camel Trophy car.** Codex rebuilt it, at the owner's request, as the 1986 event's Land Rover Ninety: a different body on a 2.36 m wheelbase with coil springs, narrower tyres and a left-hand-drive cab. That changes the tuning and the cockpit, not just the drawing, so it is its own update.
 - **Tests.** Eight CREB autopilot drives (`tests/creb.test.ts`) fail on `main` before this change as well, so they are not caused by it.
 
-## v0.77: churn rates as shipped
+## v0.77: track dirt churns slower than clay
 
-- v0.75 put wet clay, mud and black soil back to their v0.71 churn speed (0.6 × the v0.74 base rates, so 0.12 per second spinning), because the faster clay stopped the short-wheelbase 4WD on the Bloomfield Track's Rossville pinch even with both lockers. Wet grass keeps the faster rate (0.28 per second, about 2.3 × clay), so the verge still tears up quickest.
-- Track dirt now churns at 0.36 × the base rates, 0.6 × clay, as v0.74 meant; v0.75 had left it as fast as clay.
-- The Bloomfield clay test still fails after v0.75: it passes with v0.75's clay rate before the engine-overheating change, so the hotter engine is what now stalls the car there.
+- Track dirt now churns at 0.36 × the base rates (0.6 × clay), as v0.74 meant.
+- (Corrected in v0.79: this entry first said v0.75 had slowed the clay churn and that engine heat broke the Bloomfield clay test. Neither was true; see v0.79.)
 
 ## v0.78: a lugging engine makes less heat
 
 - After v0.75 the Crawler Creek autopilot, crawling the whole loop in low range, set off the overheating warning. Crawl control holds the pedal down at low revs, and v0.75 counted low revs as half the work of high revs. Heat comes from the power made, so the load is now the pedal × (a quarter plus three quarters of the rev share). High revs flat out in low range still warn in about 18 s and boil in about 28 s; 80% throttle at 3000 rpm boils in about 50 s; 60% at 2400 rpm takes about 2½ minutes; a gentle crawl settles at about 0.69.
 - `tests/crebStretches.test.ts` "Bloomfield Track over two knolls" (short-wheelbase 4WD on clay) still fails, but it fails the same way with engine heat switched off and on v0.74, so it isn't the engine heat.
+
+## v0.79: clay churns at its old speed again
+
+- v0.74 made wet clay, mud and black soil churn two-thirds faster (0.12 → 0.2 per second spinning). That stopped the short-wheelbase 4WD on the Bloomfield Track's Rossville pinch even with both lockers, which the stretch test says it must climb. They are back at their v0.71 speed (0.6 × the base rates). Wet grass keeps the faster rate (0.28 per second, about 2.3 × clay, and 40% grip lost when torn up), so the verge is still the worst way round a greasy pinch; track dirt churns at 0.6 × clay.
