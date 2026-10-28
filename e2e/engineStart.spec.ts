@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, lowGraphics, TEST_STEPS_PER_FRAME } from './helpers';
+import { collectErrors, lowGraphics, openJourney, TEST_STEPS_PER_FRAME } from './helpers';
 
 test('the engine is off on arrival until the accelerator starts it, then the car moves off', async ({
   page,
@@ -8,6 +8,7 @@ test('the engine is off on arrival until the accelerator starts it, then the car
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
   await page.locator('[data-briefing-drive]:not(.hidden)').click({ timeout: 300_000 });
   await page.waitForFunction(() => window.__game?.ready === true, null, { timeout: 300_000 });

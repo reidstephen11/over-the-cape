@@ -1376,3 +1376,11 @@ The loading briefing shows the mission, weather and deadline with one basic cont
 **Sound and loading.** The first gesture unlocks quiet synthesised water, wind and fire ambience. It follows master and ambience volume, fades when the page is hidden and releases its sources when driving takes over the same audio context. The driving engine is dynamically imported only after a play choice, so the title does not wait for Three.js and Rapier. The loading briefing uses the camp palette; story and detailed controls stay optional.
 
 **Checks.** Focused browser coverage exercises desktop, portrait and landscape menus; keyboard and held-controller input; Settings persistence without checkpoint loss; New Journey browsing; touch prompts; reduced motion; and test-mode save isolation. The welcome-to-driving check also returns through the title's Continue action and verifies automatic driving and preserved vehicle choice. Existing gameplay checks now enter setup through the title before choosing an episode or vehicle.
+
+## v0.62 — the engine starts on the accelerator
+
+**Problem.** The engine sound ran from the loading screen, and the starter played over it when the episode began. The engine synthesiser's settings defaulted to a running engine at 800 rpm, so it idled as soon as it was created, before the game had told it anything; and the game started the engine itself on arrival.
+
+**Change.** On arrival, after restarting from a camp and after changing vehicle, the engine is switched off (`Vehicle.engineOff`): no sound, 0 rpm, and the brakes hold the car. The first press of the accelerator, forward or reverse, turns it over on the starter (the sim's `starting` event plays the starter sound), and the car drives once it fires, as before. A "Start the engine" prompt shows until then. In the synthesiser, the worklet now defaults to a stopped engine (0 rpm, not running), and a master fade keeps it silent while the engine is stopped and not on the starter. That fade also cuts the faint hiss that was left after the engine ran down.
+
+The browser test helper `waitEngine` starts a switched-off engine through a test hook, as the pedal would, so the existing checks still begin with the engine running; a new browser test drives the start-up through the pedal itself.
