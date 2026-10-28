@@ -128,6 +128,13 @@ export class Vehicle {
    * until it catches. Starting up, after a vehicle swap and after a flooded stall.
    */
   crank = 0;
+  /**
+   * The engine is switched off, as on arriving at the start of a run: silent until the
+   * pedal is pressed, which turns it over on the starter.
+   */
+  engineOff = false;
+  /** Set when pressing the pedal turned the switched-off engine over this step. */
+  startedByPedal = false;
   /** Engine power multiplier applied this step (dips while flooding sputters). */
   enginePower = 1;
   /**
@@ -312,10 +319,19 @@ export class Vehicle {
   /** Turn the engine over on the starter; it drives once it catches. False if it's already starting. */
   startEngine(): boolean {
     if (this.crank > 0) return false;
+    this.engineOff = false;
     this.crank = this.tuning.engine.crankSeconds;
     this.drivetrain.engineRunning = false;
     this.drivetrain.rpm = this.tuning.engine.crankRpm;
     return true;
+  }
+
+  /** Switch the engine off: it stays off until the pedal is pressed. */
+  switchOff(): void {
+    this.engineOff = true;
+    this.crank = 0;
+    this.drivetrain.engineRunning = false;
+    this.drivetrain.rpm = 0;
   }
 
   toggleRange(): boolean {
@@ -431,6 +447,8 @@ export class Vehicle {
         reverse = true;
       }
     }
+    // Pressing the pedal (either way) with the engine switched off turns it over first.
+    this.startedByPedal = this.engineOff && throttle > 0 && this.startEngine();
     if (this.precisionCrawl && throttle > 0) {
       const crawl = t.crawling;
       const target = (throttle * (reverse ? crawl.reverseKmh : crawl.forwardKmh)) / 3.6;
@@ -459,7 +477,11 @@ export class Vehicle {
     }
     // A wrecked engine (realistic damage) or an empty tank turns over on the starter but never runs.
     this.drivetrain.engineRunning =
-      !this.condition.flood.stalled && !cranking && this.condition.engine > 0 && this.condition.fuel > 0;
+      !this.engineOff &&
+      !this.condition.flood.stalled &&
+      !cranking &&
+      this.condition.engine > 0 &&
+      this.condition.fuel > 0;
     if (this.rand() < dt * 6) this.sputterRand = this.rand();
     this.enginePower =
       enginePowerMultiplier(this.condition) * floodPower(this.condition.flood, this.sputterRand);

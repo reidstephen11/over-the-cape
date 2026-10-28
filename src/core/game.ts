@@ -559,10 +559,15 @@ export class Game {
 
   start(): void {
     this.loop.start();
-    // The engine starts as you arrive; the car drives once it has caught.
-    this.sim.startEngine(LOCAL_VEHICLE);
+    // The engine is off as you arrive: the first press of the pedal starts it.
+    this.sim.switchOffEngine(LOCAL_VEHICLE);
     // A run under way can be continued from the main menu, even before the first camp.
     this.keepCheckpoint();
+  }
+
+  /** Turn the engine over on the starter, as the first press of the pedal does. */
+  startEngine(): void {
+    this.sim.startEngine(LOCAL_VEHICLE);
   }
 
   // --- Saving ---------------------------------------------------------------
@@ -720,7 +725,7 @@ export class Game {
       this.view.snap();
       this.loop.paused = this.pause.isOpen || this.map.isOpen;
     });
-    this.sim.startEngine(LOCAL_VEHICLE);
+    this.sim.switchOffEngine(LOCAL_VEHICLE);
   }
 
   /**
@@ -749,7 +754,7 @@ export class Game {
     this.tool.cancel();
     this.crawlRuns.cancel();
     this.sim.replaceVehicle(LOCAL_VEHICLE, def.tuning);
-    this.sim.startEngine(LOCAL_VEHICLE);
+    this.sim.switchOffEngine(LOCAL_VEHICLE);
     this.view.scene.remove(this.model.root);
     this.model.dispose();
     this.model = new VehicleModel(def.tuning, this.lampBeams);
