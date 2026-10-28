@@ -62,6 +62,8 @@ export interface EpisodeDef {
    * only holds until that place (a POI id) is reached, and the HUD shows `mission` till then.
    */
   deadline?: { hour: number; label: string; until?: string; mission?: string };
+  /** Track ids of the climbs and descents timed end to end, with bests kept (src/sim/sectionTimes.ts). */
+  timedSections?: readonly string[];
   /** Someone to winch out of a bog on the way: the goal doesn't count until they're free. */
   rescue?: RescueDef;
   /** Park an upright trailer at the goal with this many delivery drums still aboard. */

@@ -1397,7 +1397,12 @@ The browser test helper `waitEngine` starts a switched-off engine through a test
 - **Best score saved with the best time** in the episode's progress (`bestScore`), and both shown on the finish screen, so a run has something to beat.
 - **Episodes 2–4 stay for now.** The owner wants them gone to focus on the CREB, but taking them out breaks several browser tests and saves, so the steps are written in `docs/ROADMAP.md` for a later update.
 
-## v0.65 — controller type and active-input prompts
+## v0.65: section times
+
+- **Big Red, Bob's Hill and the concrete are timed end to end.** Each section runs between the first and last points of its track (`timedSections` on the episode). The clock starts on leaving one end and stops at the other, so it works whichever way the section is driven. Turning back to the start, wandering well away from the far end or taking over 15 minutes drops the attempt. A small reuse of the crawl-trail code was considered, but crawl runs bring markers, penalties and HUD prompts that these sections don't need.
+- **Bests are saved per section** with the episode's progress (`sectionBests`), shown in a card as each section is finished and listed on the finish screen.
+
+## v0.66 — controller type and active-input prompts
 
 **Choice.** Title and pause Settings offer PlayStation (PS4), Xbox and Generic button labels. The preference is kept in the existing settings save; old or invalid values fall back to PlayStation, preserving the owner's PS4 setup. Generic uses numbered standard buttons. The setting changes labels without changing the physical standard gamepad bindings.
 

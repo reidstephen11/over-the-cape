@@ -4,6 +4,7 @@ import { devEnvironment, devFlood, isDevMode, type DevWeather } from '../data/de
 import { environmentFor, presetHours, type Conditions } from '../data/environment';
 import { episodeWeatherAt } from '../data/weatherTimeline';
 import { scoreRun, type RunScore } from '../sim/runScore';
+import { SectionTimes, type SectionTime } from '../sim/sectionTimes';
 import { clockTime, episodeOrder, episodes, type EpisodeDef, type EpisodeId } from '../data/episodes';
 import { usePalette } from '../render/colors';
 import { qualityPresets } from '../data/quality';
@@ -142,6 +143,7 @@ export class Game {
   private readonly findMarkers: FindMarkers;
   /** Optional scored runs on the crawl trails. */
   readonly crawlRuns: CrawlRuns;
+  readonly sectionTimes: SectionTimes;
   /** Gates driven on a gate trail (Crawler Creek). */
   readonly gateCount: GateCount;
   readonly hud: Hud;
@@ -212,6 +214,13 @@ export class Game {
     this.lampBeams = sim.env.lampBeams;
     const tuning = vehicles[vehicleId].tuning;
     this.crawlRuns = new CrawlRuns(world.map.crawlTrails ?? [], world.features.tracks, crawlBests);
+    const sections = (setup.def.timedSections ?? []).flatMap((id) => {
+      const t = world.map.tracks.find((tr) => tr.id === id);
+      if (!t || t.points.length < 2) return [];
+      const [a, b] = [t.points[0], t.points[t.points.length - 1]];
+      return [{ id, name: t.name ?? id, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] } }];
+    });
+    this.sectionTimes = new SectionTimes(sections, setup.progress[setup.def.id]?.sectionBests ?? {});
     this.gateCount = new GateCount(world.features.gates);
     this.input = new InputManager(window);
     this.input.setSteering(tuning.steering);
@@ -1099,6 +1108,10 @@ export class Game {
       ...(was.bestMinutes !== undefined
         ? [newTime ? 'New best time' : `Best time ${Math.round(was.bestMinutes)} minutes`]
         : []),
+      ...this.sectionTimes.times.map(
+        (t) =>
+          `${t.name} ${clock(t.seconds)}${t.best === null || t.seconds < t.best ? ' · best' : ` · best ${clock(t.best)}`}`,
+      ),
     ];
   }
 
@@ -1118,6 +1131,7 @@ export class Game {
       completed: true,
       bestMinutes: Math.min(was.bestMinutes ?? Infinity, Math.round(minutes * 10) / 10),
       bestScore: Math.max(was.bestScore ?? 0, score.points),
+      sectionBests: { ...this.sectionTimes.bests },
       checkpoint: null,
     };
     this.save();
@@ -1262,6 +1276,8 @@ export class Game {
       dt,
     });
     if (run) this.onCrawlRun(run);
+    const section = this.sectionTimes.update(p.x, p.z, dt);
+    if (section) this.onSectionTime(section);
     if (this.gateCount.total) {
       const f = v.forward();
       const flat = Math.hypot(f.x, f.z) || 1;
@@ -1288,6 +1304,20 @@ export class Game {
       );
       this.audio.discovery();
     }
+  }
+
+  private onSectionTime(t: SectionTime): void {
+    const best = t.best === null || t.seconds < t.best;
+    this.hud.runResult(
+      best ? (t.best === null ? 'Section time' : 'New best') : 'Section time',
+      `${t.name} · ${clock(t.seconds)}`,
+      t.best === null ? 'First time up' : best ? `Was ${clock(t.best)}` : `Best ${clock(t.best)}`,
+    );
+    this.progress[this.episode.id] = {
+      ...this.episodeProgress,
+      sectionBests: { ...this.sectionTimes.bests },
+    };
+    this.save();
   }
 
   private onCrawlRun(e: CrawlRunEvent): void {
