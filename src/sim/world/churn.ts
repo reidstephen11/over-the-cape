@@ -16,7 +16,7 @@ const ROLL_RATE = 0.006;
 interface Churnable {
   /** Grip lost when fully churned. */
   loss: number;
-  /** How fast it cuts up, against wet clay. */
+  /** How fast it cuts up, as a share of the base rates. */
   rate: number;
   /** Dry ground churns this fraction as fast as soaked ground. */
   dry: number;
@@ -28,7 +28,7 @@ const churnable: Partial<Record<SurfaceId, Churnable>> = {
   [SurfaceId.BlackSoil]: { loss: 0.3, rate: 1, dry: 0.2 },
   // A wet sward tears off its roots and leaves slick mud; dry grass barely marks.
   [SurfaceId.Grass]: { loss: 0.4, rate: 1.4, dry: 0.1 },
-  [SurfaceId.Dirt]: { loss: 0.2, rate: 0.6, dry: 0.2 },
+  [SurfaceId.Dirt]: { loss: 0.2, rate: 0.36, dry: 0.2 },
 };
 
 export class ChurnMap {
