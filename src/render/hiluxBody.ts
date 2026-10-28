@@ -941,14 +941,13 @@ export function buildHiluxBody(tuning: VehicleTuning, wheel: THREE.BufferGeometr
   }
   const g = b.build();
   const pos = g.getAttribute('position');
+  // The cab narrows towards the roof: up to 6.5% in from the waist.
   for (let i = 0; i < pos.count; i++) {
-    let x = pos.getX(i),
+    const x = pos.getX(i),
       y = pos.getY(i),
       z = pos.getZ(i);
-    if (z > -0.97 && z < 0.38 && y > 0.61 && Math.abs(x) < 0.86) {
-      x *= 1 - 0.065 * Math.min(1, (y - 0.61) / 0.65);
-    }
-    pos.setXYZ(i, x, y, z);
+    if (z > -0.97 && z < 0.38 && y > 0.61 && Math.abs(x) < 0.86)
+      pos.setX(i, x * (1 - 0.065 * Math.min(1, (y - 0.61) / 0.65)));
   }
   // Retain the builder's smooth normals on tubes/lenses; adjust only the shaped cab.
   const normals = g.getAttribute('normal');
