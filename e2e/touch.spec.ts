@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
 /** Real touch points through Chrome's input pipeline, so fingers can be held down. */
 async function fingers(page: Page) {
@@ -77,8 +77,10 @@ test.describe('phone', () => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
     await page.goto('/?surprises=off');
+    await openJourney(page);
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await openJourney(page);
     await waitReady(page);
     const controls = page.locator('.touch-controls');
     // The mission and what's on board sit clear of the controls.
@@ -224,8 +226,10 @@ test.describe('phone on the CREB', () => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
     await page.goto('/?surprises=off');
+    await openJourney(page);
     await page.evaluate(() => localStorage.clear());
     await page.reload();
+    await openJourney(page);
     await waitReady(page);
     const f = await fingers(page);
     // Low range brings up the crawl gauges; GAS against the handbrake brings up a prompt.
@@ -311,6 +315,7 @@ test('desktop shows no touch controls', async ({ page }) => {
   test.setTimeout(600_000);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   await expect(page.locator('.touch-controls')).toBeHidden();
   await expect(page.locator('.status-drive').first()).toBeVisible();

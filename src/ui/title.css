@@ -1,0 +1,543 @@
+/* The approved camp-at-dusk opening. The scene stays behind live, accessible UI. */
+.welcome,
+.loading {
+  --title-gold: #ecb15e;
+  --title-white: #f8ebd4;
+  --title-muted: #c5c5c8;
+  color: var(--title-white);
+  background: #091425;
+  isolation: isolate;
+}
+
+.welcome::before,
+.loading::before {
+  content: '';
+  position: fixed;
+  inset: -2%;
+  z-index: -2;
+  background: url('./assets/camp-dusk.webp') center / cover no-repeat;
+  animation: camp-drift 32s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.welcome::after,
+.loading::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, transparent 35%, #060c1933 65%, #060c1959);
+  pointer-events: none;
+}
+
+@keyframes camp-drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.035) translateX(-0.4%);
+  }
+}
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: safe center;
+  padding: 44px 6vw;
+}
+
+.title-home {
+  width: min(37vw, 600px);
+  text-align: center;
+  margin-top: -4vh;
+  animation: camp-reveal 0.8s ease both;
+}
+
+@keyframes camp-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.title-compass {
+  width: clamp(38px, 4.5vw, 72px);
+  height: clamp(38px, 4.5vw, 72px);
+  color: var(--title-gold);
+  margin-bottom: 20px;
+  filter: drop-shadow(0 2px 6px #0005);
+}
+
+.welcome .title-logo h1 {
+  font:
+    900 clamp(52px, 7.6vw, 128px) / 0.87 Georgia,
+    'Times New Roman',
+    serif;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  color: var(--title-white);
+  text-shadow: 0 3px 20px #0005;
+  margin: 0;
+}
+
+.title-logo h1 span {
+  display: block;
+}
+.title-logo h1 span:last-child {
+  font-size: 0.69em;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+.title-rule {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 76%;
+  margin: 22px auto 46px;
+  color: var(--title-gold);
+  font-size: 12px;
+}
+.title-rule::before,
+.title-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--title-gold));
+}
+.title-rule::after {
+  transform: rotate(180deg);
+}
+
+.title-menu {
+  display: grid;
+  gap: 6px;
+  width: max-content;
+  margin: 0 auto;
+  text-align: left;
+}
+.title-menu button,
+.title-begin {
+  position: relative;
+  background: transparent;
+  border: 0;
+  color: var(--title-white);
+  cursor: pointer;
+  font:
+    700 clamp(16px, 1.5vw, 25px) / 1.3 Georgia,
+    serif;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding: 14px 6px;
+  min-height: 48px;
+  text-align: left;
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+.title-menu button::before {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 2px;
+  background: var(--title-gold);
+  left: -40px;
+  top: 50%;
+  opacity: 0;
+}
+.title-menu button:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+.welcome .title-menu button:focus-visible {
+  outline: none;
+}
+.title-menu button.focused,
+.title-menu button:hover:not(:disabled) {
+  color: var(--title-gold);
+  transform: translateX(3px);
+}
+.title-menu button.focused::before,
+.title-menu button:hover:not(:disabled)::before {
+  opacity: 1;
+}
+.welcome .title-begin:focus-visible {
+  outline: 1px solid var(--title-gold);
+  outline-offset: 6px;
+}
+.title-begin {
+  font: 700 13px var(--font);
+  letter-spacing: 0.22em;
+  text-align: center;
+  animation: title-prompt 3s ease-in-out infinite;
+}
+@keyframes title-prompt {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.title-version,
+.title-input-hint {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  margin: 0;
+  font-size: 11px;
+  color: var(--title-muted);
+}
+.title-version {
+  left: max(28px, env(safe-area-inset-left));
+}
+.title-input-hint {
+  right: max(6vw, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.title-input-hint b {
+  display: inline-block;
+  padding: 4px 7px;
+  border: 1px solid #f8ebd488;
+  border-radius: 4px;
+  font-size: 10px;
+  color: var(--title-white);
+  font-weight: 400;
+}
+
+.title-panel {
+  background: #080f1de8;
+  border: 1px solid #c5c5c833;
+  border-radius: 5px;
+  box-shadow: 0 18px 70px #0005;
+  backdrop-filter: blur(10px);
+}
+.welcome[data-screen='journey'],
+.welcome[data-screen='settings'] {
+  align-items: center;
+}
+.welcome[data-screen='journey']::after,
+.welcome[data-screen='settings']::after {
+  background: #03091644;
+}
+.welcome .welcome-card {
+  width: min(940px, 100%);
+  padding: 22px 28px;
+  margin: auto 0;
+}
+.title-back {
+  padding: 8px 0;
+  min-height: 44px;
+  display: block;
+  border: 0;
+  background: transparent;
+  color: var(--title-muted);
+  font: 400 14px var(--font);
+  cursor: pointer;
+}
+.title-eyebrow {
+  color: var(--title-gold);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  margin: 12px 0 4px;
+}
+.welcome-card .title-eyebrow {
+  text-align: left;
+}
+.welcome .welcome-card h1 {
+  font:
+    400 34px Georgia,
+    serif;
+  margin: 0 0 24px;
+  text-align: left;
+}
+.welcome .welcome-section h2 {
+  font-family: Georgia, serif;
+  font-size: 21px;
+}
+.welcome .welcome-grid {
+  gap: 28px;
+}
+.welcome .welcome-trip {
+  background: transparent;
+  border-left: 1px solid #c5c5c833;
+  border-radius: 0;
+  padding: 12px 0 12px 28px;
+}
+.welcome .welcome-trip h2 {
+  font-size: 28px;
+}
+.welcome .welcome-kicker {
+  color: var(--title-gold);
+}
+.welcome .welcome-route,
+.welcome .welcome-note,
+.welcome .welcome-upcoming,
+.welcome .welcome-later,
+.welcome .welcome-rules,
+.welcome .build-label,
+.welcome .welcome-setup-toggle span:last-child {
+  color: var(--title-muted);
+}
+.welcome .welcome-option {
+  background: #e6d4ad0a;
+  border: 1px solid #d3c9b144;
+  color: var(--title-white);
+  border-radius: 3px;
+  font-size: 14px;
+  min-height: 44px;
+}
+.welcome .welcome-option small {
+  color: var(--title-muted);
+  font-size: 11px;
+  margin-top: 3px;
+}
+.welcome .welcome-option.on {
+  background: #ecb15e1c;
+  border-color: var(--title-gold);
+  color: var(--title-gold);
+}
+.welcome .welcome-option:disabled {
+  opacity: 0.4;
+}
+.welcome .welcome-setup-toggle {
+  color: var(--title-white);
+  border-top-color: #c5c5c833;
+}
+.welcome .welcome-drive,
+.loading .welcome-drive {
+  background: var(--title-gold);
+  border: 1px solid var(--title-gold);
+  border-radius: 3px;
+  color: #171a20;
+  font: 800 15px var(--font);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  min-height: 48px;
+}
+.welcome .welcome-option.focused,
+.welcome .welcome-option:hover:not(:disabled),
+.welcome .welcome-drive.focused,
+.welcome .welcome-drive:hover,
+.welcome .welcome-setup-toggle.focused,
+.welcome button:focus-visible {
+  outline: 2px solid var(--title-gold);
+  outline-offset: 3px;
+}
+.welcome summary:focus-visible,
+.loading summary:focus-visible {
+  outline-color: var(--title-gold);
+}
+
+.title-settings {
+  width: min(520px, 100%);
+  padding: 22px 30px 34px;
+  margin: auto 0;
+}
+.title-settings h2 {
+  margin: 0 0 30px;
+  font:
+    400 34px Georgia,
+    serif;
+}
+.title-setting {
+  margin-top: 26px;
+}
+.title-setting h3,
+.title-setting label {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+.title-setting label {
+  display: flex;
+}
+.title-setting output {
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--title-muted);
+}
+.title-setting input {
+  width: 100%;
+  accent-color: var(--title-gold);
+  min-height: 32px;
+  margin: 0;
+}
+.title-setting input:focus-visible,
+.title-setting input.focused {
+  outline: 2px solid var(--title-gold);
+  outline-offset: 4px;
+}
+
+.loading {
+  justify-items: end;
+  padding: 36px 6vw;
+}
+.loading .loading-card.paper {
+  background: #080f1ddd;
+  border: 1px solid #c5c5c833;
+  border-radius: 5px;
+  box-shadow: 0 18px 70px #0005;
+  backdrop-filter: blur(10px);
+  width: min(560px, 90vw);
+  max-height: 88dvh;
+  overflow-y: auto;
+  padding: 28px;
+}
+.loading .loading-brand {
+  color: var(--title-gold);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font: 400 11px var(--font);
+}
+.loading .briefing h2 {
+  font-family: Georgia, serif;
+  font-size: 26px;
+}
+.loading .briefing-route,
+.loading .briefing-conditions,
+.loading .briefing-resume,
+.loading .launch-controls,
+.loading .launch-details,
+.loading .progress-label,
+.loading .build-label {
+  color: var(--title-muted);
+}
+.loading .progress {
+  border: 0;
+  height: 3px;
+  border-radius: 0;
+  background: #f8ebd422;
+  margin-top: 26px;
+}
+.loading .progress-fill {
+  background: var(--title-gold);
+}
+.loading .progress-label {
+  text-align: center;
+}
+.loading .launch-details,
+.loading .briefing-facts {
+  border-color: #c5c5c833;
+}
+.loading.continuing .briefing-route,
+.loading.continuing .briefing-mission,
+.loading.continuing .briefing-conditions,
+.loading.continuing .launch-controls,
+.loading.continuing .launch-details {
+  display: none;
+}
+.loading.continuing .briefing-resume {
+  margin-top: 18px;
+}
+
+@media (max-width: 720px) {
+  .welcome {
+    padding: 28px 24px 64px;
+  }
+  .welcome::before,
+  .loading::before {
+    background-position: 35% center;
+  }
+  .welcome::after {
+    background: linear-gradient(180deg, #030b1c66, #030b1c11 48%, #030b1ccc);
+  }
+  .title-home {
+    width: 100%;
+    margin: auto 0;
+  }
+  .title-compass {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 16px;
+  }
+  .welcome .title-logo h1 {
+    font-size: clamp(66px, 20vw, 110px);
+  }
+  .title-rule {
+    width: 60%;
+    margin-bottom: 36px;
+  }
+  .title-menu {
+    padding-left: 24px;
+  }
+  .title-menu button {
+    font-size: 18px;
+    padding: 15px 6px;
+  }
+  .title-input-hint {
+    right: 24px;
+  }
+  .welcome .welcome-card {
+    padding: 16px 20px;
+  }
+  .welcome .welcome-grid {
+    gap: 18px;
+  }
+  .welcome .welcome-trip {
+    padding: 0 0 18px;
+    border-left: 0;
+    border-bottom: 1px solid #c5c5c833;
+  }
+  .title-settings {
+    padding: 16px 22px 28px;
+  }
+  .loading {
+    justify-items: center;
+    padding: 20px;
+  }
+  .loading .loading-card.paper {
+    padding: 22px;
+  }
+}
+
+@media (min-width: 721px) and (max-height: 500px) {
+  .welcome {
+    padding: 20px 5vw 45px;
+  }
+  .title-home {
+    width: 40vw;
+    margin-top: 0;
+  }
+  .title-compass {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 10px;
+  }
+  .welcome .title-logo h1 {
+    font-size: 60px;
+  }
+  .title-rule {
+    margin: 12px auto 18px;
+  }
+  .title-menu {
+    gap: 0;
+  }
+  .title-menu button {
+    padding: 9px 6px;
+    min-height: 38px;
+    font-size: 15px;
+  }
+  .welcome .welcome-card {
+    padding: 14px 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome::before,
+  .loading::before,
+  .title-home,
+  .title-begin {
+    animation: none;
+  }
+  .title-menu button {
+    transition: none;
+  }
+}

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, driveFromBriefing, lowGraphics, shot } from './helpers';
+import { openJourney, collectErrors, driveFromBriefing, lowGraphics, shot } from './helpers';
 
 test('test mode opens every episode and sets the weather, the clock, the place and the vehicle', async ({
   page,
@@ -8,6 +8,7 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?dev&surprises=off');
+  await openJourney(page);
   // Every episode is open, with conditions to pick, before any is finished.
   await expect(page.locator('[data-group="episode"][disabled]')).toHaveCount(0);
   await page.locator('[data-group="setup"]').click();

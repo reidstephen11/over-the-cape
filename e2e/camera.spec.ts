@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, shot, waitReady } from './helpers';
+import { openJourney, collectErrors, shot, waitReady } from './helpers';
 
 /** The camera's bearing from the vehicle, relative to its heading (the parked car can creep round). */
 async function bearing(page: Page): Promise<number> {
@@ -22,6 +22,7 @@ test('orbit camera: mouse, zoom, recenter button and menu isolation', async ({ p
     ),
   );
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   await page.evaluate(() => window.__game!.setInput({ handbrake: true }));
   await expect(page.locator('.camera-help')).toBeVisible();

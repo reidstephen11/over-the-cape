@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, driveFromBriefing, shot, waitSim } from './helpers';
+import { openJourney, collectErrors, driveFromBriefing, shot, waitSim } from './helpers';
 
 test('Episode 4: the trailer carries the delivery, camps retain a trailer left behind, and Continue restores it', async ({
   page,
@@ -20,6 +20,7 @@ test('Episode 4: the trailer carries the delivery, camps retain a trailer left b
       );
   });
   await page.goto('/');
+  await openJourney(page);
   await expect(page.locator('.welcome-option.on[data-group="episode"]')).toHaveAttribute(
     'data-value',
     'frenchmans',
@@ -54,6 +55,7 @@ test('Episode 4: the trailer carries the delivery, camps retain a trailer left b
   await page.evaluate(() => window.__game!.teleportPoi('pascoe-camp'));
   await expect.poll(() => page.evaluate(() => window.__game!.episode().camp)).toBe('pascoe-camp');
   await page.reload();
+  await openJourney(page);
   await expect(page.locator('.welcome-option.on[data-group="start"]')).toHaveAttribute(
     'data-value',
     'resume',
@@ -98,6 +100,7 @@ test('Episode 4 shows the fork, rutted climb, sideling and curved Pascoe line', 
     ),
   );
   await page.goto('/?dev');
+  await openJourney(page);
   await page.locator('[data-welcome-drive]').click();
   await driveFromBriefing(page);
   await page.evaluate(() => {

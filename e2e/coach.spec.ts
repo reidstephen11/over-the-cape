@@ -1,5 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, driveFromBriefing, lowGraphics, shot, waitReady, waitSim } from './helpers';
+import {
+  openJourney,
+  collectErrors,
+  driveFromBriefing,
+  lowGraphics,
+  shot,
+  waitReady,
+  waitSim,
+} from './helpers';
 
 const episode = (page: Page) => page.evaluate(() => window.__game!.episode());
 
@@ -8,6 +16,7 @@ test('Episode 2 unlocks, crosses the range, saves on the ridge and opens Lakefie
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/');
+  await openJourney(page);
   const coach = page.locator('[data-group="episode"][data-value="coach"]');
   await expect(coach).toBeDisabled();
   await waitReady(page);
@@ -16,6 +25,7 @@ test('Episode 2 unlocks, crosses the range, saves on the ridge and opens Lakefie
     .poll(() => page.evaluate(() => window.__game!.result()), { timeout: 120_000 })
     .toEqual({ open: true, title: 'The CREB Track' });
   await Promise.all([page.waitForEvent('load'), page.evaluate(() => window.__game!.pickResult('menu'))]);
+  await openJourney(page);
 
   await expect(page.locator('.welcome-option.on[data-group="episode"]')).toHaveAttribute(
     'data-value',
@@ -51,6 +61,7 @@ test('Episode 2 unlocks, crosses the range, saves on the ridge and opens Lakefie
   await expect.poll(() => page.evaluate(() => window.__game!.historyShown())).toContain('Hotel site');
   await shot(page, 'coach', 'ridge-camp');
   await page.reload();
+  await openJourney(page);
   await waitReady(page);
   expect(await episode(page)).toMatchObject({ status: 'driving', camp: 'hotel-site' });
 
@@ -69,6 +80,7 @@ test('Episode 2 unlocks, crosses the range, saves on the ridge and opens Lakefie
   await expect(page.locator('.result-card')).toContainText('Lakefield');
   await shot(page, 'coach', 'range-exit');
   await Promise.all([page.waitForEvent('load'), page.evaluate(() => window.__game!.pickResult('menu'))]);
+  await openJourney(page);
   await expect(page.locator('.welcome-option.on[data-group="episode"]')).toHaveAttribute(
     'data-value',
     'lakefield',
@@ -94,6 +106,7 @@ test('a save at a removed river camp starts safely at the new range camp', async
     );
   });
   await page.goto('/');
+  await openJourney(page);
   await waitReady(page);
   expect(await episode(page)).toMatchObject({ status: 'driving', camp: 'range-camp' });
   await expect(page.locator('.mission-clock')).toContainText('9:00 am');

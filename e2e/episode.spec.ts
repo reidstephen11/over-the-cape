@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
+  openJourney,
   collectErrors,
   driveFromBriefing,
   lowGraphics,
@@ -18,6 +19,7 @@ test('camps save the run; the clock, an empty tank, a flat with no spare and the
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   // Realistic damage, so a flat tyre with nothing to fix it ends the episode.
   await page.locator('[data-group="setup"]').click();
   await page.locator('[data-group="damage"][data-value="realistic"]').click();
@@ -105,6 +107,7 @@ test('reaching the Lions Den finishes the episode and opens replays in other con
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   await page.evaluate(() => window.__game!.teleportPoi('lions-den'));
   await expect
@@ -123,6 +126,7 @@ test('reaching the Lions Den finishes the episode and opens replays in other con
   // Back at the welcome screen the episode is finished and can be replayed at dusk in the rain.
   await page.keyboard.press('Escape');
   await Promise.all([page.waitForEvent('load'), page.getByRole('button', { name: /^Main menu/ }).click()]);
+  await openJourney(page);
   await expect(page.locator('.welcome-option[data-group="episode"]').first()).toContainText('Finished');
   await page.locator('[data-group="setup"]').click();
   await page.locator('[data-group="time"][data-value="dusk"]').click();

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitReady } from './helpers';
 
 declare global {
   interface Window {
@@ -40,6 +40,7 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   await recordDiscoveryCards(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   // Starting at Daintree Village discovers it.
   await expect.poll(() => discoveryCards(page), { timeout: 30_000 }).toContain('Daintree Village');
@@ -105,6 +106,7 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
 
   // Reload: settings are kept, and the run carries on from its last camp.
   await page.reload();
+  await openJourney(page);
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.episode())).toMatchObject({ camp: 'daintree-village' });
   await expect(page.locator('.status-speed-value')).toContainText('mph');
@@ -123,6 +125,7 @@ test('M5: with storage blocked the game still runs', async ({ page }) => {
   });
   await recordDiscoveryCards(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   await expect.poll(() => discoveryCards(page), { timeout: 30_000 }).toContain('Daintree Village');
   const t0 = await page.evaluate(() => window.__game!.simTime());

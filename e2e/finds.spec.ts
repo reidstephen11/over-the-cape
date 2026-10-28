@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitEngine, waitReady } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitEngine, waitReady } from './helpers';
 
 const health = (page: Page) => page.evaluate(() => window.__game!.health());
 const finds = (page: Page) => page.evaluate(() => window.__game!.finds());
@@ -9,6 +9,7 @@ test('finds off the main line load once, show in the supplies, and camps keep th
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   const start = await health(page);
 
