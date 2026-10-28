@@ -1,26 +1,52 @@
 import * as THREE from 'three';
-import type { Livery } from './vehicleBody';
-import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
+
+import { VehicleBuilder } from './vehicleGeometry';
 
 /**
- * Camel Trophy dress for the short-wheelbase 4WD: Land Rover's Sandglow yellow all
- * over, black decals on the doors and bonnet, four roof lamps on the rack and a
- * snorkel up the left windscreen pillar. The decal lettering and the camel are drawn
- * here as flat strokes and a traced outline, not copied artwork.
+ * Lettering and the camel for the 1986 event plaques on the Ninety, drawn as flat strokes
+ * and a traced outline, not copied artwork.
  */
-const sandglow = new THREE.Color('#E0A12B');
-export const camelLivery: Livery = { body: sandglow, roof: sandglow };
-export const camelRim = sandglow.clone().multiplyScalar(0.9);
-
-const ink = new THREE.Color('#1D1E1B'),
-  black = new THREE.Color('#232926'),
-  lensColour = new THREE.Color('#E6E3CC'),
-  steel = new THREE.Color('#959B94');
+const ink = new THREE.Color('#263C62');
 
 type Stroke = ReadonlyArray<readonly [number, number]>;
 
 /** Block capitals as polylines in a cell one unit high; `w` is the advance width. */
 const FONT: Record<string, { w: number; strokes: Stroke[] }> = {
+  D: {
+    w: 0.8,
+    strokes: [
+      [
+        [0, 0],
+        [0, 1],
+        [0.5, 1],
+        [0.8, 0.75],
+        [0.8, 0.25],
+        [0.5, 0],
+        [0, 0],
+      ],
+    ],
+  },
+  N: {
+    w: 0.8,
+    strokes: [
+      [
+        [0, 0],
+        [0, 1],
+        [0.8, 0],
+        [0.8, 1],
+      ],
+    ],
+  },
+  V: {
+    w: 0.8,
+    strokes: [
+      [
+        [0, 1],
+        [0.4, 0],
+        [0.8, 1],
+      ],
+    ],
+  },
   A: {
     w: 0.8,
     strokes: [
@@ -325,89 +351,4 @@ export function camel(b: VehicleBuilder, width: number, facing: 1 | -1 = 1): voi
     if ((q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x) < 0) [q, r] = [r, q];
     b.tri({ x: p.x, y: p.y, z: 0 }, { x: q.x, y: q.y, z: 0 }, { x: r.x, y: r.y, z: 0 }, ink);
   }
-}
-
-/** Door, bonnet and side decals, laid 3 mm proud of the panels they sit on. */
-function decals(b: VehicleBuilder): void {
-  b.slot = M.Paint;
-  for (const side of [-1, 1] as const) {
-    b.tag = Z.Sides;
-    // Local x runs the way the lettering reads from outside; the camel walks forwards. The
-    // door decal sits below the pressed crease along the side.
-    b.push()
-      .translate(side * 0.835, 0, 0)
-      .rotate(0, (side * Math.PI) / 2, 0);
-    b.push().translate(0, 0.41, 0);
-    camel(b, 0.32, side === 1 ? 1 : -1);
-    b.pop();
-    b.push().translate(0, 0.345, 0);
-    letter(b, 'CAMEL', 0.085);
-    b.pop();
-    b.push().translate(0, 0.24, 0);
-    letter(b, 'TROPHY', 0.052, 0.19, 0.42);
-    b.pop();
-    // The event's name along the rear quarter, above the wheel arch.
-    b.tag = Z.Rear;
-    b.push().translate(-side * 1.31, 0.72, 0);
-    letter(b, 'AUSTRALIA', 0.06, 0.17, 0.3);
-    b.pop();
-    b.pop();
-  }
-  // Bonnet: the camel and the name read from in front of the car.
-  b.tag = Z.Front;
-  b.push()
-    .translate(0, 0.868, -1.19)
-    .rotate(Math.PI / 2, Math.PI, 0);
-  b.push().translate(0, -0.04, 0);
-  camel(b, 0.42, 1);
-  b.pop();
-  b.push().translate(0, -0.15, 0);
-  letter(b, 'CAMEL TROPHY', 0.055, 0.18, 0.3);
-  b.pop();
-  b.pop();
-}
-
-/** Raised air intake: a riser from the left wing up the windscreen pillar to a ram head. */
-function snorkel(b: VehicleBuilder): void {
-  const base = new THREE.Vector3(-0.76, 0.79, -0.78),
-    bend = new THREE.Vector3(-0.885, 1.4, -0.6);
-  b.block(base.x, base.y + 0.01, base.z, 0.12, 0.04, 0.16, black, M.Rubber, Z.Front, 0.01);
-  b.rod(base, bend, 0.046, black, M.Rubber, Z.Front);
-  b.rod(bend, { x: bend.x, y: 1.5, z: bend.z }, 0.046, black, M.Rubber, Z.Front);
-  // Ram head facing forwards, with a slotted mouth.
-  b.block(-0.885, 1.53, -0.64, 0.11, 0.11, 0.15, black, M.Rubber, Z.Front, 0.03);
-  for (let i = 0; i < 4; i++)
-    b.block(-0.885, 1.497 + i * 0.022, -0.718, 0.085, 0.008, 0.006, steel, M.Metal, Z.Front);
-  // Brackets to the front face of the windscreen pillar, which leans back 0.09 m per metre.
-  for (const y of [1.1, 1.32]) {
-    const on = base.clone().lerp(bend, (y - base.y) / (bend.y - base.y));
-    b.rod(on, { x: -0.8, y, z: -0.56 + (y - 1.19) * 0.09 }, 0.01, steel, M.Metal, Z.Front);
-  }
-}
-
-/** Four round driving lamps on a bar across the front of the roof rack. */
-function roofLamps(b: VehicleBuilder): void {
-  b.rod({ x: -0.66, y: 1.985, z: -0.43 }, { x: 0.66, y: 1.985, z: -0.43 }, 0.018, black, M.Metal, Z.Roof);
-  for (const x of [-0.5, -0.17, 0.17, 0.5]) {
-    b.rod({ x, y: 1.985, z: -0.43 }, { x, y: 2.04, z: -0.46 }, 0.012, black, M.Metal, Z.Roof);
-    b.slot = M.Rubber;
-    b.tag = Z.Roof;
-    b.push()
-      .translate(x, 2.07, -0.48)
-      .rotate(Math.PI / 2, 0, 0);
-    b.geometry(new THREE.CylinderGeometry(0.085, 0.07, 0.09, 24), black);
-    b.pop();
-    b.ring(x, 2.07, -0.527, 0.078, 0.009, steel, M.Metal, 'z', Z.Roof);
-    b.slot = M.DrivingLamp;
-    b.push().translate(x, 2.07, -0.53).scale(1, 1, 0.25);
-    b.geometry(new THREE.SphereGeometry(0.07, 20, 10), lensColour);
-    b.pop();
-  }
-}
-
-/** Everything the Camel Trophy car carries on top of the plain short-wheelbase body. */
-export function addCamelTrophyKit(b: VehicleBuilder): void {
-  decals(b);
-  snorkel(b);
-  roofLamps(b);
 }

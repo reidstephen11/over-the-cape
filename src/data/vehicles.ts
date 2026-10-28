@@ -142,6 +142,62 @@ function raised(c: CabinLayout, dy: number): CabinLayout {
   };
 }
 
+const perentieCabin: CabinLayout = {
+  // Upright seat high on the seat box, close to the door and the screen's top rail.
+  eye: { x: 0.42, y: 1.24, z: 0.04 },
+  pitch: -0.22,
+  dialY: 0.86,
+  dialZ: -0.468,
+  dials: {
+    speed: { x: 0.42, radius: 0.062, max: 160, major: 20, minor: 10 },
+    rpm: { x: 0.29, radius: 0.04, max: 5000, major: 1000, minor: 500 },
+    oil: { x: 0.55, radius: 0.04, max: 1, major: 0.5, minor: 0.25 },
+  },
+  lamps: { xs: [0.28, 0.335, 0.39, 0.445, 0.5, 0.555, 0.61], y: 0.775, z: -0.466 },
+  // The transmission handbrake lever on the tunnel beside the driver.
+  handbrake: {
+    kind: 'lever',
+    base: { x: 0.22, y: 0.47, z: -0.08 },
+    tip: { x: 0.21, y: 0.67, z: -0.21 },
+    travel: 0.6,
+  },
+  steeringWheel: {
+    centre: { x: 0.42, y: 0.86, z: -0.24 },
+    columnBase: { x: 0.42, y: 0.516, z: -0.479 },
+    radius: 0.205,
+    // Power steering, about 1½ turns to full lock.
+    ratio: 17,
+    spokes: 4,
+  },
+};
+
+/**
+ * The Ninety's left-hand-drive cabin: the Perentie's seat, dash and wheel mirrored to the left
+ * and moved 8 cm back to the shorter front. Manual steering, about 3½ turns lock to lock.
+ */
+function camelCabin(): CabinLayout {
+  const c = perentieCabin;
+  const mirror = (p: { x: number; y: number; z: number }) => ({ ...p, x: -p.x, z: p.z + 0.08 });
+  return {
+    ...c,
+    eye: mirror(c.eye),
+    dialZ: c.dialZ + 0.08,
+    dials: {
+      speed: { ...c.dials.speed, x: -c.dials.speed.x },
+      rpm: { ...c.dials.rpm, x: -c.dials.rpm.x },
+      oil: { ...c.dials.oil, x: -c.dials.oil.x },
+    },
+    lamps: { ...c.lamps, xs: c.lamps.xs.map((x) => -x), z: c.lamps.z + 0.08 },
+    handbrake: { ...c.handbrake, base: mirror(c.handbrake.base), tip: mirror(c.handbrake.tip) },
+    steeringWheel: {
+      ...c.steeringWheel,
+      centre: mirror(c.steeringWheel.centre),
+      columnBase: mirror(c.steeringWheel.columnBase),
+      ratio: 22,
+    },
+  };
+}
+
 export const vehicles: Record<VehicleId, VehicleDef> = {
   sooty80: {
     tuning: sooty80Tuning,
@@ -157,40 +213,13 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
   },
   camel: {
     tuning: camelTuning,
-    blurb: 'The short-wheelbase 4WD in Camel Trophy yellow, with roof lamps and a snorkel.',
-    cabin: shortieCabin,
+    blurb: '1986 Camel Trophy Land Rover Ninety, 2.5 L diesel, five-speed, roof lamps, snorkel and winch.',
+    cabin: camelCabin(),
   },
   perentie: {
     tuning: perentieTuning,
     blurb: 'Army Land Rover 110 soft top, 3.9 L Isuzu diesel, four-speed.',
-    cabin: {
-      // Upright seat high on the seat box, close to the door and the screen's top rail.
-      eye: { x: 0.42, y: 1.24, z: 0.04 },
-      pitch: -0.22,
-      dialY: 0.86,
-      dialZ: -0.468,
-      dials: {
-        speed: { x: 0.42, radius: 0.062, max: 160, major: 20, minor: 10 },
-        rpm: { x: 0.29, radius: 0.04, max: 5000, major: 1000, minor: 500 },
-        oil: { x: 0.55, radius: 0.04, max: 1, major: 0.5, minor: 0.25 },
-      },
-      lamps: { xs: [0.28, 0.335, 0.39, 0.445, 0.5, 0.555, 0.61], y: 0.775, z: -0.466 },
-      // The transmission handbrake lever on the tunnel beside the driver.
-      handbrake: {
-        kind: 'lever',
-        base: { x: 0.22, y: 0.47, z: -0.08 },
-        tip: { x: 0.21, y: 0.67, z: -0.21 },
-        travel: 0.6,
-      },
-      steeringWheel: {
-        centre: { x: 0.42, y: 0.86, z: -0.24 },
-        columnBase: { x: 0.42, y: 0.516, z: -0.479 },
-        radius: 0.205,
-        // Power steering, about 1½ turns to full lock.
-        ratio: 17,
-        spokes: 4,
-      },
-    },
+    cabin: perentieCabin,
   },
   hilux: {
     tuning: hiluxTuning,
