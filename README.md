@@ -220,6 +220,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v0.79 clay churn speed:** the loading screen shows v0.79. In the wet, spin on a clay climb: does it cut up at about the v0.71 pace, while the grass beside it still tears up faster?
 - [ ] **v0.78 lugging engine:** the loading screen shows v0.78. Crawling slowly in low range (or with crawl control) should warm the engine a little but stay below HIGH; revving hard in low range should still overheat it within about half a minute.
 - [ ] **v0.77 churn rates:** the loading screen shows v0.77. In the wet, spin on the dirt part of the track: does it cut up more slowly than the red clay, and the grass beside it fastest?
 - [ ] **v0.76 new 40 Series, Hilux and LC79:** the loading screen and pause menu show v0.76. Pick the short-wheelbase 4WD, the Hilux and the LC79 in turn and walk round each, close up: front, both sides, back, roof and underneath. Does anything float, cut through the body or look wrong? Can you read TOYOTA on each grille? On the LC79, look under the tray at the rear wheels: no daylight through the arches. Steer to full lock and drive over rough ground: do the tyres stay clear? At night, do the Hilux's headlight beams start at its lamps? Does the game run as smoothly on a phone?

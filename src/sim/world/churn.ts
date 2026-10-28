@@ -23,9 +23,9 @@ interface Churnable {
 }
 
 const churnable: Partial<Record<SurfaceId, Churnable>> = {
-  [SurfaceId.Clay]: { loss: 0.3, rate: 1, dry: 0.25 },
-  [SurfaceId.Mud]: { loss: 0.3, rate: 1, dry: 0.25 },
-  [SurfaceId.BlackSoil]: { loss: 0.3, rate: 1, dry: 0.2 },
+  [SurfaceId.Clay]: { loss: 0.3, rate: 0.6, dry: 0.25 },
+  [SurfaceId.Mud]: { loss: 0.3, rate: 0.6, dry: 0.25 },
+  [SurfaceId.BlackSoil]: { loss: 0.3, rate: 0.6, dry: 0.2 },
   // A wet sward tears off its roots and leaves slick mud; dry grass barely marks.
   [SurfaceId.Grass]: { loss: 0.4, rate: 1.4, dry: 0.1 },
   [SurfaceId.Dirt]: { loss: 0.2, rate: 0.36, dry: 0.2 },
