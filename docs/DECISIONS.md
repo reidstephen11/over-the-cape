@@ -1490,3 +1490,9 @@ The next three of Codex's model studies (branch `codex/vehicle-model-review`), a
 - **Cost (body plus four wheels).** 40 Series about 91,000 triangles (77,000 before), Camel Trophy car 96,000 (82,000), Hilux 83,000 (67,000), LC79 117,000 (86,000). The Unimog stays the largest at 124,000.
 - **Not done here: the Camel Trophy car.** Codex rebuilt it, at the owner's request, as the 1986 event's Land Rover Ninety: a different body on a 2.36 m wheelbase with coil springs, narrower tyres and a left-hand-drive cab. That changes the tuning and the cockpit, not just the drawing, so it is its own update.
 - **Tests.** Eight CREB autopilot drives (`tests/creb.test.ts`) fail on `main` before this change as well, so they are not caused by it.
+
+## v0.77: churn rates as shipped
+
+- v0.75 put wet clay, mud and black soil back to their v0.71 churn speed (0.6 × the v0.74 base rates, so 0.12 per second spinning), because the faster clay stopped the short-wheelbase 4WD on the Bloomfield Track's Rossville pinch even with both lockers. Wet grass keeps the faster rate (0.28 per second, about 2.3 × clay), so the verge still tears up quickest.
+- Track dirt now churns at 0.36 × the base rates, 0.6 × clay, as v0.74 meant; v0.75 had left it as fast as clay.
+- The Bloomfield clay test still fails after v0.75: it passes with v0.75's clay rate before the engine-overheating change, so the hotter engine is what now stalls the car there.
