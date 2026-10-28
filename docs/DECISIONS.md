@@ -1496,3 +1496,8 @@ The next three of Codex's model studies (branch `codex/vehicle-model-review`), a
 - v0.75 put wet clay, mud and black soil back to their v0.71 churn speed (0.6 × the v0.74 base rates, so 0.12 per second spinning), because the faster clay stopped the short-wheelbase 4WD on the Bloomfield Track's Rossville pinch even with both lockers. Wet grass keeps the faster rate (0.28 per second, about 2.3 × clay), so the verge still tears up quickest.
 - Track dirt now churns at 0.36 × the base rates, 0.6 × clay, as v0.74 meant; v0.75 had left it as fast as clay.
 - The Bloomfield clay test still fails after v0.75: it passes with v0.75's clay rate before the engine-overheating change, so the hotter engine is what now stalls the car there.
+
+## v0.78: a lugging engine makes less heat
+
+- After v0.75 the Crawler Creek autopilot, crawling the whole loop in low range, set off the overheating warning. Crawl control holds the pedal down at low revs, and v0.75 counted low revs as half the work of high revs. Heat comes from the power made, so the load is now the pedal × (a quarter plus three quarters of the rev share). High revs flat out in low range still warn in about 18 s and boil in about 28 s; 80% throttle at 3000 rpm boils in about 50 s; 60% at 2400 rpm takes about 2½ minutes; a gentle crawl settles at about 0.69.
+- `tests/crebStretches.test.ts` "Bloomfield Track over two knolls" (short-wheelbase 4WD on clay) still fails, but it fails the same way with engine heat switched off and on v0.74, so it isn't the engine heat.

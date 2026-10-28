@@ -57,9 +57,9 @@ describe('engine heat', () => {
     expect(enginePowerMultiplier(v.condition)).toBeLessThan(0.95);
   });
 
-  it('boils at half throttle in low range given a couple of minutes', () => {
+  it('boils at part throttle in low range given a few minutes', () => {
     const v = fake(0.6, 2400, 'low', 3);
-    run(v, 150);
+    run(v, 200);
     expect(v.condition.engineHeat).toBeGreaterThan(1);
   });
 
