@@ -67,7 +67,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'paddock-creeks': {
       title: 'Paddock creeks',
-      text: 'Creeks come down off the range across the paddocks and cut their beds below the flats. The road drops in and climbs out up a steep, wet bank. Low range before the water, keep moving through it, and let the engine pull you up the far side.',
+      text: 'Creeks come down off the range across the paddocks and cut their beds below the flats. The road drops into the water and climbs out up a wet bank. Slow down before the water, keep moving through it, and let the engine pull you up the far side.',
     },
     'ridge-washout': {
       title: 'Washout',

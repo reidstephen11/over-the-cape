@@ -13,9 +13,9 @@ import type {
 /**
  * Each stretch of the CREB asks something different of the driver, going north:
  *   the village road  – orientation over a spur, one control at a time
- *   the paddock road  – bogs in the hollows and creeks with steep banks, plus potholes
- *   the range         – Big Red's crown, the ridge washout, Roaring Meg's ledge, Bob's Hill's
- *                       rock bands, the sideling
+ *   the paddock road  – bogs in the hollows and creeks off the range, plus potholes
+ *   the range         – Big Red's crown, the ridge washout, Roaring Meg's ledge, Bob's Hill,
+ *                       the sideling
  *   the Bloomfield Track – creeks, bogs, a wet clay pinch and a granite pinch
  * The roads climb real hills (`stretchHills`) rather than embankments on the flat. Deep
  * bogs lie across the roads in the hollows. The ridge still keeps the hollow in the saddle
@@ -86,10 +86,10 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
     routeHint: 'One control at a time: low range L, locks Z and X, crawl P, then the winch',
   },
   // Potholes still pinch a tyre taken fast. The bogs lie across the road in the hollows,
-  // and two creeks cut down through the paddocks with steep banks to climb out of.
+  // and two creeks come down off the range through the hollows.
   'paddock-road': {
     rough: { ...roadRough, potholes: 11, potholeDepth: 0.34, bogs: 0 },
-    routeHint: 'Bogs in the hollows and creeks with steep banks. Low range to climb out',
+    routeHint: 'Bogs in the hollows and creeks off the range. Keep moving in the water',
   },
   // The ridge keeps its deep bog and the long wet stretch below Roaring Meg camp.
   'creb-ridge': {
@@ -415,7 +415,7 @@ export const stretchPois: PoiDef[] = [
     x: fords.paddockSouth[0],
     z: fords.paddockSouth[1],
     radius: 20,
-    note: 'Creeks off the range with steep banks to climb out of',
+    note: 'Creeks off the range, with wet banks to climb out of',
   },
   {
     id: 'ridge-washout',
@@ -481,9 +481,9 @@ export const stretchProps: PropDef[] = [
   { kind: 'signpost', x: -67.23, z: 2350.4, headingDeg: 151, text: 'Winch — E R F' },
   { kind: 'signpost', x: 163.3, z: 1979.1, headingDeg: 215, text: 'Potholes' },
   { kind: 'signpost', x: 103.49, z: 2033.62, headingDeg: 236, text: 'Bog — winch' },
-  { kind: 'signpost', x: 152.97, z: 1811.61, headingDeg: 134, text: 'Creek — steep bank' },
+  { kind: 'signpost', x: 152.97, z: 1811.61, headingDeg: 134, text: 'Creek' },
   { kind: 'signpost', x: -22.44, z: 1736.05, headingDeg: 108, text: 'Bog — winch' },
-  { kind: 'signpost', x: -211.88, z: 1654.97, headingDeg: 133, text: 'Creek — steep bank' },
+  { kind: 'signpost', x: -211.88, z: 1654.97, headingDeg: 133, text: 'Creek' },
   { kind: 'signpost', x: -93.52, z: 1296.4, headingDeg: 158, text: 'Bog, then pinch' },
   { kind: 'signpost', x: -12.5, z: 802, headingDeg: 150, text: 'Washout' },
   { kind: 'signpost', x: -101.76, z: 923.41, headingDeg: 198, text: 'Ledge — low range' },

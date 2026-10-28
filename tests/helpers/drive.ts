@@ -322,7 +322,15 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       limit = 120,
       stopAt,
       planks,
-    }: { speed?: number; limit?: number; stopAt?: number; planks?: GullyDef } = {},
+      open = false,
+    }: {
+      speed?: number;
+      limit?: number;
+      stopAt?: number;
+      planks?: GullyDef;
+      /** Crawling, leave the diffs open. */
+      open?: boolean;
+    } = {},
   ) {
     const sim = new Simulation(await loadRapier(), world, env);
     try {
@@ -367,7 +375,7 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
           stopped += DT;
         }
         for (const axle of ['front', 'rear'] as const)
-          if (v.differentials[axle] !== crawl && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
+          if (v.differentials[axle] !== (crawl && !open) && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
         inputs.set('p', command);
         sim.step(inputs, DT);
         tilt = Math.max(tilt, v.tiltDeg());

@@ -1316,14 +1316,15 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 **Obstacles that belong there.**
 
 - The two road plank gaps are gone; the planks are for the ridge washout. The flat-road rock steps are gone.
-- The paddock road has two creeks coming off the range in its hollows (`paddock-creek-south`, `paddock-creek-north`), with banks to climb out of. Its second bog moved into the hollow at 690 m.
+- The paddock road has two creeks coming off the range in its hollows (`paddock-creek-south`, `paddock-creek-north`); the road drops about 2 m into each and climbs a bank of up to 15° out. Its second bog moved into the hollow at 690 m.
 - The Bloomfield Track's first bog moved onto the river flat, and a third bog lies in the hollow where the plank gap was.
 - The Bloomfield Track goes straight over two knolls. On the Rossville pinch the gravel has washed off, leaving wet red clay at about 21° for 70 m: a new `clay` stretch on a gravel track (TrackDef) paints it clay. On the granite pinch near Helenvale five rock ledges (0.4–0.55 m) and boulders on the treads stand out of a climb of up to 24°.
-- Bob's Hill now climbs to 22° up its knob, with two bands of rock across the steepest part. Big Red is 18° at the foot and 23° at its steepest, near what wet clay grips (about 23°); steeper clay would stop every vehicle, so the harder climbs use rock.
+- Bob's Hill climbs about 21° up its knob, which is lower so the track no longer runs in a trench. Rock bands across it were tried and dropped: the rock gave open diffs the grip to climb it, and a wheel rut stopped even locked vehicles. Big Red is 18° at the foot and 23° at its steepest, near what wet clay grips (about 23°); steeper clay would stop every vehicle, so the steeper new climb is on rock. Big Red's crown rut is 0.27 m deep (was 0.24): with the track lying on the face, the Unimog had started to climb it with open diffs. Its shoulders are 3 m (was 4), so the bare clay either side is narrower.
+- Diff locks: Big Red, the Rossville pinch and the granite pinch stop every vehicle tested with open diffs; Bob's Hill stops all but the Unimog.
 - The orientation keeps its four lessons and signs, now on a spur: ramp onto a bench (low range), a rock band with boulders either side (crawl), a 21° pinch (lockers), then the bog in the hollow before the river (winch).
 
 **Kept exactly.** The range-top sideling is pinned to its old heights, within a few centimetres: its fast-slide test is sensitive to small changes in the ground there.
 
-**Tests.** The gap test now counts climbs steeper than 15° as obstacles (paddock road under 450 m between them, was 400). New: the Rossville pinch climbs crawling with the lockers and not in high range; the granite pinch climbs crawling without cutting a tyre. The potholes test uses clear stretches away from the new creeks.
+**Tests.** The gap test now counts climbs steeper than 15° as obstacles (paddock road under 450 m between them, was 400). New: the Rossville pinch and the granite pinch climb crawling with both lockers, and stop with the diffs open (the test helper's `stretch` takes `open`); the Rossville pinch also stops in high range, and the granite pinch is crawled without cutting a tyre. The potholes test uses clear stretches away from the new creeks.
 
 **Not in this update.** Episode 1's other legs, the shared physics and the HUD are unchanged.

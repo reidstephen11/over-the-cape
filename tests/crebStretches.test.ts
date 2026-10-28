@@ -191,7 +191,7 @@ describe('the CREB, stretch by stretch', () => {
     }
   }, 600_000);
 
-  it('takes the Bloomfield Track over two knolls: wet clay on the Rossville pinch, granite ledges at Helenvale', async () => {
+  it('takes the Bloomfield Track over two knolls that need both lockers: wet clay on the Rossville pinch, granite ledges at Helenvale', async () => {
     const track = trackOf('bloomfield-track');
     // The roads climb hills rather than embankments built on the flat.
     expect(steepest(track)).toBeGreaterThan(19);
@@ -200,9 +200,19 @@ describe('the CREB, stretch by stretch', () => {
       expect(clay.done, `${tuning.name} clay`).toBe(true);
       const clayHigh = await stretch('bloomfield-track', 840, 935, 'high', tuning, { speed: 4, limit: 90 });
       expect(clayHigh.done, `${tuning.name} clay high`).toBe(false);
+      const clayOpen = await stretch('bloomfield-track', 840, 935, 'crawl', tuning, {
+        limit: 150,
+        open: true,
+      });
+      expect(clayOpen.done, `${tuning.name} clay open diffs`).toBe(false);
       const granite = await stretch('bloomfield-track', 1435, 1520, 'crawl', tuning, { limit: 150 });
       expect(granite.done, `${tuning.name} granite`).toBe(true);
       expect(granite.cuts, `${tuning.name} granite`).toBe(0);
+      const graniteOpen = await stretch('bloomfield-track', 1435, 1520, 'crawl', tuning, {
+        limit: 150,
+        open: true,
+      });
+      expect(graniteOpen.done, `${tuning.name} granite open diffs`).toBe(false);
     }
   }, 600_000);
 
