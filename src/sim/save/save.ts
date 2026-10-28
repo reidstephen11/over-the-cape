@@ -24,6 +24,8 @@ export interface EpisodeProgress {
   completed: boolean;
   /** Quickest finish, in minutes of driving. */
   bestMinutes?: number;
+  /** Highest finish score, out of 1000 (src/sim/runScore.ts). */
+  bestScore?: number;
   /** A run under way: where it restarts from (the last camp reached). */
   checkpoint?: Checkpoint | null;
 }
@@ -113,9 +115,11 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
 function readProgress(raw: unknown): EpisodeProgress {
   const p = (raw ?? {}) as Partial<EpisodeProgress>;
   const best = num(p.bestMinutes, NaN);
+  const score = num(p.bestScore, NaN);
   return {
     completed: p.completed === true,
     ...(Number.isFinite(best) ? { bestMinutes: best } : {}),
+    ...(Number.isFinite(score) ? { bestScore: score } : {}),
     checkpoint: readCheckpoint(p.checkpoint),
   };
 }

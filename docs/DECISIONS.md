@@ -1390,3 +1390,9 @@ The W3C standard button indices and action bindings are unchanged. The title's s
 **Change.** On arrival, after restarting from a camp and after changing vehicle, the engine is switched off (`Vehicle.engineOff`): no sound, 0 rpm, and the brakes hold the car. The first press of the accelerator, forward or reverse, turns it over on the starter (the sim's `starting` event plays the starter sound), and the car drives once it fires, as before. A "Start the engine" prompt shows until then. In the synthesiser, the worklet now defaults to a stopped engine (0 rpm, not running), and a master fade keeps it silent while the engine is stopped and not on the starter. That fade also cuts the faint hiss that was left after the engine ran down.
 
 The browser test helper `waitEngine` starts a switched-off engine through a test hook, as the pedal would, so the existing checks still begin with the engine running; a new browser test drives the start-up through the pedal itself.
+
+## v0.64: scored finish
+
+- **Score out of 1000, three parts.** Time to spare before the deadline is worth 400 (full marks at two hours spare), the car's condition 400 (engine, suspension, panels and tyres, averaged) and fuel and kit left 200. Without a deadline (a replay in chosen conditions) time is scored against 30 minutes of driving. Gold from 800, silver from 600, bronze below. The weights are a first guess, to tune after play.
+- **Best score saved with the best time** in the episode's progress (`bestScore`), and both shown on the finish screen, so a run has something to beat.
+- **Episodes 2–4 stay for now.** The owner wants them gone to focus on the CREB, but taking them out breaks several browser tests and saves, so the steps are written in `docs/ROADMAP.md` for a later update.

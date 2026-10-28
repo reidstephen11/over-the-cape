@@ -3,6 +3,7 @@ import { maps } from '../data/maps';
 import { devEnvironment, devFlood, isDevMode, type DevWeather } from '../data/devWeather';
 import { environmentFor, presetHours, type Conditions } from '../data/environment';
 import { episodeWeatherAt } from '../data/weatherTimeline';
+import { scoreRun, type RunScore } from '../sim/runScore';
 import { clockTime, episodeOrder, episodes, type EpisodeDef, type EpisodeId } from '../data/episodes';
 import { usePalette } from '../render/colors';
 import { qualityPresets } from '../data/quality';
@@ -1083,12 +1084,37 @@ export class Game {
     ];
   }
 
+  /** The finish screen's score lines, with the previous bests for comparison. */
+  private scoreStats(score: RunScore, was: EpisodeProgress, minutes: number): string[] {
+    const medal = score.medal[0].toUpperCase() + score.medal.slice(1);
+    const newScore = score.points > (was.bestScore ?? -1);
+    const newTime = minutes < (was.bestMinutes ?? Infinity);
+    return [
+      `${medal} · ${score.points} / 1000${newScore && was.bestScore !== undefined ? ' · new best score' : ''}`,
+      score.parts.map((p) => `${p.label} ${p.points}`).join(' · '),
+      ...(was.bestScore !== undefined && !newScore ? [`Best score ${was.bestScore}`] : []),
+      ...(was.bestMinutes !== undefined
+        ? [newTime ? 'New best time' : `Best time ${Math.round(was.bestMinutes)} minutes`]
+        : []),
+    ];
+  }
+
   private onComplete(): void {
     const minutes = this.run.elapsed / 60;
     const was = this.episodeProgress;
+    const deadline = this.episode.deadline?.hour;
+    const score = scoreRun({
+      condition: this.vehicle.condition,
+      startFuel: this.episode.loadout.fuel + this.episode.loadout.jerryCans * 20,
+      minutes,
+      hoursSpare: this.run.timed && deadline !== undefined ? deadline - this.run.hour : null,
+      targetMinutes: 30,
+    });
+    const scoreLines = this.scoreStats(score, was, minutes);
     this.progress[this.episode.id] = {
       completed: true,
       bestMinutes: Math.min(was.bestMinutes ?? Infinity, Math.round(minutes * 10) / 10),
+      bestScore: Math.max(was.bestScore ?? 0, score.points),
       checkpoint: null,
     };
     this.save();
@@ -1108,7 +1134,7 @@ export class Game {
       `Episode ${this.episode.number} · Mission complete`,
       this.episode.title,
       this.episode.wrapUp,
-      this.runStats(),
+      [...scoreLines, ...this.runStats()],
       buttons,
       (id) => {
         if (id === 'menu') void this.toMainMenu(next);
