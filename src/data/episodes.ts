@@ -2,20 +2,17 @@ import type { ControlInstruction } from './controlInstructions';
 import type { MapId } from './maps';
 import type { Weather } from './environment';
 import type { WeatherTimeline } from './weatherTimeline';
-import { coachEpisode } from './episodes/coach';
 import { crebEpisode } from './episodes/creb';
-import { lakefieldEpisode } from './episodes/lakefield';
-import { frenchmansEpisode } from './episodes/frenchmans';
 import type { SurpriseSetDef } from '../sim/world/surprisePlan';
 import type { StuckVehicleDef } from '../sim/stuckVehicle';
 import type { StrandedDef } from '../sim/stranded';
 import type { VehicleId } from './vehicle';
 
 /**
- * Episodes, south to north up Cape York. Each has its own map, a core mission, the
- * conditions the story sets and a fixed load of fuel and spares. They unlock in order.
+ * Episodes: each has its own map, a core mission, the conditions the story sets and a
+ * fixed load of fuel and spares. Since v0.73 the game is the CREB Track alone.
  */
-export type EpisodeId = 'creb' | 'coach' | 'lakefield' | 'frenchmans';
+export type EpisodeId = 'creb';
 
 /** Why an episode can end early. */
 export type FailReason = 'time' | 'fuel' | 'tyre' | 'engine' | 'swept';
@@ -108,27 +105,11 @@ export interface EpisodeDef {
   failures: Record<FailReason, string>;
 }
 
-/** Episodes still to come: shown locked on the welcome screen. */
-export interface UpcomingEpisode {
-  number: number;
-  title: string;
-  route: string;
-}
-
 export const episodes: Record<EpisodeId, EpisodeDef> = {
   creb: crebEpisode,
-  coach: coachEpisode,
-  lakefield: lakefieldEpisode,
-  frenchmans: frenchmansEpisode,
 };
 
-export const episodeOrder: readonly EpisodeId[] = ['creb', 'coach', 'lakefield', 'frenchmans'];
-
-export const upcomingEpisodes: readonly UpcomingEpisode[] = [
-  { number: 5, title: 'Telegraph Track South', route: 'Bramwell Junction to Gunshot Creek' },
-  { number: 6, title: 'Telegraph Track North', route: 'The waterfalls, the creeks and Nolans Brook' },
-  { number: 7, title: 'The Tip', route: 'Over the Jardine to the northernmost point' },
-];
+export const episodeOrder: readonly EpisodeId[] = ['creb'];
 
 export function isEpisodeId(x: unknown): x is EpisodeId {
   return typeof x === 'string' && x in episodes;
