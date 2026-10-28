@@ -40,11 +40,15 @@
 }
 
 .welcome {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: safe center;
   padding: 44px 6vw;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .title-home {
@@ -349,6 +353,11 @@
   width: min(520px, 100%);
   padding: 22px 30px 34px;
   margin: auto 0;
+}
+.title-settings-version {
+  margin: 28px 0 0;
+  font-size: 12px;
+  color: var(--title-muted);
 }
 .title-settings h2 {
   margin: 0 0 30px;

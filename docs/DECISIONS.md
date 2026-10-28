@@ -1543,3 +1543,10 @@ The original layout keeps a steering stick and separate GAS / BRAKE pedals. A se
 - **Feel.** On top of the stick's 12% radial deadzone, the drive axis has a further 15% deadzone so a light steer does not add throttle, and a 1.6 curve so the first half of the travel is a crawl. Full forward is still full throttle.
 - **Layout.** Joystick only hides GAS and BRAKE and labels the stick GAS / BRAKE. The other buttons stay. Switching scheme while a pedal is held lets it go.
 - **Tests.** `throttleBrakeFromStick` (deadzone, curve, reverse) and the input manager (stick Y is ignored on pedals). Title Settings persist Joystick only.
+
+## v0.84: Joystick only is the default
+
+Phone driving now starts on **Joystick only**. Steer and pedals is still there. A save that never stored the setting (including v0.82 and earlier) gets Joystick only; one that already stored Steer and pedals keeps it.
+
+- **Findable.** The setting sits under Graphics on both title and pause Settings, not below the volume sliders. The title Settings page scrolls if the screen is short (landscape phones were clipping it). The row is not gated on touch-detection, so a coarse pointer still shows it.
+- **Cache.** Opening the installed app asks the service worker for an update immediately, so a phone that installed v0.82/v0.83 does not keep the old Settings page.

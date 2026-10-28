@@ -3,8 +3,8 @@ import type { QualityLevel } from './quality';
 /** How the left-hand stick drives on a phone. `pedals` is the original GAS/BRAKE layout. */
 export type TouchDriveScheme = 'pedals' | 'stick';
 
-export const touchDriveSchemes = ['pedals', 'stick'] as const;
-export const defaultTouchDrive: TouchDriveScheme = 'pedals';
+export const touchDriveSchemes = ['stick', 'pedals'] as const;
+export const defaultTouchDrive: TouchDriveScheme = 'stick';
 export const touchDriveLabels: Record<TouchDriveScheme, string> = {
   pedals: 'Steer and pedals',
   stick: 'Joystick only',

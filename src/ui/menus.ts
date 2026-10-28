@@ -153,11 +153,11 @@ export class PauseMenu {
         `<label class="setting-row">${label}<input data-focus type="range" min="0" max="1" step="0.05" data-key="${key}" value="${s[key]}"></label>`;
       card.innerHTML = `<h2>Settings</h2>
         <div class="setting-row">Graphics<div class="seg">${q('low')}${q('medium')}${q('high')}</div></div>
+        <div class="setting-row controller-setting phone-driving-setting">Phone driving<div class="seg">${touchDriveSchemes.map((c) => `<button data-focus data-touch-drive="${c}" class="${s.touchDrive === c ? 'on' : ''}" aria-pressed="${s.touchDrive === c}">${touchDriveLabels[c]}</button>`).join('')}</div></div>
         ${slider('masterVolume', 'Master volume')}
         ${slider('engineVolume', 'Engine volume')}
         ${slider('ambienceVolume', 'Ambience volume')}
         <div class="setting-row controller-setting">Controller type<div class="seg">${controllerTypes.map((c) => `<button data-focus data-controller="${c}" class="${s.controller === c ? 'on' : ''}" aria-pressed="${s.controller === c}">${controllers[c].label}</button>`).join('')}</div></div>
-        <div class="setting-row controller-setting">Phone driving<div class="seg">${touchDriveSchemes.map((c) => `<button data-focus data-touch-drive="${c}" class="${s.touchDrive === c ? 'on' : ''}" aria-pressed="${s.touchDrive === c}">${touchDriveLabels[c]}</button>`).join('')}</div></div>
         <div class="setting-row">Units<div class="seg"><button data-focus data-units="kmh" class="${s.units === 'kmh' ? 'on' : ''}">km/h</button><button data-focus data-units="mph" class="${s.units === 'mph' ? 'on' : ''}">mph</button></div></div>
         <div class="setting-row">Damage<div class="seg">${damageModes
           .map(
