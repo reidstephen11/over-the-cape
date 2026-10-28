@@ -2,7 +2,7 @@
 
 The owner finds Episodes 2–4 boring and easy and wants the game to focus on Episode 1, the CREB Track. v0.64 added a scored finish (medal, score out of 1000, best score and time). Build the rest one update at a time, in this order. Wildlife was considered and turned down.
 
-1. **Remove Episodes 2–4.** Set `episodeOrder` in `src/data/episodes.ts` to `['creb']`, empty `upcomingEpisodes` and drop the "Further north" list in `src/ui/welcome.ts`. In `src/sim/save/save.ts`, send a save whose `episode` is no longer offered back to the CREB. Delete `e2e/coach.spec.ts`, `e2e/frenchmans.spec.ts` and the Lakefield/coach parts of other specs (`e2e/launch.spec.ts` clicks the coach episode). Once nothing imports them, delete `src/data/episodes/coach*`, `lakefield*`, `frenchmans*`, their maps in `src/data/maps.ts`, and the trailer code only they use (keep `src/sim/stuckVehicle.ts` for step 7). Update README.md's episode table and sections.
+1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. Trailers stay in test mode only; removing their code is the owner's call.
 2. ~~**Section times.**~~ Done in v0.65.
 3. **Ghost car.** Record the car's position and heading every 0.25 s on each run; save the best run's trace; on later runs draw a faded copy of the car following it (no physics).
 4. **Changing track conditions.** Clay churned up by wheelspin done in v0.70 (`src/sim/world/churn.ts`), drawn as ruts in v0.71. Still to do: each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
@@ -22,4 +22,4 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 - Optional, not requested: Episode 2 supply side trips and diary entries for Episodes 1–2.
 - CREB follow-up, shared code: append `map.bogs` to `features.mudHoles` so authored bogs get winch trees and puddles without a hand-placed boulder. A per-track crown rut would save episodes from authoring erosion coordinates by hand.
 
-Episode 4 delivers two diesel drums across the Wenlock and Pascoe rivers. The trailers, hitching, HUD, sound, delivery goal, water forces, spilled drums, trailer punctures and cargo checkpoint state are implemented. The old three-step towing handover was retired with that release; its decisions remain in docs/DECISIONS.md.
+Episode 4 (the Frenchmans diesel delivery with a trailer) was removed in v0.73. The trailers, hitching, HUD, sound, delivery goal, water forces, spilled drums, trailer punctures and cargo checkpoint state remain in the code and in test mode.

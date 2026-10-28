@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { environmentAt } from '../src/data/environment';
-import { frenchmansEpisode as E } from '../src/data/episodes/frenchmans';
-import { frenchmansMap } from '../src/data/episodes/frenchmansMap';
+import type { EpisodeDef } from '../src/data/episodes';
+import { crebEpisode } from '../src/data/episodes/creb';
+import { crebMap } from '../src/data/episodes/crebMap';
 import { boxTrailer } from '../src/data/trailers';
 import { SurfaceId } from '../src/data/surfaces';
 import { Trailer, poseBehind } from '../src/sim/trailer';
@@ -16,8 +17,14 @@ import { readDeliveryState } from '../src/sim/trailerState';
 import { buildWorld } from '../src/sim/world/world';
 import { MemoryStore, saveData } from './helpers/saves';
 
+// The delivery goal outlived Episode 4 (removed in v0.73); a stand-in CREB run with drums to deliver keeps it tested.
+const E: EpisodeDef = {
+  ...crebEpisode,
+  delivery: { drums: 2 },
+  deadline: { hour: 18.25, label: 'Dark at 6:15 pm' },
+};
 const world = buildWorld({
-  ...frenchmansMap,
+  ...crebMap,
   width: 256,
   length: 256,
   wall: [120, 120],
@@ -25,7 +32,7 @@ const world = buildWorld({
     [-128, 0],
     [128, 0],
   ],
-  noise: { ...frenchmansMap.noise, macroAmplitude: 0, midAmplitude: 0, detailAmplitude: 0 },
+  noise: { ...crebMap.noise, macroAmplitude: 0, midAmplitude: 0, detailAmplitude: 0 },
   tracks: [],
   creeks: [],
   bogs: [],
@@ -36,7 +43,7 @@ const world = buildWorld({
   border: { width: 0, height: 0, gaps: [] },
   blackSoil: undefined,
   horizon: undefined,
-  vegetation: { ...frenchmansMap.vegetation, maxTreeDensity: 0, boulderDensity: 0, termiteMounds: 0 },
+  vegetation: { ...crebMap.vegetation, maxTreeDensity: 0, boulderDensity: 0, termiteMounds: 0 },
   pois: [{ id: 'start', name: 'Camp', kind: 'campsite', x: 0, z: 0, radius: 20 }],
   spawnCampsite: 'start',
 });
@@ -87,11 +94,8 @@ describe('fuel delivery and trailer persistence', () => {
     const run = new EpisodeRun(E, startCheckpoint(E, 'start', 'shortie'), true);
     const checkpoint = checkpointAt('start', run, v, ['start'], [], [], state);
     const store = new MemoryStore();
-    writeSave(
-      saveData({ episode: 'frenchmans', episodes: { frenchmans: { completed: false, checkpoint } } }),
-      store,
-    );
-    const loaded = loadSave(store)!.episodes.frenchmans!.checkpoint!.delivery!;
+    writeSave(saveData({ episode: 'creb', episodes: { creb: { completed: false, checkpoint } } }), store);
+    const loaded = loadSave(store)!.episodes.creb!.checkpoint!.delivery!;
     expect(loaded).toEqual(state);
     sim.removeTrailer(t.id);
     sim.restoreDelivery(loaded, 'p');

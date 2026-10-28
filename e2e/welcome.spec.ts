@@ -17,9 +17,9 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   await expect(on('start')).toHaveAttribute('data-value', 'new');
   await expect(on('vehicle')).toHaveAttribute('data-value', 'shortie');
   await expect(on('damage')).toHaveAttribute('data-value', 'mild');
-  // The later episodes are listed, north up the Cape, but not yet playable.
-  await expect(page.locator('.welcome-upcoming li')).toHaveCount(3);
-  await expect(page.locator('.welcome-upcoming')).toContainText('The Tip');
+  // The CREB is the whole game: one episode and no "coming soon" list.
+  await expect(page.locator('[data-group="episode"]')).toHaveCount(1);
+  await expect(page.locator('.welcome-upcoming')).toHaveCount(0);
   // Conditions are the story's until the episode is finished.
   await expect(page.locator('[data-group="time"]')).toHaveCount(0);
 

@@ -1,6 +1,6 @@
 # Working on this repo
 
-Episode 4 is the first towing mission. Follow-up work is recorded in `docs/ROADMAP.md`.
+The game is the CREB Track alone (Episodes 2–4 removed in v0.73). Follow-up work is recorded in `docs/ROADMAP.md`.
 
 ## Modelling a vehicle
 

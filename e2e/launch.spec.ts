@@ -52,7 +52,6 @@ test('New Journey opens episode setup and keeps vehicle, difficulty and replay c
   await page.goto('/');
   await openJourney(page);
   await expect(page.locator('#welcome-setup')).toBeHidden();
-  await expect(page.locator('.welcome-upcoming')).toBeHidden();
   await page.locator('[data-group="setup"]').click();
   await expect(page.locator('[data-group="vehicle"]')).toHaveCount(9);
   await expect(page.locator('[data-group="time"].on')).toHaveAttribute('data-value', 'dusk');
@@ -61,9 +60,7 @@ test('New Journey opens episode setup and keeps vehicle, difficulty and replay c
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-group="vehicle"].on')).toHaveAttribute('data-value', 'hilux');
-  await page.locator('[data-group="episode"][data-value="coach"]').click();
-  await expect(page.locator('.welcome-trip h2')).toHaveText('The Old Coach Road');
-  await expect(page.locator('[data-group="time"]')).toHaveCount(0);
+  await expect(page.locator('[data-group="episode"]')).toHaveCount(1);
   await page.keyboard.press('Escape');
   await expect(page.locator('.title-menu')).toBeVisible();
   expect(errors).toEqual([]);
