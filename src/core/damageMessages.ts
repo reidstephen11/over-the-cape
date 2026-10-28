@@ -28,6 +28,7 @@ export function damageMessage(e: DamageEvent, t: VehicleTuning, mode: DamageMode
     crash: 'Front-end damage — the engine is damaged',
     inverted: 'Upside down — the engine is starved of oil',
     water: 'Water in the engine — it’s damaged',
+    overheat: 'Engine overheating — ease off and let it cool',
     rock: 'The engine is damaged',
     spin: 'The engine is damaged',
     hole: 'The engine is damaged',

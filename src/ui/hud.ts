@@ -61,6 +61,9 @@ export interface SuppliesHud {
   jerryCans: number;
   spares: number;
   plugs: number;
+  /** Engine heat, 0..1+ (over 0.85 is hot). */
+  heat: number;
+  lowPressure: boolean;
 }
 
 /** The trailer line beside the supplies. */
@@ -450,7 +453,9 @@ export class Hud {
   }
 
   private drawSupplies(s: SuppliesHud | null): void {
-    const key = s ? `${s.fuel.toFixed(1)}|${s.tank}|${s.jerryCans}|${s.spares}|${s.plugs}` : '';
+    const key = s
+      ? `${s.fuel.toFixed(1)}|${s.tank}|${s.jerryCans}|${s.spares}|${s.plugs}|${Math.round(s.heat * 20)}|${s.lowPressure}`
+      : '';
     if (key === this.lastSuppliesKey) return;
     this.lastSuppliesKey = key;
     this.suppliesPanel.classList.toggle('hidden', !s);
@@ -460,7 +465,7 @@ export class Hud {
     this.fuelEl.querySelector('.fuel-litres')!.textContent = `${Math.round(s.fuel)} L`;
     this.fuelEl.classList.toggle('low', share < 0.15);
     this.fuelEl.title = `Fuel: ${s.fuel.toFixed(1)} of ${s.tank} L`;
-    this.suppliesEl.innerHTML = `<span title="Jerry cans (20 L each)">${icons.fuel}×${s.jerryCans}</span><span title="Spare wheels">${icons.tyre}×${s.spares}</span><span title="Tyre plugs">${icons.plug}×${s.plugs}</span>`;
+    this.suppliesEl.innerHTML = `<span title="Jerry cans (20 L each)">${icons.fuel}×${s.jerryCans}</span><span title="Spare wheels">${icons.tyre}×${s.spares}</span><span title="Tyre plugs">${icons.plug}×${s.plugs}</span><span title="Engine temperature" class="engine-temp${s.heat >= 0.85 ? ' hot' : ''}">TEMP ${s.heat >= 1 ? 'HOT' : s.heat >= 0.85 ? 'HIGH' : 'OK'}</span>${s.lowPressure ? '<span title="Tyres let down">LOW PSI</span>' : ''}`;
   }
 
   private drawTrailer(t: TrailerHud | null): void {

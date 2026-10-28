@@ -265,6 +265,8 @@ export function buildHudState(i: HudInputs): HudState {
           jerryCans: cond.jerryCans,
           spares: cond.spares,
           plugs: cond.plugs,
+          heat: cond.engineHeat ?? 0.5,
+          lowPressure: !!cond.lowPressure,
         }
       : null,
     gates: i.gates

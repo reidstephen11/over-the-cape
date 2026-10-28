@@ -2636,3 +2636,8 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
     width: 86vw;
   }
 }
+
+.engine-temp.hot {
+  color: #a3311f;
+  font-weight: 700;
+}

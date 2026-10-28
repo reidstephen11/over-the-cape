@@ -1415,3 +1415,8 @@ The browser test helper `waitEngine` starts a switched-off engine through a test
 ## v0.66: driving on in the dark
 
 - **Dark at 6:15 pm no longer ends the CREB.** A note says it's dark, the HUD shows "Dark · by 8:00 pm", and the run goes on until 8 pm (`graceHours` on the deadline) before it fails. Arriving after dark scores nothing for time, so the medal still rewards beating the light. The other episodes keep their hard deadlines.
+
+## v0.67: engine heat and tyre pressures
+
+- **Engine heat.** The engine's temperature settles towards a level set by throttle and revs, raised 1.6 times in low range and lowered by airflow at speed, over about 90 seconds (`damageTuning.engine`). Full revs in low range boil it in about a minute; a steady crawl stays under. The supplies strip shows TEMP OK, HIGH (from 0.85, with a warning) or HOT; past HOT the engine loses health, 0.01 a second, down to the damage setting's floor. Damage set to off turns it off. No gauge needle: three states were enough to act on.
+- **Tyre pressures.** The tool menu lets the tyres down or pumps them up, while stopped. Let down they grip 15% better everywhere, but rock landings and pothole strikes cut them at 75% of the usual speed. The change is instant: a timed wait was left for later.

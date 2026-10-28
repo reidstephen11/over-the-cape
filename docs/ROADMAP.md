@@ -6,8 +6,8 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 2. ~~**Section times.**~~ Done in v0.65.
 3. **Ghost car.** Record the car's position and heading every 0.25 s on each run; save the best run's trace; on later runs draw a faded copy of the car following it (no physics).
 4. **Changing track conditions.** Each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
-5. **Engine strain.** Engine temperature that rises with high revs in low range and load, and falls when easing off; a gauge on the HUD; overheating damages the engine (the existing `engine` failure). Water entering the engine in deep crossings taken too fast.
-6. **Tyre pressures.** A tool to let tyres down (more grip on clay and sand, more puncture risk on rock, slower on gravel) and a compressor to pump them back up, which takes time.
+5. ~~**Engine strain.**~~ Heat done in v0.67; water entering the engine in deep crossings taken too fast is still to do.
+6. ~~**Tyre pressures.**~~ Done in v0.67 (instant; a timed compressor is still to do).
 7. **Other traffic.** Oncoming 4WDs on narrow sections that you pull over for, and now and then a stranded driver to winch out for fuel or plugs. Reuse the stuck-vehicle code in `src/sim/stuckVehicle.ts`.
 8. ~~**Night finish.**~~ Done in v0.66.
 

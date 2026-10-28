@@ -942,6 +942,12 @@ export class Game {
         enabled: v.differentials.front || Math.abs(v.speed) <= v.tuning.crawling.diffLockMaxKmh / 3.6,
       },
       {
+        id: 'pressure',
+        label: v.condition.lowPressure ? 'Pump the tyres up' : 'Let the tyres down',
+        icon: 'tyre',
+        enabled: Math.abs(v.speed) < 0.5,
+      },
+      {
         id: 'refuel',
         label: refuel ? `Pour in a jerry can (${v.condition.jerryCans})` : 'No jerry cans',
         icon: 'fuel',
@@ -997,7 +1003,15 @@ export class Game {
           ? 'Trailer tyre repaired'
           : 'Stop alongside it with a plug or spare left',
       );
-    else if (id === 'winch' && !this.tool.startWinchTarget()) this.hud.toast('No anchor in reach');
+    else if (id === 'pressure') {
+      const c = this.vehicle.condition;
+      c.lowPressure = !c.lowPressure;
+      this.hud.toast(
+        c.lowPressure
+          ? 'Tyres let down: more grip on clay and rock, but they cut more easily'
+          : 'Tyres pumped back up for the gravel',
+      );
+    } else if (id === 'winch' && !this.tool.startWinchTarget()) this.hud.toast('No anchor in reach');
     else if (id === 'planks') this.tool.startPlanks();
     else if (id === 'recall') this.sim.recallPlanks(LOCAL_VEHICLE);
     else if (id === 'detach') this.sim.detachWinch(LOCAL_VEHICLE);

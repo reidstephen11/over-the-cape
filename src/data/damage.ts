@@ -25,6 +25,9 @@ export const damageTuning = {
      * the trails' rocks stays below it (at most 3.6 m/s, measured with both vehicles).
      */
     punctureSpeed: 4.4,
+    /** Tyres let down: grip times this, and rock landings and hole strikes cut them at this share of the usual speed. */
+    lowPressureGrip: 1.15,
+    lowPressureCut: 0.75,
     /** Landing harder than this (m/s), about a 1.5 m drop, tears the sidewall instead. */
     sidewallSpeed: 5.4,
     /**
@@ -73,6 +76,18 @@ export const damageTuning = {
     toeDeg: 4,
   },
   engine: {
+    /**
+     * Engine heat (src/sim/vehicle/damage.ts) settles towards throttle × rpm share × this
+     * (times `lowRangeHeat` in low range), less `airflowCool` per m/s, over `heatSeconds`.
+     * Full revs in low range boils it in about a minute; a steady crawl stays just under.
+     */
+    heatGain: 1.3,
+    lowRangeHeat: 1.6,
+    airflowCool: 0.02,
+    heatSeconds: 90,
+    /** Above full heat the engine loses this much health per second, and warns at `heatWarn`. */
+    overheatPerSecond: 0.01,
+    heatWarn: 0.85,
     /**
      * A chassis knock harder than this (impulse, N·s) cracks the sump or bends the steering
      * arms. Belly scrapes on the trails and park lines reach about 4400; a 50 km/h crash
