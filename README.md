@@ -220,6 +220,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v0.81 Camel fixes:** the loading screen shows v0.81. In `?dev`, the Army trailer should only hitch to the Land Rover and the Unimog, not the Camel. Crawl the Camel through a rock garden: it should not hang up on its belly as easily.
 - [ ] **v0.80 Camel Trophy Land Rover 90:** the loading screen shows v0.80. Pick the Camel Trophy car: is it now a yellow Land Rover Ninety? Walk round it close up: front, both sides, back, roof and underneath. Does anything float or cut through the body? From the driver's seat, is the wheel on the left with the dials readable? Drive Big Red and Bob's Hill: does the diesel sound right, and does it feel slower but nimble? Wade a deep creek: does the snorkel keep it running? At night, do the beams start at the round headlamps, and do the four roof lamps light with high beam?
 - [ ] **v0.79 clay churn speed:** the loading screen shows v0.79. In the wet, spin on a clay climb: does it cut up at about the v0.71 pace, while the grass beside it still tears up faster?
 - [ ] **v0.78 lugging engine:** the loading screen shows v0.78. Crawling slowly in low range (or with crawl control) should warm the engine a little but stay below HIGH; revving hard in low range should still overheat it within about half a minute.

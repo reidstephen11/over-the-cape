@@ -154,10 +154,11 @@ describe('Crawler Creek gate trail', () => {
 
   it('the Camel Trophy car drives the whole loop from the Trailhead without help, or damage', async () => {
     const s = await scene(gateTrailSections[0].id, false, 'both', camelTuning);
-    // Careful driving does no harm, even with realistic damage.
+    // Careful driving does no harm, even with realistic damage. The Ninety's small diesel works
+    // hard enough in the Rock Garden to reach the HIGH temperature warning, which costs no health.
     s.sim.setDamage('realistic');
     const damage: string[] = [];
-    s.sim.events.on('damage', (e) => damage.push(`${e.part} ${e.wheel} ${e.cause}`));
+    s.sim.events.on('damage', (e) => e.health < 1 && damage.push(`${e.part} ${e.wheel} ${e.cause}`));
     try {
       for (const section of gateTrailSections) {
         const r = await driveLeg(s, trackOf(section.id), false, 300);
