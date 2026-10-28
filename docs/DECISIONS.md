@@ -1475,6 +1475,7 @@ An open or queued note formats its instructions for the current input. Changing 
 - The new model (`updateEngineHeat` in `src/sim/vehicle/damage.ts`): a thermostat holds the engine at normal (0.5) until the load outruns the radiator. Load is the pedal times half to all of the revs (a lugging engine still makes heat), times 1.6 in low range, less 0.03 per m/s of airflow. Heat climbs over 60 s and cools over 150 s, so burst after burst up a climb adds up.
 - Measured on the 25° slope: flat out in low range warns in about 20 s and boils in about 30 s; half throttle boils in about 90 s; a gentle crawl (30% pedal) settles at about 0.78, below the warning. High-range cruising now reads a steady normal instead of drifting towards cold.
 - A boiling engine loses power, down to 75% at the top of the dial (`hotPower`, `maxHeat` 1.3), on every damage setting. Engine damage from boiling still only happens on Mild and Realistic; on Off the dial and the warning still work.
+
 ## v0.76: new 40 Series, Hilux and LC79 bodies
 
 The next three of Codex's model studies (branch `codex/vehicle-model-review`), after the Unimog and Patrol (v0.31), the Troop Carrier and Perentie (v0.34) and the 80 Series (v0.45). The owner asked for the rest to be reviewed and brought in. Brought in the same way: Codex's body, wheel, equipment and interior code, without the parts only its review viewer used (part markers, clearance records, the bonnet topology count).
