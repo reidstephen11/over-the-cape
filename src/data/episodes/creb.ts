@@ -19,7 +19,12 @@ export const crebEpisode: EpisodeDef = {
   weather: 'wet',
   // A storm comes through in the afternoon (src/data/episodes/crebWeather.ts).
   storm: crebStorm,
-  deadline: { hour: 18.25, label: 'Dark at 6:15 pm' },
+  deadline: {
+    hour: 18.25,
+    label: 'Dark at 6:15 pm',
+    graceHours: 1.75,
+    graceNote: 'Dark. Keep going on the headlights: reach the Lions Den by 8 pm',
+  },
   // Game seconds per real second. The afternoon is 5¾ hours, so this leaves time to stop
   // and winch. Getting stuck or swept is what fails the day, not the clock.
   clockRate: 4.5,
@@ -144,7 +149,7 @@ export const crebEpisode: EpisodeDef = {
     'In December 2023 floodwater from the Annan rose more than three metres inside the hotel. It was rebuilt and reopened five months later.',
   ],
   failures: {
-    time: 'Dark caught you short of the Lions Den. The CREB is no place to be finding the track at night.',
+    time: 'Eight o’clock and still short of the Lions Den. The CREB is no place to be finding the track at night.',
     fuel: 'Out of fuel, with no jerry cans left.',
     tyre: 'A tyre is flat and there’s nothing left to fix it with.',
     engine: 'The engine is wrecked.',

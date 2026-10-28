@@ -1411,3 +1411,7 @@ The browser test helper `waitEngine` starts a switched-off engine through a test
 **Active input.** The label profile is separate from the input device. Using keys restores keyboard prompts; using a controller restores that profile's buttons; touch uses the phone controls. Title and pause navigation hints follow input changes, and an already-open map updates its hint without needing to reopen. The pause Controls page switches to touch help when appropriate. Keyboard and controller help are both available on its non-touch table.
 
 **Checks.** Save tests cover each preference, old and invalid values, and existing progress. Browser checks cover persisted title selection, controller/keyboard switching, phone layouts and live changes in pause Settings across driving, camera, map and help UI.
+
+## v0.66: driving on in the dark
+
+- **Dark at 6:15 pm no longer ends the CREB.** A note says it's dark, the HUD shows "Dark · by 8:00 pm", and the run goes on until 8 pm (`graceHours` on the deadline) before it fails. Arriving after dark scores nothing for time, so the medal still rewards beating the light. The other episodes keep their hard deadlines.
