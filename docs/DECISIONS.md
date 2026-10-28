@@ -1512,6 +1512,15 @@ The owner chose the real 1986 vehicle over the 40 Series in Camel dress. The bod
 - **Body.** A left-hand-drive Ninety County station wagon in Sandglow yellow: flat wing tops, black lamp panels with round headlamps, a slatted grille, one-piece windscreen, Alpine windows, a single rear door with the spare, a second spare on the bonnet, a front cage and B hoop, a basket rack with jerry cans and sand ladders, four roof work lamps, a raised left-side intake into the wing, a winch with a fairlead, and blue-and-yellow plaques drawn in code. Five-stud yellow steel wheels on narrow 7.50R16-style tyres. About 121,000 triangles with its wheels (the Unimog stays the largest at 124,000).
 - **Driving.** 2.36 m wheelbase and 1.486 m track, coil springs (drawn as coils), 1.9 t. The 2.5 L naturally aspirated diesel peaks at 155 Nm at 1800 rpm and stops at 4200 rpm; LT77 five-speed, LT230 transfer box (1.667 high, 3.32 low) and 3.54 axles. Brakes, grip and anti-roll follow the Perentie. It uses the diesel engine sound. Its 54.5 L tank does about 9 L/100 km on level dirt (the fuel test's band for it is now 7–14).
 - **Cockpit.** The Perentie's seat, dash and wheel mirrored to the left and moved 8 cm back. Manual steering, ratio 22. Codex's binnacle sat in front of the dial faces, hiding them from the seat; it now stands just ahead of them.
-- **Tow hitch.** A NATO pin on the rear crossmember jaw (z 1.94), so trailers couple to it.
+- **Tow hitch.** (Corrected in v0.81: this said the Camel got a pintle hook. It has none, like the 40 it replaced.)
 - **Removed:** `camelLivery.ts`, the 40 Series dress.
 - **Tests.** `tests/camel.test.ts` now checks the Ninety's wheelbase, track, five-speed, diesel redline and left-hand drive instead of comparing it with the 40.
+
+## v0.81: fixes after the Camel Ninety
+
+The tests after v0.80 found two problems it caused.
+
+- **No pintle hook on the Camel.** v0.80 gave the Ninety a hitch point, which in the game means a pintle hook, so the Army No. 5 trailer's ring coupled to it. The Camel's tow jaw is civilian, so the Army trailer goes only on the Land Rover and the Unimog again; the box trailer still couples to every vehicle.
+- **Transfer case tucked up.** On the Crawler Creek loop the Camel beached its transfer case on a boulder in the Rock Garden and boiled its engine trying to climb off. Its collision box came from the Perentie and hung 3 cm below the Ninety's drawn chassis rails; it now sits level with them (bottom 0.08 m below the origin). The loop goes again.
+- **Heat in the Rock Garden.** The Ninety's 2.5 L diesel needs about half throttle there (the 4.2 L petrol about a third), so it reaches the HIGH temperature warning near the end (peak 0.91, warning at 0.85) without losing health. That is left as it is, since the small diesel working hard should run warm. The Crawler Creek test now counts only damage that costs health.
+- Other failing tests (eight CREB hill climbs, the Granite Spur Rock Steps) use other vehicles and fail on v0.79 too.

@@ -32,10 +32,10 @@ export const camelTuning: VehicleTuning = {
     { x: HALF_TRACK, y: MOUNT_Y, z: HALF_BASE, front: false },
   ],
   bodyBoxes: [
-    // Chassis rails and the transfer case.
+    // Chassis rails, and the transfer case tucked up level with their bottoms (as drawn).
     { cx: -0.43, cy: 0.03, cz: 0.0, hx: 0.05, hy: 0.09, hz: 1.75 },
     { cx: 0.43, cy: 0.03, cz: 0.0, hx: 0.05, hy: 0.09, hz: 1.75 },
-    { cx: 0.08, cy: -0.02, cz: -0.25, hx: 0.2, hy: 0.09, hz: 0.3 },
+    { cx: 0.08, cy: 0.0, cz: -0.25, hx: 0.2, hy: 0.08, hz: 0.3 },
     // Floor and seat box, engine bay, rear body between the wheel boxes.
     { cx: 0, cy: 0.17, cz: 0.0, hx: 0.6, hy: 0.06, hz: 1.7 },
     { cx: 0, cy: 0.45, cz: -1.25, hx: 0.6, hy: 0.24, hz: 0.55 },
@@ -95,6 +95,6 @@ export const camelTuning: VehicleTuning = {
   intake: { x: -0.995, y: 1.51, z: -0.65 },
   winchMount: { x: 0, y: 0.3, z: -2.12 },
   towPoint: { x: 0, y: 0.03, z: 1.9 },
-  // The NATO pin on the rear crossmember's jaw.
-  hitch: { x: 0, y: 0.03, z: 1.94 },
+  // A civilian tow jaw, not the Army's pintle hook: the No. 5 trailer's ring doesn't go on it.
+  hitch: undefined,
 };
