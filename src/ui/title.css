@@ -211,6 +211,15 @@
   font-weight: 400;
 }
 
+.title-input-hint b[role='img'] {
+  min-width: 24px;
+  padding: 2px 5px;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  text-align: center;
+}
+
 .title-panel {
   background: #080f1de8;
   border: 1px solid #c5c5c833;

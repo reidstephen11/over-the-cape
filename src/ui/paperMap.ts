@@ -25,7 +25,7 @@ const PHONE_ZOOM = 2.5;
 
 const hints = {
   keyboard: 'Scroll to zoom · drag to move · M or Esc to close',
-  gamepad: 'B or View to close',
+  gamepad: '○ or SHARE to close',
   touch: 'Pinch to zoom · drag to move · Close, or tap outside',
 };
 

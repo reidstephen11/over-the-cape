@@ -185,11 +185,11 @@ export class Hud {
       <div class="status paper">
         <div class="status-range" title="Transfer range">H</div>
         <div class="status-speed" title="Speed and gear"><span class="status-speed-value">0.0 km/h</span><span class="status-gear">1</span></div>
-        <button type="button" class="status-drive" data-drive="frontDiff" aria-label="Front differential lock" aria-pressed="false" title="Front diff lock: Z / LB menu">F OPEN</button>
-        <button type="button" class="status-drive" data-drive="rearDiff" aria-label="Rear differential lock" aria-pressed="false" title="Rear diff lock: X / LB menu">R OPEN</button>
-        <button type="button" class="status-drive" data-drive="precision" aria-label="Precision crawl" aria-pressed="false" title="Precision crawl: P / LB menu. Hold throttle for walking pace.">CRAWL</button>
-        <div class="status-park" title="Handbrake on: Space / X">P</div>
-        <div class="status-item status-lights" title="Headlights: N / LB menu">${icons.headlight}</div>
+        <button type="button" class="status-drive" data-drive="frontDiff" aria-label="Front differential lock" aria-pressed="false" title="Front diff lock: Z / L1 menu">F OPEN</button>
+        <button type="button" class="status-drive" data-drive="rearDiff" aria-label="Rear differential lock" aria-pressed="false" title="Rear diff lock: X / L1 menu">R OPEN</button>
+        <button type="button" class="status-drive" data-drive="precision" aria-label="Precision crawl" aria-pressed="false" title="Precision crawl: P / L1 menu. Hold throttle for walking pace.">CRAWL</button>
+        <div class="status-park" title="Handbrake on: Space / □">P</div>
+        <div class="status-item status-lights" title="Headlights: N / L1 menu">${icons.headlight}</div>
         <div class="status-item status-damage" title="Damage"></div>
         <div class="status-item status-planks" title="Recovery planks on board">${icons.planks}<span class="status-label">Planks</span><span class="status-planks-count">2/2</span></div>
         <div class="status-item status-winch" title="Winch attached">${icons.winch}</div>
@@ -207,7 +207,7 @@ export class Hud {
       <div class="alert-rail" aria-live="polite"><div class="alerts"></div></div>
       <div class="camera-help paper">
         <span class="camera-hint">Drag to orbit · Scroll to zoom</span>
-        <button type="button" class="camera-preset" aria-label="Camera view" title="Cycle wheel-placement views: C / hold LB + click right stick">View<span class="camera-preset-name">: <span>Follow</span></span> <kbd>C</kbd></button>
+        <button type="button" class="camera-preset" aria-label="Camera view" title="Cycle wheel-placement views: C / hold L1 + click right stick">View<span class="camera-preset-name">: <span>Follow</span></span> <kbd>C</kbd></button>
         <button type="button" class="camera-reset" aria-label="Reset view" title="Return behind the vehicle"><span class="camera-reset-label">Reset view</span><span class="camera-reset-icon" aria-hidden="true">⟲</span> <kbd>V</kbd></button>
       </div>
       <div class="gate-count paper hidden"></div>
@@ -302,7 +302,7 @@ export class Hud {
     this.cameraPresetButton.hidden = !driving;
     this.cameraPresetButton.querySelector('.camera-preset-name span')!.textContent =
       cameraPresets[preset].label;
-    this.cameraPresetButton.querySelector('kbd')!.textContent = device === 'keyboard' ? 'C' : 'LB + R3';
+    this.cameraPresetButton.querySelector('kbd')!.textContent = device === 'keyboard' ? 'C' : 'L1 + R3';
   }
 
   update(s: HudState): void {
