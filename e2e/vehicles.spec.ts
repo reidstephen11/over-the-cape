@@ -51,6 +51,7 @@ test('the Hilux is chosen on the welcome screen, drives off, and has its own cab
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /Hilux single cab/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',
@@ -87,6 +88,7 @@ test('the Unimog is chosen on the welcome screen, drives off, and has its own ca
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /Unimog UL1700L/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',
@@ -125,6 +127,7 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /Troop Carrier/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',
@@ -170,6 +173,7 @@ test('the GQ Patrol is chosen on the welcome screen and drives off', async ({ pa
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/');
+  await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /GQ Patrol/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',
@@ -196,6 +200,7 @@ test('the LC79 V8 is chosen on the welcome screen and drives off', async ({ page
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/');
+  await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /LC79 V8/ }).click();
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',

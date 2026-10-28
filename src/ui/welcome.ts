@@ -9,7 +9,7 @@ import { vehicleOrder, vehicles } from '../data/vehicles';
 import { unlocked, type SaveData } from '../sim/save/save';
 import { damageNotes } from './menus';
 
-type Group = 'episode' | 'start' | 'vehicle' | 'damage' | 'time' | 'weather' | 'drive';
+type Group = 'episode' | 'start' | 'setup' | 'vehicle' | 'damage' | 'time' | 'weather' | 'drive';
 
 /** The full choice: the launch, plus the damage setting (it decides how an episode can end). */
 export interface WelcomeChoice extends LaunchChoice {
@@ -34,6 +34,7 @@ export class WelcomeScreen {
   private padPrev: boolean[] = [];
   private raf = 0;
   private done = false;
+  private setupOpen = false;
   /** Test mode (`?dev`): every episode open, and conditions to pick for any of them. */
   private readonly dev = isDevMode();
 
@@ -52,6 +53,14 @@ export class WelcomeScreen {
     this.el.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest('button');
       if (b && !b.disabled) this.activate(b);
+    });
+    this.el.addEventListener('focusin', (e) => {
+      const button = e.target as HTMLButtonElement;
+      const row = this.rows.findIndex((r) => r.includes(button));
+      if (row < 0) return;
+      this.row = row;
+      this.col = this.rows[row].indexOf(button);
+      this.refresh();
     });
     window.addEventListener('keydown', this.onKey);
     this.render('drive');
@@ -78,60 +87,73 @@ export class WelcomeScreen {
       ...episodeOrder.map((id) => {
         const e = episodes[id];
         const p = this.save?.episodes[id];
-        const status = p?.completed ? ' · finished' : p?.checkpoint ? ' · under way' : '';
+        const status = p?.completed ? 'Finished' : p?.checkpoint ? 'Under way' : '';
         const open = this.dev || unlocked(this.save, id);
         return option(
           'episode',
           id,
           `${e.number}. ${e.title}`,
-          open ? `${e.route}${status}` : `${e.route} · finish episode ${e.number - 1} first`,
+          open ? status : `Finish episode ${e.number - 1} to unlock`,
           !open,
         );
       }),
     ].join('');
-    const upcoming = upcomingEpisodes
-      .map((u) => `<li><b>${u.number}. ${u.title}</b> — ${u.route}</li>`)
-      .join('');
+    const upcoming = upcomingEpisodes.map((u) => `<li>${u.number}. ${u.title}</li>`).join('');
     const story = `${weatherLabels[def.weather]}${def.storm ? `, ${def.storm.forecast}` : ''}, from ${clockTime(def.startHour)}${def.deadline ? ` · ${def.deadline.label.toLowerCase()}` : ''}`;
     this.el.innerHTML = `
       <div class="welcome-card paper">
         <h1>Over the Cape</h1>
-        <p class="subtitle">A 4WD adventure up Cape York, in episodes</p>
+        <p class="subtitle">Your journey north</p>
         <div class="welcome-grid">
           <section class="welcome-section welcome-episodes">
-            <h2>Episode</h2>
+            <h2>Choose an episode</h2>
             <div class="welcome-options">${episodeButtons}</div>
-            <p class="welcome-note">Coming in later updates, north up the Cape:</p>
-            <ul class="welcome-upcoming">${upcoming}</ul>
+            <details class="welcome-later"><summary>Further north · coming soon</summary><ul class="welcome-upcoming">${upcoming}</ul></details>
           </section>
-          <section class="welcome-section">
-            <h2>Start</h2>
-            <div class="welcome-options seg">${
+          <section class="welcome-section welcome-trip">
+            <p class="welcome-kicker">Episode ${def.number}</p>
+            <h2>${def.title}</h2>
+            <p class="welcome-route">${def.route}</p>
+            <p class="welcome-mission">${def.mission}</p>
+            <div class="welcome-options seg welcome-start" ${camp ? '' : 'hidden'}>${
               camp ? option('start', 'resume', 'Continue', `From ${camp.name}`) : ''
-            }${option('start', 'new', camp ? 'Start again' : 'Start', `From ${maps[def.mapId].def.pois.find((p) => p.id === maps[def.mapId].def.spawnCampsite)?.name ?? 'the start'}`)}</div>
+            }${option('start', 'new', camp ? 'Start again' : 'Start')}</div>
+            <button type="button" class="welcome-drive" data-group="drive" data-welcome-drive>${camp && this.choice.resume ? 'Continue' : 'Drive'}</button>
+          </section>
+        </div>
+        <button type="button" class="welcome-setup-toggle" data-group="setup" aria-expanded="${this.setupOpen}" aria-controls="welcome-setup"><span>Vehicle & difficulty</span><span>${vehicles[this.choice.vehicle].tuning.name} · ${damageLabels[this.choice.damage]} <b aria-hidden="true">${this.setupOpen ? '−' : '+'}</b></span></button>
+        <section id="welcome-setup" class="welcome-section welcome-setup" ${this.setupOpen ? '' : 'hidden'}>
             <h2>Vehicle</h2>
             <div class="welcome-options seg">${vehicleOrder.map((id) => option('vehicle', id, vehicles[id].tuning.name)).join('')}</div>
             <p class="welcome-note">${vehicles[this.choice.vehicle].blurb}</p>
             <h2>Difficulty</h2>
             <div class="welcome-options seg">${damageModes.map((m) => option('damage', m, damageLabels[m])).join('')}</div>
-            <p class="welcome-note damage-note"></p>
+            <details class="welcome-rules"><summary>About difficulty</summary><p class="welcome-note damage-note"></p></details>
             ${
               progress?.completed || this.dev
                 ? `<h2>Conditions</h2>
             <div class="welcome-options seg">${option('time', 'story', 'Story', story)}${timesOfDay.map((t) => option('time', t, timeLabels[t])).join('')}</div>
             ${this.time === 'story' ? '' : `<div class="welcome-options seg">${weathers.map((w) => option('weather', w, weatherLabels[w])).join('')}</div>`}
-            <p class="welcome-note">${this.time === 'story' ? 'The story’s own time and weather, with its time limit.' : 'Your choice of light and weather: the clock stands still and there’s no time limit.'}</p>`
-                : `<h2>Conditions</h2><p class="welcome-note">${story}. Finish the episode to replay it in other conditions.</p>`
+            <p class="welcome-note">${this.time === 'story' ? '' : 'No time limit.'}</p>`
+                : ''
             }
-          </section>
-        </div>
-        <button type="button" class="welcome-drive" data-group="drive" data-welcome-drive>Drive</button>
+        </section>
         ${this.dev ? '<p class="welcome-note dev-note">Test mode: every episode is open, and nothing you do is saved.</p>' : ''}
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>
       </div>`;
-    const groups: Group[] = ['episode', 'start', 'vehicle', 'damage', 'time', 'weather', 'drive'];
+    const groups: Group[] = [
+      'episode',
+      'start',
+      'setup',
+      ...(this.setupOpen ? (['vehicle', 'damage', 'time', 'weather'] as const) : []),
+      'drive',
+    ];
     this.rows = groups
-      .map((g) => [...this.el.querySelectorAll<HTMLButtonElement>(`[data-group="${g}"]:not([disabled])`)])
+      .map((g) =>
+        [...this.el.querySelectorAll<HTMLButtonElement>(`[data-group="${g}"]:not([disabled])`)].filter(
+          (b) => !b.closest('[hidden]'),
+        ),
+      )
       .filter((r) => r.length > 0);
     this.row = Math.max(
       0,
@@ -140,6 +162,8 @@ export class WelcomeScreen {
     const on = this.rows[this.row].findIndex((b) => this.chosen(b));
     this.col = Math.max(0, on);
     this.refresh();
+    // Rendering replaces the buttons: keep keyboard activation on the current choice.
+    this.rows[this.row]?.[this.col]?.focus({ preventScroll: true });
   }
 
   /** Is this option the one chosen in its group? */
@@ -168,6 +192,11 @@ export class WelcomeScreen {
     const group = b.dataset.group as Group;
     const value = b.dataset.value ?? '';
     if (group === 'drive') return this.drive();
+    if (group === 'setup') {
+      this.setupOpen = !this.setupOpen;
+      this.render('setup');
+      return;
+    }
     if (group === 'episode') {
       this.choice.episode = value as EpisodeId;
       this.choice.resume = !!this.progress?.checkpoint;
