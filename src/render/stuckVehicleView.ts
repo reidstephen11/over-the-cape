@@ -1,17 +1,19 @@
 import type { VehicleTuning } from '../data/vehicle';
-import { STUCK_RIDE_HEIGHT, type StuckVehicle } from '../sim/stuckVehicle';
+import type RAPIER from '@dimforge/rapier3d-compat';
+import { STUCK_RIDE_HEIGHT } from '../sim/stuckVehicle';
 import { createCondition } from '../sim/vehicle/condition';
 import { VehicleModel } from './vehicleModel';
 
 /**
- * Someone else's bogged vehicle (src/sim/stuckVehicle.ts), drawn as one of the game's
+ * Someone else's vehicle, bogged (src/sim/stuckVehicle.ts) or coming the other way
+ * (src/sim/traffic.ts), drawn as one of the game's
  * vehicles: caked in mud, wheels still, following its body as it comes out of the bog.
  */
 export class StuckVehicleView {
   readonly model: VehicleModel;
 
   constructor(
-    private readonly stuck: StuckVehicle,
+    private readonly stuck: { readonly body: RAPIER.RigidBody },
     tuning: VehicleTuning,
   ) {
     this.model = new VehicleModel(tuning);

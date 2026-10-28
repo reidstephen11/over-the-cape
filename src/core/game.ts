@@ -6,6 +6,14 @@ import { environmentFor, presetHours, type Conditions } from '../data/environmen
 import { episodeWeatherAt } from '../data/weatherTimeline';
 import { scoreRun, type RunScore } from '../sim/runScore';
 import { SectionTimes, type SectionTime } from '../sim/sectionTimes';
+import {
+  Traffic,
+  createTrafficBody,
+  placeTrafficBody,
+  type OncomingCar,
+  type TrafficEvent,
+} from '../sim/traffic';
+import type RAPIER from '@dimforge/rapier3d-compat';
 import { clockTime, episodeOrder, episodes, type EpisodeDef, type EpisodeId } from '../data/episodes';
 import { usePalette } from '../render/colors';
 import { qualityPresets } from '../data/quality';
@@ -145,6 +153,9 @@ export class Game {
   /** Optional scored runs on the crawl trails. */
   readonly crawlRuns: CrawlRuns;
   readonly sectionTimes: SectionTimes;
+  readonly traffic: Traffic;
+  private readonly trafficCars = new Map<OncomingCar, { body: RAPIER.RigidBody; view: StuckVehicleView }>();
+  private readonly trafficLooks = new Map<string, VehicleId>();
   /** Gates driven on a gate trail (Crawler Creek). */
   readonly gateCount: GateCount;
   readonly hud: Hud;
@@ -222,6 +233,12 @@ export class Game {
       return [{ id, name: t.name ?? id, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] } }];
     });
     this.sectionTimes = new SectionTimes(sections, setup.progress[setup.def.id]?.sectionBests ?? {});
+    const traffic = (setup.def.traffic ?? []).flatMap((t) => {
+      const track = world.map.tracks.find((tr) => tr.id === t.track);
+      this.trafficLooks.set(t.name, t.look);
+      return track ? [{ name: t.name, points: track.points.map(([x, z]) => [x, z] as const) }] : [];
+    });
+    this.traffic = new Traffic(traffic);
     this.gateCount = new GateCount(world.features.gates);
     this.input = new InputManager(window);
     this.input.setSteering(tuning.steering);
@@ -1297,6 +1314,9 @@ export class Game {
     if (run) this.onCrawlRun(run);
     const section = this.sectionTimes.update(p.x, p.z, dt);
     if (section) this.onSectionTime(section);
+    for (const e of this.traffic.update(dt, p)) this.onTraffic(e);
+    for (const [car, { body }] of this.trafficCars)
+      placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), false);
     if (this.gateCount.total) {
       const f = v.forward();
       const flat = Math.hypot(f.x, f.z) || 1;
@@ -1322,6 +1342,32 @@ export class Game {
         gateLapDetail(e.missed, e.flags),
       );
       this.audio.discovery();
+    }
+  }
+
+  private onTraffic(e: TrafficEvent): void {
+    const { car } = e;
+    if (e.type === 'spawned') {
+      const body = createTrafficBody(this.sim.R, this.sim.physics);
+      placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), true);
+      const view = new StuckVehicleView(
+        { body },
+        vehicles[this.trafficLooks.get(car.name) ?? 'troopy'].tuning,
+      );
+      view.model.root.name = 'traffic';
+      this.view.scene.add(view.model.root);
+      this.trafficCars.set(car, { body, view });
+      this.hud.toast(`${car.name} is coming the other way on this narrow track`, 3000);
+    } else if (e.type === 'waiting') {
+      this.hud.toast(`${car.name} has stopped for you: pull off to one side to let it past`, 3000);
+    } else if (e.type === 'moving' && car.s > 1) {
+      this.hud.toast(`${car.name} squeezes past with a wave`, 2200);
+    } else if (e.type === 'gone') {
+      const drawn = this.trafficCars.get(car);
+      if (!drawn) return;
+      this.sim.physics.world.removeRigidBody(drawn.body);
+      this.view.scene.remove(drawn.view.model.root);
+      this.trafficCars.delete(car);
     }
   }
 
@@ -1480,6 +1526,7 @@ export class Game {
     this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
     this.syncDeliveryViews();
     for (const s of this.stuckViews) s.update();
+    for (const { view } of this.trafficCars.values()) view.update();
     for (const t of this.trailerViews.values()) t.update(this.loop.paused ? 1 : alpha);
     for (const d of this.drumViews.values()) d.update();
     this.model.applyCondition(v.condition);
