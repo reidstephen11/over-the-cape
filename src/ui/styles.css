@@ -575,6 +575,11 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
   color: var(--ink-soft);
 }
 
+/* An episode adds the supplies strip above the status strip: the hint card sits above it. */
+body:not(.touch-mode) .supplies:not(.hidden) ~ .course-hint {
+  bottom: 106px;
+}
+
 .status-item {
   display: flex;
   align-items: center;

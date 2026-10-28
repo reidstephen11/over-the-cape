@@ -1334,3 +1334,7 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 **Problem.** After v0.54 changed the ground, seed 1's rockfall on the Roaring Meg climb dropped a big rock on the sloping edge of the bank. Once down it kept rolling, about 1 m. A saved game puts fallen rocks back where they were planned to land, so after a reload the rock was in a different place from where the player last saw it. The surprises test caught it.
 
 **Fix.** The planner only lands a rock where the ground under it rises less than 0.15 m per metre (`rockRestSlope`), and tries another spot otherwise. Rocks also resist rolling more once down (angular damping 2.5, was 0.8): they dig in, rather than creeping down a gentle slope. Every rockfall site still comes up across seeds 1–60.
+
+## v0.56 — the hint card clears the supplies strip
+
+- **The hint card moves up while the supplies strip shows.** In an episode, the fuel and supplies strip sits above the status strip at 62 px from the bottom, and the hint card (for example "Upper Daintree Road") sat at 78 px, so the card covered the strip. When the supplies strip is showing, the card now sits at 106 px, 10 px above it, in both the follow and driver's-seat views. Outside episodes the strip is hidden and the card keeps its old place. Touch screens use a separate layout and are unchanged.
