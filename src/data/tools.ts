@@ -57,6 +57,15 @@ export const floodTuning = {
   restartDryTime: 20,
   /** Timer counts down at this fraction of real time when the intake is clear. */
   recoverRate: 0.25,
+  /**
+   * Bow wave: driven faster than `bowFromSpeed` (m/s) through water deeper than
+   * `bowFromDepth` (m), the water piles up in front of the car `bowPerSpeed` m higher for
+   * every m/s over, up to the water's depth again. That's what reaches the intake on a
+   * crossing taken too fast.
+   */
+  bowFromSpeed: 2.5,
+  bowPerSpeed: 0.2,
+  bowFromDepth: 0.3,
 };
 
 export const wearTuning = {

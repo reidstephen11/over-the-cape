@@ -156,6 +156,7 @@ export class Game {
   readonly traffic: Traffic;
   private readonly trafficCars = new Map<OncomingCar, { body: RAPIER.RigidBody; view: StuckVehicleView }>();
   private readonly trafficLooks = new Map<string, VehicleId>();
+  private churnNoted = false;
   /** Gates driven on a gate trail (Crawler Creek). */
   readonly gateCount: GateCount;
   readonly hud: Hud;
@@ -460,6 +461,7 @@ export class Game {
           plug: `Tyre plugged (${c.plugs} plug${c.plugs === 1 ? '' : 's'} left)`,
           refuel: `20 L in the tank (${c.jerryCans} can${c.jerryCans === 1 ? '' : 's'} left)`,
           camp: 'Repaired at camp',
+          pump: 'Tyres pumped back up for the gravel',
         }[kind],
         2000,
       );
@@ -993,7 +995,9 @@ export class Game {
       {
         id: 'repair',
         label: fix
-          ? { field: 'Field repair', spare: 'Fit a spare', plug: 'Plug the tyre', refuel: '' }[fix.kind]
+          ? { field: 'Field repair', spare: 'Fit a spare', plug: 'Plug the tyre', refuel: '', pump: '' }[
+              fix.kind
+            ]
           : 'Nothing to repair',
         icon: 'wrench',
         // Needed but not possible here: picking it says why (stop first, spare used...).
@@ -1023,12 +1027,12 @@ export class Game {
       );
     else if (id === 'pressure') {
       const c = this.vehicle.condition;
-      c.lowPressure = !c.lowPressure;
-      this.hud.toast(
-        c.lowPressure
-          ? 'Tyres let down: more grip on clay and rock, but they cut more easily'
-          : 'Tyres pumped back up for the gravel',
-      );
+      if (c.lowPressure) {
+        if (!this.sim.startPump(LOCAL_VEHICLE)) this.hud.toast('Stop on level ground first');
+      } else {
+        c.lowPressure = true;
+        this.hud.toast('Tyres let down: more grip on clay and rock, but they cut more easily');
+      }
     } else if (id === 'winch' && !this.tool.startWinchTarget()) this.hud.toast('No anchor in reach');
     else if (id === 'planks') this.tool.startPlanks();
     else if (id === 'recall') this.sim.recallPlanks(LOCAL_VEHICLE);
@@ -1315,6 +1319,10 @@ export class Game {
     const section = this.sectionTimes.update(p.x, p.z, dt);
     if (section) this.onSectionTime(section);
     for (const e of this.traffic.update(dt, p)) this.onTraffic(e);
+    if (!this.churnNoted && this.sim.churn.peak > 0.5) {
+      this.churnNoted = true;
+      this.hud.toast('The clay is cutting up under the wheels: spinning here makes it slipperier', 3200);
+    }
     for (const [car, { body }] of this.trafficCars)
       placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), false);
     if (this.gateCount.total) {

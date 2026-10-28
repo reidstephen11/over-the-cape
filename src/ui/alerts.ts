@@ -83,7 +83,7 @@ const RULES: Rule[] = [
   },
   {
     id: 'intake',
-    pattern: /^Water at the air intake!$/,
+    pattern: /^(Water|Bow wave) at the air intake!/,
     critical: false,
     rank: 5,
     text: 'Water at intake',

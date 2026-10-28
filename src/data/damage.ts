@@ -105,7 +105,8 @@ export const damageTuning = {
     floor: { mild: 0.5, realistic: 0 },
   },
   /** Roadside jobs from the tool menu: seconds stopped while you work. */
-  repair: { fieldSeconds: 6, spareSeconds: 8, plugSeconds: 10, refuelSeconds: 12 },
+  /** Pumping all four tyres back up takes a minute: about 4½ minutes on the CREB's clock. */
+  repair: { fieldSeconds: 6, spareSeconds: 8, plugSeconds: 10, refuelSeconds: 12, pumpSeconds: 60 },
   /** Fuel in one jerry can (L). */
   jerryCanLitres: 20,
   /** Below this health a part counts as damaged on the HUD. */

@@ -17,13 +17,13 @@ export type ToolEvent =
   | { type: 'noAnchor' };
 
 /** Roadside jobs from the tool menu. */
-export type RepairKind = 'field' | 'spare' | 'plug' | 'refuel';
+export type RepairKind = 'field' | 'spare' | 'plug' | 'refuel' | 'pump';
 
 /** A repair under way at the roadside: the car stays put until it's done. */
 export interface RepairJob {
   /**
    * Field repair (mild damage), fitting a spare or plugging a puncture (realistic), or
-   * pouring in a jerry can.
+   * pouring in a jerry can, or pumping let-down tyres back up with the compressor.
    */
   kind: RepairKind;
   /** Seconds left, out of `total`. */
