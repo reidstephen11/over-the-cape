@@ -9,7 +9,7 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 5. **Engine strain.** Engine temperature that rises with high revs in low range and load, and falls when easing off; a gauge on the HUD; overheating damages the engine (the existing `engine` failure). Water entering the engine in deep crossings taken too fast.
 6. **Tyre pressures.** A tool to let tyres down (more grip on clay and sand, more puncture risk on rock, slower on gravel) and a compressor to pump them back up, which takes time.
 7. **Other traffic.** Oncoming 4WDs on narrow sections that you pull over for, and now and then a stranded driver to winch out for fuel or plugs. Reuse the stuck-vehicle code in `src/sim/stuckVehicle.ts`.
-8. **Night finish.** Instead of failing at 6:15 pm, let the run go on in the dark on headlights, with a lower time score, and fail later (for example 8 pm).
+8. ~~**Night finish.**~~ Done in v0.66.
 
 # Other follow-up work
 

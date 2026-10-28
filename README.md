@@ -51,7 +51,7 @@ They run south to north and unlock in order: finish one to open the next. A fini
 
 ### Episode 1: The CREB Track
 
-**Mission: reach the Lions Den Hotel before dark.** June, the track has just reopened after the wet, and it rained overnight. You leave Daintree Village at 12:30 pm; it's dark at 6:15 pm. Storms are forecast from 3 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs.
+**Mission: reach the Lions Den Hotel before dark.** If dark catches you, carry on by headlights: the run only ends at 8 pm, but a finish after dark scores nothing for time. June, the track has just reopened after the wet, and it rained overnight. You leave Daintree Village at 12:30 pm; it's dark at 6:15 pm. Storms are forecast from 3 pm. On board: 50 L of fuel, one 20 L jerry can, one spare wheel and three tyre plugs.
 
 The map is a long strip, 1.3 km wide and 6 km from south to north, with about 6.6 km of track up its length. The real trip is over 100 km, so the distances are shortened; the obstacles are full size.
 
@@ -287,6 +287,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v0.66 driving in the dark:** the loading screen shows v0.66. Still be on the CREB at 6:15 pm: does a note say it's dark, the HUD show "Dark · by 8:00 pm", and the run carry on? Do the headlights light the track well enough to drive it? Finish after dark: does Time score 0? Still be out at 8 pm: does the episode end?
 - [ ] **v0.66 controller type:** in title Settings select PlayStation (PS4), Xbox or Generic. Use the controller: do Select and Back show that type's buttons? Press a keyboard key: do Enter and Esc return? Reload and check the choice was saved. Change the type again from pause Settings while driving. Check the engine-start and recovery prompts, camera buttons, map-close hint, pause navigation hint and Controls help. While the map is open, switch between the controller and keyboard: should the hint update without closing the map? On a phone, both Settings screens should fit without sideways scrolling. An old save should retain PlayStation prompts and its existing progress.
 
 - [ ] **v0.65 section times:** the loading screen shows v0.65. Drive up Big Red, Bob's Hill and down the concrete: does a card show each section's time as you reach the far end? Drive them again: does it compare with your best? Does the finish screen list the section times?

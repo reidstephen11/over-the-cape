@@ -1082,6 +1082,9 @@ export class Game {
     this.noteHour = this.run.hour;
     for (const n of this.episode.storm?.notes ?? [])
       if (from < n.hour && n.hour <= this.run.hour) this.hud.toast(n.text, 6000);
+    const d = this.episode.deadline;
+    if (d?.graceNote && this.run.timed && !this.run.deadlineMet && from < d.hour && d.hour <= this.run.hour)
+      this.hud.toast(d.graceNote, 8000);
   }
 
   /** How the run went, for the result card. */
@@ -1545,7 +1548,11 @@ export class Game {
           title: `Episode ${this.episode.number} · ${this.episode.title}`,
           mission: this.run.missionLine(),
           clock: this.run.timed ? clockTime(this.run.hour) : '',
-          deadline: Number.isFinite(this.run.hoursLeft()) ? (this.episode.deadline?.label ?? '') : '',
+          deadline: !Number.isFinite(this.run.hoursLeft())
+            ? ''
+            : this.run.hoursLeft() <= 0 && this.episode.deadline?.graceHours
+              ? `Dark · by ${clockTime(this.episode.deadline.hour + this.episode.deadline.graceHours)}`
+              : (this.episode.deadline?.label ?? ''),
           urgent: this.run.hoursLeft() < 0.5,
         },
         supplies: true,

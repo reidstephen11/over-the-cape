@@ -112,6 +112,11 @@ export class EpisodeRun {
     return this.timed && d && !this.deadlineMet && !this.noTimeLimit ? d.hour - this.hour : Infinity;
   }
 
+  /** Hours left before the run fails: the deadline plus any time allowed in the dark. */
+  hoursToFail(): number {
+    return this.hoursLeft() + (this.def.deadline?.graceHours ?? 0);
+  }
+
   /** Check the goal and the ways the episode can end. Returns the new status when it changes. */
   check(v: Vehicle, mode: DamageMode, goal: PoiDef, trailers: Iterable<Trailer> = []): EpisodeStatus | null {
     if (this.status !== 'driving') return null;
@@ -125,7 +130,7 @@ export class EpisodeRun {
       this.status = 'complete';
       return this.status;
     }
-    const reason = failure(v, mode, this.hoursLeft());
+    const reason = failure(v, mode, this.hoursToFail());
     if (!reason) return null;
     this.status = 'failed';
     this.reason = reason;

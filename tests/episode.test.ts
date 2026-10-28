@@ -40,7 +40,10 @@ describe('episodes', () => {
     run.tick(3600 / crebEpisode.clockRate);
     expect(run.hour).toBeCloseTo(crebEpisode.startHour + 1, 5);
     expect(run.check(s.vehicle, 'mild', goal)).toBeNull();
+    // Dark doesn't end it: the run goes on until the grace in the dark runs out.
     run.hour = crebEpisode.deadline!.hour;
+    expect(run.check(s.vehicle, 'mild', goal)).toBeNull();
+    run.hour = crebEpisode.deadline!.hour + crebEpisode.deadline!.graceHours!;
     expect(run.check(s.vehicle, 'mild', goal)).toBe('failed');
     expect(run.reason).toBe('time');
     // Once ended, nothing changes until it restarts from a camp.
@@ -275,5 +278,15 @@ describe('tyres', () => {
     spin(1, damageTuning.tyre.abrasionSeconds + 0.5);
     expect(v.condition.tyreFault[0]).toBe('puncture');
     s.physics.world.free();
+  });
+});
+
+describe('driving on in the dark', () => {
+  it('keeps the CREB going past dark until 8 pm', () => {
+    const run = new EpisodeRun(crebEpisode, { hour: 18.5, elapsed: 0 }, true);
+    expect(run.hoursLeft()).toBeLessThan(0);
+    expect(run.hoursToFail()).toBeCloseTo(1.5);
+    run.hour = 20.01;
+    expect(run.hoursToFail()).toBeLessThan(0);
   });
 });
