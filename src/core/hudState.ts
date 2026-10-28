@@ -87,6 +87,7 @@ const jobText: Record<RepairKind, [string, string]> = {
   spare: ['Fitting a spare', 'Fit a spare (tool menu)'],
   plug: ['Plugging the tyre', 'Plug the tyre (tool menu)'],
   refuel: ['Pouring in a jerry can', 'Pour in a jerry can (tool menu)'],
+  pump: ['Pumping the tyres up', 'Pump the tyres up (tool menu)'],
 };
 
 /** Build what the HUD shows this frame, including context prompts (SPEC §9). */
@@ -143,7 +144,11 @@ export function buildHudState(i: HudInputs): HudState {
         prompts.push({ keys: '!', text: 'Engine flooded — get the air intake out of the water' });
       else if (wait > 0) prompts.push({ keys: '!', text: `Engine flooded — drying out (${wait} s)` });
       else prompts.push({ keys: g.accelerate ?? 'W', text: 'Restart engine' });
-    } else if (flood.submerged) prompts.push({ keys: '!', text: 'Water at the air intake!' });
+    } else if (flood.submerged)
+      prompts.push({
+        keys: '!',
+        text: v.bowWave > 0.05 ? 'Bow wave at the air intake! Slow down' : 'Water at the air intake!',
+      });
     else if (v.engineOff) prompts.push({ keys: g.accelerate ?? 'W', text: 'Start the engine' });
     if (i.find && !t.repair)
       prompts.push({

@@ -11,6 +11,8 @@ import {
 import { crashTuning, type VehicleTuning } from '../../data/vehicle';
 import { nextHeadlightMode, type HeadlightMode } from '../../data/headlights';
 import { damageTuning } from '../../data/damage';
+import { floodTuning } from '../../data/tools';
+import type { ChurnMap } from '../world/churn';
 import { Groups, groups, type Physics } from '../physics';
 import type { VehicleInput } from '../input/vehicleInput';
 import {
@@ -83,6 +85,8 @@ export interface SpawnPose {
 export interface VehicleEnv {
   wetness: number;
   waterLevelOffset: number;
+  /** Churned-up clay and mud, worse where wheels have spun (absent: none). */
+  churn?: ChurnMap;
 }
 
 const WHEEL_FILTER = groups(Groups.VEHICLE, Groups.TERRAIN | Groups.STATIC | Groups.DYNAMIC | Groups.VEHICLE);
@@ -123,6 +127,8 @@ export class Vehicle {
   swept = 0;
   /** Set when flooding stalls or restarts the engine this step. */
   floodEvent: FloodEvent = null;
+  /** How high the bow wave stands above the water in front of the car (m). */
+  bowWave = 0;
   /**
    * Seconds of cranking left: the starter turns the engine over and nothing drives
    * until it catches. Starting up, after a vehicle swap and after a flooded stall.
@@ -465,7 +471,14 @@ export class Vehicle {
     // Engine flooding: is the air intake under the water surface?
     this.localToWorld(t.intake.x, t.intake.y, t.intake.z, this.intakePos);
     const ws = this.physics.ground.waterSurfaceAt(this.intakePos.x, this.intakePos.z);
-    const submerged = ws !== null && this.intakePos.y < ws + this.env.waterLevelOffset;
+    const bed = this.physics.ground.heightAt?.(this.intakePos.x, this.intakePos.z);
+    const wading = ws !== null && bed !== undefined ? ws + this.env.waterLevelOffset - bed : 0;
+    const F = floodTuning;
+    this.bowWave =
+      wading > F.bowFromDepth
+        ? Math.min(wading, Math.max(0, Math.abs(this.speed) - F.bowFromSpeed) * F.bowPerSpeed)
+        : 0;
+    const submerged = ws !== null && this.intakePos.y < ws + this.env.waterLevelOffset + this.bowWave;
     this.floodEvent = updateFlood(this.condition.flood, submerged, f, dt);
     // A flooded engine that's dried out restarts on the starter like any other.
     if (this.floodEvent === 'restarted') this.crank = t.engine.crankSeconds;
@@ -505,7 +518,15 @@ export class Vehicle {
       (waterLift.standingCreep + (1 - waterLift.standingCreep) * Math.min(1, Math.abs(this.speed) / 1.5));
     for (let i = 0; i < 4; i++) {
       const w = this.wheels[i];
-      const grip = surfaceGrip(w.surface, this.env.wetness) * tyreGripMultiplier(this.condition, i);
+      const churn = this.env.churn;
+      if (churn && w.contact) {
+        const p = w.contactPoint;
+        churn.work(p.x, p.z, w.surface, w.spin, this.speed, this.env.wetness, dt);
+      }
+      const grip =
+        surfaceGrip(w.surface, this.env.wetness) *
+        tyreGripMultiplier(this.condition, i) *
+        (churn && w.contact ? churn.grip(w.contactPoint.x, w.contactPoint.z, w.surface) : 1);
       this.caps[i] = w.contact ? t.longitudinalGrip * grip * w.load : 0;
       c.setWheelFrictionSlip(i, t.lateralGrip * grip);
       const deep = Math.min(1, Math.max(0, (w.water - 0.15) / (t.wheelRadius + 0.05)));

@@ -33,6 +33,7 @@ import { headingOf, rotate, v3 } from './vehicle/math';
 import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } from './surprises';
 import type { SurprisePlan } from './world/surprisePlan';
 import { StuckVehicle, type StuckVehicleDef } from './stuckVehicle';
+import { ChurnMap } from './world/churn';
 import { poseBehind, Trailer, type TrailerEvent } from './trailer';
 import { DRUM, canCouple, trailers, trailerTuning, type TrailerTuning } from '../data/trailers';
 import { CargoDrum } from './cargoDrum';
@@ -127,6 +128,8 @@ export class Simulation {
   surprises: Surprises | null = null;
   /** Other people's vehicles bogged and waiting for a winch (an episode's rescue), by id. */
   readonly stuck = new Map<string, StuckVehicle>();
+  /** Clay and mud churned up by wheelspin over the run. */
+  readonly churn = new ChurnMap();
   /** Trailers, hitched or standing on their jockey wheels, by id. */
   readonly trailers = new Map<string, Trailer>();
   readonly looseDrums = new Map<string, CargoDrum>();
@@ -579,6 +582,7 @@ export class Simulation {
       get waterLevelOffset() {
         return env.waterLevelOffset;
       },
+      churn: this.churn,
     });
     this.vehicles.set(id, v);
     this.tools.set(id, new VehicleTools());
@@ -990,6 +994,16 @@ export class Simulation {
     return { kind, possible: true };
   }
 
+  /** Pump let-down tyres back up with the compressor: a roadside job like a repair. */
+  startPump(id: string): boolean {
+    const v = this.vehicleOf(id);
+    const tools = this.toolsOf(id);
+    if (!v.condition.lowPressure || tools.repair || !this.canWork(v, 'pump').possible) return false;
+    const total = damageTuning.repair.pumpSeconds;
+    tools.repair = { kind: 'pump', remaining: total, total };
+    return true;
+  }
+
   /** Start a roadside job (tool menu). False if there's nothing it can do here. */
   startRepair(id: string, refuel = false): boolean {
     const option = refuel ? this.refuelOption(id) : this.repairOption(id);
@@ -1001,6 +1015,7 @@ export class Simulation {
       spare: R.spareSeconds,
       plug: R.plugSeconds,
       refuel: R.refuelSeconds,
+      pump: R.pumpSeconds,
     }[option.kind];
     tools.repair = { kind: option.kind, remaining: total, total };
     return true;
@@ -1014,6 +1029,7 @@ export class Simulation {
     const v = this.vehicleOf(id);
     const c = v.condition;
     if (job.kind === 'field') repairAll(c);
+    else if (job.kind === 'pump') c.lowPressure = false;
     else if (job.kind === 'refuel') {
       if (c.jerryCans === 0) return;
       c.jerryCans--;

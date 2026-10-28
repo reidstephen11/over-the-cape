@@ -230,6 +230,25 @@ describe('mechanical damage', () => {
     sim.physics.free();
   });
 
+  it('pumps let-down tyres back up with the compressor, which takes a minute', async () => {
+    const world = testWorld();
+    const sim = new Simulation(await loadRapier(), world, lateAfternoon);
+    const v = sim.addVehicle('p', sim.campsitePose(world.map.spawnCampsite));
+    const inputs = new Map([['p', emptyInput()]]);
+    const run = (seconds: number) => {
+      for (let t = 0; t < seconds; t += 1 / 60) sim.step(inputs, 1 / 60);
+    };
+    run(1);
+    expect(sim.startPump('p')).toBe(false);
+    v.condition.lowPressure = true;
+    expect(sim.startPump('p')).toBe(true);
+    run(damageTuning.repair.pumpSeconds - 1);
+    expect(v.condition.lowPressure).toBe(true);
+    run(1.5);
+    expect(v.condition.lowPressure).toBe(false);
+    sim.physics.world.free();
+  });
+
   it('is a setting, remembered in the save, and mild for older saves', () => {
     const data = new Map<string, string>();
     const s: KeyValueStore = {
