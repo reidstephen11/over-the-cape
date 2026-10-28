@@ -28,7 +28,7 @@ function blob(): THREE.Texture {
 }
 
 /**
- * Churned-up clay and mud (src/sim/world/churn.ts), drawn as dark wet patches lying on the
+ * Churned-up clay, mud and grass (src/sim/world/churn.ts), drawn as dark wet patches lying on the
  * ground: the darker, the more it has been cut up and the less it grips.
  */
 export class RutsView {

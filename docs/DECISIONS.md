@@ -1462,7 +1462,20 @@ An open or queued note formats its instructions for the current input. Changing 
 - Kept: the trailers stay in test mode (`?dev`) and the generic episode features (a required rescue, a delivery goal) stay in the episode code, unused by the CREB. `tests/delivery.test.ts` now tests the delivery goal and trailer saves on a flattened CREB map with a stand-in CREB run carrying two drums. `src/sim/stuckVehicle.ts` stays for the CREB's stranded drivers. Removing the trailer code entirely would touch about 30 files and lose a test-mode feature, so it is left for the owner to decide.
 - Older DECISIONS and README "What to test" entries about Episodes 2–4 are history and are left as written.
 
-## v0.74: new 40 Series, Hilux and LC79 bodies
+## v0.74: wet grass churns up too
+
+- The owner got stuck on wet clay on Bob's Hill but drove straight up the grass beside it, which isn't how it goes. Wet grass now grips about as badly as the greasy clay track: grass `wetGripLoss` goes from 0.3 to 0.5 (wet grass 0.43 against wet clay's 0.43).
+- `ChurnMap` now has a per-surface table instead of only clay and mud. Grass churns 1.4× as fast as wet clay and loses 40% grip when fully torn up (clay and mud stay at 30%), but dry grass churns at only 10% of the wet rate. Black soil churns like clay. Track dirt churns at 0.6× and loses up to 20%, so the dirt sections cut up too in the wet but less than the clay.
+- Churn builds faster everywhere: spinning 0.12 → 0.2 per second, rolling 0.004 → 0.006 per metre on soaked ground. A few seconds of wheelspin on wet grass digs it to mud.
+- The churn message now says "the ground is cutting up" because it can appear on grass.
+
+## v0.75: the engine overheats when worked hard
+
+- The owner drove hard in low range on the CREB and never saw the engine overheat. A probe on a 25° slope with the real physics showed why: heat only reached the warning after about 45 s of unbroken full throttle at high revs, any easing off cooled it just as fast as it had heated, half throttle never got there, and with damage set to Off the heat wasn't simulated at all.
+- The new model (`updateEngineHeat` in `src/sim/vehicle/damage.ts`): a thermostat holds the engine at normal (0.5) until the load outruns the radiator. Load is the pedal times half to all of the revs (a lugging engine still makes heat), times 1.6 in low range, less 0.03 per m/s of airflow. Heat climbs over 60 s and cools over 150 s, so burst after burst up a climb adds up.
+- Measured on the 25° slope: flat out in low range warns in about 20 s and boils in about 30 s; half throttle boils in about 90 s; a gentle crawl (30% pedal) settles at about 0.78, below the warning. High-range cruising now reads a steady normal instead of drifting towards cold.
+- A boiling engine loses power, down to 75% at the top of the dial (`hotPower`, `maxHeat` 1.3), on every damage setting. Engine damage from boiling still only happens on Mild and Realistic; on Off the dial and the warning still work.
+## v0.76: new 40 Series, Hilux and LC79 bodies
 
 The next three of Codex's model studies (branch `codex/vehicle-model-review`), after the Unimog and Patrol (v0.31), the Troop Carrier and Perentie (v0.34) and the 80 Series (v0.45). The owner asked for the rest to be reviewed and brought in. Brought in the same way: Codex's body, wheel, equipment and interior code, without the parts only its review viewer used (part markers, clearance records, the bonnet topology count).
 

@@ -1354,7 +1354,7 @@ export class Game {
     for (const e of this.traffic.update(dt, p)) this.onTraffic(e);
     if (!this.churnNoted && this.sim.churn.peak > 0.5) {
       this.churnNoted = true;
-      this.hud.toast('The clay is cutting up under the wheels: spinning here makes it slipperier', 3200);
+      this.hud.toast('The ground is cutting up under the wheels: spinning here makes it slipperier', 3200);
     }
     for (const [car, { body }] of this.trafficCars)
       placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), false);

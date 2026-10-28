@@ -50,7 +50,8 @@ export const surfaces: Record<SurfaceId, SurfaceDef> = {
     sink: 0,
     dust: false,
     spray: false,
-    wetGripLoss: 0.3,
+    // Wet grass is slick as soap on a slope: no better than the greasy clay beside it.
+    wetGripLoss: 0.5,
     dirtRate: 0.004,
   },
   [SurfaceId.Gravel]: {
