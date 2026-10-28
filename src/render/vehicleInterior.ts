@@ -10,7 +10,17 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
     seat = new THREE.Color('#615F4C');
   const metal = new THREE.Color('#858A83'),
     ivory = new THREE.Color('#D9D6BF');
-  b.block(0, 0.265, 0.47, 1.16, 0.06, 2.5, dark, M.Rubber, Z.Trim);
+  for (const [z0, z1, w] of [
+    [-0.78, 0.65, 1.16],
+    [0.65, 1.65, 1.04],
+    [1.65, 1.72, 1.16],
+  ])
+    b.block(0, 0.265, (z0 + z1) / 2, w, 0.06, z1 - z0, dark, M.Rubber, Z.Trim);
+  for (const side of [-1, 1]) {
+    b.block(side * 0.655, 0.49, 1.15, 0.27, 0.035, 1.06, dark, M.Rubber, Z.Trim, 0.01);
+    for (const z of [0.84, 1.56])
+      b.block(side * 0.56, 0.55, z, 0.025, 0.09, 0.025, new THREE.Color('#858A83'), M.Metal, Z.Trim);
+  }
   for (const x of [-0.38, 0.38]) {
     b.block(x, 0.47, 0.21, 0.52, 0.15, 0.58, seat, M.Fabric, Z.Trim, 0.055);
     b.push().rotate(-0.12, 0, 0);
