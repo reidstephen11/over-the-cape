@@ -1338,3 +1338,9 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 ## v0.56 — the hint card clears the supplies strip
 
 - **The hint card moves up while the supplies strip shows.** In an episode, the fuel and supplies strip sits above the status strip at 62 px from the bottom, and the hint card (for example "Upper Daintree Road") sat at 78 px, so the card covered the strip. When the supplies strip is showing, the card now sits at 106 px, 10 px above it, in both the follow and driver's-seat views. Outside episodes the strip is hidden and the card keeps its old place. Touch screens use a separate layout and are unchanged.
+
+## v0.57 — Big Red bends and climbs in pinches
+
+**Problem.** Big Red ran dead straight up the spur at an even 17–23°, so the climb was one long ramp with nothing to steer.
+
+**Change.** The track now swings about 35° right and then 30° left on its way up the face, and climbs in three pinches (about 19°, 22° and 22°) with a short easing of about 4° at each bend. It is about 170 m long (was 160 m) and still meets the paddock road, the west line and the ridge at the same points. The pinned profile is rounded over 8 m (was 14 m) so the easings stay distinct. The erosion ruts were stretched to the new length, and the hollow that lays the face back and the map marker were moved onto the new line.

@@ -132,7 +132,7 @@ const baseTracks: TrackDef[] = [
     surface: 'clay',
     ruts: 0.12,
     camber: 0.25,
-    pinSmooth: 14,
+    pinSmooth: 8,
     rough: pinch,
   },
   {
@@ -688,7 +688,7 @@ export const crebMap: MapDef = {
       id: 'big-red',
       name: 'Big Red',
       kind: 'feature',
-      x: 4,
+      x: 22,
       z: 1226,
       radius: 30,
       note: 'Red clay climb; the bypass goes round to the west',

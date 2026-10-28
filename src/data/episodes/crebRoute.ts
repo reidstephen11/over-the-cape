@@ -64,13 +64,18 @@ export const paddockRoad: Waypoint[] = [
   [11, 1298, 36],
 ];
 
-/** Big Red: straight up the red clay face of the spur. */
+/**
+ * Big Red: up the red clay face of the spur in three pinches, swinging right over the
+ * first easing and back left over the second.
+ */
 export const bigRed: Waypoint[] = [
   [11, 1298, 36],
-  [7, 1262, 48],
-  [2, 1226, 59.5],
-  [-2, 1194, 73],
-  [-6, 1166, 83.5],
+  [14, 1266, 47],
+  [22, 1250, 48],
+  [28, 1222, 59.5],
+  [22, 1204, 61],
+  [8, 1180],
+  [-3, 1160],
   [-11, 1138, 90],
 ];
 
