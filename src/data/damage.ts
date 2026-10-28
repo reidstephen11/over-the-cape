@@ -77,14 +77,21 @@ export const damageTuning = {
   },
   engine: {
     /**
-     * Engine heat (src/sim/vehicle/damage.ts) settles towards throttle × rpm share × this
-     * (times `lowRangeHeat` in low range), less `airflowCool` per m/s, over `heatSeconds`.
-     * Full revs in low range boils it in about a minute; a steady crawl stays just under.
+     * Engine heat (src/sim/vehicle/damage.ts) sits at 0.5 until the load (pedal × half to all
+     * of the revs, times `lowRangeHeat` in low range) times `heatGain`, less `airflowCool` per
+     * m/s, pushes it higher. It climbs over `heatSeconds` and cools over `coolSeconds`.
+     * Flat out up a low-range climb boils it in about half a minute; half throttle in about
+     * a minute and a half; a gentle crawl and high-range driving stay under the warning.
      */
-    heatGain: 1.3,
+    heatGain: 1,
     lowRangeHeat: 1.6,
-    airflowCool: 0.02,
-    heatSeconds: 90,
+    airflowCool: 0.03,
+    heatSeconds: 60,
+    coolSeconds: 150,
+    /** Heat stops rising here (the dial's end stop is 1.2). */
+    maxHeat: 1.3,
+    /** Above full heat the engine loses power, down to this share at `maxHeat`. */
+    hotPower: 0.75,
     /** Above full heat the engine loses this much health per second, and warns at `heatWarn`. */
     overheatPerSecond: 0.01,
     heatWarn: 0.85,

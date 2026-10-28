@@ -1468,3 +1468,10 @@ An open or queued note formats its instructions for the current input. Changing 
 - `ChurnMap` now has a per-surface table instead of only clay and mud. Grass churns 1.4× as fast as wet clay and loses 40% grip when fully torn up (clay and mud stay at 30%), but dry grass churns at only 10% of the wet rate. Black soil churns like clay. Track dirt churns at 0.6× and loses up to 20%, so the dirt sections cut up too in the wet but less than the clay.
 - Churn builds faster everywhere: spinning 0.12 → 0.2 per second, rolling 0.004 → 0.006 per metre on soaked ground. A few seconds of wheelspin on wet grass digs it to mud.
 - The churn message now says "the ground is cutting up" because it can appear on grass.
+
+## v0.75: the engine overheats when worked hard
+
+- The owner drove hard in low range on the CREB and never saw the engine overheat. A probe on a 25° slope with the real physics showed why: heat only reached the warning after about 45 s of unbroken full throttle at high revs, any easing off cooled it just as fast as it had heated, half throttle never got there, and with damage set to Off the heat wasn't simulated at all.
+- The new model (`updateEngineHeat` in `src/sim/vehicle/damage.ts`): a thermostat holds the engine at normal (0.5) until the load outruns the radiator. Load is the pedal times half to all of the revs (a lugging engine still makes heat), times 1.6 in low range, less 0.03 per m/s of airflow. Heat climbs over 60 s and cools over 150 s, so burst after burst up a climb adds up.
+- Measured on the 25° slope: flat out in low range warns in about 20 s and boils in about 30 s; half throttle boils in about 90 s; a gentle crawl (30% pedal) settles at about 0.78, below the warning. High-range cruising now reads a steady normal instead of drifting towards cold.
+- A boiling engine loses power, down to 75% at the top of the dial (`hotPower`, `maxHeat` 1.3), on every damage setting. Engine damage from boiling still only happens on Mild and Realistic; on Off the dial and the warning still work.
