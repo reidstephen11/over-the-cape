@@ -1428,3 +1428,10 @@ The browser test helper `waitEngine` starts a switched-off engine through a test
 **Change.** The four orientation notes now carry an instruction identifier rather than embedded key names. Their instruction text uses the active device and selected controller profile. PS4 precision crawl explains the real tool-menu action: hold L1, choose Enable precision crawl and release L1. Low range, both diff locks and winching have equivalent keyboard, controller and touch instructions. The keyboard diff-lock description follows the bindings: Z front, X rear. The briefing describes the lesson sequence without fixed key names.
 
 An open or queued note formats its instructions for the current input. Changing devices or controller type updates the visible card without rediscovering it, resetting its timer or advancing the queue. Historical prose stays untouched; touch-mode reading and dismissal remain intact. Regression checks exercise the reported card, all four instruction types and live controller/keyboard changes.
+
+## v0.69: oncoming traffic
+
+- Other 4WDs now come the other way on the narrow CREB Track (`src/sim/traffic.ts`, the episode's `traffic` list): a Troopy on the ridge after Big Red and a HiLux on the range top. The first time you reach either end of one of those tracks, its car sets off from the other end towards you.
+- The car drives the track's centre line at 18 km/h. It stops whenever you're on its line less than 18 m ahead, and goes on once you're 2.3 m or more off the line, which on a 3.6 m track means pulling at least partly off it. A message tells you each time. At the end of the track it's removed.
+- It's a solid, kinematic body the size of the bogged stockman's car, drawn with the same view (`StuckVehicleView` now takes any body). It doesn't steer around you or reverse; a car stopped for you waits for as long as you stay put.
+- Not done: stranded drivers to winch out in return for fuel or plugs; that's still in `docs/ROADMAP.md`.

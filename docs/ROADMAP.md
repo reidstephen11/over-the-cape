@@ -8,7 +8,7 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 4. **Changing track conditions.** Each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
 5. ~~**Engine strain.**~~ Heat done in v0.67; water entering the engine in deep crossings taken too fast is still to do.
 6. ~~**Tyre pressures.**~~ Done in v0.67 (instant; a timed compressor is still to do).
-7. **Other traffic.** Oncoming 4WDs on narrow sections that you pull over for, and now and then a stranded driver to winch out for fuel or plugs. Reuse the stuck-vehicle code in `src/sim/stuckVehicle.ts`.
+7. **Other traffic.** ~~Oncoming 4WDs on narrow sections that you pull over for~~ (done in v0.69, `src/sim/traffic.ts`). Still to do: now and then a stranded driver to winch out for fuel or plugs, reusing `src/sim/stuckVehicle.ts`.
 8. ~~**Night finish.**~~ Done in v0.66.
 
 # Other follow-up work

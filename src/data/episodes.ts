@@ -74,6 +74,8 @@ export interface EpisodeDef {
   };
   /** Track ids of the climbs and descents timed end to end, with bests kept (src/sim/sectionTimes.ts). */
   timedSections?: readonly string[];
+  /** Oncoming 4WDs on narrow tracks: one sets off along each the first time you reach its end. */
+  traffic?: readonly { track: string; name: string; look: VehicleId }[];
   /** Someone to winch out of a bog on the way: the goal doesn't count until they're free. */
   rescue?: RescueDef;
   /** Park an upright trailer at the goal with this many delivery drums still aboard. */
