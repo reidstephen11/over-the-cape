@@ -272,6 +272,12 @@ export function buildHudState(i: HudInputs): HudState {
           plugs: cond.plugs,
           heat: cond.engineHeat ?? 0.5,
           lowPressure: !!cond.lowPressure,
+          tyres: v.tuning.wheels.map((w, k) => ({
+            inflation: cond.tyres[k],
+            fault: cond.tyreFault[k],
+            front: w.front,
+            left: w.x < 0,
+          })),
         }
       : null,
     gates: i.gates

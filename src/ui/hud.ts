@@ -4,6 +4,7 @@ import { cameraPresets, type CameraPreset } from '../data/camera';
 import { CrawlGauges, formatSpeed, type GaugeMode, type GaugeState, type SpeedUnits } from './crawlGauges';
 import type { HeadlightMode } from '../data/headlights';
 import { railItems, touchNotice, warningView, type RailItem } from './alerts';
+import { VehicleGauges, type VehicleGaugeState } from './vehicleGauges';
 
 /** Labels already printed on the on-screen buttons. A prompt with only these keys repeats them. */
 const TOUCH_BUTTON_KEYS = new Set([
@@ -55,15 +56,10 @@ export interface EpisodeHud {
 }
 
 /** Fuel and what's on board to fix and refill with. */
-export interface SuppliesHud {
-  fuel: number;
-  tank: number;
+export interface SuppliesHud extends VehicleGaugeState {
   jerryCans: number;
   spares: number;
   plugs: number;
-  /** Engine heat, 0..1+ (over 0.85 is hot). */
-  heat: number;
-  lowPressure: boolean;
 }
 
 /** The trailer line beside the supplies. */
@@ -160,7 +156,7 @@ export class Hud {
   private readonly gateEl: HTMLElement;
   private readonly missionEl: HTMLElement;
   private readonly suppliesPanel: HTMLElement;
-  private readonly fuelEl: HTMLElement;
+  private readonly vehicleGauges: VehicleGauges;
   private readonly suppliesEl: HTMLElement;
   private readonly trailerEl: HTMLElement;
   private lastTrailerKey = '';
@@ -201,9 +197,10 @@ export class Hud {
         <div class="status-item status-engine" title="Engine flooding">${icons.engine}</div>
       </div>
       <div class="supplies paper hidden">
-        <div class="status-item status-fuel" title="Fuel in the tank">${icons.fuel}<span class="fuel-bar"><span></span></span><span class="fuel-litres"></span></div>
+        <div class="supplies-footer">
         <div class="status-item status-supplies"></div>
         <div class="status-item status-trailer hidden">${icons.trailer}<span class="trailer-text"></span><span class="trailer-kg"></span></div>
+        </div>
       </div>
       <div class="mission paper hidden"><small></small><strong></strong><span class="mission-clock"></span></div>
       <div class="course-hint paper hidden"><strong></strong><span></span><small></small></div>
@@ -223,7 +220,8 @@ export class Hud {
     this.runEl = this.el.querySelector('.crawl-run') as HTMLElement;
     this.missionEl = this.el.querySelector('.mission') as HTMLElement;
     this.suppliesPanel = this.el.querySelector('.supplies') as HTMLElement;
-    this.fuelEl = this.el.querySelector('.status-fuel') as HTMLElement;
+    this.vehicleGauges = new VehicleGauges(this.suppliesPanel);
+    this.suppliesPanel.prepend(this.vehicleGauges.el);
     this.suppliesEl = this.el.querySelector('.status-supplies') as HTMLElement;
     this.trailerEl = this.el.querySelector('.status-trailer') as HTMLElement;
     this.gateEl = this.el.querySelector('.gate-count') as HTMLElement;
@@ -453,19 +451,13 @@ export class Hud {
   }
 
   private drawSupplies(s: SuppliesHud | null): void {
-    const key = s
-      ? `${s.fuel.toFixed(1)}|${s.tank}|${s.jerryCans}|${s.spares}|${s.plugs}|${Math.round(s.heat * 20)}|${s.lowPressure}`
-      : '';
-    if (key === this.lastSuppliesKey) return;
-    this.lastSuppliesKey = key;
     this.suppliesPanel.classList.toggle('hidden', !s);
     if (!s) return;
-    const share = Math.min(1, Math.max(0, s.fuel / s.tank));
-    (this.fuelEl.querySelector('.fuel-bar span') as HTMLElement).style.width = `${Math.round(share * 100)}%`;
-    this.fuelEl.querySelector('.fuel-litres')!.textContent = `${Math.round(s.fuel)} L`;
-    this.fuelEl.classList.toggle('low', share < 0.15);
-    this.fuelEl.title = `Fuel: ${s.fuel.toFixed(1)} of ${s.tank} L`;
-    this.suppliesEl.innerHTML = `<span title="Jerry cans (20 L each)">${icons.fuel}×${s.jerryCans}</span><span title="Spare wheels">${icons.tyre}×${s.spares}</span><span title="Tyre plugs">${icons.plug}×${s.plugs}</span><span title="Engine temperature" class="engine-temp${s.heat >= 0.85 ? ' hot' : ''}">TEMP ${s.heat >= 1 ? 'HOT' : s.heat >= 0.85 ? 'HIGH' : 'OK'}</span>${s.lowPressure ? '<span title="Tyres let down">LOW PSI</span>' : ''}`;
+    this.vehicleGauges.update(s);
+    const key = `${s.jerryCans}|${s.spares}|${s.plugs}`;
+    if (key === this.lastSuppliesKey) return;
+    this.lastSuppliesKey = key;
+    this.suppliesEl.innerHTML = `<span title="Jerry cans (20 L each)">${icons.fuel}×${s.jerryCans}</span><span title="Spare wheels">${icons.tyre}×${s.spares}</span><span title="Tyre plugs">${icons.plug}×${s.plugs}</span>`;
   }
 
   private drawTrailer(t: TrailerHud | null): void {

@@ -577,7 +577,7 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
 
 /* An episode adds the supplies strip above the status strip: the hint card sits above it. */
 body:not(.touch-mode) .supplies:not(.hidden) ~ .course-hint {
-  bottom: 106px;
+  bottom: 216px;
 }
 
 .status-item {
@@ -865,6 +865,7 @@ body:not(.touch-mode) .supplies:not(.hidden) ~ .course-hint {
 /* The ring can reach the compass and status strip on a short screen: fade them out under it. */
 .hud.tool-menu-open .compass,
 .hud.tool-menu-open .status,
+.hud.tool-menu-open .supplies,
 .hud.tool-menu-open .course-hint,
 .hud.tool-menu-open .crawl-gauges,
 .hud.tool-menu-open .camera-help {
@@ -2003,9 +2004,10 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   left: 14px;
   bottom: 62px;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 4px 12px 4px 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  padding: 8px 10px 5px;
   font-weight: 800;
   font-size: 14px;
   opacity: 0.94;
@@ -2020,27 +2022,14 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   height: 22px;
 }
 
-.fuel-bar {
-  width: 44px;
-  height: 10px;
-  border: 2px solid var(--ink);
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--paper-dark);
-}
-
-.fuel-bar span {
-  display: block;
-  height: 100%;
-  background: #3f7a34;
-}
-
-.status-fuel.low .fuel-bar span {
-  background: #a3311f;
-}
-
-.status-fuel.low {
-  color: #a3311f;
+.supplies-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px 12px;
+  padding-top: 5px;
+  border-top: 1px solid var(--paper-dark);
 }
 
 .status-supplies {
@@ -2353,10 +2342,12 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   bottom: auto;
   left: max(12px, env(safe-area-inset-left));
   font-size: 12px;
+  padding: 6px 8px 4px;
+  gap: 3px;
 }
 
 .touch-mode .mission {
-  top: 144px;
+  top: 220px;
   left: max(12px, env(safe-area-inset-left));
   max-width: 230px;
   padding: 4px 9px;
@@ -2579,17 +2570,42 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   }
 
   .touch-mode .mission {
-    top: 188px;
+    top: 258px;
   }
 
   /* The crawl gauges go top right under the fuel, and the mission narrows beside them. */
   .touch-mode .crawl-gauges,
   .touch-mode .hud.cockpit .crawl-gauges {
-    top: 188px;
+    top: 258px;
   }
 
   .touch-mode .hud.with-gauges .mission {
     max-width: calc(100vw - 216px);
+  }
+
+  /* A lesson sign takes the mission's title space while its clock remains visible. */
+  .touch-mode .hud-readout:has(.course-hint:not(.hidden)) .mission strong {
+    display: none;
+  }
+
+  .touch-mode .supplies:not(.hidden) ~ .course-hint {
+    top: 292px;
+    max-width: calc(100vw - 216px);
+    padding: 4px 8px;
+  }
+
+  .touch-mode .supplies:not(.hidden) ~ .course-hint strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 16px;
+    line-height: 1.1;
+  }
+
+  .touch-mode .supplies:not(.hidden) ~ .course-hint span,
+  .touch-mode .supplies:not(.hidden) ~ .course-hint small {
+    display: none;
   }
 }
 
@@ -2637,7 +2653,351 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   }
 }
 
-.engine-temp.hot {
+.vehicle-gauges {
+  --dial-size: 88px;
+  --tyre-width: 132px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.vehicle-dial {
+  position: relative;
+  flex: 0 0 var(--dial-size);
+  width: var(--dial-size);
+  height: var(--dial-size);
+  color: var(--ink);
+}
+
+.dial-face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.dial-bezel {
+  fill: #faf4e7;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.dial-track,
+.dial-danger {
+  fill: none;
+  stroke-width: 5;
+}
+
+.dial-track {
+  stroke: var(--paper-dark);
+}
+
+.dial-danger {
+  stroke: #b54532;
+}
+
+.dial-ticks {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+}
+
+.dial-title,
+.dial-end {
+  fill: var(--ink-soft);
+  font: 800 9px var(--font);
+  text-anchor: middle;
+}
+
+.dial-title {
+  letter-spacing: 1px;
+}
+
+.dial-needle {
+  transform-origin: 50px 47px;
+  transition: transform 0.3s ease-out;
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.dial-value {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 9%;
+  text-align: center;
+  font-size: calc(var(--dial-size) * 0.12);
+  line-height: 1;
+}
+
+.vehicle-dial.hot,
+.vehicle-dial.low {
   color: #a3311f;
-  font-weight: 700;
+}
+
+.vehicle-dial.hot .dial-bezel,
+.vehicle-dial.low .dial-bezel {
+  fill: #fbe6d7;
+  stroke: #a3311f;
+  stroke-width: 2;
+}
+
+.vehicle-dial.critical .dial-value {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tyre-panel {
+  width: var(--tyre-width);
+  flex: 0 0 var(--tyre-width);
+  padding-left: 8px;
+  border-left: 1px solid var(--paper-dark);
+}
+
+.tyre-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  line-height: 1;
+}
+
+.tyre-mode {
+  padding: 2px 4px;
+  border: 1px solid var(--ink-soft);
+  border-radius: 3px;
+  color: var(--ink-soft);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.tyre-mode.trail {
+  color: #416443;
+  border-color: #416443;
+  background: #e3e9d6;
+}
+
+.tyre-layout {
+  display: grid;
+  grid-template-columns: 1fr 20px 1fr;
+  grid-template-rows: 26px 26px;
+  gap: 2px;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.tyre-chassis {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  width: 20px;
+  height: 50px;
+  fill: var(--paper-dark);
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+}
+
+.tyre-windscreen {
+  fill: var(--paper);
+}
+
+.tyre-gauge {
+  display: grid;
+  grid-template-columns: 11px 7px 1fr;
+  gap: 3px;
+  align-items: center;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.tyre-gauge[data-corner='FL'] {
+  grid-area: 1 / 1;
+}
+
+.tyre-gauge[data-corner='FR'] {
+  grid-area: 1 / 3;
+}
+
+.tyre-gauge[data-corner='RL'] {
+  grid-area: 2 / 1;
+}
+
+.tyre-gauge[data-corner='RR'] {
+  grid-area: 2 / 3;
+}
+
+.tyre-corner {
+  color: var(--ink-soft);
+  font-size: 8px;
+}
+
+.tyre-air {
+  display: flex;
+  align-items: flex-end;
+  height: 22px;
+  overflow: hidden;
+  border: 1px solid var(--ink-soft);
+  border-radius: 3px;
+  background: var(--paper-dark);
+}
+
+.tyre-air > span {
+  width: 100%;
+  background: #52704b;
+  transition: height 0.3s linear;
+}
+
+.tyre-gauge.leaking {
+  color: #995017;
+}
+
+.tyre-gauge.leaking .tyre-air > span {
+  background: #b8741a;
+}
+
+.tyre-gauge.flat {
+  color: #a3311f;
+}
+
+.tyre-gauge.flat .tyre-air {
+  border-color: #a3311f;
+}
+
+.tyre-caption {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 8px;
+  letter-spacing: 0.6px;
+  text-align: center;
+  line-height: 1;
+}
+
+.touch-mode .vehicle-gauges {
+  --dial-size: 64px;
+  --tyre-width: 132px;
+}
+
+.touch-mode .supplies-footer {
+  padding-top: 3px;
+}
+
+.touch-mode .supplies .status-item svg {
+  width: 16px;
+  height: 16px;
+}
+
+.touch-mode .status-supplies {
+  font-size: 12px;
+}
+
+.touch-mode .tyre-mode {
+  padding: 1px 3px;
+  font-size: 8px;
+}
+
+.touch-mode .tyre-layout {
+  grid-template-rows: 18px 18px;
+  margin: 2px 0;
+}
+
+.touch-mode .tyre-chassis {
+  height: 36px;
+}
+
+.touch-mode .tyre-air {
+  height: 17px;
+}
+
+@media (orientation: landscape) and (max-height: 540px) {
+  .touch-mode .hud.cockpit .camera-help {
+    padding: 2px;
+  }
+
+  .touch-mode .hud-readout .course-hint strong {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font: 800 11px/1.2 var(--font);
+  }
+
+  .touch-mode .trailer-kg {
+    display: none;
+  }
+
+  .touch-mode .vehicle-gauges {
+    --dial-size: 48px;
+    --tyre-width: 94px;
+    gap: 4px;
+  }
+
+  .touch-mode .tyre-panel {
+    padding-left: 4px;
+  }
+
+  .touch-mode .tyre-heading {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+
+  .touch-mode .tyre-mode {
+    font-size: 7px;
+    padding: 1px 2px;
+  }
+
+  .touch-mode .tyre-layout {
+    grid-template-columns: 1fr 12px 1fr;
+    grid-template-rows: 18px 18px;
+    margin: 2px 0;
+  }
+
+  .touch-mode .tyre-chassis {
+    width: 12px;
+    height: 34px;
+  }
+
+  .touch-mode .tyre-gauge {
+    grid-template-columns: 5px 1fr;
+    gap: 2px;
+    font-size: 8px;
+  }
+
+  .touch-mode .tyre-corner,
+  .touch-mode .tyre-caption {
+    display: none;
+  }
+
+  .touch-mode .tyre-air {
+    height: 16px;
+  }
+
+  .touch-mode .dial-value {
+    font-size: 8px;
+  }
+
+  .touch-mode .supplies-footer {
+    gap: 2px 6px;
+    padding-top: 2px;
+  }
+
+  .touch-mode .status-supplies,
+  .touch-mode .status-trailer {
+    font-size: 10px;
+  }
+
+  .touch-mode .supplies .status-item svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dial-needle,
+  .tyre-air > span {
+    transition: none;
+  }
 }
