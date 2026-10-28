@@ -18,6 +18,9 @@ import {
 import { isTouchDevice } from './touchControls';
 import { damageNotes } from './menus';
 
+const gamepadMenuHint =
+  '<b role="img" aria-label="Cross" title="Cross">✕</b> Select <b role="img" aria-label="Circle" title="Circle">○</b> Back';
+
 type Group =
   | 'menu'
   | 'back'
@@ -38,6 +41,7 @@ export interface WelcomeChoice extends LaunchChoice {
   damage: DamageMode;
   /** Continue returns to the saved camp without another briefing confirmation. */
   quickStart?: boolean;
+  inputDevice?: 'keyboard' | 'gamepad' | 'touch';
 }
 
 /**
@@ -146,7 +150,7 @@ export class WelcomeScreen {
     const hasCamp = !!this.save?.episodes[this.initial.episode]?.checkpoint;
     const hint =
       this.inputMode === 'gamepad'
-        ? '<b>A</b> Select <b>B</b> Back'
+        ? gamepadMenuHint
         : this.inputMode === 'touch'
           ? 'Tap to select'
           : '<b>Enter</b> Select <b>Esc</b> Back';
@@ -415,7 +419,7 @@ export class WelcomeScreen {
         this.inputMode = 'gamepad';
         this.el.dataset.input = 'gamepad';
         const hint = this.el.querySelector('.title-input-hint');
-        if (hint) hint.innerHTML = '<b>A</b> Select <b>B</b> Back';
+        if (hint) hint.innerHTML = gamepadMenuHint;
       }
       if (this.page === 'title') {
         if (pressed.some((p, i) => p && !this.padPrev[i])) this.openMenu();
@@ -423,7 +427,7 @@ export class WelcomeScreen {
         this.raf = requestAnimationFrame(this.pollPad);
         return;
       }
-      // Standard mapping: 12-15 d-pad up, down, left, right; 0 = A; 9 = Start.
+      // Standard mapping: 12-15 d-pad up, down, left, right; 0 = Cross; 9 = Options.
       if (edge(12)) this.move(-1, 0);
       if (edge(13)) this.move(1, 0);
       if (edge(14)) this.move(0, -1);
@@ -454,6 +458,9 @@ export class WelcomeScreen {
       (this.progress?.completed || this.dev) && this.time !== 'story'
         ? { time: this.time, weather: this.weather }
         : null;
-    this.onDrive({ ...this.choice, replay, quickStart, settings: { ...this.settings } }, audio);
+    this.onDrive(
+      { ...this.choice, replay, quickStart, settings: { ...this.settings }, inputDevice: this.inputMode },
+      audio,
+    );
   }
 }

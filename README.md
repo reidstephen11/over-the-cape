@@ -27,7 +27,7 @@ npm run dev        # then open http://localhost:5173
 
 The game opens at a riverside camp at dusk. **Press any button** (or **Tap to begin**) brings up **Continue**, **New Journey** and **Settings**, with quiet camp ambience. **Continue** loads your saved camp and starts driving without another briefing confirmation. **New Journey** opens episode selection; **Vehicle & difficulty** also contains replay conditions for finished episodes. Choosing a new journey does not delete the saved camp while you browse. **Settings** offers graphics, master volume and speed units, preserving your progress.
 
-Use the arrow keys and Enter, a controller's d-pad and A, or touch. Escape or B goes back. The background drifts slowly; reduced-motion preferences disable this and the prompt animation. The title loads before the driving engine, which is downloaded only when you choose to play. Sound starts with the first gesture, respects the volume setting and fades into driving.
+Use the arrow keys and Enter, a PS4 controller's d-pad and ✕ (Cross), or touch. Escape or ○ (Circle) goes back. The background drifts slowly; reduced-motion preferences disable this and the prompt animation. The title loads before the driving engine, which is downloaded only when you choose to play. Sound starts with the first gesture, respects the volume setting and fades into driving.
 
 For a new run, the loading **briefing** shows the mission, weather and deadline. **Story & trip details** and **Controls** expand when wanted; press **Drive** when ready. **Pause menu → Main menu** returns to the title with progress kept.
 
@@ -124,7 +124,7 @@ The civilian vehicles start with the **6×4 box trailer**; the Perentie and Unim
 - **Deliver the cargo:** stop the car and park the upright trailer inside the fuel camp with both drums aboard. Arriving in the car alone, with an empty trailer or on its side does not finish the job.
 - **Look after the load:** hard hits at speed loosen the straps. The HUD warns you; stop and choose **Tools → Tighten load straps**. A tip or a loose load can spill a drum. It becomes a physical object that rolls, floats and drifts in the current. Stop with the upright trailer alongside it and choose **Load loose drum**. The delivery drums cannot be used to refuel the car.
 - **Trailer punctures on Realistic:** hitting rock or a deep hole hard enough at speed can flatten a trailer tyre. Stop alongside it and choose **Repair trailer tyre**, using a plug or a spare from the car. The flat corner sits low and drags. Camps patch punctures when the trailer is alongside.
-- **Unhitch and return:** the existing tool-menu unhitch action and E / A / USE to hitch work in this episode. A trailer left behind stays there, with its load and damage. Camps save trailer state and loose drums. Restarting or continuing reloads that state; it does not replace lost cargo. A hitched trailer restarts behind the car at camp, while an unhitched one stays at its saved position.
+- **Unhitch and return:** the existing tool-menu unhitch action and E / ✕ / USE to hitch work in this episode. A trailer left behind stays there, with its load and damage. Camps save trailer state and loose drums. Restarting or continuing reloads that state; it does not replace lost cargo. A hitched trailer restarts behind the car at camp, while an unhitched one stays at its saved position.
 
 Check the route with `npx vite-node scripts/frenchmans-drive.ts all`; it uses the actual starting fuel, trailer load, rising water and delivery goal.
 
@@ -189,29 +189,29 @@ The **80 Series — Sooty MkII** joins the menu in v0.45: the recovered light bl
 
 The 80 Series uses the same controls below, including low range, lockers, winch and lights.
 
-| Action                                     | Keyboard                                              | Gamepad                                              |
+| Action                                     | Keyboard                                              | PS4 controller                                       |
 | ------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------- |
-| Accelerate (first press starts the engine) | W / ↑                                                 | RT                                                   |
-| Brake / reverse                            | S / ↓ (hold when stopped to reverse)                  | LT                                                   |
+| Accelerate (first press starts the engine) | W / ↑                                                 | R2                                                   |
+| Brake / reverse                            | S / ↓ (hold when stopped to reverse)                  | L2                                                   |
 | Steer                                      | A D / ← →                                             | Left stick                                           |
-| Handbrake on / off                         | Space (press again to let it off)                     | X / Square                                           |
-| Toggle high/low range                      | L (below 20 km/h)                                     | Y / Triangle                                         |
-| Front / rear diff lock                     | Z / X (below 5 km/h to engage)                        | Hold LB → front / rear diff                          |
-| Precision crawl                            | P                                                     | Hold LB → precision crawl                            |
-| Winch quick attach / detach                | E                                                     | RB                                                   |
+| Handbrake on / off                         | Space (press again to let it off)                     | □ (Square)                                           |
+| Toggle high/low range                      | L (below 20 km/h)                                     | △ (Triangle)                                         |
+| Front / rear diff lock                     | Z / X (below 5 km/h to engage)                        | Hold L1 → front / rear diff                          |
+| Precision crawl                            | P                                                     | Hold L1 → precision crawl                            |
+| Winch quick attach / detach                | E                                                     | R1                                                   |
 | Winch in / out                             | R / F                                                 | D-pad up / down                                      |
-| Tool menu                                  | Hold Q, point with the mouse, arrows or WASD, release | Hold LB, point with the left stick or d-pad, release |
-| Interact (planks, hitch)                   | E (when prompted)                                     | A / Cross                                            |
-| Right vehicle                              | Hold J (when prompted)                                | Hold B / Circle                                      |
+| Tool menu                                  | Hold Q, point with the mouse, arrows or WASD, release | Hold L1, point with the left stick or d-pad, release |
+| Interact (planks, hitch)                   | E (when prompted)                                     | ✕ (Cross)                                            |
+| Right vehicle                              | Hold J (when prompted)                                | Hold ○ (Circle)                                      |
 | Orbit camera                               | Mouse drag (left or right button), or Num 4/6/8/2     | Right stick                                          |
 | Camera distance                            | Scroll                                                | D-pad left/right while driving                       |
 | Recenter camera                            | V or Num 5, or the Reset view button                  | Right stick click                                    |
-| Cycle crawler / driver views               | C, or the View button                                 | Hold LB + click right stick                          |
+| Cycle crawler / driver views               | C, or the View button                                 | Hold L1 + click right stick                          |
 | Crawl gauges: auto / on / off              | I                                                     | Shown in low range                                   |
 | Horn                                       | H                                                     | Left stick click                                     |
-| Headlights: off / low / high               | N                                                     | Hold LB → headlights                                 |
-| Map                                        | M (scroll to zoom, drag to move it)                   | View / Select                                        |
-| Pause                                      | Esc                                                   | Start / Options                                      |
+| Headlights: off / low / high               | N                                                     | Hold L1 → headlights                                 |
+| Map                                        | M (scroll to zoom, drag to move it)                   | SHARE                                                |
+| Pause                                      | Esc                                                   | OPTIONS                                              |
 
 The **tool menu** holds: Unhitch the trailer (while towing one), Winch (or Detach winch), the front and rear diff locks, Place planks (or Recall planks), precision crawl, the headlights, the repair the car needs (Field repair, Plug the tyre or Fit a spare) and Pour in a jerry can. Finds load by themselves when you stop beside them. An option that can't be used now is greyed out; picking it says why ("Stop first", "No spares left"...).
 
@@ -283,8 +283,10 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
-- [ ] **v0.62 engine start:** the loading screen and pause menu show v0.62. Start an episode: is it silent on the loading screen and when you arrive, with a "Start the engine" prompt? Press the accelerator: do you hear the starter, then the engine fire, and only then does the car move? Try it with reverse (S) too, after restarting from a camp, and after changing vehicle from the pause menu.
-- [ ] **v0.61 camp title:** the version shows v0.61. Is the camp-at-dusk opening close to the chosen mockup, on a computer and on a phone held either way? Press a key, tap or use the controller to open Continue / New Journey / Settings. With a saved camp, Continue should start driving after loading without a second Drive press. Without a saved run it should be unavailable. New Journey should reveal episode selection; Back should leave your camp intact. Change graphics, volume and units in Settings, then reload: are they kept, with your journey? Does the quiet camp ambience fade into driving? Check keyboard arrows, Enter and Escape, controller d-pad, A and B, and reduced-motion mode.
+- [ ] **v0.63 engine start:** the loading screen and pause menu show v0.63. Start an episode: is it silent on the loading screen and when you arrive, with a "Start the engine" prompt? Press the accelerator: do you hear the starter, then the engine fire, and only then does the car move? Try it with reverse (S) too, after restarting from a camp, and after changing vehicle from the pause menu.
+- [ ] **v0.62 PS4 labels:** use the PS4 controller to open the title menu. Does it show ✕ to select and ○ to go back? Start driving: prompts should use □ for the handbrake, △ for low range, L1 for tools, R1 for the winch and L2/R2 for the pedals. The briefing and pause Controls page should use the same labels. Open the map with SHARE and close it with ○ or SHARE; pause with OPTIONS. Keyboard and touch prompts should still match their inputs.
+
+- [ ] **v0.61 camp title:** the version shows v0.61. Is the camp-at-dusk opening close to the chosen mockup, on a computer and on a phone held either way? Press a key, tap or use the controller to open Continue / New Journey / Settings. With a saved camp, Continue should start driving after loading without a second Drive press. Without a saved run it should be unavailable. New Journey should reveal episode selection; Back should leave your camp intact. Change graphics, volume and units in Settings, then reload: are they kept, with your journey? Does the quiet camp ambience fade into driving? Check keyboard arrows, Enter and Escape, controller d-pad, ✕ and ○, and reduced-motion mode.
 
 - [ ] **v0.60 Big Red worn into the hill:** the loading screen and pause menu show v0.60. Look at Big Red from the foot and from the free camera. Does it look like a track worn into the hillside, wandering up the spur, rather than a built road on a bank? Climb it in low range with both lockers and crawl, then try high range and open diffs: only the locked crawl should get up.
 - [ ] **v0.59 shorter launch:** choose an episode and drive without opening setup. On a phone, upright and sideways, is Drive visible immediately? Open **Vehicle & difficulty**, change the vehicle and difficulty, then close it: does the summary match? Continue a saved camp, or select **Start again**. The briefing should show just the mission, conditions and a basic controls reminder. Open **Story & trip details** and **Controls** with a tap or Enter/Space: do they open without starting the game? Drive should still start the engine and sound. Finished episodes retain their replay conditions in setup.

@@ -196,7 +196,7 @@ export function buildHudState(i: HudInputs): HudState {
         text: line.hint,
         controls:
           i.device === 'gamepad'
-            ? 'Y low range · LB tools · LB + R3 views'
+            ? '△ low range · L1 tools · L1 + R3 views'
             : touch
               ? 'LOW range · F / R LOCK · CRAWL · View'
               : `${g.range} low range · ${g.frontDiff} front · ${g.rearDiff} rear · ${g.precision} crawl · C views`,
@@ -230,7 +230,7 @@ export function buildHudState(i: HudInputs): HudState {
           ? 'L low range · P crawl · Z / X lockers · C views'
           : touch
             ? 'LOW range · CRAWL · F / R LOCK · View'
-            : 'Y low range · LB tools · LB + R3 views',
+            : '△ low range · L1 tools · L1 + R3 views',
       };
     }
   }
@@ -248,7 +248,7 @@ export function buildHudState(i: HudInputs): HudState {
           ? 'L low range · P crawl · C views'
           : touch
             ? 'LOW range · CRAWL · View'
-            : 'Y low range · LB tools · LB + R3 views',
+            : '△ low range · L1 tools · L1 + R3 views',
       };
   }
 

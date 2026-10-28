@@ -8,8 +8,8 @@ export interface ToolOption {
 }
 
 /**
- * Radial tool menu (SPEC §9): held open with Q / LB. Point with the mouse, the steering
- * keys or the left stick; letting go of Q/LB picks the highlighted option. Opened from the
+ * Radial tool menu (SPEC §9): held open with Q / L1. Point with the mouse, the steering
+ * keys or the left stick; letting go of Q/L1 picks the highlighted option. Opened from the
  * touch TOOLS button it stays open until an option or the space around it is tapped.
  */
 export class ToolMenu {
