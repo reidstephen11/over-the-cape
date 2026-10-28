@@ -1,4 +1,5 @@
-import { glyphs } from '../data/controls';
+import type { ControllerType } from '../data/controllers';
+import { glyphsFor } from '../data/controls';
 import { floodTuning } from '../data/tools';
 import type { Device } from '../sim/input/inputManager';
 import type { VehicleTools } from '../sim/tools/tools';
@@ -20,6 +21,7 @@ export interface HudInputs {
   vehicle: Vehicle;
   tools: VehicleTools;
   device: Device;
+  controller?: ControllerType;
   mode: ToolMode;
   cameraHeading: number;
   discovered: ReadonlySet<string>;
@@ -89,7 +91,7 @@ const jobText: Record<RepairKind, [string, string]> = {
 
 /** Build what the HUD shows this frame, including context prompts (SPEC §9). */
 export function buildHudState(i: HudInputs): HudState {
-  const g = glyphs[i.device];
+  const g = glyphsFor(i.device, i.controller);
   const kb = i.device === 'keyboard';
   const touch = i.device === 'touch';
   const v = i.vehicle;
@@ -196,7 +198,7 @@ export function buildHudState(i: HudInputs): HudState {
         text: line.hint,
         controls:
           i.device === 'gamepad'
-            ? '△ low range · L1 tools · L1 + R3 views'
+            ? `${g.range} low range · ${g.toolMenu} tools · ${g.toolMenu} + ${g.cameraReset} views`
             : touch
               ? 'LOW range · F / R LOCK · CRAWL · View'
               : `${g.range} low range · ${g.frontDiff} front · ${g.rearDiff} rear · ${g.precision} crawl · C views`,
@@ -230,7 +232,7 @@ export function buildHudState(i: HudInputs): HudState {
           ? 'L low range · P crawl · Z / X lockers · C views'
           : touch
             ? 'LOW range · CRAWL · F / R LOCK · View'
-            : '△ low range · L1 tools · L1 + R3 views',
+            : `${g.range} low range · ${g.toolMenu} tools · ${g.toolMenu} + ${g.cameraReset} views`,
       };
     }
   }
@@ -248,7 +250,7 @@ export function buildHudState(i: HudInputs): HudState {
           ? 'L low range · P crawl · C views'
           : touch
             ? 'LOW range · CRAWL · View'
-            : '△ low range · L1 tools · L1 + R3 views',
+            : `${g.range} low range · ${g.toolMenu} tools · ${g.toolMenu} + ${g.cameraReset} views`,
       };
   }
 

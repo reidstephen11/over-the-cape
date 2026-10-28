@@ -1,3 +1,4 @@
+import { controllers, controllerTypes, type ControllerType } from '../data/controllers';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import { controlsTable, touchControlsTable } from '../data/controls';
 import type { Settings } from '../sim/save/save';
@@ -42,6 +43,7 @@ export class PauseMenu {
   private episodeName = '';
   /** Opened from the touch controls: the Controls page lists those instead of the keyboard. */
   private touch = false;
+  private device: 'keyboard' | 'gamepad' | 'touch' = 'keyboard';
 
   constructor(
     root: HTMLElement,
@@ -57,6 +59,7 @@ export class PauseMenu {
   open(campsiteName: string, touch = false): void {
     this.campsiteName = campsiteName;
     this.touch = touch;
+    if (touch) this.device = 'touch';
     this.isOpen = true;
     this.show('main');
     this.el.classList.remove('hidden');
@@ -69,6 +72,31 @@ export class PauseMenu {
 
   setSettings(s: Settings): void {
     this.settings = { ...s };
+    this.updateInputHint();
+    if (this.isOpen && this.page === 'controls') this.show('controls');
+  }
+
+  setInputDevice(device: 'keyboard' | 'gamepad' | 'touch'): void {
+    if (this.device !== device) {
+      this.device = device;
+      this.updateInputHint();
+    }
+    const touch = device === 'touch';
+    if (touch === this.touch) return;
+    this.touch = touch;
+    if (this.isOpen && this.page === 'controls') this.show('controls');
+  }
+
+  private updateInputHint(): void {
+    const hint = this.el.querySelector('.pause-input-hint');
+    if (!hint) return;
+    const p = controllers[this.settings.controller];
+    hint.textContent =
+      this.device === 'gamepad'
+        ? `${p.confirm} Select · ${p.back} Back`
+        : this.device === 'touch'
+          ? 'Tap an option'
+          : 'Enter Select · Esc Back';
   }
 
   /** The vehicle being driven, ticked on the Vehicle page. */
@@ -127,6 +155,7 @@ export class PauseMenu {
         ${slider('masterVolume', 'Master volume')}
         ${slider('engineVolume', 'Engine volume')}
         ${slider('ambienceVolume', 'Ambience volume')}
+        <div class="setting-row controller-setting">Controller type<div class="seg">${controllerTypes.map((c) => `<button data-focus data-controller="${c}" class="${s.controller === c ? 'on' : ''}" aria-pressed="${s.controller === c}">${controllers[c].label}</button>`).join('')}</div></div>
         <div class="setting-row">Units<div class="seg"><button data-focus data-units="kmh" class="${s.units === 'kmh' ? 'on' : ''}">km/h</button><button data-focus data-units="mph" class="${s.units === 'mph' ? 'on' : ''}">mph</button></div></div>
         <div class="setting-row">Damage<div class="seg">${damageModes
           .map(
@@ -141,7 +170,9 @@ export class PauseMenu {
         ? `<thead><tr><th>Action</th><th>Touch</th></tr></thead><tbody>${touchControlsTable
             .map(([a, t]) => `<tr><td>${a}</td><td>${t}</td></tr>`)
             .join('')}</tbody>`
-        : `<thead><tr><th>Action</th><th>Keyboard</th><th>PS4 controller</th></tr></thead><tbody>${controlsTable
+        : `<thead><tr><th>Action</th><th>Keyboard</th><th>${controllers[this.settings.controller].label}</th></tr></thead><tbody>${controlsTable(
+            this.settings.controller,
+          )
             .map(([a, k, g]) => `<tr><td>${a}</td><td>${k}</td><td>${g}</td></tr>`)
             .join('')}</tbody>`;
       // The table scrolls on its own so Back stays at the bottom of the card.
@@ -149,8 +180,12 @@ export class PauseMenu {
       card.innerHTML = `<h2>Controls</h2><div class="controls-scroll"><table class="controls">${table}</table></div>
         <button data-focus data-act="back">Back</button>`;
     }
+    const hint = document.createElement('p');
+    hint.className = 'menu-note pause-input-hint';
+    card.appendChild(hint);
     this.el.innerHTML = '';
     this.el.appendChild(card);
+    this.updateInputHint();
     card.addEventListener('click', (e) => this.activate(e.target as HTMLElement));
     card.addEventListener('input', (e) => {
       const t = e.target as HTMLInputElement;
@@ -182,6 +217,10 @@ export class PauseMenu {
     } else if (t.dataset.quality) {
       this.settings.quality = t.dataset.quality as Settings['quality'];
       this.actions.changeSettings({ quality: this.settings.quality });
+      this.show('settings');
+    } else if (t.dataset.controller) {
+      this.settings.controller = t.dataset.controller as ControllerType;
+      this.actions.changeSettings({ controller: this.settings.controller });
       this.show('settings');
     } else if (t.dataset.units) {
       this.settings.units = t.dataset.units as Settings['units'];

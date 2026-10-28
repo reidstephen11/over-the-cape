@@ -1,3 +1,4 @@
+import { controllers, defaultController, type ControllerType } from '../data/controllers';
 import type { World } from '../sim/world/world';
 import { NO_WATER } from '../sim/world/terrain';
 import { Noise2D } from '../sim/world/noise';
@@ -25,7 +26,6 @@ const PHONE_ZOOM = 2.5;
 
 const hints = {
   keyboard: 'Scroll to zoom · drag to move · M or Esc to close',
-  gamepad: '○ or SHARE to close',
   touch: 'Pinch to zoom · drag to move · Close, or tap outside',
 };
 
@@ -512,13 +512,14 @@ export class PaperMap {
   open(
     discovered: ReadonlySet<string>,
     player: { x: number; z: number; heading: number },
-    device: keyof typeof hints = 'keyboard',
+    device: 'keyboard' | 'gamepad' | 'touch' = 'keyboard',
+    controller: ControllerType = defaultController,
   ): void {
     const opening = !this.isOpen;
     this.el.classList.remove('hidden');
     this.isOpen = true;
     document.body.classList.toggle('map-open', true);
-    this.hint.textContent = hints[device];
+    this.updateInput(device, controller);
     if (opening) {
       this.pointers.clear();
       this.armHint();
@@ -540,7 +541,7 @@ export class PaperMap {
       this.ctx.fillStyle = '#F3EBDA';
       this.ctx.fillRect(0, 0, this.width, this.height);
       void this.prepare().then(() => {
-        if (this.isOpen) this.open(discovered, player, device);
+        if (this.isOpen) this.open(discovered, player, device, controller);
       });
       return;
     }
@@ -569,6 +570,17 @@ export class PaperMap {
     g.stroke();
     pois.forEach((p, i) => this.drawPoi(g, p, labels[i]));
     this.drawPlayer(g, player);
+  }
+
+  updateInput(device: 'keyboard' | 'gamepad' | 'touch', controller: ControllerType): void {
+    if (!this.isOpen) return;
+    const text =
+      device === 'gamepad'
+        ? `${controllers[controller].back} or ${controllers[controller].map} to close`
+        : hints[device];
+    if (this.hint.textContent === text) return;
+    this.hint.textContent = text;
+    this.armHint();
   }
 
   close(): void {

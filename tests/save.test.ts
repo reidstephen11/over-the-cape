@@ -7,6 +7,29 @@ import { defaultSettings, loadSave, unlocked, writeSave, type KeyValueStore } fr
 import { MemoryStore, saveData } from './helpers/saves';
 
 describe('exploration and saving', () => {
+  it('keeps controller preferences across saves and defaults old or invalid values to PlayStation', () => {
+    const s = new MemoryStore();
+    for (const controller of ['playstation', 'xbox', 'generic'] as const) {
+      writeSave(saveData({ settings: { ...defaultSettings, controller } }), s);
+      expect(loadSave(s)!.settings.controller).toBe(controller);
+    }
+    for (const controller of [undefined, null, 'unknown', '__proto__']) {
+      s.setItem(
+        'overthecape.save.v1',
+        JSON.stringify({
+          version: 1,
+          settings: { controller },
+          vehicle: 'perentie',
+          episodes: { creb: { completed: true } },
+        }),
+      );
+      const loaded = loadSave(s)!;
+      expect(loaded.settings.controller).toBe('playstation');
+      expect(loaded.vehicle).toBe('perentie');
+      expect(loaded.episodes.creb?.completed).toBe(true);
+    }
+  });
+
   it('discovers a POI once and remembers the last campsite', () => {
     const ex = new Exploration(highCountryMap.pois, { discovered: [], lastCampsite: 'river-flat-camp' });
     const hut = highCountryMap.pois.find((p) => p.id === 'mountain-hut')!;

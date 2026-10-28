@@ -1,3 +1,4 @@
+import { controllers, defaultController, type ControllerType } from '../data/controllers';
 import { icons, type PoiIcon } from './icons';
 import { cameraPresets, type CameraPreset } from '../data/camera';
 import { CrawlGauges, formatSpeed, type GaugeMode, type GaugeState, type SpeedUnits } from './crawlGauges';
@@ -118,6 +119,7 @@ export interface HudState {
  */
 export class Hud {
   readonly el: HTMLElement;
+  private controller: ControllerType = defaultController;
   onCameraReset: (() => void) | null = null;
   onCameraPreset: (() => void) | null = null;
   private readonly compass: HTMLCanvasElement;
@@ -283,6 +285,22 @@ export class Hud {
     this.el.classList.toggle('hidden', !v);
   }
 
+  setControllerType(controller: ControllerType): void {
+    this.controller = controller;
+    const p = controllers[controller];
+    const labels: Record<string, string> = {
+      frontDiff: `Front diff lock: Z / ${p.toolMenu} menu`,
+      rearDiff: `Rear diff lock: X / ${p.toolMenu} menu`,
+      precision: `Precision crawl: P / ${p.toolMenu} menu. Hold throttle for walking pace.`,
+    };
+    for (const button of this.driveButtons) {
+      button.title = labels[button.dataset.drive ?? ''] ?? button.title;
+    }
+    this.parkEl.title = `Handbrake on: Space / ${p.handbrake}`;
+    this.lightsEl.title = `Headlights: N / ${p.toolMenu} menu`;
+    this.cameraPresetButton.title = `Cycle wheel-placement views: C / hold ${p.toolMenu} + ${p.cameraReset}`;
+  }
+
   cameraHelp(
     device: 'keyboard' | 'gamepad' | 'touch',
     visible: boolean,
@@ -297,12 +315,15 @@ export class Hud {
           ? 'Drag the view to look around'
           : `Right stick to orbit${driving ? ' · D-pad ←/→ to zoom' : ''}`;
     if (this.cameraHint.textContent !== hint) this.cameraHint.textContent = hint;
-    const key = device === 'keyboard' ? 'V' : 'R3';
+    const key = device === 'keyboard' ? 'V' : controllers[this.controller].cameraReset;
     if (this.cameraResetKey.textContent !== key) this.cameraResetKey.textContent = key;
     this.cameraPresetButton.hidden = !driving;
     this.cameraPresetButton.querySelector('.camera-preset-name span')!.textContent =
       cameraPresets[preset].label;
-    this.cameraPresetButton.querySelector('kbd')!.textContent = device === 'keyboard' ? 'C' : 'L1 + R3';
+    this.cameraPresetButton.querySelector('kbd')!.textContent =
+      device === 'keyboard'
+        ? 'C'
+        : `${controllers[this.controller].toolMenu} + ${controllers[this.controller].cameraReset}`;
   }
 
   update(s: HudState): void {

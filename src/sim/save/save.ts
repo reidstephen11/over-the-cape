@@ -1,3 +1,4 @@
+import { defaultController, isControllerType, type ControllerType } from '../../data/controllers';
 import { SAVE_KEY } from '../../core/config';
 import type { CrawlBests } from '../crawlRuns';
 import type { Checkpoint } from '../episode';
@@ -11,6 +12,7 @@ import { readDeliveryState } from '../trailerState';
 
 export interface Settings {
   quality: 'low' | 'medium' | 'high';
+  controller: ControllerType;
   masterVolume: number;
   engineVolume: number;
   ambienceVolume: number;
@@ -46,6 +48,7 @@ export interface SaveData {
 
 export const defaultSettings: Settings = {
   quality: 'medium',
+  controller: defaultController,
   masterVolume: 0.8,
   engineVolume: 0.8,
   ambienceVolume: 0.7,
@@ -91,6 +94,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
     return {
       version: 1,
       settings: {
+        controller: isControllerType(st.controller) ? st.controller : defaultController,
         quality: st.quality === 'low' || st.quality === 'high' ? st.quality : 'medium',
         masterVolume: clamp01(st.masterVolume, defaultSettings.masterVolume),
         engineVolume: clamp01(st.engineVolume, defaultSettings.engineVolume),

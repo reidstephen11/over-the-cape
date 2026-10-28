@@ -264,6 +264,7 @@ export class Game {
 
     this.hud = new Hud(uiRoot, (action) => this.input.requestDriveAction(action));
     this.hud.units = settings.units;
+    this.hud.setControllerType(settings.controller);
     this.hud.onCameraReset = () => this.chase.recenter();
     this.hud.onCameraPreset = () => this.chase.cyclePreset();
     this.toolMenu = new ToolMenu(uiRoot);
@@ -658,6 +659,7 @@ export class Game {
     if (this.settings.damage !== this.sim.damage) this.sim.setDamage(this.settings.damage);
     this.pause.setSettings(this.settings);
     this.hud.units = this.settings.units;
+    this.hud.setControllerType(this.settings.controller);
     this.audio.setSettings(this.settings);
     this.onSettings?.(this.settings);
     this.save();
@@ -680,6 +682,7 @@ export class Game {
       this.exploration.discovered,
       { x: p.x, z: p.z, heading: this.cameraHeading() },
       this.input.activeDevice,
+      this.settings.controller,
     );
     this.loop.paused = true;
     this.audio.mapOpened();
@@ -1366,6 +1369,8 @@ export class Game {
 
   private renderFrame(alpha: number, frameDt: number): void {
     this.input.poll();
+    this.map.updateInput(this.input.activeDevice, this.settings.controller);
+    this.pause.setInputDevice(this.input.activeDevice);
     this.clock += frameDt;
     this.updateEnvironment();
     this.devPanel?.update();
@@ -1489,6 +1494,7 @@ export class Game {
         vehicle: v,
         tools,
         device: this.input.activeDevice,
+        controller: this.settings.controller,
         mode: this.tool.mode,
         cameraHeading: this.cameraHeading(),
         discovered: this.exploration.discovered,

@@ -1,4 +1,5 @@
-import { glyphs } from '../data/controls';
+import { defaultController, type ControllerType } from '../data/controllers';
+import { glyphsFor } from '../data/controls';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import type { DamageMode } from '../data/damage';
 import { timeLabels, weatherLabels, type Conditions } from '../data/environment';
@@ -30,8 +31,9 @@ export class LoadingScreen {
   constructor(
     root: HTMLElement,
     device: 'keyboard' | 'gamepad' | 'touch' = isTouchDevice() ? 'touch' : 'keyboard',
+    controller: ControllerType = defaultController,
   ) {
-    const pad = glyphs.gamepad;
+    const pad = glyphsFor('gamepad', controller);
     this.el = document.createElement('div');
     this.el.className = 'loading';
     this.el.innerHTML = `

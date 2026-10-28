@@ -1,3 +1,5 @@
+import { controllers, defaultController, type ControllerType } from './controllers';
+
 /** Controls (SPEC §10). Key codes are KeyboardEvent.code; pad indices follow the W3C standard mapping. */
 export type Action =
   | 'accelerate'
@@ -110,6 +112,38 @@ export const padTuning = {
   cameraOrbitRate: 1.8,
 };
 
+function padGlyphs(controller: ControllerType): Partial<Record<Action, string>> {
+  const p = controllers[controller];
+  return {
+    accelerate: p.accelerate,
+    brake: p.brake,
+    handbrake: p.handbrake,
+    range: p.range,
+    frontDiff: `${p.toolMenu} menu`,
+    rearDiff: `${p.toolMenu} menu`,
+    precision: `${p.toolMenu} menu`,
+    winch: p.winch,
+    winchIn: 'D-pad ↑',
+    winchOut: 'D-pad ↓',
+    toolMenu: p.toolMenu,
+    interact: p.confirm,
+    jack: p.back,
+    horn: p.horn,
+    lights: `${p.toolMenu} menu`,
+    map: p.map,
+    pause: p.pause,
+    confirm: p.confirm,
+    back: p.back,
+    cameraReset: p.cameraReset,
+  };
+}
+
+export const controllerGlyphs: Record<ControllerType, Partial<Record<Action, string>>> = {
+  playstation: padGlyphs('playstation'),
+  xbox: padGlyphs('xbox'),
+  generic: padGlyphs('generic'),
+};
+
 /** Short glyphs shown in prompts for the active device. */
 export const glyphs: Record<'keyboard' | 'gamepad' | 'touch', Partial<Record<Action, string>>> = {
   keyboard: {
@@ -133,27 +167,7 @@ export const glyphs: Record<'keyboard' | 'gamepad' | 'touch', Partial<Record<Act
     confirm: 'E',
     back: 'Esc',
   },
-  gamepad: {
-    accelerate: 'R2',
-    brake: 'L2',
-    handbrake: '□',
-    range: '△',
-    frontDiff: 'L1 menu',
-    rearDiff: 'L1 menu',
-    precision: 'L1 menu',
-    winch: 'R1',
-    winchIn: 'D-pad ↑',
-    winchOut: 'D-pad ↓',
-    toolMenu: 'L1',
-    interact: '✕',
-    jack: '○',
-    horn: 'L3',
-    lights: 'L1 menu',
-    map: 'SHARE',
-    pause: 'OPTIONS',
-    confirm: '✕',
-    back: '○',
-  },
+  gamepad: controllerGlyphs[defaultController],
   /** Labels on the on-screen touch buttons. */
   touch: {
     accelerate: 'GAS',
@@ -177,30 +191,47 @@ export const glyphs: Record<'keyboard' | 'gamepad' | 'touch', Partial<Record<Act
   },
 };
 
+/** The active input device and the saved controller label preference are independent. */
+export function glyphsFor(
+  device: 'keyboard' | 'gamepad' | 'touch',
+  controller = defaultController,
+): Partial<Record<Action, string>> {
+  return device === 'gamepad' ? controllerGlyphs[controller] : glyphs[device];
+}
+
 /** Rows for the controls table (pause menu and README). */
-export const controlsTable: ReadonlyArray<readonly [string, string, string]> = [
-  ['Accelerate', 'W / ↑', 'R2'],
-  ['Brake / reverse', 'S / ↓', 'L2'],
-  ['Steer', 'A D / ← →', 'Left stick'],
-  ['Handbrake on / off', 'Space', '□ (Square)'],
-  ['Toggle high/low range', 'L', '△ (Triangle)'],
-  ['Toggle front / rear diff lock', 'Z / X (below 5 km/h to engage)', 'Hold L1 → front / rear diff'],
-  ['Toggle precision crawl', 'P (6 km/h forward, 5 km/h reverse)', 'Hold L1 → precision crawl'],
-  ['Winch quick attach / detach', 'E', 'R1'],
-  ['Winch in / out', 'R / F', 'D-pad up / down'],
-  ['Tool menu', 'Hold Q', 'Hold L1'],
-  ['Interact (pick up planks)', 'E (when prompted)', '✕ (Cross)'],
-  ['Right vehicle', 'Hold J', 'Hold ○ (Circle)'],
-  ['Orbit camera', 'Mouse drag / Num 4 6 8 2', 'Right stick'],
-  ['Camera distance', 'Scroll', 'D-pad left/right (driving)'],
-  ['Recenter camera', 'V / Num 5', 'Right stick click'],
-  ['Cycle crawler and driver views', 'C / View button', 'Hold L1 + click right stick'],
-  ['Crawl gauges: auto (low range) / on / off', 'I', 'Shown in low range'],
-  ['Horn', 'H', 'Left stick click'],
-  ['Headlights: off / low beam / high beam', 'N', 'Hold L1 → headlights'],
-  ['Map', 'M', 'SHARE'],
-  ['Pause', 'Esc', 'OPTIONS'],
-];
+export function controlsTable(
+  controller: ControllerType = defaultController,
+): ReadonlyArray<readonly [string, string, string]> {
+  const p = controllers[controller];
+  return [
+    ['Accelerate', 'W / ↑', p.accelerate],
+    ['Brake / reverse', 'S / ↓', p.brake],
+    ['Steer', 'A D / ← →', 'Left stick'],
+    ['Handbrake on / off', 'Space', p.handbrake],
+    ['Toggle high/low range', 'L', p.range],
+    [
+      'Toggle front / rear diff lock',
+      'Z / X (below 5 km/h to engage)',
+      `Hold ${p.toolMenu} → front / rear diff`,
+    ],
+    ['Toggle precision crawl', 'P (6 km/h forward, 5 km/h reverse)', `Hold ${p.toolMenu} → precision crawl`],
+    ['Winch quick attach / detach', 'E', p.winch],
+    ['Winch in / out', 'R / F', 'D-pad up / down'],
+    ['Tool menu', 'Hold Q', `Hold ${p.toolMenu}`],
+    ['Interact (pick up planks)', 'E (when prompted)', p.confirm],
+    ['Right vehicle', 'Hold J', `Hold ${p.back}`],
+    ['Orbit camera', 'Mouse drag / Num 4 6 8 2', 'Right stick'],
+    ['Camera distance', 'Scroll', 'D-pad left/right (driving)'],
+    ['Recenter camera', 'V / Num 5', p.cameraReset],
+    ['Cycle crawler and driver views', 'C / View button', `Hold ${p.toolMenu} + ${p.cameraReset}`],
+    ['Crawl gauges: auto (low range) / on / off', 'I', 'Shown in low range'],
+    ['Horn', 'H', p.horn],
+    ['Headlights: off / low beam / high beam', 'N', `Hold ${p.toolMenu} → headlights`],
+    ['Map', 'M', p.map],
+    ['Pause', 'Esc', p.pause],
+  ];
+}
 
 /** Action → touch control, for the Controls page on phones and tablets (README "Phones and tablets"). */
 export const touchControlsTable: ReadonlyArray<readonly [string, string]> = [

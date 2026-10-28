@@ -1396,3 +1396,13 @@ The browser test helper `waitEngine` starts a switched-off engine through a test
 - **Score out of 1000, three parts.** Time to spare before the deadline is worth 400 (full marks at two hours spare), the car's condition 400 (engine, suspension, panels and tyres, averaged) and fuel and kit left 200. Without a deadline (a replay in chosen conditions) time is scored against 30 minutes of driving. Gold from 800, silver from 600, bronze below. The weights are a first guess, to tune after play.
 - **Best score saved with the best time** in the episode's progress (`bestScore`), and both shown on the finish screen, so a run has something to beat.
 - **Episodes 2–4 stay for now.** The owner wants them gone to focus on the CREB, but taking them out breaks several browser tests and saves, so the steps are written in `docs/ROADMAP.md` for a later update.
+
+## v0.65 — controller type and active-input prompts
+
+**Choice.** Title and pause Settings offer PlayStation (PS4), Xbox and Generic button labels. The preference is kept in the existing settings save; old or invalid values fall back to PlayStation, preserving the owner's PS4 setup. Generic uses numbered standard buttons. The setting changes labels without changing the physical standard gamepad bindings.
+
+**Shared labels.** Controller profiles supply title navigation symbols, the briefing, driving and recovery prompts, course hints, camera buttons and tooltips, map-close hints and Controls help. Changing the setting in the pause menu updates the HUD immediately and saves the choice without resetting the episode.
+
+**Active input.** The label profile is separate from the input device. Using keys restores keyboard prompts; using a controller restores that profile's buttons; touch uses the phone controls. Title and pause navigation hints follow input changes, and an already-open map updates its hint without needing to reopen. The pause Controls page switches to touch help when appropriate. Keyboard and controller help are both available on its non-touch table.
+
+**Checks.** Save tests cover each preference, old and invalid values, and existing progress. Browser checks cover persisted title selection, controller/keyboard switching, phone layouts and live changes in pause Settings across driving, camera, map and help UI.
