@@ -1344,3 +1344,9 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 **Problem.** Big Red ran dead straight up the spur at an even 17–23°, so the climb was one long ramp with nothing to steer.
 
 **Change.** The track now swings about 35° right and then 30° left on its way up the face, and climbs in three pinches (about 19°, 22° and 22°) with a short easing of about 4° at each bend. It is about 170 m long (was 160 m) and still meets the paddock road, the west line and the ridge at the same points. The pinned profile is rounded over 8 m (was 14 m) so the easings stay distinct. The erosion ruts were stretched to the new length, and the hollow that lays the face back and the map marker were moved onto the new line.
+
+## v0.58 — Big Red you can climb
+
+**Problem.** v0.57's Big Red stopped every vehicle except the Unimog, even locked in low range. The bends sat on the steep clay, the third pinch ran 70 m at 21–22°, and the ruts carried on through the turns, where a good line cuts the corner.
+
+**Fix.** Each pinch is now straight, about 18°, 20° and 19°, and the turns (about 30° right, then 60° left) sit on the easings between them. The track is about 180 m long. The left-wheel rut and the two gutters run down the pinches only, with a break at each turn. The left-wheel rut is 0.2 m deep (was 0.27 m): where the third pinch crosses the spur, the slope leans the car onto it. Every vehicle climbs it locked in low range; high range, open diffs and a line drifted into the gutter still stop.
