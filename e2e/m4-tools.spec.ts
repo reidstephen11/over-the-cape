@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
 type VState = {
   position: { x: number; y: number; z: number };
@@ -17,6 +17,7 @@ test('M4: winch, planks, jack, flooding, dirt and dents', async ({ page }) => {
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?debug&surprises=off');
+  await openJourney(page);
   await waitReady(page);
 
   // --- Winch up Big Red to a rainforest tree ---

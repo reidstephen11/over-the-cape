@@ -20,7 +20,7 @@ Its feel is inspired by Over The Hill: simple but good-looking graphics, and a t
 | Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; from v0.11 the Army Unimog UL1700L truck; from v0.14 the 1990s LandCruiser 75 Series Troop Carrier; and from v0.19 the GQ Patrol. A modern 4WD comes later. |
 | Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.14: the Troop Carrier. v0.17: Episode 2, the Old Coach Road. v0.22: the LC79 V8. v0.23: Episode 3, Lakefield (winching someone else out, a deadline that holds until a crossing). v0.46–49: trailers and towing in test mode. v0.50: Episode 4, delivering fuel drums across Frenchmans Track. Towing another vehicle comes later. |
 | Look | The game's current look, made more realistic (§5a). Not photo-real or highly detailed; vehicle bodies with accurate shapes come first. |
-| Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; everything generated in code. |
+| Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; the world, vehicles and sound are generated in code, with an approved camp artwork for the title. |
 
 ## 2. Episodes
 
@@ -94,7 +94,7 @@ Keep the game's current look and lighting, made more realistic rather than styli
 
 ## 6. Interface
 
-- Welcome screen: episode list (later episodes listed as coming), Continue / Start again, vehicle, difficulty, and for finished episodes the conditions.
+- Title screen: the camp-at-dusk artwork, live logo and Press any button / Tap to begin, then Continue, New Journey and Settings. Continue loads the saved camp directly. New Journey opens the episode list and vehicle/difficulty setup, including conditions for finished episodes. Settings saves graphics, volume and units without changing progress. Keyboard, touch and gamepad are supported; reduced-motion preferences disable title animation.
 - Loading screen: the briefing, then Drive.
 - HUD: kept quiet so the scenery comes first (planned). Every icon has a short word label, and supplies (recovery boards, spares, plugs, jerry cans) show only when they change or when the tool menu is open. Mission panel top left (episode, mission, clock and deadline); fuel gauge and supplies above the status strip; history notes top right; result card centred. On a touch screen the fuel and the mission sit under the status strip (sideways, the clock only), and a history note stops the game and shows centred until tapped.
 - Pause menu: Resume, Map, Restart from last camp, Vehicle (restarts from the camp), Settings, Controls, Main menu.

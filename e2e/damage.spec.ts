@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitReady } from './helpers';
 
 test('damage: a setting, shown on the HUD; fit a spare for a torn sidewall, camps fix the engine', async ({
   page,
@@ -8,6 +8,7 @@ test('damage: a setting, shown on the HUD; fit a spare for a torn sidewall, camp
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
 
   // Pause menu → Settings → Damage: Mild by default, then Realistic.

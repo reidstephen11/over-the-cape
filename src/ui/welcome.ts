@@ -1,3 +1,4 @@
+import { TitleAmbience } from '../audio/titleAmbience';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import type { LaunchChoice } from '../core/game';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
@@ -6,21 +7,43 @@ import { timeLabels, timesOfDay, weatherLabels, weathers, type TimeOfDay } from 
 import { clockTime, episodeOrder, episodes, upcomingEpisodes, type EpisodeId } from '../data/episodes';
 import { maps } from '../data/maps';
 import { vehicleOrder, vehicles } from '../data/vehicles';
-import { unlocked, type SaveData } from '../sim/save/save';
+import {
+  defaultSettings,
+  loadSave,
+  unlocked,
+  writeSave,
+  type SaveData,
+  type Settings,
+} from '../sim/save/save';
+import { isTouchDevice } from './touchControls';
 import { damageNotes } from './menus';
 
-type Group = 'episode' | 'start' | 'setup' | 'vehicle' | 'damage' | 'time' | 'weather' | 'drive';
+type Group =
+  | 'menu'
+  | 'back'
+  | 'quality'
+  | 'volume'
+  | 'units'
+  | 'episode'
+  | 'start'
+  | 'setup'
+  | 'vehicle'
+  | 'damage'
+  | 'time'
+  | 'weather'
+  | 'drive';
 
 /** The full choice: the launch, plus the damage setting (it decides how an episode can end). */
 export interface WelcomeChoice extends LaunchChoice {
   damage: DamageMode;
+  /** Continue returns to the saved camp without another briefing confirmation. */
+  quickStart?: boolean;
 }
 
 /**
- * Welcome screen (shown on launch): choose the episode, whether to carry on from its last
- * camp, the vehicle and the difficulty; a finished episode can be replayed in conditions
- * of your choosing. It starts on the last choices, so Enter (or A on a gamepad) goes
- * straight back to where you were. Arrow keys or the d-pad move between options.
+ * Camp title, main menu and journey setup. The first gesture starts quiet ambience;
+ * Continue loads the saved camp, while New Journey opens episode and vehicle choices.
+ * Keyboard, touch and gamepad share the same selection and focus state.
  */
 export class WelcomeScreen {
   readonly el: HTMLElement;
@@ -28,7 +51,11 @@ export class WelcomeScreen {
   /** Replaying: the time and weather picked (story when `replay` is null). */
   private time: TimeOfDay | 'story';
   private weather: (typeof weathers)[number] = 'clear';
-  private rows: HTMLButtonElement[][] = [];
+  private rows: (HTMLButtonElement | HTMLInputElement)[][] = [];
+  private page: 'title' | 'menu' | 'journey' | 'settings' = 'title';
+  private settings: Settings;
+  private ambience: TitleAmbience | null = null;
+  private inputMode: 'keyboard' | 'touch' | 'gamepad' = isTouchDevice() ? 'touch' : 'keyboard';
   private row = 0;
   private col = 0;
   private padPrev: boolean[] = [];
@@ -40,22 +67,36 @@ export class WelcomeScreen {
 
   constructor(
     root: HTMLElement,
-    initial: WelcomeChoice,
+    private readonly initial: WelcomeChoice,
     private readonly save: SaveData | null,
     private readonly onDrive: (choice: WelcomeChoice, audio?: AudioContext) => void,
   ) {
     this.choice = { ...initial };
+    this.settings = {
+      ...defaultSettings,
+      quality: isTouchDevice() ? 'low' : defaultSettings.quality,
+      ...save?.settings,
+    };
     this.time = initial.replay?.time ?? 'story';
     this.weather = initial.replay?.weather ?? 'clear';
     this.el = document.createElement('div');
     this.el.className = 'welcome';
+    this.el.tabIndex = -1;
     root.appendChild(this.el);
     this.el.addEventListener('click', (e) => {
+      if (this.page === 'title') return this.openMenu();
       const b = (e.target as HTMLElement).closest('button');
       if (b && !b.disabled) this.activate(b);
     });
+    this.el.addEventListener('input', (e) => {
+      const slider = e.target as HTMLInputElement;
+      if (slider.dataset.group !== 'volume') return;
+      this.settings.masterVolume = Number(slider.value);
+      this.persistSettings();
+      this.el.querySelector('output')!.textContent = `${Math.round(this.settings.masterVolume * 100)}%`;
+    });
     this.el.addEventListener('focusin', (e) => {
-      const button = e.target as HTMLButtonElement;
+      const button = e.target as HTMLButtonElement | HTMLInputElement;
       const row = this.rows.findIndex((r) => r.includes(button));
       if (row < 0) return;
       this.row = row;
@@ -63,9 +104,7 @@ export class WelcomeScreen {
       this.refresh();
     });
     window.addEventListener('keydown', this.onKey);
-    this.render('drive');
-    // Without preventScroll a phone opens scrolled down to Drive, hiding the title.
-    this.rows[this.row][this.col]?.focus({ preventScroll: true });
+    this.render();
     this.raf = requestAnimationFrame(this.pollPad);
   }
 
@@ -73,8 +112,89 @@ export class WelcomeScreen {
     return this.save?.episodes[this.choice.episode];
   }
 
-  /** Build the card for the current choices, keeping the focus on `focusGroup`. */
+  private readonly logo = `<div class="title-logo" role="img" aria-label="Over the Cape"><svg class="title-compass" viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0 46 33 80 40 47 46 40 80 33 47 0 40 33 33Z" fill="currentColor"/><path d="M40 0V40H80L47 46 40 80V40H0L33 33Z" fill="#f7dec0"/></svg><h1><span>Over</span><span>The Cape</span></h1><div class="title-rule" aria-hidden="true">◆</div></div>`;
+
+  private openMenu(): void {
+    if (!this.ambience) {
+      try {
+        this.ambience = new TitleAmbience(this.settings);
+      } catch {
+        /* Silent play is supported. */
+      }
+    }
+    this.page = 'menu';
+    this.render();
+  }
+
+  private persistSettings(): void {
+    const saved = loadSave() ?? {
+      version: 1 as const,
+      settings: this.settings,
+      episode: this.initial.episode,
+      vehicle: this.initial.vehicle,
+      episodes: {},
+      replay: null,
+    };
+    if (!this.dev) writeSave({ ...saved, settings: this.settings });
+    this.ambience?.setSettings(this.settings);
+  }
+
   private render(focusGroup?: Group): void {
+    this.el.dataset.screen = this.page;
+    this.el.dataset.input = this.inputMode;
+    if (this.page === 'journey') return this.renderJourney(focusGroup ?? 'drive');
+    const hasCamp = !!this.save?.episodes[this.initial.episode]?.checkpoint;
+    const hint =
+      this.inputMode === 'gamepad'
+        ? '<b>A</b> Select <b>B</b> Back'
+        : this.inputMode === 'touch'
+          ? 'Tap to select'
+          : '<b>Enter</b> Select <b>Esc</b> Back';
+    if (this.page === 'settings') {
+      const setting = (group: Group, value: string, label: string, on: boolean) =>
+        `<button type="button" class="welcome-option ${on ? 'on' : ''}" aria-pressed="${on}" data-group="${group}" data-value="${value}">${label}</button>`;
+      this.el.innerHTML = `<div class="title-settings title-panel"><button class="title-back" data-group="back">‹ Back</button><p class="title-eyebrow">Over the Cape</p><h2>Settings</h2>
+        <section class="title-setting"><h3>Graphics</h3><div class="welcome-options seg">${(['low', 'medium', 'high'] as const).map((q) => setting('quality', q, q[0].toUpperCase() + q.slice(1), this.settings.quality === q)).join('')}</div></section>
+        <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
+        <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
+      </div><p class="title-input-hint">${hint}</p>`;
+      this.setRows(['back', 'quality', 'volume', 'units'], focusGroup ?? 'back');
+      return;
+    }
+    this.el.innerHTML = `<div class="title-home">${this.logo}${
+      this.page === 'title'
+        ? `<button type="button" class="title-begin" data-title-begin>${this.inputMode === 'touch' ? 'Tap to begin' : 'Press any button'}</button>`
+        : `<nav class="title-menu" aria-label="Main menu"><button type="button" data-group="menu" data-value="continue" data-title-continue ${hasCamp ? '' : 'disabled'}>Continue</button><button type="button" data-group="menu" data-value="journey" data-title-journey>New Journey</button><button type="button" data-group="menu" data-value="settings">Settings</button></nav>`
+    }
+      </div><p class="title-version" title="Build ${BUILD_LABEL}">${GAME_VERSION}</p>${this.page === 'menu' ? `<p class="title-input-hint">${hint}</p>` : ''}`;
+    if (this.page === 'menu') this.setRows(['menu'], 'menu');
+    else {
+      this.rows = [];
+      this.el.focus({ preventScroll: true });
+    }
+  }
+
+  private setRows(groups: Group[], focusGroup: Group): void {
+    this.rows = groups
+      .map((g) =>
+        [
+          ...this.el.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+            `[data-group="${g}"]:not([disabled])`,
+          ),
+        ].filter((b) => !b.closest('[hidden]')),
+      )
+      .filter((r) => r.length > 0);
+    this.row = Math.max(
+      0,
+      this.rows.findIndex((r) => r[0].dataset.group === focusGroup),
+    );
+    this.col = Math.max(0, this.rows[this.row]?.findIndex((b) => this.chosen(b)) ?? 0);
+    this.refresh();
+    this.rows[this.row]?.[this.col]?.focus({ preventScroll: true });
+  }
+
+  /** Episode and vehicle setup follows New Journey, away from the title menu. */
+  private renderJourney(focusGroup?: Group): void {
     const keep = focusGroup ?? (this.rows[this.row]?.[0]?.dataset.group as Group | undefined);
     const option = (group: Group, value: string, label: string, note = '', disabled = false) =>
       `<button type="button" class="welcome-option" data-group="${group}" data-value="${value}"${disabled ? ' disabled' : ''}>${label}${note ? `<small>${note}</small>` : ''}</button>`;
@@ -101,9 +221,10 @@ export class WelcomeScreen {
     const upcoming = upcomingEpisodes.map((u) => `<li>${u.number}. ${u.title}</li>`).join('');
     const story = `${weatherLabels[def.weather]}${def.storm ? `, ${def.storm.forecast}` : ''}, from ${clockTime(def.startHour)}${def.deadline ? ` · ${def.deadline.label.toLowerCase()}` : ''}`;
     this.el.innerHTML = `
-      <div class="welcome-card paper">
-        <h1>Over the Cape</h1>
-        <p class="subtitle">Your journey north</p>
+      <div class="welcome-card title-panel">
+        <button type="button" class="title-back" data-group="back">‹ Back</button>
+        <p class="title-eyebrow">Over the Cape</p>
+        <h1>Your journey</h1>
         <div class="welcome-grid">
           <section class="welcome-section welcome-episodes">
             <h2>Choose an episode</h2>
@@ -142,34 +263,24 @@ export class WelcomeScreen {
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>
       </div>`;
     const groups: Group[] = [
+      'back',
       'episode',
       'start',
       'setup',
       ...(this.setupOpen ? (['vehicle', 'damage', 'time', 'weather'] as const) : []),
       'drive',
     ];
-    this.rows = groups
-      .map((g) =>
-        [...this.el.querySelectorAll<HTMLButtonElement>(`[data-group="${g}"]:not([disabled])`)].filter(
-          (b) => !b.closest('[hidden]'),
-        ),
-      )
-      .filter((r) => r.length > 0);
-    this.row = Math.max(
-      0,
-      this.rows.findIndex((r) => r[0].dataset.group === keep),
-    );
-    const on = this.rows[this.row].findIndex((b) => this.chosen(b));
-    this.col = Math.max(0, on);
-    this.refresh();
-    // Rendering replaces the buttons: keep keyboard activation on the current choice.
-    this.rows[this.row]?.[this.col]?.focus({ preventScroll: true });
+    this.setRows(groups, keep ?? 'drive');
   }
 
   /** Is this option the one chosen in its group? */
-  private chosen(b: HTMLButtonElement): boolean {
+  private chosen(b: HTMLButtonElement | HTMLInputElement): boolean {
     const v = b.dataset.value;
     switch (b.dataset.group as Group) {
+      case 'quality':
+        return v === this.settings.quality;
+      case 'units':
+        return v === this.settings.units;
       case 'episode':
         return v === this.choice.episode;
       case 'start':
@@ -187,10 +298,34 @@ export class WelcomeScreen {
     }
   }
 
-  private activate(b: HTMLButtonElement): void {
+  private activate(b: HTMLButtonElement | HTMLInputElement): void {
     if (this.done) return;
     const group = b.dataset.group as Group;
     const value = b.dataset.value ?? '';
+    if (group === 'back') {
+      this.page = 'menu';
+      this.render();
+      return;
+    }
+    if (group === 'menu') {
+      if (value === 'continue') {
+        this.choice = { ...this.initial, damage: this.settings.damage, resume: true };
+        this.time = this.initial.replay?.time ?? 'story';
+        this.weather = this.initial.replay?.weather ?? 'clear';
+        return this.drive(true);
+      }
+      this.page = value === 'settings' ? 'settings' : 'journey';
+      if (this.page === 'journey') this.choice.resume = false;
+      this.render();
+      return;
+    }
+    if (group === 'quality' || group === 'units') {
+      if (group === 'quality') this.settings.quality = value as Settings['quality'];
+      else this.settings.units = value as Settings['units'];
+      this.persistSettings();
+      this.render(group);
+      return;
+    }
     if (group === 'drive') return this.drive();
     if (group === 'setup') {
       this.setupOpen = !this.setupOpen;
@@ -199,7 +334,7 @@ export class WelcomeScreen {
     }
     if (group === 'episode') {
       this.choice.episode = value as EpisodeId;
-      this.choice.resume = !!this.progress?.checkpoint;
+      this.choice.resume = false;
     } else if (group === 'start') this.choice.resume = value === 'resume';
     else if (group === 'vehicle') this.choice.vehicle = value as WelcomeChoice['vehicle'];
     else if (group === 'damage') this.choice.damage = value as DamageMode;
@@ -222,11 +357,19 @@ export class WelcomeScreen {
   }
 
   private move(dRow: number, dCol: number): void {
+    if (this.page === 'menu') {
+      dCol = dRow || dCol;
+      dRow = 0;
+    }
     if (dRow) {
       this.row = Math.max(0, Math.min(this.rows.length - 1, this.row + dRow));
       // Land on the chosen option of the new row.
       const on = this.rows[this.row].findIndex((b) => this.chosen(b));
       this.col = Math.max(0, on);
+    } else if (this.rows[this.row][this.col] instanceof HTMLInputElement) {
+      const input = this.rows[this.row][this.col] as HTMLInputElement;
+      input.value = String(Math.max(0, Math.min(1, Number(input.value) + dCol * 0.1)));
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     } else this.col = Math.max(0, Math.min(this.rows[this.row].length - 1, this.col + dCol));
     this.rows[this.row][this.col]?.focus();
     this.refresh();
@@ -234,6 +377,20 @@ export class WelcomeScreen {
 
   private readonly onKey = (e: KeyboardEvent): void => {
     if (this.done) return;
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (this.page === 'title') {
+      if (e.repeat || ['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape'].includes(e.key)) return;
+      e.preventDefault();
+      this.openMenu();
+      return;
+    }
+    if (e.code === 'Escape') {
+      e.preventDefault();
+      this.page = this.page === 'menu' ? 'title' : 'menu';
+      this.render();
+      return;
+    }
+    if (e.target instanceof HTMLInputElement && ['ArrowLeft', 'ArrowRight'].includes(e.code)) return;
     const moves: Record<string, [number, number]> = {
       ArrowUp: [-1, 0],
       ArrowDown: [1, 0],
@@ -254,40 +411,49 @@ export class WelcomeScreen {
     if (pad) {
       const pressed = pad.buttons.map((b) => b.pressed);
       const edge = (i: number) => pressed[i] && !this.padPrev[i];
+      if (pressed.some(Boolean) && this.inputMode !== 'gamepad') {
+        this.inputMode = 'gamepad';
+        this.el.dataset.input = 'gamepad';
+        const hint = this.el.querySelector('.title-input-hint');
+        if (hint) hint.innerHTML = '<b>A</b> Select <b>B</b> Back';
+      }
+      if (this.page === 'title') {
+        if (pressed.some((p, i) => p && !this.padPrev[i])) this.openMenu();
+        this.padPrev = pressed;
+        this.raf = requestAnimationFrame(this.pollPad);
+        return;
+      }
       // Standard mapping: 12-15 d-pad up, down, left, right; 0 = A; 9 = Start.
       if (edge(12)) this.move(-1, 0);
       if (edge(13)) this.move(1, 0);
       if (edge(14)) this.move(0, -1);
       if (edge(15)) this.move(0, 1);
-      if (edge(0)) this.activate(this.rows[this.row][this.col]);
-      if (edge(9)) this.drive();
+      if (edge(1)) {
+        this.page = this.page === 'menu' ? 'title' : 'menu';
+        this.render();
+      } else if (edge(0) || edge(9)) {
+        if (edge(9) && this.page === 'journey') this.drive();
+        else this.activate(this.rows[this.row][this.col]);
+      }
       this.padPrev = pressed;
     }
     this.raf = requestAnimationFrame(this.pollPad);
   };
 
-  private drive(): void {
+  private drive(quickStart = false): void {
     if (this.done) return;
     this.done = true;
     cancelAnimationFrame(this.raf);
     window.removeEventListener('keydown', this.onKey);
-    // This click (or key or button press) lets the browser start sound now.
-    let audio: AudioContext | undefined;
-    try {
-      const Ctor = window.AudioContext as typeof AudioContext | undefined;
-      if (Ctor) {
-        audio = new Ctor({ latencyHint: 'interactive' });
-        void audio.resume().catch(() => undefined);
-      }
-    } catch {
-      audio = undefined;
-    }
+    this.settings.damage = this.choice.damage;
+    this.persistSettings();
+    const audio = this.ambience?.leave();
     this.el.classList.add('hidden');
     setTimeout(() => this.el.remove(), 400);
     const replay =
       (this.progress?.completed || this.dev) && this.time !== 'story'
         ? { time: this.time, weather: this.weather }
         : null;
-    this.onDrive({ ...this.choice, replay }, audio);
+    this.onDrive({ ...this.choice, replay, quickStart, settings: { ...this.settings } }, audio);
   }
 }

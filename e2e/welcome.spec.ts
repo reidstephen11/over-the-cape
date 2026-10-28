@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, driveFromBriefing, lowGraphics, shot } from './helpers';
+import { openJourney, collectErrors, driveFromBriefing, lowGraphics, shot, waitEngine } from './helpers';
 
 test('the welcome screen offers the episodes in order, then the briefing, and remembers the choices', async ({
   page,
@@ -8,6 +8,7 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   const drive = page.locator('[data-welcome-drive]');
   await expect(drive).toBeVisible();
   const on = (group: string) => page.locator(`.welcome-option.on[data-group="${group}"]`);
@@ -62,6 +63,17 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   await page.keyboard.press('Escape');
   await expect(page.locator('.pause-episode')).toHaveText('Episode 1 · The CREB Track');
   await Promise.all([page.waitForEvent('load'), page.getByRole('button', { name: /^Main menu/ }).click()]);
+  await page.locator('[data-title-begin]').click();
+  await expect(page.locator('[data-title-continue]')).toBeEnabled();
+  await page.locator('[data-title-continue]').click();
+  // Continue starts the saved camp without a second Drive press or setup screen.
+  await page.waitForFunction(() => window.__game?.ready, null, { timeout: 300_000 });
+  await waitEngine(page);
+  await expect(page.locator('[data-briefing-drive]')).toHaveCount(0);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('perentie');
+  await page.keyboard.press('Escape');
+  await Promise.all([page.waitForEvent('load'), page.getByRole('button', { name: /^Main menu/ }).click()]);
+  await openJourney(page);
   await expect(drive).toBeVisible();
   await expect(on('start')).toHaveAttribute('data-value', 'resume');
   await expect(on('start')).toContainText('From Daintree Village');

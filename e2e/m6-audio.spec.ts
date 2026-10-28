@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
 const audio = (page: Page) => page.evaluate(() => window.__game!.audio());
 
@@ -14,6 +14,7 @@ test('M6: audio starts with the Drive button, follows the car, and the volume se
   });
   await lowGraphics(page);
   await page.goto('/?debug&surprises=off');
+  await openJourney(page);
   await waitReady(page);
 
   // The welcome screen's Drive click is the first input, so sound starts with the game
@@ -97,6 +98,7 @@ test('M6: without Web Audio the game still runs, silently', async ({ page }) => 
   });
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   await page.keyboard.press('KeyW');
   await expect.poll(async () => (await audio(page)).state).toBe('unavailable');

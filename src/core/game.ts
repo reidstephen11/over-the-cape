@@ -76,6 +76,8 @@ export interface LaunchChoice {
   replay: Conditions | null;
   /** The damage setting picked on the welcome screen (else the saved one). */
   damage?: DamageMode;
+  /** Title-screen settings, also applied in test mode without writing to the real save. */
+  settings?: Settings;
 }
 
 /** The episode being played: its story, where this run starts, and progress on them all. */
@@ -485,6 +487,7 @@ export class Game {
         ...defaultSettings,
         quality: isTouchDevice() ? touchTuning.defaultQuality : defaultSettings.quality,
       }),
+      ...choice.settings,
       ...(choice.damage ? { damage: choice.damage } : {}),
     };
     const def = episodes[choice.episode];

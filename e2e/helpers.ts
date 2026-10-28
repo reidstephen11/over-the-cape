@@ -15,12 +15,26 @@ export function collectErrors(page: Page): string[] {
   return errors;
 }
 
+/** Open episode setup through the console title, retaining a saved camp for gameplay checks. */
+export async function openJourney(page: Page): Promise<void> {
+  await page.locator('.welcome').waitFor({ state: 'visible' });
+  const begin = page.locator('[data-title-begin]');
+  if (await begin.isVisible()) await begin.click();
+  const journey = page.locator('[data-title-journey]');
+  if (await journey.isVisible()) {
+    await journey.click();
+    const resume = page.locator('[data-group="start"][data-value="resume"]');
+    if (await resume.isVisible()) await resume.click();
+  }
+}
+
 /**
  * Press Drive on the welcome screen (it starts on the saved choices), then Drive again on
  * the episode briefing once the map has built, and wait until the engine has started (it
  * cranks for about a second).
  */
 export async function waitReady(page: Page): Promise<void> {
+  await openJourney(page);
   await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
   await driveFromBriefing(page);
 }
@@ -80,7 +94,7 @@ export async function shot(page: Page, milestone: string, name: string): Promise
   const wanted = (process.env.SCREENSHOTS ?? '').split(',').includes(milestone);
   const dir = wanted ? `docs/screenshots/${milestone}` : `test-results/screenshots/${milestone}`;
   mkdirSync(dir, { recursive: true });
-  await page.screenshot({ path: `${dir}/${name}.png` });
+  await page.screenshot({ path: `${dir}/${name}.png`, animations: 'disabled' });
 }
 
 /**
