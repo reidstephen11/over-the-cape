@@ -148,38 +148,45 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
     // Metres along, metres right of the centreline.
     // The shallow rut sits under the crown's left wheel only: an open diff spins it,
     // a locker lets the right wheel pull. The two deeper gutters sit under the wheels
-    // of a line drifted about 1.1 m left, and clear of the crown.
+    // of a line drifted about 1.1 m left, and clear of the crown. They run down the
+    // straight pinches only: through the turns on the easings a good line cuts the corner,
+    // and a locked axle turning on the clay has no grip to spare.
     erosion: [
-      {
-        path: [
-          [16, -0.86],
-          [60, -0.88],
-          [110, -0.84],
-          [158, -0.86],
-        ],
-        width: 0.5,
-        depth: 0.27,
-      },
-      {
-        path: [
-          [18, -1.78],
-          [75, -1.85],
-          [130, -1.75],
-          [160, -1.72],
-        ],
-        width: 0.55,
-        depth: 0.52,
-      },
-      {
-        path: [
-          [22, -0.35],
-          [80, -0.38],
-          [134, -0.34],
-          [158, -0.36],
-        ],
-        width: 0.3,
-        depth: 0.48,
-      },
+      ...(
+        [
+          [18, 28],
+          [52, 80],
+          [110, 167],
+        ] as const
+      ).flatMap(([from, to]) => [
+        {
+          path: [
+            [from - 2, -0.86],
+            [(from + to) / 2, -0.88],
+            [to, -0.85],
+          ] as [number, number][],
+          width: 0.5,
+          depth: 0.2,
+        },
+        {
+          path: [
+            [from, -1.78],
+            [(from + to) / 2, -1.85],
+            [to, -1.72],
+          ] as [number, number][],
+          width: 0.55,
+          depth: 0.52,
+        },
+        {
+          path: [
+            [from + 3, -0.35],
+            [(from + to) / 2, -0.38],
+            [to - 2, -0.36],
+          ] as [number, number][],
+          width: 0.3,
+          depth: 0.48,
+        },
+      ]),
     ],
   },
 };
