@@ -1,4 +1,5 @@
 import { defaultController, isControllerType, type ControllerType } from '../../data/controllers';
+import { defaultTouchDrive, isTouchDriveScheme, type TouchDriveScheme } from '../../data/touch';
 import { SAVE_KEY } from '../../core/config';
 import type { CrawlBests } from '../crawlRuns';
 import type { Checkpoint } from '../episode';
@@ -19,6 +20,8 @@ export interface Settings {
   units: 'kmh' | 'mph';
   /** Mechanical damage, and with it how an episode can end: off, mild or realistic. */
   damage: DamageMode;
+  /** How the on-screen stick drives on a phone. Missing on older saves: pedals. */
+  touchDrive: TouchDriveScheme;
 }
 
 /** How far you've got in one episode. */
@@ -56,6 +59,7 @@ export const defaultSettings: Settings = {
   ambienceVolume: 0.7,
   units: 'kmh',
   damage: 'mild',
+  touchDrive: defaultTouchDrive,
 };
 
 /** Minimal storage interface so tests can pass a fake. */
@@ -103,6 +107,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
         ambienceVolume: clamp01(st.ambienceVolume, defaultSettings.ambienceVolume),
         units: st.units === 'mph' ? 'mph' : 'kmh',
         damage: isDamageMode(st.damage) ? st.damage : defaultSettings.damage,
+        touchDrive: isTouchDriveScheme(st.touchDrive) ? st.touchDrive : defaultTouchDrive,
       },
       vehicle: isVehicleId(data.vehicle) ? data.vehicle : 'shortie',
       episode: isEpisodeId(data.episode) ? data.episode : episodeOrder[0],

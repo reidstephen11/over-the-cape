@@ -90,9 +90,15 @@ test('title Settings persist sound and graphics without replacing a saved journe
   await expect(page.locator('.title-settings')).toBeVisible();
   await page.locator('[data-group="quality"][data-value="high"]').click();
   await page.locator('#title-volume').fill('0.3');
+  await page.locator('[data-group="touchDrive"][data-value="stick"]').click();
   await page.locator('[data-group="units"][data-value="mph"]').click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('overthecape.save.v1')!));
-  expect(saved.settings).toMatchObject({ quality: 'high', masterVolume: 0.3, units: 'mph' });
+  expect(saved.settings).toMatchObject({
+    quality: 'high',
+    masterVolume: 0.3,
+    units: 'mph',
+    touchDrive: 'stick',
+  });
   expect(saved.episodes.creb.checkpoint.camp).toBe('roaring-meg-camp');
   expect(saved.vehicle).toBe('perentie');
   await page.keyboard.press('Escape');
@@ -101,6 +107,7 @@ test('title Settings persist sound and graphics without replacing a saved journe
   await page.keyboard.press('Enter');
   await page.locator('[data-value="settings"]').click();
   await expect(page.locator('#title-volume')).toHaveValue('0.3');
+  await expect(page.locator('[data-group="touchDrive"][data-value="stick"]')).toHaveClass(/\bon\b/);
 });
 
 test('New Journey starts fresh without deleting the existing checkpoint while browsing', async ({ page }) => {

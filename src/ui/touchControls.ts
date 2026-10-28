@@ -1,4 +1,5 @@
 import type { Action } from '../data/controls';
+import type { TouchDriveScheme } from '../data/touch';
 import type { InputManager } from '../sim/input/inputManager';
 import { TouchStick } from '../sim/input/touchStick';
 import type { ToolMode } from '../core/toolController';
@@ -26,11 +27,11 @@ export interface TouchControlsState {
 }
 
 /**
- * On-screen controls for phones and tablets (SPEC §10): a joystick for steering under the
- * left thumb, GAS and BRAKE pedals under the right, and buttons for everything else. They
- * show on touch screens and whenever the screen is touched, and hide again when a key or
- * a gamepad is used. They feed the same InputManager as the keyboard, so driving behaves
- * the same.
+ * On-screen controls for phones and tablets (SPEC §10): a joystick under the left thumb,
+ * GAS and BRAKE pedals under the right (or Joystick only, where the stick's forward/back
+ * axis is throttle and brake), and buttons for everything else. They show on touch screens
+ * and whenever the screen is touched, and hide again when a key or a gamepad is used. They
+ * feed the same InputManager as the keyboard, so driving behaves the same.
  */
 export class TouchControls {
   readonly el: HTMLElement;
@@ -59,7 +60,7 @@ export class TouchControls {
         <button type="button" class="touch-btn" data-tap="lights" data-state="lightsOn" title="Headlights: off, low beam, high beam">LIGHTS</button>
         <button type="button" class="touch-btn touch-fullscreen" aria-label="Full screen" hidden>⛶</button>
       </div>
-      <div class="touch-stick" aria-label="Steering"><div class="touch-stick-base"><div class="touch-stick-knob"></div></div></div>
+      <div class="touch-stick" aria-label="Steering"><div class="touch-stick-base"><p class="touch-stick-axis" aria-hidden="true"><span>GAS</span><span>BRAKE</span></p><div class="touch-stick-knob"></div></div></div>
       <div class="touch-right">
         <div class="touch-pile touch-drive">
           <button type="button" class="touch-btn" data-tap="range" data-state="lowRange">LOW</button>
@@ -165,6 +166,19 @@ export class TouchControls {
 
     this.setActive(isTouchDevice());
     input.onDeviceChange((d) => this.setActive(d === 'touch'));
+  }
+
+  /** Pedals (default) or Joystick only. Hides GAS/BRAKE in the stick scheme. */
+  setDriveScheme(scheme: TouchDriveScheme): void {
+    this.el.classList.toggle('stick-drive', scheme === 'stick');
+    const stick = this.el.querySelector('.touch-stick');
+    stick?.setAttribute('aria-label', scheme === 'stick' ? 'Steer, throttle and brake' : 'Steering');
+    if (scheme === 'stick') {
+      for (const b of [...this.holds.keys()]) {
+        if (b.dataset.hold === 'accelerate' || b.dataset.hold === 'brake') this.release(b);
+      }
+    }
+    this.measure();
   }
 
   get visible(): boolean {

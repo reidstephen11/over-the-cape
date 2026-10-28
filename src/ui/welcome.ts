@@ -7,6 +7,7 @@ import { isDevMode } from '../data/devWeather';
 import { timeLabels, timesOfDay, weatherLabels, weathers, type TimeOfDay } from '../data/environment';
 import { clockTime, episodeOrder, episodes, type EpisodeId } from '../data/episodes';
 import { maps } from '../data/maps';
+import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
 import { vehicleOrder, vehicles } from '../data/vehicles';
 import {
   defaultSettings,
@@ -23,6 +24,7 @@ type Group =
   | 'menu'
   | 'back'
   | 'controller'
+  | 'touchDrive'
   | 'quality'
   | 'volume'
   | 'units'
@@ -181,9 +183,10 @@ export class WelcomeScreen {
         <section class="title-setting"><h3>Graphics</h3><div class="welcome-options seg">${(['low', 'medium', 'high'] as const).map((q) => setting('quality', q, q[0].toUpperCase() + q.slice(1), this.settings.quality === q)).join('')}</div></section>
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
+        <section class="title-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
       </div><p class="title-input-hint">${hint}</p>`;
-      this.setRows(['back', 'quality', 'volume', 'controller', 'units'], focusGroup ?? 'back');
+      this.setRows(['back', 'quality', 'volume', 'controller', 'touchDrive', 'units'], focusGroup ?? 'back');
       return;
     }
     this.el.innerHTML = `<div class="title-home">${this.logo}${
@@ -302,6 +305,8 @@ export class WelcomeScreen {
     switch (b.dataset.group as Group) {
       case 'controller':
         return v === this.settings.controller;
+      case 'touchDrive':
+        return v === this.settings.touchDrive;
       case 'quality':
         return v === this.settings.quality;
       case 'units':
@@ -344,9 +349,10 @@ export class WelcomeScreen {
       this.render();
       return;
     }
-    if (group === 'quality' || group === 'units' || group === 'controller') {
+    if (group === 'quality' || group === 'units' || group === 'controller' || group === 'touchDrive') {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
       else if (group === 'controller') this.settings.controller = value as ControllerType;
+      else if (group === 'touchDrive') this.settings.touchDrive = value as TouchDriveScheme;
       else this.settings.units = value as Settings['units'];
       this.persistSettings();
       this.render(group);

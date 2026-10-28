@@ -14,6 +14,8 @@ describe('exploration and saving', () => {
       writeSave(saveData({ settings: { ...defaultSettings, controller } }), s);
       expect(loadSave(s)!.settings.controller).toBe(controller);
     }
+    writeSave(saveData({ settings: { ...defaultSettings, touchDrive: 'stick' } }), s);
+    expect(loadSave(s)!.settings.touchDrive).toBe('stick');
     for (const controller of [undefined, null, 'unknown', '__proto__']) {
       s.setItem(
         'overthecape.save.v1',
@@ -26,6 +28,7 @@ describe('exploration and saving', () => {
       );
       const loaded = loadSave(s)!;
       expect(loaded.settings.controller).toBe('playstation');
+      expect(loaded.settings.touchDrive).toBe('pedals');
       expect(loaded.vehicle).toBe('perentie');
       expect(loaded.episodes.creb?.completed).toBe(true);
     }

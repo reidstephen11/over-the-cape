@@ -217,6 +217,44 @@ test.describe('phone', () => {
     await page.evaluate(() => window.__game!.pinHazards(null));
     expect(errors).toEqual([]);
   });
+
+  test('Joystick only hides the pedals and drives from the stick', async ({ page }) => {
+    test.setTimeout(900_000);
+    const errors = collectErrors(page);
+    await lowGraphics(page);
+    await page.goto('/?surprises=off');
+    await waitReady(page);
+    await expect(page.locator('[data-hold="accelerate"]')).toBeVisible();
+    await expect(page.locator('.touch-stick-axis')).toBeHidden();
+    await shot(page, 'touch', 'pedals-drive');
+
+    await page.evaluate(() => window.__game!.setTouchDrive('stick'));
+    await expect(page.locator('.touch-controls')).toHaveClass(/stick-drive/);
+    await expect(page.locator('.touch-pedals.touch-drive')).toBeHidden();
+    await expect(page.locator('.touch-stick-axis')).toBeVisible();
+    await expect(page.locator('.touch-stick')).toHaveAttribute('aria-label', 'Steer, throttle and brake');
+    await shot(page, 'touch', 'stick-drive');
+
+    const f = await fingers(page);
+    await f.press(1, '.touch-stick-base');
+    await f.move(1, '.touch-stick-base', 0, -80);
+    await waitSim(page, 1);
+    const forward = await page.evaluate(() => window.__game!.vehicle());
+    expect(forward.throttle).toBeGreaterThan(0.5);
+    expect(forward.brake).toBe(0);
+    await f.lift(1);
+    await waitSim(page, 0.2);
+    expect((await page.evaluate(() => window.__game!.vehicle())).throttle).toBe(0);
+
+    await f.press(1, '.touch-stick-base');
+    await f.move(1, '.touch-stick-base', 0, 80);
+    await waitSim(page, 0.5);
+    const back = await page.evaluate(() => window.__game!.vehicle());
+    expect(back.throttle).toBe(0);
+    expect(back.brake).toBeGreaterThan(0.5);
+    await f.lift(1);
+    expect(errors).toEqual([]);
+  });
 });
 
 test.describe('phone on the CREB', () => {

@@ -1,5 +1,6 @@
 import type { ControllerType } from '../data/controllers';
 import { glyphsFor } from '../data/controls';
+import { defaultTouchDrive, type TouchDriveScheme } from '../data/touch';
 import { floodTuning } from '../data/tools';
 import type { Device } from '../sim/input/inputManager';
 import type { VehicleTools } from '../sim/tools/tools';
@@ -22,6 +23,7 @@ export interface HudInputs {
   tools: VehicleTools;
   device: Device;
   controller?: ControllerType;
+  touchDrive?: TouchDriveScheme;
   mode: ToolMode;
   cameraHeading: number;
   discovered: ReadonlySet<string>;
@@ -92,7 +94,7 @@ const jobText: Record<RepairKind, [string, string]> = {
 
 /** Build what the HUD shows this frame, including context prompts (SPEC §9). */
 export function buildHudState(i: HudInputs): HudState {
-  const g = glyphsFor(i.device, i.controller);
+  const g = glyphsFor(i.device, i.controller, i.touchDrive ?? defaultTouchDrive);
   const kb = i.device === 'keyboard';
   const touch = i.device === 'touch';
   const v = i.vehicle;

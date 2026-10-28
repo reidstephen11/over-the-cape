@@ -314,6 +314,8 @@ export class Game {
     this.toolMenu = new ToolMenu(uiRoot);
     this.toolMenu.onPick = (id) => this.pickTool(id);
     this.touch = new TouchControls(uiRoot, this.input);
+    this.input.setTouchDrive(settings.touchDrive);
+    this.touch.setDriveScheme(settings.touchDrive);
     if (isTouchDevice()) this.input.usePointer('touch');
     this.map = new PaperMap(uiRoot, world);
     this.map.onClose = () => this.closeMap();
@@ -715,6 +717,8 @@ export class Game {
     this.pause.setSettings(this.settings);
     this.hud.units = this.settings.units;
     this.hud.setControllerType(this.settings.controller);
+    this.input.setTouchDrive(this.settings.touchDrive);
+    this.touch.setDriveScheme(this.settings.touchDrive);
     this.audio.setSettings(this.settings);
     this.onSettings?.(this.settings);
     this.save();
@@ -1651,6 +1655,7 @@ export class Game {
         tools,
         device: this.input.activeDevice,
         controller: this.settings.controller,
+        touchDrive: this.settings.touchDrive,
         mode: this.tool.mode,
         cameraHeading: this.cameraHeading(),
         discovered: this.exploration.discovered,

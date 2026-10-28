@@ -1532,6 +1532,7 @@ table.controls td {
 }
 
 .touch-stick-base {
+  position: relative;
   width: 132px;
   height: 132px;
   border-radius: 50%;
@@ -1542,12 +1543,39 @@ table.controls td {
 }
 
 .touch-stick-knob {
+  position: relative;
+  z-index: 1;
   width: 58px;
   height: 58px;
   border-radius: 50%;
   background: rgba(243, 235, 218, 0.9);
   border: 2px solid var(--ink);
   box-shadow: 2px 3px 0 rgba(59, 42, 30, 0.25);
+}
+
+.touch-stick-axis {
+  display: none;
+  position: absolute;
+  inset: 14px 0;
+  margin: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  font: 800 11px/1 var(--font);
+  color: rgba(243, 235, 218, 0.75);
+  pointer-events: none;
+}
+
+.touch-controls.stick-drive .touch-stick-axis {
+  display: flex;
+}
+
+.touch-controls.stick-drive .touch-pedals.touch-drive {
+  display: none;
+}
+
+.touch-controls.tool-mode .touch-stick-axis {
+  display: none;
 }
 
 .touch-right {
