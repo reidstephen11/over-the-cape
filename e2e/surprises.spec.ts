@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
 test('Surprises: a dead tree comes down across the track ahead, and the message says so', async ({
   page,
@@ -8,6 +8,7 @@ test('Surprises: a dead tree comes down across the track ahead, and the message 
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?seed=1');
+  await openJourney(page);
   await waitReady(page);
   const plans = await page.evaluate(() => window.__game!.surprises(72));
   expect(plans.map((p) => p.kind).sort()).toEqual(['rockfall', 'treefall', 'treefall']);

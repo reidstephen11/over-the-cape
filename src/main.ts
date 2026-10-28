@@ -1,5 +1,5 @@
 import './ui/styles.css';
-import { Game } from './core/game';
+import './ui/title.css';
 import { choiceFromSave } from './core/launch';
 import { episodes } from './data/episodes';
 import { maps } from './data/maps';
@@ -24,10 +24,13 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
     checkpoint ? (map.pois.find((p) => p.id === checkpoint.camp)?.name ?? null) : null,
     choice.damage,
   );
+  if (choice.quickStart) loading.el.classList.add('continuing');
   try {
+    // The title appears without downloading or initialising the driving engine first.
+    const { Game } = await import('./core/game');
     const game = await Game.create(appEl, uiEl, choice, (p, label) => loading.set(p, label), audio);
     loading.set(1, 'Ready');
-    await loading.waitForDrive();
+    if (!choice.quickStart) await loading.waitForDrive();
     loading.hide();
     game.start();
   } catch (err) {

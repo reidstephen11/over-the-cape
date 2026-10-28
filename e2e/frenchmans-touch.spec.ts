@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, shot, waitReady, waitSim } from './helpers';
+import { openJourney, collectErrors, shot, waitReady, waitSim } from './helpers';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
@@ -19,6 +19,7 @@ test('the delivery trailer and its Tools actions fit on a phone upright and side
     ),
   );
   await page.goto('/');
+  await openJourney(page);
   await waitReady(page);
   await waitSim(page, 6);
   await expect(page.locator('.supplies')).toContainText('2 drums');

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
+import { openJourney, collectErrors, lowGraphics, shot, waitReady, waitSim } from './helpers';
 
 test('night: the storm comes in, dusk turns the headlights on, N cycles them, and they light the ground ahead', async ({
   page,
@@ -8,6 +8,7 @@ test('night: the storm comes in, dusk turns the headlights on, N cycles them, an
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await waitReady(page);
   expect((await page.evaluate(() => window.__game!.vehicle())).lights).toBe('off');
   // The clock runs on into the evening: at dusk the lamps come on by themselves.
@@ -25,6 +26,7 @@ test('night: the storm comes in, dusk turns the headlights on, N cycles them, an
   await page.evaluate(() => window.__game!.setHour(19.6));
   await expect.poll(() => page.evaluate(() => window.__game!.result().open)).toBe(true);
   await Promise.all([page.waitForEvent('load'), page.evaluate(() => window.__game!.pickResult('menu'))]);
+  await openJourney(page);
 
   // Driving at night is a replay of a finished episode: the clock stands at night.
   await page.evaluate(() => {
@@ -35,6 +37,7 @@ test('night: the storm comes in, dusk turns the headlights on, N cycles them, an
     localStorage.setItem(key, JSON.stringify(save));
   });
   await page.reload();
+  await openJourney(page);
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.episode())).toMatchObject({ replay: { time: 'night' } });
   expect((await page.evaluate(() => window.__game!.vehicle())).lights).toBe('low');

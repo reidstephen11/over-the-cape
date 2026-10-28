@@ -4,7 +4,7 @@ A single-player 4WD adventure up Cape York, told in episodes, that runs in the b
 
 The story follows a grandparent's 1986 trip up the Cape through their diary, and the vehicles are being rebuilt with more accurate body shapes: see [SPEC.md](SPEC.md) for the game's direction.
 
-It is built on the code of [4WD Simulator](https://github.com/reidstephen11/4wd-simulator) and keeps its look and driving: Three.js, Rapier physics and TypeScript, with everything the game draws (terrain, trees, leaf textures, vehicles and sound) generated in code. Reference photographs for the vehicles live in [`reference/vehicles/`](reference/vehicles/README.md) and are not loaded by the game.
+It is built on the code of [4WD Simulator](https://github.com/reidstephen11/4wd-simulator) and keeps its look and driving: Three.js, Rapier physics and TypeScript, with its terrain, trees, leaf textures, vehicles and sound generated in code. The title screen uses the approved camp-at-dusk artwork as its backdrop. Reference photographs for the vehicles live in [`reference/vehicles/`](reference/vehicles/README.md) and are not loaded by the game.
 
 ## Play
 
@@ -25,7 +25,11 @@ npm run dev        # then open http://localhost:5173
 | `npm test`         | Unit and headless physics tests (Vitest)            |
 | `npm run test:e2e` | Browser tests (Playwright; builds first)            |
 
-The game opens on the **welcome screen** with your episode, its mission and **Drive** (or **Continue** from a saved camp). Press Enter to use the current choice. Open **Vehicle & difficulty** to change the setup; finished episodes also offer replay conditions there. On a phone the mission and Drive come first. While the map builds, the **briefing** shows the mission, weather and deadline, with the story and supplies under **Story & trip details** and the full controls under **Controls**. Press **Drive** when ready. The short reminder shows WASD and Space on a keyboard, or the stick, GAS and HAND on touch screens. **Pause menu → Main menu** returns here with progress kept.
+The game opens at a riverside camp at dusk. **Press any button** (or **Tap to begin**) brings up **Continue**, **New Journey** and **Settings**, with quiet camp ambience. **Continue** loads your saved camp and starts driving without another briefing confirmation. **New Journey** opens episode selection; **Vehicle & difficulty** also contains replay conditions for finished episodes. Choosing a new journey does not delete the saved camp while you browse. **Settings** offers graphics, master volume and speed units, preserving your progress.
+
+Use the arrow keys and Enter, a controller's d-pad and A, or touch. Escape or B goes back. The background drifts slowly; reduced-motion preferences disable this and the prompt animation. The title loads before the driving engine, which is downloaded only when you choose to play. Sound starts with the first gesture, respects the volume setting and fades into driving.
+
+For a new run, the loading **briefing** shows the mission, weather and deadline. **Story & trip details** and **Controls** expand when wanted; press **Drive** when ready. **Pause menu → Main menu** returns to the title with progress kept.
 
 The version number (for example v0.01) is on the loading screen and the pause menu, and goes up by 0.01 with every update merged into `main`. Hover over it to see the exact build.
 
@@ -151,7 +155,7 @@ Check the route with `npx vite-node scripts/frenchmans-drive.ts all`; it uses th
 
 ## Difficulty
 
-The welcome screen's **Difficulty** is the damage setting (also in pause menu → Settings → Damage). It decides what can hurt the car, and so which ways an episode can end.
+**New Journey → Vehicle & difficulty** is the damage setting (also in pause menu → Settings → Damage). It decides what can hurt the car, and so which ways an episode can end.
 
 | Setting   | Damage                                                                                     | Ends the episode                                                       |
 | --------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
@@ -161,7 +165,7 @@ The welcome screen's **Difficulty** is the damage setting (also in pause menu �
 
 ## Vehicles
 
-Pick one on the welcome screen. Pause menu → Vehicle changes it mid-episode, but the run restarts from your last camp in the new one. Each episode sets what you start with, and the Troop Carrier carries more on top: 60 L of extra fuel in its two 90 L tanks. These come only at the start of an episode: changing vehicle at a camp carries what's on board across as it is, and fuel that won't fit the new vehicle's tank is left behind.
+Pick one under **New Journey → Vehicle & difficulty**. Pause menu → Vehicle changes it mid-episode, but the run restarts from your last camp in the new one. Each episode sets what you start with, and the Troop Carrier carries more on top: 60 L of extra fuel in its two 90 L tanks. These come only at the start of an episode: changing vehicle at a camp carries what's on board across as it is, and fuel that won't fit the new vehicle's tank is left behind.
 
 | Vehicle                 | Based on                                                      | Engine and gearbox                                                | Tank                   |
 | ----------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------- |
@@ -277,6 +281,8 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 Add `?seed=7` (any number) to start a new run with that run's surprises, to see the same ones again, or `?surprises=off` to drive without them.
 
 ## What to test
+
+- [ ] **v0.61 camp title:** the version shows v0.61. Is the camp-at-dusk opening close to the chosen mockup, on a computer and on a phone held either way? Press a key, tap or use the controller to open Continue / New Journey / Settings. With a saved camp, Continue should start driving after loading without a second Drive press. Without a saved run it should be unavailable. New Journey should reveal episode selection; Back should leave your camp intact. Change graphics, volume and units in Settings, then reload: are they kept, with your journey? Does the quiet camp ambience fade into driving? Check keyboard arrows, Enter and Escape, controller d-pad, A and B, and reduced-motion mode.
 
 - [ ] **v0.60 Big Red worn into the hill:** the loading screen and pause menu show v0.60. Look at Big Red from the foot and from the free camera. Does it look like a track worn into the hillside, wandering up the spur, rather than a built road on a bank? Climb it in low range with both lockers and crawl, then try high range and open diffs: only the locked crawl should get up.
 - [ ] **v0.59 shorter launch:** choose an episode and drive without opening setup. On a phone, upright and sideways, is Drive visible immediately? Open **Vehicle & difficulty**, change the vehicle and difficulty, then close it: does the summary match? Continue a saved camp, or select **Start again**. The briefing should show just the mission, conditions and a basic controls reminder. Open **Story & trip details** and **Controls** with a tap or Enter/Space: do they open without starting the game? Drive should still start the engine and sound. Finished episodes retain their replay conditions in setup.

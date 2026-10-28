@@ -1,11 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { collectErrors, lowGraphics, waitReady, waitSim } from './helpers';
+import { openJourney, collectErrors, lowGraphics, waitReady, waitSim } from './helpers';
 
 test('Sooty 80 Series can be selected, driven and restored after reload', async ({ page }) => {
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
   await page.goto('/?surprises=off');
+  await openJourney(page);
   await page.locator('[data-group="setup"]').click();
   const button = page.locator('[data-group="vehicle"][data-value="sooty80"]');
   await button.click();
@@ -26,6 +27,7 @@ test('Sooty 80 Series can be selected, driven and restored after reload', async 
   expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
   await page.evaluate(() => window.__game!.setInput(null));
   await page.reload();
+  await openJourney(page);
   await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
     'data-value',
     'sooty80',

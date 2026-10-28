@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { collectErrors, driveFromBriefing, shot, waitSim } from './helpers';
+import { openJourney, collectErrors, driveFromBriefing, shot, waitSim } from './helpers';
 
 const episode = (page: Page) => page.evaluate(() => window.__game!.episode());
 
@@ -30,6 +30,7 @@ test('Episode 3, Lakefield: winch the stockman out, beat the river over Hann Cro
       );
   });
   await page.goto('/');
+  await openJourney(page);
   await expect(page.locator('.welcome-option.on[data-group="episode"]')).toHaveAttribute(
     'data-value',
     'lakefield',
