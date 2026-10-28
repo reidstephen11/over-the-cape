@@ -118,10 +118,10 @@ function updateEngineHeat(v: Vehicle, dt: number): DamageEvent | null {
   const c = v.condition;
   const d = v.drivetrain;
   const heat = c.engineHeat ?? 0.5;
-  // Load: the pedal, counting even low revs as half the work (a lugging engine still makes heat).
+  // Load: the pedal times the revs, with a quarter of the work even when lugging at low revs.
   const load = d.engineRunning
     ? Math.abs(v.throttle) *
-      (0.5 + 0.5 * Math.min(1, d.rpm / v.tuning.engine.redlineRpm)) *
+      (0.25 + 0.75 * Math.min(1, d.rpm / v.tuning.engine.redlineRpm)) *
       (d.range === 'low' ? E.lowRangeHeat : 1)
     : 0;
   const target = d.engineRunning
