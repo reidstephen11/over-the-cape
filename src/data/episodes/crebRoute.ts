@@ -65,19 +65,22 @@ export const paddockRoad: Waypoint[] = [
 ];
 
 /**
- * Big Red: up the red clay face of the spur in three straight pinches, turning right on
- * the first easing and back left on the second (turning with both diffs locked binds the
- * wheels, so the turns are kept off the steep clay).
+ * Big Red: worn into the red clay of the spur, wandering across the face where the wheels
+ * found the easiest line rather than graded straight up it.
  */
 export const bigRed: Waypoint[] = [
   [11, 1298, 36],
-  [10, 1282],
-  [9, 1266, 46.5],
-  [18, 1254, 48],
-  [26, 1236],
-  [34, 1218, 62.5],
-  [30, 1200, 64],
-  [9.5, 1169],
+  [8, 1282],
+  [5, 1266],
+  [9, 1252],
+  [17, 1238],
+  [23, 1222],
+  [24, 1208],
+  [19, 1195],
+  [13, 1184],
+  [10, 1172],
+  [3, 1162],
+  [-4, 1152],
   [-11, 1138, 90],
 ];
 

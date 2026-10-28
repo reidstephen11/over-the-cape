@@ -63,7 +63,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'big-red': {
       title: 'Big Red',
-      text: 'The hardest climb on the CREB: red clay that turns to grease in the wet. Low range, both lockers, precision crawl, and keep the wheels on the crown. The left gutter is dug out — drop a wheel in it and the belly grounds. The west line is longer, with a bog and a pinch as steep as this face.',
+      text: 'The hardest climb on the CREB: red clay that turns to grease in the wet. Low range, both lockers, precision crawl, and keep the wheels on the crown. It is worn deep into the hill: drift onto the left bank and the belly grounds. The west line is longer, with a bog and a pinch as steep as this face.',
     },
     'paddock-creeks': {
       title: 'Paddock creeks',
