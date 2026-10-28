@@ -6,7 +6,8 @@ import { buildVehicleWheel } from './vehicleWheel';
 import { buildRackPlank } from './vehicleEquipment';
 import { WIDEN as PATROL_WIDEN, buildPatrolBody, buildPatrolPlank, buildPatrolWheel } from './patrolBody';
 import { buildPerentieBody, buildPerentiePlank, buildPerentieWheel } from './perentieBody';
-import { addCamelTrophyKit, camelLivery, camelRim } from './camelLivery';
+import { buildCamelBody, buildCamelPlank } from './camelBody';
+import { buildCamelWheel } from './camelWheel';
 import { buildHiluxBody, buildHiluxPlank, buildHiluxWheel } from './hiluxBody';
 import { buildUnimogBody, buildUnimogPlank, buildUnimogWheel } from './unimogBody';
 import { buildTroopyBody, buildTroopyPlank, buildTroopyWheel } from './troopyBody';
@@ -60,17 +61,18 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     lamps: { head: fortySeriesHeadlamps },
   },
   camel: {
-    name: 'camel-trophy-4wd',
-    // The snorkel takes the left wing, so the aerial moves to the right.
-    body: (tuning, wheel) =>
-      buildVehicleBody(tuning, wheel, camelLivery, { aerialSide: 1, add: addCamelTrophyKit }),
-    wheel: (tuning) => buildVehicleWheel(tuning, camelRim),
-    plank: buildRackPlank,
+    name: 'camel-trophy-land-rover-90',
+    body: buildCamelBody,
+    wheel: buildCamelWheel,
+    plank: buildCamelPlank,
     paint: { roughness: 0.39, metalness: 0.14, clearcoat: 0.7, clearcoatRoughness: 0.24 },
-    springs: 'leaf',
+    springs: 'coil',
     lamps: {
-      head: fortySeriesHeadlamps,
-      roof: [-0.5, -0.17, 0.17, 0.5].map((x) => ({ x, y: 2.07, z: -0.53 })),
+      head: [
+        { x: -0.626, y: 0.467, z: -1.84 },
+        { x: 0.626, y: 0.467, z: -1.84 },
+      ],
+      roof: [-0.61, -0.27, 0.27, 0.61].map((x) => ({ x, y: 1.84, z: -0.74 })),
     },
   },
   perentie: {

@@ -6,16 +6,16 @@ Each modelled vehicle has a folder. `SOURCES.md` in that folder names the real v
 
 ## Which folder is which
 
-| Game id    | In the game             | Real vehicle                                                                                                     | Folder                                                   |
-| ---------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `shortie`  | Short-wheelbase 4WD     | Toyota Land Cruiser 40 Series hardtop, FJ40, 1970s, 4.2 L 2F                                                     | `landcruiser-fj40/`                                      |
-| `camel`    | Camel Trophy 4WD        | The same FJ40 body, in the game's Camel Trophy dress                                                             | `camel-trophy/` (body photos are in `landcruiser-fj40/`) |
-| `hilux`    | Hilux single cab        | Toyota Hilux 4WD, 1979–83, long bed, single cab, styleside tub, 2.0 L 18R                                        | `hilux-1979-83/`                                         |
-| `perentie` | Land Rover 110 Perentie | Australian Army Land Rover 110, 4x4 General Service soft top (Project Perentie, JRA Moorebank)                   | `land-rover-110-perentie/`                               |
-| `unimog`   | Unimog UL1700L          | Australian Army Mercedes-Benz Unimog U 1700 L/38, type 435.113, 3,850 mm wheelbase                               | `unimog-ul1700l/`                                        |
-| `troopy`   | Troop Carrier           | Toyota Land Cruiser 75 Series Troop Carrier, HZJ75, 1990–99, 4.2 L 1HZ                                           | `landcruiser-hzj75-troopy/`                              |
-| `patrol`   | GQ Patrol               | Nissan Patrol Y60 (GQ) long-wheelbase wagon, 1987–97, 4.2 L TD42                                                 | `nissan-gq-patrol/`                                      |
-| `lc79`     | LC79 V8                 | Toyota Land Cruiser 79 single cab with the 2024 front clip, then the game's lift, 37 inch tyres, tray and canopy | `landcruiser-79-2024/`                                   |
+| Game id    | In the game                | Real vehicle                                                                                                     | Folder                                                      |
+| ---------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `shortie`  | Short-wheelbase 4WD        | Toyota Land Cruiser 40 Series hardtop, FJ40, 1970s, 4.2 L 2F                                                     | `landcruiser-fj40/`                                         |
+| `camel`    | Camel Trophy Land Rover 90 | 1986 Camel Trophy Land Rover Ninety County, LHD, 2.5 L diesel (since v0.80)                                      | `camel-trophy/` (no photos; see `land-rover-110-perentie/`) |
+| `hilux`    | Hilux single cab           | Toyota Hilux 4WD, 1979–83, long bed, single cab, styleside tub, 2.0 L 18R                                        | `hilux-1979-83/`                                            |
+| `perentie` | Land Rover 110 Perentie    | Australian Army Land Rover 110, 4x4 General Service soft top (Project Perentie, JRA Moorebank)                   | `land-rover-110-perentie/`                                  |
+| `unimog`   | Unimog UL1700L             | Australian Army Mercedes-Benz Unimog U 1700 L/38, type 435.113, 3,850 mm wheelbase                               | `unimog-ul1700l/`                                           |
+| `troopy`   | Troop Carrier              | Toyota Land Cruiser 75 Series Troop Carrier, HZJ75, 1990–99, 4.2 L 1HZ                                           | `landcruiser-hzj75-troopy/`                                 |
+| `patrol`   | GQ Patrol                  | Nissan Patrol Y60 (GQ) long-wheelbase wagon, 1987–97, 4.2 L TD42                                                 | `nissan-gq-patrol/`                                         |
+| `lc79`     | LC79 V8                    | Toyota Land Cruiser 79 single cab with the 2024 front clip, then the game's lift, 37 inch tyres, tray and canopy | `landcruiser-79-2024/`                                      |
 
 The trailers (`src/data/trailers.ts`, drawn in `src/render/trailerView.ts`) have folders too. The studio shows one with `?trailer=no5` (or `box6x4`), on its own or hitched behind `vehicle`; `npx vite-node scripts/studio-shots.ts /tmp/shots trailer:no5` photographs it.
 

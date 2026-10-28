@@ -764,7 +764,7 @@ export const v8PetrolSynthTuning: EngineSynthTuning = {
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
-  camel: engineSynthTuning,
+  camel: dieselSynthTuning,
   perentie: dieselSynthTuning,
   hilux: petrolFourSynthTuning,
   unimog: dieselSixSynthTuning,

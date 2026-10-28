@@ -1504,3 +1504,14 @@ The next three of Codex's model studies (branch `codex/vehicle-model-review`), a
 ## v0.79: clay churns at its old speed again
 
 - v0.74 made wet clay, mud and black soil churn two-thirds faster (0.12 → 0.2 per second spinning). That stopped the short-wheelbase 4WD on the Bloomfield Track's Rossville pinch even with both lockers, which the stretch test says it must climb. They are back at their v0.71 speed (0.6 × the base rates). Wet grass keeps the faster rate (0.28 per second, about 2.3 × clay, and 40% grip lost when torn up), so the verge is still the worst way round a greasy pinch; track dirt churns at 0.6 × clay.
+
+## v0.80: the Camel Trophy car is a Land Rover Ninety
+
+The owner chose the real 1986 vehicle over the 40 Series in Camel dress. The body is Codex's study (`docs/vehicle-review/camel-v1` on `codex/vehicle-model-review`), brought in like the others: its body, wheel and plaque code without the review viewer's part markers and clearance records. Sources are in `reference/vehicles/camel-trophy/SOURCES.md`.
+
+- **Body.** A left-hand-drive Ninety County station wagon in Sandglow yellow: flat wing tops, black lamp panels with round headlamps, a slatted grille, one-piece windscreen, Alpine windows, a single rear door with the spare, a second spare on the bonnet, a front cage and B hoop, a basket rack with jerry cans and sand ladders, four roof work lamps, a raised left-side intake into the wing, a winch with a fairlead, and blue-and-yellow plaques drawn in code. Five-stud yellow steel wheels on narrow 7.50R16-style tyres. About 121,000 triangles with its wheels (the Unimog stays the largest at 124,000).
+- **Driving.** 2.36 m wheelbase and 1.486 m track, coil springs (drawn as coils), 1.9 t. The 2.5 L naturally aspirated diesel peaks at 155 Nm at 1800 rpm and stops at 4200 rpm; LT77 five-speed, LT230 transfer box (1.667 high, 3.32 low) and 3.54 axles. Brakes, grip and anti-roll follow the Perentie. It uses the diesel engine sound. Its 54.5 L tank does about 9 L/100 km on level dirt (the fuel test's band for it is now 7–14).
+- **Cockpit.** The Perentie's seat, dash and wheel mirrored to the left and moved 8 cm back. Manual steering, ratio 22. Codex's binnacle sat in front of the dial faces, hiding them from the seat; it now stands just ahead of them.
+- **Tow hitch.** A NATO pin on the rear crossmember jaw (z 1.94), so trailers couple to it.
+- **Removed:** `camelLivery.ts`, the 40 Series dress.
+- **Tests.** `tests/camel.test.ts` now checks the Ninety's wheelbase, track, five-speed, diesel redline and left-hand drive instead of comparing it with the 40.
