@@ -1328,3 +1328,9 @@ Dark is 6:15 pm. Both arrive with fuel left in the 50 L start. The short-wheelba
 **Tests.** The gap test now counts climbs steeper than 15° as obstacles (paddock road under 450 m between them, was 400). New: the Rossville pinch and the granite pinch climb crawling with both lockers, and stop with the diffs open (the test helper's `stretch` takes `open`); the Rossville pinch also stops in high range, and the granite pinch is crawled without cutting a tyre. The potholes test uses clear stretches away from the new creeks.
 
 **Not in this update.** Episode 1's other legs, the shared physics and the HUD are unchanged.
+
+## v0.55 — fallen rocks stay where they land
+
+**Problem.** After v0.54 changed the ground, seed 1's rockfall on the Roaring Meg climb dropped a big rock on the sloping edge of the bank. Once down it kept rolling, about 1 m. A saved game puts fallen rocks back where they were planned to land, so after a reload the rock was in a different place from where the player last saw it. The surprises test caught it.
+
+**Fix.** The planner only lands a rock where the ground under it rises less than 0.15 m per metre (`rockRestSlope`), and tries another spot otherwise. Rocks also resist rolling more once down (angular damping 2.5, was 0.8): they dig in, rather than creeping down a gentle slope. Every rockfall site still comes up across seeds 1–60.

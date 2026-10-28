@@ -325,7 +325,7 @@ export class Surprises {
     const R = this.R;
     const shape = convexHull(d.points);
     const body = this.physics.world.createRigidBody(
-      R.RigidBodyDesc.kinematicPositionBased().setLinearDamping(0.3).setAngularDamping(0.8),
+      R.RigidBodyDesc.kinematicPositionBased().setLinearDamping(0.3).setAngularDamping(2.5),
     );
     const c = this.physics.world.createCollider(
       R.ColliderDesc.convexHull(shape.vertices)!

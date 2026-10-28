@@ -126,6 +126,12 @@ export const surpriseTuning = {
   trunkFall: 2.6,
   /** A rockfall needs a bank rising at least this much (m) beside the track, 9 m out. */
   bankRise: 1.4,
+  /**
+   * A rock comes to rest only where the ground under it is this level (rise over run):
+   * steeper, it rolls on once it is down, and a saved game, which puts it back where it
+   * landed, would not match.
+   */
+  rockRestSlope: 0.15,
   /** Rock density (kg/m³); rapier works the mass out from the hull. */
   rockDensity: 2300,
 } as const;
@@ -371,6 +377,11 @@ function planRockfall(world: World, track: TrackInfo, at: number, rand: () => nu
     const ry = r * (0.7 + rand() * 0.2);
     const rz = r * (0.9 + rand() * 0.25);
     const end = at2(along, lateral);
+    const slope = Math.hypot(
+      h(end.x + 0.5, end.z) - h(end.x - 0.5, end.z),
+      h(end.x, end.z + 0.5) - h(end.x, end.z - 0.5),
+    );
+    if (slope > T.rockRestSlope) return false;
     // From up the bank, 7–10 m out, a little up or down the track.
     const start = at2(along + (rand() * 2 - 1) * 2, 7 + rand() * 3);
     if (!clearAlong(world, start.x, start.z, end.x, end.z, Math.max(rx, rz) + 0.25)) return false;
