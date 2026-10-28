@@ -23,10 +23,14 @@ export interface DamageEvent {
 /**
  * Mechanical damage (SPEC §11): hard knocks cut tyres, bend suspension corners and hurt
  * the engine. The physics reads the results through the condition multipliers. Returns
- * what was damaged this step (empty when nothing was, and always with damage off).
+ * what was damaged this step (with damage off, only the overheating warning).
  */
 export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEvent[] {
   const events: DamageEvent[] = [];
+  // The engine heats with any damage setting, so the gauge always reads true; only the
+  // harm from boiling it is left out with damage off.
+  const heated = updateEngineHeat(v, dt);
+  if (heated) events.push(heated);
   if (mode === 'off') return events;
   const c = v.condition;
 
@@ -92,21 +96,6 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     if (Math.floor(before * 10) !== Math.floor(c.engine * 10))
       events.push({ part: 'engine', wheel: -1, health: c.engine, cause: 'inverted' });
   }
-  // Hard work at high revs, worst in low range with little air through the radiator.
-  const dt_ = v.drivetrain;
-  const heat = c.engineHeat ?? 0.5;
-  const work = dt_.engineRunning
-    ? Math.abs(v.throttle) * Math.min(1, dt_.rpm / v.tuning.engine.redlineRpm)
-    : 0;
-  const target = Math.max(
-    0.3,
-    work * E.heatGain * (dt_.range === 'low' ? E.lowRangeHeat : 1) +
-      (dt_.engineRunning ? 0.5 : 0) * (1 - work) -
-      E.airflowCool * Math.abs(v.speed),
-  );
-  c.engineHeat = heat + ((target - heat) * dt) / E.heatSeconds;
-  if (heat < E.heatWarn && c.engineHeat >= E.heatWarn)
-    events.push({ part: 'engine', wheel: -1, health: c.engine, cause: 'overheat' });
   if (c.engineHeat > 1) {
     const before = c.engine;
     hurt(E.overheatPerSecond * dt, 'overheat', true);
@@ -116,6 +105,33 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
   // In realistic mode, water drawn in through the intake bends a connecting rod.
   if (mode === 'realistic' && v.floodEvent === 'stalled') hurt(E.floodStall, 'water');
   return events;
+}
+
+/**
+ * Engine temperature (0.5 normal). The thermostat holds it at normal until the work outruns
+ * the radiator: heavy throttle, worst in low range at a crawl with little air through the
+ * core. It climbs in about `heatSeconds` and cools back over the slower `coolSeconds`, so
+ * burst after burst up a climb adds up. Returns the warning when it reaches `heatWarn`.
+ */
+function updateEngineHeat(v: Vehicle, dt: number): DamageEvent | null {
+  const E = D.engine;
+  const c = v.condition;
+  const d = v.drivetrain;
+  const heat = c.engineHeat ?? 0.5;
+  // Load: the pedal, counting even low revs as half the work (a lugging engine still makes heat).
+  const load = d.engineRunning
+    ? Math.abs(v.throttle) *
+      (0.5 + 0.5 * Math.min(1, d.rpm / v.tuning.engine.redlineRpm)) *
+      (d.range === 'low' ? E.lowRangeHeat : 1)
+    : 0;
+  const target = d.engineRunning
+    ? Math.max(0.5, 0.5 + load * E.heatGain - E.airflowCool * Math.abs(v.speed))
+    : 0.3;
+  const seconds = target > heat ? E.heatSeconds : E.coolSeconds;
+  c.engineHeat = Math.min(E.maxHeat, heat + ((target - heat) * dt) / seconds);
+  return heat < E.heatWarn && c.engineHeat >= E.heatWarn
+    ? { part: 'engine', wheel: -1, health: c.engine, cause: 'overheat' }
+    : null;
 }
 
 /** Mend one tyre (a plug, a spare fitted, or a camp's repair). */

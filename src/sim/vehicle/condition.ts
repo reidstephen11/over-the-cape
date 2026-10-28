@@ -84,7 +84,10 @@ export function createCondition(fuel = 70): VehicleCondition {
 
 /** Multipliers the physics reads (all 1 on an undamaged vehicle). */
 export function enginePowerMultiplier(c: VehicleCondition): number {
-  return Math.max(0, Math.min(1, 0.4 + 0.6 * c.engine));
+  const E = D.engine;
+  // A boiling engine pulls less, all the way down to `hotPower` at the top of the dial.
+  const hot = Math.min(1, Math.max(0, ((c.engineHeat ?? 0.5) - 1) / (E.maxHeat - 1)));
+  return Math.max(0, Math.min(1, 0.4 + 0.6 * c.engine)) * (1 - (1 - E.hotPower) * hot);
 }
 
 export function tyreGripMultiplier(c: VehicleCondition, wheel: number): number {
