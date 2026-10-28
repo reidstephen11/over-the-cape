@@ -63,7 +63,7 @@ export const stretchHills: HillDef[] = [
   { id: 'village-bench', x: -60, z: 2490, radius: 45, height: 13, shape: 'dome', stretch: [1.8, 1, -63.4] },
   { id: 'village-knoll', x: -42, z: 2385, radius: 95, height: 19, shape: 'dome' },
   // Big Red's face lies back to the line of the climb, so the track is not cut in a trench.
-  { id: 'big-red-face', x: -2, z: 1195, radius: 55, height: -5, shape: 'dome' },
+  { id: 'big-red-face', x: 8, z: 1200, radius: 55, height: -5, shape: 'dome' },
   // North of the Bloomfield the road goes straight over two knolls rather than round them.
   { id: 'rossville-knoll', x: -121, z: -1530, radius: 90, height: 14, shape: 'dome' },
   { id: 'helenvale-knoll', x: 214, z: -1975, radius: 85, height: 18, shape: 'dome' },
@@ -153,9 +153,9 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
       {
         path: [
           [16, -0.86],
-          [55, -0.88],
-          [100, -0.84],
-          [145, -0.86],
+          [60, -0.88],
+          [110, -0.84],
+          [158, -0.86],
         ],
         width: 0.5,
         depth: 0.27,
@@ -163,9 +163,9 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
       {
         path: [
           [18, -1.78],
-          [70, -1.85],
-          [120, -1.75],
-          [148, -1.72],
+          [75, -1.85],
+          [130, -1.75],
+          [160, -1.72],
         ],
         width: 0.55,
         depth: 0.52,
@@ -173,9 +173,9 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
       {
         path: [
           [22, -0.35],
-          [74, -0.38],
-          [124, -0.34],
-          [146, -0.36],
+          [80, -0.38],
+          [134, -0.34],
+          [158, -0.36],
         ],
         width: 0.3,
         depth: 0.48,
