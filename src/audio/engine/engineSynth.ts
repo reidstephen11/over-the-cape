@@ -101,6 +101,8 @@ export class EngineSynth {
   private readonly fan: Biquad;
   private readonly whistle: Biquad;
   private readonly starterLevel: OnePole;
+  /** Fades everything out once the engine has stopped turning, and in when it starts. */
+  private readonly alive: OnePole;
   private starterPhase = 0;
   private readonly starterBand: Biquad;
   private readonly brushBand: Biquad;
@@ -173,6 +175,7 @@ export class EngineSynth {
     this.fan = new Biquad(sr).bandpass(T.fan.hz, 0.6);
     this.whistle = new Biquad(sr).bandpass(T.overrun.whistleHz, 6);
     this.starterLevel = new OnePole(sr, 1).timeConstant(0.03);
+    this.alive = new OnePole(sr, 1).timeConstant(0.08);
     this.starterBand = new Biquad(sr).bandpass(T.starter.toneHz, 1.3);
     this.brushBand = new Biquad(sr).bandpass(T.starter.brushHz, 1.5);
     this.whineLevel = new OnePole(sr, 1).timeConstant(0.08);
@@ -400,7 +403,9 @@ export class EngineSynth {
         whistle +
         starter +
         whine;
-      out[i] = softClip(mix * T.outputGain);
+      // Silent while the engine is switched off (from the first sample) or has run down.
+      const alive = this.alive.process(this.mode !== 'run' || inp.running || inp.rpm > 30 ? 1 : 0);
+      out[i] = softClip(mix * T.outputGain * alive);
     }
   }
 

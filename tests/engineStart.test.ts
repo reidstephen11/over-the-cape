@@ -45,4 +45,52 @@ describe('starting the engine', () => {
       expect(events).toEqual(['starting']);
       sim.physics.free();
     });
+
+  it('arrives switched off: silent and held still until the pedal turns it over, then drives once it catches', async () => {
+    const world = testWorld();
+    const sim = new Simulation(await loadRapier(), world, lateAfternoon);
+    const tuning = vehicles.shortie.tuning;
+    sim.addVehicle('p', sim.campsitePose(world.map.spawnCampsite, tuning.wheelRadius), tuning);
+    const inputs = new Map([['p', emptyInput()]]);
+    sim.switchOffEngine('p');
+    const v = sim.vehicles.get('p')!;
+    const events: string[] = [];
+    sim.events.on('engine', ({ event }) => events.push(event));
+    for (let i = 0; i < 120; i++) sim.step(inputs, DT);
+    expect(v.engineOff).toBe(true);
+    expect(v.drivetrain.engineRunning).toBe(false);
+    expect(v.drivetrain.rpm).toBe(0);
+    expect(sim.serialize().vehicles[0].engineOff).toBe(true);
+    expect(events).toEqual([]);
+    const start = { ...v.position };
+    // The pedal turns it over on the starter; nothing moves until it catches.
+    inputs.set('p', { ...emptyInput(), throttle: 1 });
+    sim.step(inputs, DT);
+    expect(events).toEqual(['starting']);
+    expect(v.engineOff).toBe(false);
+    for (let t = DT; t < tuning.engine.crankSeconds - 0.1; t += DT) {
+      sim.step(inputs, DT);
+      expect(v.drivetrain.engineRunning).toBe(false);
+    }
+    expect(Math.hypot(v.position.x - start.x, v.position.z - start.z)).toBeLessThan(0.05);
+    for (let i = 0; i < 12; i++) sim.step(inputs, DT);
+    expect(v.drivetrain.engineRunning).toBe(true);
+    for (let i = 0; i < 120; i++) sim.step(inputs, DT);
+    expect(Math.hypot(v.position.x - start.x, v.position.z - start.z)).toBeGreaterThan(1);
+    expect(events).toEqual(['starting']);
+    sim.physics.free();
+  });
+
+  it('starts on the pedal in reverse too', async () => {
+    const world = testWorld();
+    const sim = new Simulation(await loadRapier(), world, lateAfternoon);
+    const tuning = vehicles.shortie.tuning;
+    sim.addVehicle('p', sim.campsitePose(world.map.spawnCampsite, tuning.wheelRadius), tuning);
+    sim.switchOffEngine('p');
+    const v = sim.vehicles.get('p')!;
+    sim.step(new Map([['p', { ...emptyInput(), brake: 1 }]]), DT);
+    expect(v.engineOff).toBe(false);
+    expect(v.crank).toBeGreaterThan(0);
+    sim.physics.free();
+  });
 });

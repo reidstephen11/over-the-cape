@@ -72,6 +72,10 @@ export async function lowGraphics(page: Page): Promise<void> {
  * touch screen a history note stops the game until it's tapped, so tap any that shows.
  */
 export async function waitEngine(page: Page): Promise<void> {
+  // The engine is off on arrival until the pedal is pressed: start it as the pedal would.
+  await page.evaluate(() => {
+    if (window.__game!.vehicle().engineOff) window.__game!.startEngine();
+  });
   await page.waitForFunction(
     () => {
       document.querySelector<HTMLElement>('.history-card.reading')?.click();

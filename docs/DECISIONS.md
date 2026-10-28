@@ -1382,3 +1382,11 @@ The loading briefing shows the mission, weather and deadline with one basic cont
 The owner's controller is a PS4 DualShock. Controller prompts now use ✕ Cross, ○ Circle, □ Square, △ Triangle, L1/R1, L2/R2, SHARE and OPTIONS. This covers the title menu, driving and recovery prompts, camera hints, HUD tooltips, map-close hint and pause Controls table. The briefing receives the input device from the title and shows PS4 controls when launched with the controller. Keyboard and touch reminders still follow their own input devices.
 
 The W3C standard button indices and action bindings are unchanged. The title's symbol glyphs have accessible Cross and Circle names. Existing controller navigation coverage verifies the rendered labels and selection/back behavior; the driving-input checks exercise the existing physical bindings.
+
+## v0.63 — the engine starts on the accelerator
+
+**Problem.** The engine sound ran from the loading screen, and the starter played over it when the episode began. The engine synthesiser's settings defaulted to a running engine at 800 rpm, so it idled as soon as it was created, before the game had told it anything; and the game started the engine itself on arrival.
+
+**Change.** On arrival, after restarting from a camp and after changing vehicle, the engine is switched off (`Vehicle.engineOff`): no sound, 0 rpm, and the brakes hold the car. The first press of the accelerator, forward or reverse, turns it over on the starter (the sim's `starting` event plays the starter sound), and the car drives once it fires, as before. A "Start the engine" prompt shows until then. In the synthesiser, the worklet now defaults to a stopped engine (0 rpm, not running), and a master fade keeps it silent while the engine is stopped and not on the starter. That fade also cuts the faint hiss that was left after the engine ran down.
+
+The browser test helper `waitEngine` starts a switched-off engine through a test hook, as the pedal would, so the existing checks still begin with the engine running; a new browser test drives the start-up through the pedal itself.

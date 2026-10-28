@@ -67,10 +67,14 @@ export interface GameHook {
     precisionCrawl: boolean;
     throttle: number;
     brake: number;
-    /** False while the engine is stalled or still cranking. */
+    /** False while the engine is off, stalled or still cranking. */
     engineRunning: boolean;
+    /** Switched off until the pedal is pressed (on arriving). */
+    engineOff: boolean;
     lights: HeadlightMode;
   };
+  /** Start a switched-off engine on the starter, as the first press of the pedal does. */
+  startEngine(): void;
   /** Park the vehicle on the approach to a POI and frame it with the free camera. */
   showPoi(id: string): void;
   tool(
@@ -488,6 +492,7 @@ export function installHook(game: Game): void {
         tyres: [...t.tyres],
       };
     },
+    startEngine: () => g.startEngine(),
     vehicle: () => {
       const v = g.vehicle;
       const p = v.body.translation();
@@ -506,6 +511,7 @@ export function installHook(game: Game): void {
         throttle: v.throttle,
         brake: v.brake,
         engineRunning: v.drivetrain.engineRunning,
+        engineOff: v.engineOff,
         lights: v.lights,
       };
     },

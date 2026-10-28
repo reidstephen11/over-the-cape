@@ -103,6 +103,12 @@ describe('engine synthesiser', () => {
     expect(stopped).toBeLessThan(running * 0.1);
   });
 
+  it('makes no sound from the start while the engine is off', () => {
+    const running = rms(render(1, {}));
+    const off = rms(render(1, { rpm: 0, running: false }));
+    expect(off).toBeLessThan(running * 0.01);
+  });
+
   it('misfires when the intake takes in water', () => {
     const clean = rms(render(2, { rpm: 900, throttle: 0.3, load: 0.3 }), SR / 2);
     const flooded = rms(render(2, { rpm: 900, throttle: 0.3, load: 0.3, misfire: 0.6 }), SR / 2);

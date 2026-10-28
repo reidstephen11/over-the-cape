@@ -142,6 +142,7 @@ export function buildHudState(i: HudInputs): HudState {
       else if (wait > 0) prompts.push({ keys: '!', text: `Engine flooded — drying out (${wait} s)` });
       else prompts.push({ keys: g.accelerate ?? 'W', text: 'Restart engine' });
     } else if (flood.submerged) prompts.push({ keys: '!', text: 'Water at the air intake!' });
+    else if (v.engineOff) prompts.push({ keys: g.accelerate ?? 'W', text: 'Start the engine' });
     if (i.find && !t.repair)
       prompts.push({
         keys: i.find.inReach ? 'Stop' : '!',

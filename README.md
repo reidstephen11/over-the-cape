@@ -189,29 +189,29 @@ The **80 Series — Sooty MkII** joins the menu in v0.45: the recovered light bl
 
 The 80 Series uses the same controls below, including low range, lockers, winch and lights.
 
-| Action                        | Keyboard                                              | PS4 controller                                       |
-| ----------------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
-| Accelerate                    | W / ↑                                                 | R2                                                   |
-| Brake / reverse               | S / ↓ (hold when stopped to reverse)                  | L2                                                   |
-| Steer                         | A D / ← →                                             | Left stick                                           |
-| Handbrake on / off            | Space (press again to let it off)                     | □ (Square)                                           |
-| Toggle high/low range         | L (below 20 km/h)                                     | △ (Triangle)                                         |
-| Front / rear diff lock        | Z / X (below 5 km/h to engage)                        | Hold L1 → front / rear diff                          |
-| Precision crawl               | P                                                     | Hold L1 → precision crawl                            |
-| Winch quick attach / detach   | E                                                     | R1                                                   |
-| Winch in / out                | R / F                                                 | D-pad up / down                                      |
-| Tool menu                     | Hold Q, point with the mouse, arrows or WASD, release | Hold L1, point with the left stick or d-pad, release |
-| Interact (planks, hitch)      | E (when prompted)                                     | ✕ (Cross)                                            |
-| Right vehicle                 | Hold J (when prompted)                                | Hold ○ (Circle)                                      |
-| Orbit camera                  | Mouse drag (left or right button), or Num 4/6/8/2     | Right stick                                          |
-| Camera distance               | Scroll                                                | D-pad left/right while driving                       |
-| Recenter camera               | V or Num 5, or the Reset view button                  | Right stick click                                    |
-| Cycle crawler / driver views  | C, or the View button                                 | Hold L1 + click right stick                          |
-| Crawl gauges: auto / on / off | I                                                     | Shown in low range                                   |
-| Horn                          | H                                                     | Left stick click                                     |
-| Headlights: off / low / high  | N                                                     | Hold L1 → headlights                                 |
-| Map                           | M (scroll to zoom, drag to move it)                   | SHARE                                                |
-| Pause                         | Esc                                                   | OPTIONS                                              |
+| Action                                     | Keyboard                                              | PS4 controller                                       |
+| ------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------- |
+| Accelerate (first press starts the engine) | W / ↑                                                 | R2                                                   |
+| Brake / reverse                            | S / ↓ (hold when stopped to reverse)                  | L2                                                   |
+| Steer                                      | A D / ← →                                             | Left stick                                           |
+| Handbrake on / off                         | Space (press again to let it off)                     | □ (Square)                                           |
+| Toggle high/low range                      | L (below 20 km/h)                                     | △ (Triangle)                                         |
+| Front / rear diff lock                     | Z / X (below 5 km/h to engage)                        | Hold L1 → front / rear diff                          |
+| Precision crawl                            | P                                                     | Hold L1 → precision crawl                            |
+| Winch quick attach / detach                | E                                                     | R1                                                   |
+| Winch in / out                             | R / F                                                 | D-pad up / down                                      |
+| Tool menu                                  | Hold Q, point with the mouse, arrows or WASD, release | Hold L1, point with the left stick or d-pad, release |
+| Interact (planks, hitch)                   | E (when prompted)                                     | ✕ (Cross)                                            |
+| Right vehicle                              | Hold J (when prompted)                                | Hold ○ (Circle)                                      |
+| Orbit camera                               | Mouse drag (left or right button), or Num 4/6/8/2     | Right stick                                          |
+| Camera distance                            | Scroll                                                | D-pad left/right while driving                       |
+| Recenter camera                            | V or Num 5, or the Reset view button                  | Right stick click                                    |
+| Cycle crawler / driver views               | C, or the View button                                 | Hold L1 + click right stick                          |
+| Crawl gauges: auto / on / off              | I                                                     | Shown in low range                                   |
+| Horn                                       | H                                                     | Left stick click                                     |
+| Headlights: off / low / high               | N                                                     | Hold L1 → headlights                                 |
+| Map                                        | M (scroll to zoom, drag to move it)                   | SHARE                                                |
+| Pause                                      | Esc                                                   | OPTIONS                                              |
 
 The **tool menu** holds: Unhitch the trailer (while towing one), Winch (or Detach winch), the front and rear diff locks, Place planks (or Recall planks), precision crawl, the headlights, the repair the car needs (Field repair, Plug the tyre or Fit a spare) and Pour in a jerry can. Finds load by themselves when you stop beside them. An option that can't be used now is greyed out; picking it says why ("Stop first", "No spares left"...).
 
@@ -238,6 +238,7 @@ On a touch screen the game shows on-screen controls, held sideways or upright. H
 
 ## Driving tips
 
+- The engine is off when you arrive at the start of an episode, after restarting from a camp and after changing vehicle. Press the accelerator: the starter turns it over, and the car moves off once it fires.
 - **Low range (L)** and **precision crawl (P)** for the climbs and descents: hold W for a steady walking pace, let go and it brakes to a stop. On Big Red and Bob's Hill lock both diffs (**Z**, **X**) below 5 km/h.
 - The red clay is slick after rain: brake early, keep a steady throttle (spinning the wheels digs you in), and lock both diffs in low range before you start up any steep pinch, not halfway up it.
 - Take the mud holes steadily, in a low gear, without stopping in them.
@@ -282,6 +283,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v0.63 engine start:** the loading screen and pause menu show v0.63. Start an episode: is it silent on the loading screen and when you arrive, with a "Start the engine" prompt? Press the accelerator: do you hear the starter, then the engine fire, and only then does the car move? Try it with reverse (S) too, after restarting from a camp, and after changing vehicle from the pause menu.
 - [ ] **v0.62 PS4 labels:** use the PS4 controller to open the title menu. Does it show ✕ to select and ○ to go back? Start driving: prompts should use □ for the handbrake, △ for low range, L1 for tools, R1 for the winch and L2/R2 for the pedals. The briefing and pause Controls page should use the same labels. Open the map with SHARE and close it with ○ or SHARE; pause with OPTIONS. Keyboard and touch prompts should still match their inputs.
 
 - [ ] **v0.61 camp title:** the version shows v0.61. Is the camp-at-dusk opening close to the chosen mockup, on a computer and on a phone held either way? Press a key, tap or use the controller to open Continue / New Journey / Settings. With a saved camp, Continue should start driving after loading without a second Drive press. Without a saved run it should be unavailable. New Journey should reveal episode selection; Back should leave your camp intact. Change graphics, volume and units in Settings, then reload: are they kept, with your journey? Does the quiet camp ambience fade into driving? Check keyboard arrows, Enter and Escape, controller d-pad, ✕ and ○, and reduced-motion mode.

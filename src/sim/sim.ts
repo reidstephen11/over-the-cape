@@ -97,6 +97,8 @@ export interface SimState {
     parkBrake: boolean;
     lights: HeadlightMode;
     engineRunning: boolean;
+    /** Switched off until the pedal is pressed. */
+    engineOff: boolean;
     /** Seconds of cranking left before the engine catches. */
     crank: number;
     flood: { timer: number; stalled: boolean; dryTime: number };
@@ -589,6 +591,11 @@ export class Simulation {
     if (this.vehicleOf(id).startEngine()) this.events.emit('engine', { id, event: 'starting' });
   }
 
+  /** Switch a vehicle's engine off: pressing the pedal starts it. */
+  switchOffEngine(id: string): void {
+    this.vehicleOf(id).switchOff();
+  }
+
   /**
    * Swap a vehicle for another model where it stands, facing the same way: the winch
    * lets go, placed planks come back and the new one starts clean (with its lights as
@@ -690,6 +697,7 @@ export class Simulation {
       if (v.precisionCrawl !== precisionBefore)
         this.events.emit('precisionChanged', { id, enabled: v.precisionCrawl });
       if (v.floodEvent) this.events.emit('engine', { id, event: v.floodEvent });
+      if (v.startedByPedal) this.events.emit('engine', { id, event: 'starting' });
       tools.winch.step(v, input.winchIn, input.winchOut, dt);
       v.externalLoad = tools.winch.tension;
       const pulled = tools.winch.anchor?.id.startsWith('stuck:')
@@ -1118,6 +1126,7 @@ export class Simulation {
           parkBrake: v.parkBrake,
           lights: v.lights,
           engineRunning: v.drivetrain.engineRunning,
+          engineOff: v.engineOff,
           crank: v.crank,
           flood: {
             timer: v.condition.flood.timer,
