@@ -1,6 +1,11 @@
+import { registerSW } from 'virtual:pwa-register';
 import './ui/styles.css';
 import './ui/title.css';
 import { choiceFromSave } from './core/launch';
+
+if (import.meta.env.PROD && location.pathname.startsWith('/over-the-cape')) {
+  registerSW({ immediate: true });
+}
 import { episodes } from './data/episodes';
 import { maps } from './data/maps';
 import { vehicleLoadout } from './data/vehicles';
