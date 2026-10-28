@@ -15,7 +15,7 @@ export interface DamageEvent {
    * What did it: a rock cut, wheelspin wearing through on rock, a pothole or washout hit at
    * speed, a hard landing, a chassis knock, a crash, upside down, water.
    */
-  cause: 'rock' | 'spin' | 'hole' | 'landing' | 'knock' | 'crash' | 'inverted' | 'water';
+  cause: 'rock' | 'spin' | 'hole' | 'landing' | 'knock' | 'crash' | 'inverted' | 'water' | 'overheat';
   /** Tyres: a slow puncture or a torn sidewall. */
   fault?: TyreFault;
 }
@@ -40,10 +40,11 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     const w = v.wheels[i];
     const intact = c.tyreFault[i] === 'none';
     // A tyre landing hard on rock is cut and starts going down; harder still tears the sidewall.
-    if (hit > D.tyre.punctureSpeed && w.surface === SurfaceId.Rock && intact)
+    const low = c.lowPressure ? D.tyre.lowPressureCut : 1;
+    if (hit > D.tyre.punctureSpeed * low && w.surface === SurfaceId.Rock && intact)
       cut(i, hit > D.tyre.sidewallSpeed ? 'sidewall' : 'puncture', 'rock');
     // A pothole or washout hit at speed pinches the tyre.
-    else if (intact && v.wheelStrikes[i] > D.tyre.strike) cut(i, 'puncture', 'hole');
+    else if (intact && v.wheelStrikes[i] > D.tyre.strike * low) cut(i, 'puncture', 'hole');
     // Spinning hard on rock wears through the tread.
     else if (intact && w.contact && w.surface === SurfaceId.Rock && w.spin > D.tyre.abrasionSpin) {
       c.abrasion[i] += w.spin * dt;
@@ -91,6 +92,27 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     if (Math.floor(before * 10) !== Math.floor(c.engine * 10))
       events.push({ part: 'engine', wheel: -1, health: c.engine, cause: 'inverted' });
   }
+  // Hard work at high revs, worst in low range with little air through the radiator.
+  const dt_ = v.drivetrain;
+  const heat = c.engineHeat ?? 0.5;
+  const work = dt_.engineRunning
+    ? Math.abs(v.throttle) * Math.min(1, dt_.rpm / v.tuning.engine.redlineRpm)
+    : 0;
+  const target = Math.max(
+    0.3,
+    work * E.heatGain * (dt_.range === 'low' ? E.lowRangeHeat : 1) +
+      (dt_.engineRunning ? 0.5 : 0) * (1 - work) -
+      E.airflowCool * Math.abs(v.speed),
+  );
+  c.engineHeat = heat + ((target - heat) * dt) / E.heatSeconds;
+  if (heat < E.heatWarn && c.engineHeat >= E.heatWarn)
+    events.push({ part: 'engine', wheel: -1, health: c.engine, cause: 'overheat' });
+  if (c.engineHeat > 1) {
+    const before = c.engine;
+    hurt(E.overheatPerSecond * dt, 'overheat', true);
+    if (Math.floor(before * 10) !== Math.floor(c.engine * 10))
+      events.push({ part: 'engine', wheel: -1, health: c.engine, cause: 'overheat' });
+  }
   // In realistic mode, water drawn in through the intake bends a connecting rod.
   if (mode === 'realistic' && v.floodEvent === 'stalled') hurt(E.floodStall, 'water');
   return events;
@@ -109,6 +131,7 @@ export function repairAll(c: VehicleCondition): void {
   c.engine = 1;
   for (let i = 0; i < 4; i++) mendTyre(c, i);
   c.suspension.fill(1);
+  c.engineHeat = 0.5;
 }
 
 /** Keep damage within what a mode allows (after changing the setting). */

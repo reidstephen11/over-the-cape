@@ -54,6 +54,10 @@ export interface VehicleCondition {
   mudShare: number;
   dents: Dent[];
   flood: FloodState;
+  /** Engine temperature: 0 cold, about 0.5 normal running, over 1 overheating (src/sim/vehicle/damage.ts). */
+  engineHeat: number;
+  /** Tyres let down for grip off the gravel: more grip, but they cut more easily. */
+  lowPressure: boolean;
 }
 
 export function createCondition(fuel = 70): VehicleCondition {
@@ -73,6 +77,8 @@ export function createCondition(fuel = 70): VehicleCondition {
     mudShare: 0,
     dents: [],
     flood: { timer: 0, stalled: false, dryTime: 0, submerged: false },
+    engineHeat: 0.5,
+    lowPressure: false,
   };
 }
 
@@ -82,7 +88,7 @@ export function enginePowerMultiplier(c: VehicleCondition): number {
 }
 
 export function tyreGripMultiplier(c: VehicleCondition, wheel: number): number {
-  return 0.6 + 0.4 * c.tyres[wheel];
+  return (0.6 + 0.4 * c.tyres[wheel]) * (c.lowPressure ? D.tyre.lowPressureGrip : 1);
 }
 
 /** Cornering grip a soft or flat tyre keeps as its sidewall folds (1 when inflated). */
