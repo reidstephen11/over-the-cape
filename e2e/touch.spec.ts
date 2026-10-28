@@ -83,9 +83,22 @@ test.describe('phone', () => {
     await openJourney(page);
     await waitReady(page);
     const controls = page.locator('.touch-controls');
-    // The mission and what's on board sit clear of the controls.
-    await expect(page.locator('.mission')).toBeVisible();
+    // Compact strip on a phone; the full TEMP/FUEL dials stay folded until tap or a warning.
+    await expect(page.locator('.vehicle-strip')).toBeVisible();
+    await expect(page.locator('.vehicle-gauges')).not.toHaveClass(/\bopen\b/);
+    await expect(page.locator('[data-dial="temp"]')).toBeHidden();
     await expect(page.locator('.supplies')).toBeVisible();
+    await expect(page.locator('.mission')).toBeVisible();
+    await expect(page.locator('.crawl-gauges')).toBeHidden();
+    await page.waitForTimeout(4800);
+    await expect(page.locator('.mission')).toBeHidden();
+    await page.locator('.vehicle-strip').click();
+    await expect(page.locator('.mission')).toBeVisible();
+    await expect(page.locator('.vehicle-gauges')).toHaveClass(/\bopen\b/);
+    await expect(page.locator('[data-dial="temp"]')).toBeVisible();
+    await page.locator('.vehicle-strip').click();
+    await expect(page.locator('.vehicle-gauges')).not.toHaveClass(/\bopen\b/);
+    await expect(page.locator('[data-dial="temp"]')).toBeHidden();
     await expect(controls).toBeVisible();
     // No saved settings: a phone starts on the low graphics preset.
     expect(await page.evaluate(() => window.__game!.quality())).toBe('low');
@@ -274,14 +287,14 @@ test.describe('phone on the CREB', () => {
     await openJourney(page);
     await waitReady(page);
     const f = await fingers(page);
-    // Low range brings up the crawl gauges; GAS against the handbrake brings up a prompt.
+    // Low range on the flat does not bring up pitch/roll; GAS against the handbrake still prompts.
     await f.tap('.touch-pile-toggle');
     await f.tap('[data-tap="range"]');
     await f.tap('[data-tap="handbrake"]');
     await page.evaluate(() => window.__game!.setInput({ throttle: 1 }));
     await expect(page.locator('.prompt', { hasText: 'Release the handbrake' })).toBeVisible();
-    await expect(page.locator('.crawl-gauges')).toBeVisible();
-    await expect(page.locator('.mission')).toBeVisible();
+    await expect(page.locator('.crawl-gauges')).toBeHidden();
+    await expect(page.locator('.vehicle-strip')).toBeVisible();
     await expect(page.locator('.supplies')).toBeVisible();
     const panels =
       '.touch-btn, .touch-stick-base, .hud button, .compass, .status, .camera-help, .prompt, .crawl-gauges, .mission, .supplies';

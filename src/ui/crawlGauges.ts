@@ -48,8 +48,16 @@ export function outlineRotation(angleDeg: number): number {
 const W = 318;
 const H = 150;
 /** Angles where the dial turns red: tipping risk. */
-const PITCH_WARN = 32;
-const ROLL_WARN = 28;
+export const PITCH_WARN = 32;
+export const ROLL_WARN = 28;
+/** On a phone the inclinometer stays hidden until the car is this far into a lean (degrees). */
+export const PITCH_RISK = 20;
+export const ROLL_RISK = 16;
+
+/** True when the phone HUD should show pitch/roll: the car is leaning enough to worry. */
+export function phoneTiltRisk(g: Pick<GaugeState, 'pitch' | 'roll' | 'bodyContact'>): boolean {
+  return g.bodyContact || Math.abs(g.pitch) >= PITCH_RISK || Math.abs(g.roll) >= ROLL_RISK;
+}
 
 /**
  * Crawl gauges (bottom right): a pitch and roll inclinometer like the ones bolted to

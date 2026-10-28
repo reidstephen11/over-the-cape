@@ -1,10 +1,20 @@
 import { controllers, defaultController, type ControllerType } from '../data/controllers';
 import { icons, type PoiIcon } from './icons';
 import { cameraPresets, type CameraPreset } from '../data/camera';
-import { CrawlGauges, formatSpeed, type GaugeMode, type GaugeState, type SpeedUnits } from './crawlGauges';
+import {
+  CrawlGauges,
+  formatSpeed,
+  phoneTiltRisk,
+  type GaugeMode,
+  type GaugeState,
+  type SpeedUnits,
+} from './crawlGauges';
 import type { HeadlightMode } from '../data/headlights';
 import { railItems, touchNotice, warningView, type RailItem } from './alerts';
 import { VehicleGauges, type VehicleGaugeState } from './vehicleGauges';
+
+/** Phone mission line (clock + place) stays this long, then folds away. Tap the strip to see it again. */
+export const MISSION_FADE_MS = 4500;
 
 /** Labels already printed on the on-screen buttons. A prompt with only these keys repeats them. */
 const TOUCH_BUTTON_KEYS = new Set([
@@ -161,6 +171,8 @@ export class Hud {
   private readonly trailerEl: HTMLElement;
   private lastTrailerKey = '';
   private lastMissionKey = '';
+  private lastMissionPlace = '';
+  private missionRevealUntil = 0;
   private lastSuppliesKey = '';
   /** Crawl gauges: 'auto' shows them in low range, precision crawl or the driver's seat. */
   gaugeMode: GaugeMode = 'auto';
@@ -222,6 +234,14 @@ export class Hud {
     this.suppliesPanel = this.el.querySelector('.supplies') as HTMLElement;
     this.vehicleGauges = new VehicleGauges(this.suppliesPanel);
     this.suppliesPanel.prepend(this.vehicleGauges.el);
+    this.vehicleGauges.el.addEventListener('click', (e) => {
+      if (!document.body.classList.contains('touch-mode')) return;
+      if (!(e.target as HTMLElement).closest('.vehicle-strip')) return;
+      e.stopPropagation();
+      this.vehicleGauges.toggleOpen();
+      this.missionRevealUntil = performance.now() + MISSION_FADE_MS;
+      this.lastMissionKey = '';
+    });
     this.suppliesEl = this.el.querySelector('.status-supplies') as HTMLElement;
     this.trailerEl = this.el.querySelector('.status-trailer') as HTMLElement;
     this.gateEl = this.el.querySelector('.gate-count') as HTMLElement;
@@ -330,9 +350,11 @@ export class Hud {
   update(s: HudState): void {
     this.el.classList.toggle('cockpit', this.cockpitView);
     this.drawCompass(s);
+    const touch = document.body.classList.contains('touch-mode');
     const showGauges =
       this.gaugeMode === 'on' ||
-      (this.gaugeMode === 'auto' && (s.range === 'low' || s.precisionCrawl || this.cockpitView));
+      (this.gaugeMode === 'auto' &&
+        (touch ? phoneTiltRisk(s.gauges) : s.range === 'low' || s.precisionCrawl || this.cockpitView));
     this.gauges.visible = showGauges;
     if (showGauges) this.gauges.update(s.gauges);
     // On a phone held upright the panels below make room for these (see styles.css).
@@ -375,14 +397,13 @@ export class Hud {
       this.courseHint.querySelector('small')!.textContent = s.courseHint.controls;
     }
     this.planksEl.textContent = `${s.planksCarried}/${s.planksTotal}`;
-    this.drawMission(s.episode);
+    this.drawMission(s.episode, touch);
     this.drawSupplies(s.supplies);
     this.drawTrailer(s.trailer ?? null);
     this.winchEl.classList.toggle('shown', s.winchAttached);
     this.engineEl.classList.toggle('shown', s.engine > 0);
     this.engineEl.classList.toggle('stalled', s.engine === 2);
     this.status.dataset.engine = String(s.engine);
-    const touch = document.body.classList.contains('touch-mode');
     // Warnings leave the banner stack on a phone; what you can do (winch, handbrake) stays.
     const prompts = touch ? s.prompts.filter((p) => p.keys !== '!') : s.prompts;
     const key = `${touch ? 't' : 'd'}:${prompts.map((p) => `${p.keys}|${p.text}|${p.progress?.toFixed(2) ?? ''}`).join('#')}`;
@@ -437,11 +458,19 @@ export class Hud {
     for (const item of items) this.alertsEl.appendChild(alertElement(item));
   }
 
-  private drawMission(e: EpisodeHud | null): void {
-    const key = e ? `${e.title}|${e.mission}|${e.clock}|${e.deadline}|${e.urgent}` : '';
+  private drawMission(e: EpisodeHud | null, touch: boolean): void {
+    const now = performance.now();
+    const place = e ? `${e.mission}|${e.urgent}` : '';
+    if (place !== this.lastMissionPlace) {
+      this.lastMissionPlace = place;
+      this.missionRevealUntil = now + MISSION_FADE_MS;
+    }
+    const faded = touch && !!e && !e.urgent && now > this.missionRevealUntil;
+    this.vehicleGauges.setClock(e?.clock ?? '');
+    const key = e ? `${e.title}|${e.mission}|${e.clock}|${e.deadline}|${e.urgent}|${faded}` : `:${faded}`;
     if (key === this.lastMissionKey) return;
     this.lastMissionKey = key;
-    this.missionEl.classList.toggle('hidden', !e);
+    this.missionEl.classList.toggle('hidden', !e || faded);
     if (!e) return;
     this.missionEl.querySelector('small')!.textContent = e.title;
     this.missionEl.querySelector('strong')!.textContent = e.mission;
