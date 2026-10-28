@@ -1401,3 +1401,13 @@ The browser test helper `waitEngine` starts a switched-off engine through a test
 
 - **Big Red, Bob's Hill and the concrete are timed end to end.** Each section runs between the first and last points of its track (`timedSections` on the episode). The clock starts on leaving one end and stops at the other, so it works whichever way the section is driven. Turning back to the start, wandering well away from the far end or taking over 15 minutes drops the attempt. A small reuse of the crawl-trail code was considered, but crawl runs bring markers, penalties and HUD prompts that these sections don't need.
 - **Bests are saved per section** with the episode's progress (`sectionBests`), shown in a card as each section is finished and listed on the finish screen.
+
+## v0.66 — controller type and active-input prompts
+
+**Choice.** Title and pause Settings offer PlayStation (PS4), Xbox and Generic button labels. The preference is kept in the existing settings save; old or invalid values fall back to PlayStation, preserving the owner's PS4 setup. Generic uses numbered standard buttons. The setting changes labels without changing the physical standard gamepad bindings.
+
+**Shared labels.** Controller profiles supply title navigation symbols, the briefing, driving and recovery prompts, course hints, camera buttons and tooltips, map-close hints and Controls help. Changing the setting in the pause menu updates the HUD immediately and saves the choice without resetting the episode.
+
+**Active input.** The label profile is separate from the input device. Using keys restores keyboard prompts; using a controller restores that profile's buttons; touch uses the phone controls. Title and pause navigation hints follow input changes, and an already-open map updates its hint without needing to reopen. The pause Controls page switches to touch help when appropriate. Keyboard and controller help are both available on its non-touch table.
+
+**Checks.** Save tests cover each preference, old and invalid values, and existing progress. Browser checks cover persisted title selection, controller/keyboard switching, phone layouts and live changes in pause Settings across driving, camera, map and help UI.

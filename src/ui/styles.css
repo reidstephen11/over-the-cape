@@ -1048,6 +1048,20 @@ body.map-open .hud {
   accent-color: var(--accent);
 }
 
+.controller-setting {
+  display: block;
+}
+
+.controller-setting .seg {
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.controller-setting .seg button {
+  flex: 1 1 auto;
+  width: auto;
+}
+
 .seg {
   display: flex;
   gap: 6px;

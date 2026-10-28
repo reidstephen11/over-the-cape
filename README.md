@@ -27,7 +27,9 @@ npm run dev        # then open http://localhost:5173
 
 The game opens at a riverside camp at dusk. **Press any button** (or **Tap to begin**) brings up **Continue**, **New Journey** and **Settings**, with quiet camp ambience. **Continue** loads your saved camp and starts driving without another briefing confirmation. **New Journey** opens episode selection; **Vehicle & difficulty** also contains replay conditions for finished episodes. Choosing a new journey does not delete the saved camp while you browse. **Settings** offers graphics, master volume and speed units, preserving your progress.
 
-Use the arrow keys and Enter, a PS4 controller's d-pad and ✕ (Cross), or touch. Escape or ○ (Circle) goes back. The background drifts slowly; reduced-motion preferences disable this and the prompt animation. The title loads before the driving engine, which is downloaded only when you choose to play. Sound starts with the first gesture, respects the volume setting and fades into driving.
+Choose **Controller type** in the title or pause **Settings**: **PlayStation (PS4)**, **Xbox** or **Generic** (numbered buttons). The choice is saved; existing saves keep PlayStation labels. Driving, recovery, camera, map and controls-help prompts use that choice when a controller is active. Using the keyboard brings key labels back automatically; using touch brings back the phone controls. The title and pause navigation hints also follow the current input.
+
+Use the arrow keys and Enter, the controller's d-pad and its confirm button, or touch. Escape or the controller's back button goes back. The background drifts slowly; reduced-motion preferences disable this and the prompt animation. The title loads before the driving engine, which is downloaded only when you choose to play. Sound starts with the first gesture, respects the volume setting and fades into driving.
 
 For a new run, the loading **briefing** shows the mission, weather and deadline. **Story & trip details** and **Controls** expand when wanted; press **Drive** when ready. **Pause menu → Main menu** returns to the title with progress kept.
 
@@ -189,7 +191,7 @@ The **80 Series — Sooty MkII** joins the menu in v0.45: the recovered light bl
 
 ## Controls
 
-The 80 Series uses the same controls below, including low range, lockers, winch and lights.
+The 80 Series uses the same controls below, including low range, lockers, winch and lights. The table shows PlayStation labels; choose Xbox or Generic in Settings to change the in-game prompts and Controls help. Generic buttons are numbered 1–12 in standard gamepad order.
 
 | Action                                     | Keyboard                                              | PS4 controller                                       |
 | ------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------- |
@@ -284,6 +286,8 @@ Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle
 Add `?seed=7` (any number) to start a new run with that run's surprises, to see the same ones again, or `?surprises=off` to drive without them.
 
 ## What to test
+
+- [ ] **v0.66 controller type:** in title Settings select PlayStation (PS4), Xbox or Generic. Use the controller: do Select and Back show that type's buttons? Press a keyboard key: do Enter and Esc return? Reload and check the choice was saved. Change the type again from pause Settings while driving. Check the engine-start and recovery prompts, camera buttons, map-close hint, pause navigation hint and Controls help. While the map is open, switch between the controller and keyboard: should the hint update without closing the map? On a phone, both Settings screens should fit without sideways scrolling. An old save should retain PlayStation prompts and its existing progress.
 
 - [ ] **v0.65 section times:** the loading screen shows v0.65. Drive up Big Red, Bob's Hill and down the concrete: does a card show each section's time as you reach the far end? Drive them again: does it compare with your best? Does the finish screen list the section times?
 - [ ] **v0.64 scored finish:** the loading screen shows v0.64. Finish the CREB: does the finish screen show a medal and a score out of 1000, split into Time, Car and Fuel and kit? Finish it again: does it show your best score and time, and say when you beat them?

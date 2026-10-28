@@ -1,3 +1,4 @@
+import { controllers, controllerTypes, type ControllerType } from '../data/controllers';
 import { TitleAmbience } from '../audio/titleAmbience';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import type { LaunchChoice } from '../core/game';
@@ -18,12 +19,10 @@ import {
 import { isTouchDevice } from './touchControls';
 import { damageNotes } from './menus';
 
-const gamepadMenuHint =
-  '<b role="img" aria-label="Cross" title="Cross">✕</b> Select <b role="img" aria-label="Circle" title="Circle">○</b> Back';
-
 type Group =
   | 'menu'
   | 'back'
+  | 'controller'
   | 'quality'
   | 'volume'
   | 'units'
@@ -87,6 +86,9 @@ export class WelcomeScreen {
     this.el.className = 'welcome';
     this.el.tabIndex = -1;
     root.appendChild(this.el);
+    this.el.addEventListener('pointerdown', (e) =>
+      this.setInputMode(e.pointerType === 'touch' ? 'touch' : 'keyboard'),
+    );
     this.el.addEventListener('click', (e) => {
       if (this.page === 'title') return this.openMenu();
       const b = (e.target as HTMLElement).closest('button');
@@ -118,6 +120,29 @@ export class WelcomeScreen {
 
   private readonly logo = `<div class="title-logo" role="img" aria-label="Over the Cape"><svg class="title-compass" viewBox="0 0 80 80" aria-hidden="true"><path d="M40 0 46 33 80 40 47 46 40 80 33 47 0 40 33 33Z" fill="currentColor"/><path d="M40 0V40H80L47 46 40 80V40H0L33 33Z" fill="#f7dec0"/></svg><h1><span>Over</span><span>The Cape</span></h1><div class="title-rule" aria-hidden="true">◆</div></div>`;
 
+  private get gamepadMenuHint(): string {
+    const p = controllers[this.settings.controller];
+    const confirm = this.settings.controller === 'generic' ? '1' : p.confirm;
+    const back = this.settings.controller === 'generic' ? '2' : p.back;
+    return `<b role="img" aria-label="${p.confirmName}" title="${p.confirmName}">${confirm}</b> Select <b role="img" aria-label="${p.backName}" title="${p.backName}">${back}</b> Back`;
+  }
+
+  private get inputHint(): string {
+    return this.inputMode === 'gamepad'
+      ? this.gamepadMenuHint
+      : this.inputMode === 'touch'
+        ? 'Tap to select'
+        : '<b>Enter</b> Select <b>Esc</b> Back';
+  }
+
+  private setInputMode(device: 'keyboard' | 'gamepad' | 'touch'): void {
+    if (this.inputMode === device) return;
+    this.inputMode = device;
+    this.el.dataset.input = device;
+    const hint = this.el.querySelector('.title-input-hint');
+    if (hint) hint.innerHTML = this.inputHint;
+  }
+
   private openMenu(): void {
     if (!this.ambience) {
       try {
@@ -148,21 +173,17 @@ export class WelcomeScreen {
     this.el.dataset.input = this.inputMode;
     if (this.page === 'journey') return this.renderJourney(focusGroup ?? 'drive');
     const hasCamp = !!this.save?.episodes[this.initial.episode]?.checkpoint;
-    const hint =
-      this.inputMode === 'gamepad'
-        ? gamepadMenuHint
-        : this.inputMode === 'touch'
-          ? 'Tap to select'
-          : '<b>Enter</b> Select <b>Esc</b> Back';
+    const hint = this.inputHint;
     if (this.page === 'settings') {
       const setting = (group: Group, value: string, label: string, on: boolean) =>
         `<button type="button" class="welcome-option ${on ? 'on' : ''}" aria-pressed="${on}" data-group="${group}" data-value="${value}">${label}</button>`;
       this.el.innerHTML = `<div class="title-settings title-panel"><button class="title-back" data-group="back">‹ Back</button><p class="title-eyebrow">Over the Cape</p><h2>Settings</h2>
         <section class="title-setting"><h3>Graphics</h3><div class="welcome-options seg">${(['low', 'medium', 'high'] as const).map((q) => setting('quality', q, q[0].toUpperCase() + q.slice(1), this.settings.quality === q)).join('')}</div></section>
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
+        <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
       </div><p class="title-input-hint">${hint}</p>`;
-      this.setRows(['back', 'quality', 'volume', 'units'], focusGroup ?? 'back');
+      this.setRows(['back', 'quality', 'volume', 'controller', 'units'], focusGroup ?? 'back');
       return;
     }
     this.el.innerHTML = `<div class="title-home">${this.logo}${
@@ -281,6 +302,8 @@ export class WelcomeScreen {
   private chosen(b: HTMLButtonElement | HTMLInputElement): boolean {
     const v = b.dataset.value;
     switch (b.dataset.group as Group) {
+      case 'controller':
+        return v === this.settings.controller;
       case 'quality':
         return v === this.settings.quality;
       case 'units':
@@ -323,8 +346,9 @@ export class WelcomeScreen {
       this.render();
       return;
     }
-    if (group === 'quality' || group === 'units') {
+    if (group === 'quality' || group === 'units' || group === 'controller') {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
+      else if (group === 'controller') this.settings.controller = value as ControllerType;
       else this.settings.units = value as Settings['units'];
       this.persistSettings();
       this.render(group);
@@ -382,6 +406,7 @@ export class WelcomeScreen {
   private readonly onKey = (e: KeyboardEvent): void => {
     if (this.done) return;
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    this.setInputMode('keyboard');
     if (this.page === 'title') {
       if (e.repeat || ['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape'].includes(e.key)) return;
       e.preventDefault();
@@ -415,12 +440,7 @@ export class WelcomeScreen {
     if (pad) {
       const pressed = pad.buttons.map((b) => b.pressed);
       const edge = (i: number) => pressed[i] && !this.padPrev[i];
-      if (pressed.some(Boolean) && this.inputMode !== 'gamepad') {
-        this.inputMode = 'gamepad';
-        this.el.dataset.input = 'gamepad';
-        const hint = this.el.querySelector('.title-input-hint');
-        if (hint) hint.innerHTML = gamepadMenuHint;
-      }
+      if (pressed.some(Boolean)) this.setInputMode('gamepad');
       if (this.page === 'title') {
         if (pressed.some((p, i) => p && !this.padPrev[i])) this.openMenu();
         this.padPrev = pressed;
