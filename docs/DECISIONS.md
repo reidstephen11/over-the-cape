@@ -1461,3 +1461,10 @@ An open or queued note formats its instructions for the current input. Changing 
 - Old saves: `loadSave` already drops progress for an episode id it doesn't know and falls back to the first episode, so a browser last on Lakefield opens on the CREB with its CREB progress kept. A new save test covers this.
 - Kept: the trailers stay in test mode (`?dev`) and the generic episode features (a required rescue, a delivery goal) stay in the episode code, unused by the CREB. `tests/delivery.test.ts` now tests the delivery goal and trailer saves on a flattened CREB map with a stand-in CREB run carrying two drums. `src/sim/stuckVehicle.ts` stays for the CREB's stranded drivers. Removing the trailer code entirely would touch about 30 files and lose a test-mode feature, so it is left for the owner to decide.
 - Older DECISIONS and README "What to test" entries about Episodes 2–4 are history and are left as written.
+
+## v0.74: wet grass churns up too
+
+- The owner got stuck on wet clay on Bob's Hill but drove straight up the grass beside it, which isn't how it goes. Wet grass now grips about as badly as the greasy clay track: grass `wetGripLoss` goes from 0.3 to 0.5 (wet grass 0.43 against wet clay's 0.43).
+- `ChurnMap` now has a per-surface table instead of only clay and mud. Grass churns 1.4× as fast as wet clay and loses 40% grip when fully torn up (clay and mud stay at 30%), but dry grass churns at only 10% of the wet rate. Black soil churns like clay. Track dirt churns at 0.6× and loses up to 20%, so the dirt sections cut up too in the wet but less than the clay.
+- Churn builds faster everywhere: spinning 0.12 → 0.2 per second, rolling 0.004 → 0.006 per metre on soaked ground. A few seconds of wheelspin on wet grass digs it to mud.
+- The churn message now says "the ground is cutting up" because it can appear on grass.
