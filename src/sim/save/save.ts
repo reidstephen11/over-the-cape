@@ -26,6 +26,8 @@ export interface EpisodeProgress {
   bestMinutes?: number;
   /** Highest finish score, out of 1000 (src/sim/runScore.ts). */
   bestScore?: number;
+  /** Best seconds for each timed section (src/sim/sectionTimes.ts), by track id. */
+  sectionBests?: Record<string, number>;
   /** A run under way: where it restarts from (the last camp reached). */
   checkpoint?: Checkpoint | null;
 }
@@ -120,6 +122,13 @@ function readProgress(raw: unknown): EpisodeProgress {
     completed: p.completed === true,
     ...(Number.isFinite(best) ? { bestMinutes: best } : {}),
     ...(Number.isFinite(score) ? { bestScore: score } : {}),
+    ...(p.sectionBests && typeof p.sectionBests === 'object'
+      ? {
+          sectionBests: Object.fromEntries(
+            Object.entries(p.sectionBests).filter(([, v]) => typeof v === 'number' && v > 0),
+          ),
+        }
+      : {}),
     checkpoint: readCheckpoint(p.checkpoint),
   };
 }

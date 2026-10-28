@@ -1396,3 +1396,8 @@ The browser test helper `waitEngine` starts a switched-off engine through a test
 - **Score out of 1000, three parts.** Time to spare before the deadline is worth 400 (full marks at two hours spare), the car's condition 400 (engine, suspension, panels and tyres, averaged) and fuel and kit left 200. Without a deadline (a replay in chosen conditions) time is scored against 30 minutes of driving. Gold from 800, silver from 600, bronze below. The weights are a first guess, to tune after play.
 - **Best score saved with the best time** in the episode's progress (`bestScore`), and both shown on the finish screen, so a run has something to beat.
 - **Episodes 2–4 stay for now.** The owner wants them gone to focus on the CREB, but taking them out breaks several browser tests and saves, so the steps are written in `docs/ROADMAP.md` for a later update.
+
+## v0.65: section times
+
+- **Big Red, Bob's Hill and the concrete are timed end to end.** Each section runs between the first and last points of its track (`timedSections` on the episode). The clock starts on leaving one end and stops at the other, so it works whichever way the section is driven. Turning back to the start, wandering well away from the far end or taking over 15 minutes drops the attempt. A small reuse of the crawl-trail code was considered, but crawl runs bring markers, penalties and HUD prompts that these sections don't need.
+- **Bests are saved per section** with the episode's progress (`sectionBests`), shown in a card as each section is finished and listed on the finish screen.
