@@ -33,6 +33,13 @@ export function tyreLabel(tyre: TyreGaugeState): string {
   return `${Math.round(clamp(tyre.inflation) * 100)}%`;
 }
 
+/** Full dials on a phone when the engine is hot, fuel is low, or a tyre is hurt. */
+export function instrumentsNeedDetail(s: VehicleGaugeState): boolean {
+  if (s.heat >= damageTuning.engine.heatWarn) return true;
+  if (s.fuel / Math.max(1, s.tank) < 0.15) return true;
+  return s.tyres.some((t) => t.fault !== 'none' || t.inflation < 0.97);
+}
+
 function point(share: number, radius: number): string {
   const a = ((-120 + clamp(share) * 240) * Math.PI) / 180;
   return `${(50 + Math.sin(a) * radius).toFixed(2)},${(47 - Math.cos(a) * radius).toFixed(2)}`;
@@ -69,14 +76,24 @@ export class VehicleGauges {
   private readonly fuel: HTMLElement;
   private readonly pressure: HTMLElement;
   private readonly wheels: HTMLElement[];
+  private readonly strip: HTMLButtonElement;
   private lastKey = '';
+  private userOpen = false;
+  private warn = false;
 
   constructor(root: HTMLElement) {
     this.el = document.createElement('div');
     this.el.className = 'vehicle-gauges';
     this.el.setAttribute('role', 'group');
     this.el.setAttribute('aria-label', 'Vehicle instruments');
-    this.el.innerHTML = `${dial('temp', 'TEMP', 'C', 'H')}${dial('fuel', 'FUEL', 'E', 'F')}
+    this.el.innerHTML = `<button type="button" class="vehicle-strip" aria-expanded="false" aria-label="Vehicle instruments, tap for dials">
+        <span class="strip-heat">NORMAL</span>
+        <span class="strip-fuel"></span>
+        <span class="strip-mode">ROAD</span>
+        <span class="strip-tyres" aria-hidden="true">${['FL', 'FR', 'RL', 'RR'].map((c) => `<i data-corner="${c}"></i>`).join('')}</span>
+        <span class="strip-clock"></span>
+      </button>
+      ${dial('temp', 'TEMP', 'C', 'H')}${dial('fuel', 'FUEL', 'E', 'F')}
       <div class="tyre-panel">
         <div class="tyre-heading">TYRES <span class="tyre-mode"></span></div>
         <div class="tyre-layout">
@@ -86,10 +103,23 @@ export class VehicleGauges {
         <span class="tyre-caption">AIR REMAINING</span>
       </div>`;
     root.appendChild(this.el);
+    this.strip = this.el.querySelector('.vehicle-strip')!;
     this.temp = this.el.querySelector('[data-dial="temp"]')!;
     this.fuel = this.el.querySelector('[data-dial="fuel"]')!;
     this.pressure = this.el.querySelector('.tyre-mode')!;
     this.wheels = [...this.el.querySelectorAll<HTMLElement>('.tyre-gauge')];
+  }
+
+  /** Phone compact strip: tap to open the dials (a warning keeps them open). */
+  toggleOpen(): void {
+    if (this.warn) return;
+    this.userOpen = !this.userOpen;
+    this.syncOpen();
+  }
+
+  setClock(text: string): void {
+    const el = this.strip.querySelector('.strip-clock')!;
+    if (el.textContent !== text) el.textContent = text;
   }
 
   update(s: VehicleGaugeState): void {
@@ -113,6 +143,23 @@ export class VehicleGauges {
     this.fuel.classList.toggle('low', fuel < 0.15);
     this.pressure.textContent = s.lowPressure ? 'TRAIL' : 'ROAD';
     this.pressure.classList.toggle('trail', s.lowPressure);
+    const heatEl = this.strip.querySelector('.strip-heat')!;
+    heatEl.textContent = heat;
+    heatEl.classList.toggle('hot', s.heat >= damageTuning.engine.heatWarn);
+    heatEl.classList.toggle('critical', s.heat >= 1);
+    const fuelEl = this.strip.querySelector('.strip-fuel')!;
+    fuelEl.textContent = `${Math.round(s.fuel)} L`;
+    fuelEl.classList.toggle('low', fuel < 0.15);
+    this.strip.querySelector('.strip-mode')!.textContent = s.lowPressure ? 'TRAIL' : 'ROAD';
+    for (const pip of this.strip.querySelectorAll<HTMLElement>('.strip-tyres i')) {
+      const corner = pip.dataset.corner!;
+      const tyre = s.tyres.find((t) => t.front === (corner[0] === 'F') && t.left === (corner[1] === 'L'));
+      pip.classList.toggle('leak', !!tyre && (tyre.fault !== 'none' || tyre.inflation < 0.97));
+      pip.classList.toggle('flat', !!tyre && tyre.inflation <= 0.05);
+    }
+    this.warn = instrumentsNeedDetail(s);
+    this.el.classList.toggle('warn', this.warn);
+    this.syncOpen();
     this.pressure.title = s.lowPressure
       ? 'Tyres let down for off-road grip. Pump them up for gravel from Tools.'
       : 'Road pressure. Let the tyres down for off-road grip from Tools.';
@@ -136,6 +183,12 @@ export class VehicleGauges {
       el.querySelector('.tyre-value')!.textContent = tyreLabel(tyre);
       (el.querySelector('.tyre-air span') as HTMLElement).style.height = `${percent}%`;
     }
+  }
+
+  private syncOpen(): void {
+    const open = this.userOpen || this.warn;
+    this.el.classList.toggle('open', open);
+    this.strip.setAttribute('aria-expanded', String(open));
   }
 
   private updateDial(

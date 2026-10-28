@@ -2637,6 +2637,283 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   }
 }
 
+/*
+ * Compact phone HUD: the car and the track stay in the middle. One slim readout, a thin
+ * compass, smaller thumbs, pitch/roll only when the lean is risky. Desktop is unchanged.
+ */
+.touch-mode .touch-top .touch-btn {
+  height: 30px;
+  min-width: 32px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.touch-mode .camera-help {
+  gap: 4px;
+  padding: 2px;
+}
+
+.touch-mode .camera-help button {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 7px;
+  font-size: 12px;
+}
+
+.touch-mode .compass {
+  top: max(8px, env(safe-area-inset-top));
+  height: 22px;
+  width: min(220px, 46vw);
+  padding: 0 4px;
+  opacity: 0.88;
+}
+
+.touch-mode .touch-stick {
+  width: 148px;
+  height: 148px;
+}
+
+.touch-mode .touch-stick-base {
+  width: 114px;
+  height: 114px;
+}
+
+.touch-mode .touch-stick-knob {
+  width: 50px;
+  height: 50px;
+}
+
+.touch-mode .touch-right {
+  gap: 6px;
+}
+
+.touch-mode .touch-grid {
+  grid-template-columns: repeat(2, 48px);
+  gap: 4px;
+}
+
+.touch-mode .touch-grid .touch-btn {
+  height: 36px;
+  min-width: 0;
+  font-size: 11px;
+}
+
+.touch-mode .touch-wide {
+  grid-column: span 2;
+}
+
+.touch-mode .touch-pile {
+  grid-template-columns: repeat(4, 42px);
+  gap: 4px;
+}
+
+.touch-mode .touch-pile .touch-btn {
+  height: 32px;
+  font-size: 10px;
+}
+
+.touch-mode .hud-readout {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top)) + 32px);
+  left: max(8px, env(safe-area-inset-left));
+  width: max-content;
+  max-width: min(248px, calc(100vw - 120px));
+  gap: 2px;
+  padding: 3px 7px 4px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 8px 10px 7px 9px;
+  box-shadow: 2px 3px 0 rgba(59, 42, 30, 0.25);
+  opacity: 0.92;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.touch-mode .hud-readout > .paper {
+  position: static;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  min-width: 0;
+  max-width: 100%;
+  width: auto;
+  transform: none;
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  opacity: 1;
+}
+
+.touch-mode .hud-readout .status {
+  gap: 6px;
+  font-size: 12px;
+  padding: 0;
+}
+
+.touch-mode .hud-readout .status-range {
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+}
+
+.touch-mode .hud-readout .status-speed {
+  font-size: 14px;
+}
+
+.touch-mode .hud-readout .status-label {
+  display: none;
+}
+
+.touch-mode .hud-readout .supplies {
+  gap: 2px;
+  font-size: 11px;
+  padding: 0;
+}
+
+.touch-mode .hud-readout .supplies-footer {
+  padding-top: 2px;
+  gap: 4px 8px;
+}
+
+.touch-mode .hud-readout .mission {
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 6px;
+  max-width: none;
+  padding: 1px 0 0;
+}
+
+.touch-mode .hud-readout .mission small {
+  display: none;
+}
+
+.touch-mode .hud-readout .mission strong {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.touch-mode .hud-readout .mission-clock {
+  display: block;
+  flex: 0 0 auto;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.touch-mode .vehicle-gauges .vehicle-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 1px 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-mode .vehicle-gauges:not(.open) .vehicle-dial,
+.touch-mode .vehicle-gauges:not(.open) .tyre-panel {
+  display: none;
+}
+
+.touch-mode .vehicle-gauges.open {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.touch-mode .strip-heat.hot,
+.touch-mode .strip-heat.critical,
+.touch-mode .strip-fuel.low {
+  color: #a3311f;
+}
+
+.touch-mode .strip-tyres {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+}
+
+.touch-mode .strip-tyres i {
+  width: 6px;
+  height: 8px;
+  border-radius: 1px;
+  background: #6b8f5e;
+}
+
+.touch-mode .strip-tyres i.leak {
+  background: #b8741a;
+}
+
+.touch-mode .strip-tyres i.flat {
+  background: #a3311f;
+}
+
+.touch-mode .strip-clock {
+  margin-left: auto;
+  color: var(--ink-soft);
+}
+
+.touch-mode .alert-rail {
+  z-index: 6;
+}
+
+.touch-mode .alert {
+  font-size: 13px;
+}
+
+.touch-mode .crawl-gauges,
+.touch-mode .hud.cockpit .crawl-gauges {
+  left: auto;
+  right: max(8px, env(safe-area-inset-right));
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + var(--touch-right-height, 160px) + 6px);
+  top: auto;
+  transform: scale(0.48);
+  transform-origin: bottom right;
+}
+
+@media (orientation: portrait) {
+  .touch-mode .compass {
+    top: calc(max(8px, env(safe-area-inset-top)) + 34px);
+    width: min(240px, 64vw);
+  }
+
+  .touch-mode .hud-readout {
+    top: calc(max(8px, env(safe-area-inset-top)) + 58px);
+    max-width: min(248px, calc(100vw - 88px));
+  }
+
+  .touch-mode .crawl-gauges,
+  .touch-mode .hud.cockpit .crawl-gauges {
+    top: calc(max(8px, env(safe-area-inset-top)) + 34px);
+    bottom: auto;
+    transform: scale(0.48);
+    transform-origin: top right;
+  }
+
+  .touch-mode .hud.with-gauges .mission,
+  .touch-mode .hud.with-gauges .course-hint {
+    max-width: none;
+  }
+}
+
 /* On a touch screen a history note is read with the game stopped, over a dimmed view. */
 .history-backdrop {
   position: fixed;
@@ -2688,6 +2965,10 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   align-items: center;
   gap: 8px;
   font-variant-numeric: tabular-nums;
+}
+
+.vehicle-strip {
+  display: none;
 }
 
 .vehicle-dial {
