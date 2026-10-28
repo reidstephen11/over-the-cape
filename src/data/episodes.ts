@@ -1,3 +1,4 @@
+import type { ControlInstruction } from './controlInstructions';
 import type { MapId } from './maps';
 import type { Weather } from './environment';
 import type { WeatherTimeline } from './weatherTimeline';
@@ -89,7 +90,7 @@ export interface EpisodeDef {
   /** Paragraphs shown before the episode. */
   briefing: string[];
   /** History notes shown on reaching a place (by POI id). */
-  notes: Record<string, { title: string; text: string }>;
+  notes: Record<string, { title: string; text: string; instruction?: ControlInstruction }>;
   /** Paragraphs shown on completing the mission. */
   wrapUp: string[];
   failures: Record<FailReason, string>;

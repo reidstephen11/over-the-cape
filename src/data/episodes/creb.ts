@@ -38,7 +38,7 @@ export const crebEpisode: EpisodeDef = {
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
     'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. It rained overnight: the red clay on the climbs will be slippery.',
-    'The road out of the village is an orientation over a spur of the range. The signs take the controls one at a time: low range (L) on the ramp up onto a bench, precision crawl (P) over the band of rock on it, the diff locks (Z, then X) on the pinch to the top, then the winch (E to hook, R and F to wind) in the bog in the hollow before the river. After that the track stops being a lesson.',
+    'The road out of the village is an orientation over a spur of the range. The signs take the controls one at a time: low range on the ramp up onto a bench, precision crawl over the band of rock on it, the diff locks on the pinch to the top, then the winch in the bog in the hollow before the river. After that the track stops being a lesson.',
     'Storms are forecast from about 3 pm. Once the rain sets in the clay gets greasier and the creeks rise and run faster the longer it rains. There is time to winch out of a bog. What ends the day is getting stuck for good, or stopping in a crossing and being swept. A clean run finishes on the fuel in the tank.',
     'Cross the Daintree River, climb the range on the old powerline track, come down to the Bloomfield River at Wujal Wujal and follow the Bloomfield Track north to the Lions Den Hotel. Get there before dark.',
   ],
@@ -53,19 +53,23 @@ export const crebEpisode: EpisodeDef = {
     },
     'orient-low-range': {
       title: 'Low range',
-      text: 'Press L. Low range multiplies the gearing so the engine can creep instead of stalling. This first ramp is the place to learn it: high range spins the wheels on the wet clay. Come at it straight, in low range, and let it pull.',
+      instruction: 'range',
+      text: 'Low range multiplies the gearing so the engine can creep instead of stalling. This first ramp is the place to learn it: high range spins the wheels on the wet clay. Come at it straight, in low range, and let it pull.',
     },
     'orient-lockers': {
       title: 'Diff locks',
-      text: 'Press Z to lock the rear diff, then X for the front. They only engage below a walking pace. An open diff sends the drive to the wheel that slips; locked, both wheels on the axle have to turn together. This pinch needs both.',
+      instruction: 'locks',
+      text: 'They only engage below a walking pace. An open diff sends the drive to the wheel that slips; locked, both wheels on the axle have to turn together. This pinch needs both.',
     },
     'orient-crawl': {
       title: 'Precision crawl',
-      text: 'Press P. Crawl holds a walking pace: hold the throttle and it creeps, let go and it stops. Walk the wheels up the step. Come at it in high range and you bang the lip.',
+      instruction: 'precision',
+      text: 'Crawl holds a walking pace: hold the throttle and it creeps, let go and it stops. Walk the wheels up the step. Come at it in high range and you bang the lip.',
     },
     'orient-winch': {
       title: 'The winch',
-      text: 'The bog is across the road. Stop in it, press E and pick the tree ahead, then R to wind in (F winds out). A tree stands at either end. The same winch pulls a fallen tree aside later on the range.',
+      instruction: 'winch',
+      text: 'The bog is across the road. A tree stands at either end. The same winch pulls a fallen tree aside later on the range.',
     },
     'big-red': {
       title: 'Big Red',

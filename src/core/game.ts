@@ -1,3 +1,4 @@
+import type { ControlInstruction } from '../data/controlInstructions';
 import * as THREE from 'three';
 import { maps } from '../data/maps';
 import { devEnvironment, devFlood, isDevMode, type DevWeather } from '../data/devWeather';
@@ -1057,9 +1058,10 @@ export class Game {
    * A place's history note. On a touch screen there is no room for it beside the buttons,
    * so the game stops while it's read; tapping it carries on.
    */
-  showHistory(note: { title: string; text: string }): void {
+  showHistory(note: { title: string; text: string; instruction?: ControlInstruction }): void {
     const reading = this.input.activeDevice === 'touch';
-    this.history.show(note.title, note.text, reading);
+    this.history.setInput(this.input.activeDevice, this.settings.controller);
+    this.history.show(note.title, note.text, reading, note.instruction);
     if (reading) this.loop.paused = true;
   }
 
@@ -1418,6 +1420,7 @@ export class Game {
     this.input.poll();
     this.map.updateInput(this.input.activeDevice, this.settings.controller);
     this.pause.setInputDevice(this.input.activeDevice);
+    this.history.setInput(this.input.activeDevice, this.settings.controller);
     this.clock += frameDt;
     this.updateEnvironment();
     this.devPanel?.update();

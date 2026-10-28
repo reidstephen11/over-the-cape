@@ -1,3 +1,13 @@
+import { controlInstruction, type ControlInstruction, type InputDevice } from '../data/controlInstructions';
+import { controllers, defaultController, type ControllerType } from '../data/controllers';
+
+interface HistoryNote {
+  title: string;
+  text: string;
+  reading: boolean;
+  instruction?: ControlInstruction;
+}
+
 /**
  * Episode cards: the history note shown on reaching a place, and the result card when the
  * mission is done or the episode ends early (centred, with buttons, the game paused behind
@@ -9,7 +19,10 @@ export class HistoryCard {
   /** Titles shown so far, oldest first. */
   readonly shown: string[] = [];
   private readonly backdrop: HTMLElement;
-  private readonly queue: { title: string; text: string; reading: boolean }[] = [];
+  private readonly queue: HistoryNote[] = [];
+  private current: HistoryNote | null = null;
+  private device: InputDevice = 'keyboard';
+  private controller: ControllerType = defaultController;
   private timer = 0;
 
   /** `onRead` runs when the last note read with the game stopped is closed. */
@@ -38,8 +51,8 @@ export class HistoryCard {
   }
 
   /** Show a note (after any already waiting). `reading`: stop and read it, tap to close. */
-  show(title: string, text: string, reading = false): void {
-    this.queue.push({ title, text, reading });
+  show(title: string, text: string, reading = false, instruction?: ControlInstruction): void {
+    this.queue.push({ title, text, reading, instruction });
     if (!this.isShown) this.next();
   }
 
@@ -48,6 +61,7 @@ export class HistoryCard {
     clearTimeout(this.timer);
     const wasReading = this.reading;
     const n = this.queue.shift();
+    this.current = n ?? null;
     this.el.classList.toggle('hidden', !n);
     this.el.classList.toggle('reading', !!n?.reading);
     this.backdrop.classList.toggle('hidden', !n?.reading);
@@ -57,16 +71,40 @@ export class HistoryCard {
     }
     this.el.querySelector('strong')!.textContent = n.title;
     this.shown.push(n.title);
-    this.el.querySelector('p')!.textContent = n.text;
+    const text = this.noteText(n);
+    this.el.querySelector('p')!.textContent = text;
+    this.updateHint();
     if (n.reading) return;
     // About 200 words a minute, and at least 12 s.
-    const words = n.text.split(/\s+/).length;
+    const words = text.split(/\s+/).length;
     this.timer = window.setTimeout(() => this.next(), Math.max(12_000, (words / 200) * 60_000 + 4_000));
   }
 
   clear(): void {
     this.queue.length = 0;
     this.next();
+  }
+
+  /** Reformat an open tutorial without rediscovering it, resetting its timer or advancing the queue. */
+  setInput(device: InputDevice, controller: ControllerType): void {
+    if (this.device === device && this.controller === controller) return;
+    this.device = device;
+    this.controller = controller;
+    if (this.current) this.el.querySelector('p')!.textContent = this.noteText(this.current);
+    this.updateHint();
+  }
+
+  private noteText(note: HistoryNote): string {
+    return note.instruction
+      ? `${controlInstruction(note.instruction, this.device, this.controller)} ${note.text}`
+      : note.text;
+  }
+
+  private updateHint(): void {
+    this.el.querySelector('.history-hint')!.textContent =
+      this.device === 'touch'
+        ? 'Tap to carry on'
+        : `${this.device === 'gamepad' ? controllers[this.controller].confirm : 'Enter'} to carry on`;
   }
 }
 
