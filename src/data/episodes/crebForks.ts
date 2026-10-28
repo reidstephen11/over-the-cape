@@ -16,17 +16,18 @@ import type { Waypoint } from './crebRoute';
  */
 
 /**
- * Round the ridge's deep bog to the west. It drops off the saddle, then climbs
- * back at about 21°: longer than the bog, and not a way to skip the grade.
+ * Round the ridge's deep bog to the west. It drops along the side of the saddle, then
+ * climbs back up the bank at about 21°: longer than the bog, and not a way to skip the grade.
  */
 export const chickenTrack: Waypoint[] = [
   [-36, 1028, 95],
-  [-62, 1012, 86],
-  [-92, 990, 76],
-  [-108, 955, 72],
-  [-104, 918, 68],
-  [-82, 895, 80],
-  [-58, 884, 86],
+  [-62, 1012, 87.5],
+  [-92, 990, 75.5],
+  [-108, 955, 73.5],
+  [-106, 936.5, 75.5],
+  [-104, 918, 83],
+  [-82, 895, 85.5],
+  [-58, 884, 86.5],
   [-40, 890, 86.6],
 ];
 

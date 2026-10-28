@@ -8,21 +8,23 @@ import type { XZ } from '../../sim/world/mapTypes';
 export type Waypoint = readonly [number, number] | readonly [number, number, number];
 
 /**
- * Daintree Village north to the south bank of the Daintree River.
- * The heights are the orientation: a low-range ramp, then a steeper locker pinch,
- * easing down to the crawl step and the winch bog before the river.
+ * Daintree Village north to the south bank of the Daintree River, over a spur off the
+ * range (crebStretches' `stretchHills`). The heights follow that ground: a low-range ramp
+ * onto a bench, the crawl step on it, a steeper locker pinch to the top, then down to
+ * the winch bog in the hollow before the river.
  */
 export const upperDaintreeRoad: Waypoint[] = [
   [-60, 2630, 8],
   [-80, 2594, 9],
-  [-90, 2557, 7],
-  [-74, 2520, 19],
-  [-50, 2480, 19.5],
-  [-38, 2446, 14],
-  [-30, 2410, 27],
-  [-48, 2378, 28],
-  [-72, 2350, 16],
-  [-70, 2318, 10],
+  [-90, 2557, 7.5],
+  [-74, 2520, 15.5],
+  [-50, 2480, 18.5],
+  [-38, 2446, 20],
+  [-33, 2428, 22],
+  [-30, 2410, 28],
+  [-48, 2378, 29.5],
+  [-72, 2350, 19.5],
+  [-70, 2318, 10.5],
   [-40, 2300, 6],
 ];
 
@@ -59,34 +61,35 @@ export const paddockRoad: Waypoint[] = [
   [-118, 1440],
   [-56, 1407],
   [-9, 1358, 21.9],
-  [11, 1298, 34],
+  [11, 1298, 36],
 ];
 
 /** Big Red: straight up the red clay face of the spur. */
 export const bigRed: Waypoint[] = [
-  [11, 1298, 34],
-  [7, 1262, 45.5],
-  [2, 1226, 57.5],
-  [-2, 1194, 71],
-  [-6, 1166, 82],
+  [11, 1298, 36],
+  [7, 1262, 48],
+  [2, 1226, 59.5],
+  [-2, 1194, 73],
+  [-6, 1166, 83.5],
   [-11, 1138, 90],
 ];
 
 /**
  * The west line round Big Red. It is longer than the face, levels off for a bog,
- * then climbs a pinch as steep as the face itself.
+ * then climbs the spur's west flank in pinches as steep as the face itself, over its
+ * shoulder and down onto the top of Big Red.
  */
 export const bigRedBypass: Waypoint[] = [
   [-9, 1358, 21.9],
-  [-55, 1345, 28],
-  [-91, 1309, 34],
-  [-102, 1284, 36],
-  [-110, 1260, 36],
-  [-114, 1232, 48],
-  [-108, 1204, 58],
-  [-90, 1172, 68],
-  [-60, 1148, 80],
-  [-32, 1126, 88],
+  [-55, 1345, 25.5],
+  [-91, 1309, 28.5],
+  [-102, 1284, 34.5],
+  [-110, 1260, 36.5],
+  [-114, 1232, 45.5],
+  [-108, 1204, 52],
+  [-90, 1172, 63.5],
+  [-60, 1148, 78.5],
+  [-32, 1126, 92],
   [-11, 1138, 90],
 ];
 
@@ -115,24 +118,24 @@ export const roaringMegClimb: Waypoint[] = [
   [-31, 392],
   [-9, 331],
   [2, 273],
-  [-24, 230, 129],
+  [-24, 230, 131.5],
 ];
 
 /** Bob's Hill: the steep, rutted, rocky pinch near halfway. */
 export const bobsHill: Waypoint[] = [
-  [-24, 230, 129],
-  [-21, 186, 130],
-  [-20, 143, 147],
-  [-18, 100, 151],
-  [-9, 62, 146],
+  [-24, 230, 131.5],
+  [-21, 186, 132],
+  [-20, 143, 149],
+  [-18, 100, 146.5],
+  [-9, 62, 140.5],
 ];
 
-/** Along the top of the range to the lookout. */
+/** Along the top of the range to the lookout. The sideling is built out over the drop. */
 export const rangeTop: Waypoint[] = [
-  [-9, 62, 146],
+  [-9, 62, 140.5],
   [18, 19],
-  [-12, -40],
-  [22, -100],
+  [-12, -40, 152.13],
+  [22, -100, 147.12],
   [-19, -159],
   [-9, -214],
   [-4, -263, 130],

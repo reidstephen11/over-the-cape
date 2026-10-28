@@ -34,7 +34,7 @@ function steepest(track: TrackInfo, window = 12) {
   return max;
 }
 
-/** Metres along a road between on-road bogs, plank gaps, rock steps and creek crossings. */
+/** Metres along a road between on-road bogs, plank gaps, rock steps, creek crossings and steep climbs. */
 function gaps(trackId: string) {
   const track = trackOf(trackId);
   const marks = [0, track.poly.length];
@@ -45,6 +45,14 @@ function gaps(trackId: string) {
   for (const bog of world.map.bogs) near(bog.x, bog.z, track.def.width);
   for (const gully of world.map.gullies) near(gully.x, gully.z, 3);
   for (const step of track.def.rockySteps ?? []) marks.push(step.at);
+  // A climb steeper than 15° over 12 m.
+  for (let k = 0; k < track.poly.count; k += 4) {
+    let j = k;
+    while (j + 1 < track.poly.count && track.poly.s[j] - track.poly.s[k] < 12) j++;
+    const ds = track.poly.s[j] - track.poly.s[k];
+    if (ds > 9 && Math.atan2(track.profile[j] - track.profile[k], ds) > (15 * Math.PI) / 180)
+      marks.push(track.poly.s[k]);
+  }
   for (const creek of world.features.creeks) {
     let best = { along: 0, distance: Infinity };
     for (let i = 0; i < creek.poly.count; i += 2) {
@@ -102,16 +110,19 @@ describe('the CREB, stretch by stretch', () => {
     expect(steepest(trackOf('big-red-bypass'))).toBeGreaterThan(20);
     expect(steepest(trackOf('chicken-track'))).toBeGreaterThan(20);
     expect(steepest(trackOf('upper-daintree-road'))).toBeGreaterThan(15);
-    expect(gaps('paddock-road')).toBeLessThan(400);
+    expect(gaps('paddock-road')).toBeLessThan(450);
     expect(gaps('bloomfield-track')).toBeLessThan(450);
+    // No plank gaps cut across the roads: the planks are for the ridge washout.
+    expect(world.map.gullies.map((g) => g.id)).toEqual([crebWashout.id]);
   });
 
   it('pinches tyres on the paddock road taken fast, but not at a steady 30 km/h', async () => {
-    // Clear of the on-road bog, rock steps and plank gap, so the potholes are the only obstacle.
+    // Clear of the on-road bogs and the creeks, so the potholes are the only obstacle.
     // Each vehicle pinches on a different clear stretch; together they still do, and neither stops.
     const clear: ReadonlyArray<readonly [number, number]> = [
-      [300, 540],
-      [590, 700],
+      [255, 470],
+      [530, 675],
+      [940, 1100],
     ];
     for (const tuning of both) {
       let steadyCuts = 0;
@@ -177,6 +188,31 @@ describe('the CREB, stretch by stretch', () => {
       // The muddy edge (v0.37) lets it slide more than it digs in, so it leans less than on dry dirt.
       expect(fast.roll, tuning.name).toBeGreaterThan(crawl.roll + 1);
       expect(fast.deviation, tuning.name).toBeGreaterThan(2);
+    }
+  }, 600_000);
+
+  it('takes the Bloomfield Track over two knolls that need both lockers: wet clay on the Rossville pinch, granite ledges at Helenvale', async () => {
+    const track = trackOf('bloomfield-track');
+    // The roads climb hills rather than embankments built on the flat.
+    expect(steepest(track)).toBeGreaterThan(19);
+    for (const tuning of both) {
+      const clay = await stretch('bloomfield-track', 840, 935, 'crawl', tuning, { limit: 150 });
+      expect(clay.done, `${tuning.name} clay`).toBe(true);
+      const clayHigh = await stretch('bloomfield-track', 840, 935, 'high', tuning, { speed: 4, limit: 90 });
+      expect(clayHigh.done, `${tuning.name} clay high`).toBe(false);
+      const clayOpen = await stretch('bloomfield-track', 840, 935, 'crawl', tuning, {
+        limit: 150,
+        open: true,
+      });
+      expect(clayOpen.done, `${tuning.name} clay open diffs`).toBe(false);
+      const granite = await stretch('bloomfield-track', 1435, 1520, 'crawl', tuning, { limit: 150 });
+      expect(granite.done, `${tuning.name} granite`).toBe(true);
+      expect(granite.cuts, `${tuning.name} granite`).toBe(0);
+      const graniteOpen = await stretch('bloomfield-track', 1435, 1520, 'crawl', tuning, {
+        limit: 150,
+        open: true,
+      });
+      expect(graniteOpen.done, `${tuning.name} granite open diffs`).toBe(false);
     }
   }, 600_000);
 

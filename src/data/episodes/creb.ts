@@ -32,7 +32,7 @@ export const crebEpisode: EpisodeDef = {
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
     'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. It rained overnight: the red clay on the climbs will be slippery.',
-    'The road out of the village is an orientation. The signs take the controls one at a time: low range (L) on the first ramp, the diff locks (Z, then X) on the pinch after it, precision crawl (P) over the rock step, then the winch (E to hook, R and F to wind) in the bog before the river. After that the track stops being a lesson.',
+    'The road out of the village is an orientation over a spur of the range. The signs take the controls one at a time: low range (L) on the ramp up onto a bench, precision crawl (P) over the band of rock on it, the diff locks (Z, then X) on the pinch to the top, then the winch (E to hook, R and F to wind) in the bog in the hollow before the river. After that the track stops being a lesson.',
     'Storms are forecast from about 3 pm. Once the rain sets in the clay gets greasier and the creeks rise and run faster the longer it rains. There is time to winch out of a bog. What ends the day is getting stuck for good, or stopping in a crossing and being swept. A clean run finishes on the fuel in the tank.',
     'Cross the Daintree River, climb the range on the old powerline track, come down to the Bloomfield River at Wujal Wujal and follow the Bloomfield Track north to the Lions Den Hotel. Get there before dark.',
   ],
@@ -65,17 +65,21 @@ export const crebEpisode: EpisodeDef = {
       title: 'Big Red',
       text: 'The hardest climb on the CREB: red clay that turns to grease in the wet. Low range, both lockers, precision crawl, and keep the wheels on the crown. The left gutter is dug out — drop a wheel in it and the belly grounds. The west line is longer, with a bog and a pinch as steep as this face.',
     },
-    'paddock-gap': {
-      title: 'Plank gap',
-      text: 'A channel cut across the road, too wide to drive. Stop short, lay the planks in line with the wheels and crawl over in low range. Recall planks in the tool menu puts them back on the rack for the next gap.',
+    'paddock-creeks': {
+      title: 'Paddock creeks',
+      text: 'Creeks come down off the range across the paddocks and cut their beds below the flats. The road drops into the water and climbs out up a wet bank. Slow down before the water, keep moving through it, and let the engine pull you up the far side.',
     },
     'ridge-washout': {
       title: 'Washout',
-      text: 'Water running off the range in the wet has cut a channel across the track, too wide and deep to drive over. The same planks as on the paddock road: stop short, lay them in line with the wheels, and crawl over in low range. Recall planks once you are well past.',
+      text: 'Water running off the range in the wet has cut a channel across the track, too wide and deep to drive over. Stop short of it, lay the planks across the gap in line with the wheels, and crawl over them in low range. Once you are well past, Recall planks in the tool menu puts them back on the roof rack.',
     },
-    'bloomfield-gap': {
-      title: 'Another gap',
-      text: 'The Bloomfield Track is cut the same way. Planks across, low range, then recall them. The creeks either side of it are the other lesson: slow down before the water and do not stop in it.',
+    'rossville-pinch': {
+      title: 'Rossville pinch',
+      text: 'The road goes straight over the knoll rather than round it, and the wet has washed the gravel off the steep side, leaving bare red clay. Low range, both lockers and a steady crawl. Stop on it and you may not get going again.',
+    },
+    'helenvale-granite': {
+      title: 'Granite pinch',
+      text: 'Granite from the country round Black Mountain comes up through the road here in ledges, with rocks on the treads under one wheel and then the other. Crawl it with both lockers and pick the line; rushed, the tyres go on the rock.',
     },
     'roaring-meg-ledge': {
       title: 'Rock ledge',
