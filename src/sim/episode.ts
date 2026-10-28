@@ -34,6 +34,8 @@ export interface Checkpoint {
   surprises: string[];
   /** The episode's bogged vehicle had been winched out by the camp. */
   rescued: boolean;
+  /** Stranded drivers (`EpisodeDef.stranded`) winched out by the camp (absent in older saves). */
+  stranded?: string[];
   /** Trailer poses, cargo and loose drums as they were at this camp (absent in older saves). */
   delivery?: DeliveryState;
 }

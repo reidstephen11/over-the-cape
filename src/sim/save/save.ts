@@ -164,6 +164,7 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     surprises: strings(c.surprises),
     // Saves from before rescues: nobody had been pulled out.
     rescued: c.rescued === true,
+    ...(Array.isArray(c.stranded) ? { stranded: strings(c.stranded) } : {}),
     ...(c.delivery ? { delivery: readDeliveryState(c.delivery) } : {}),
   };
 }

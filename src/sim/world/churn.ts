@@ -6,7 +6,7 @@ import { SurfaceId } from '../../data/surfaces';
  * less, so a climb you've spun on gets harder for the next attempt. Kept per 2 m square for
  * the rest of the run.
  */
-const CELL = 2;
+export const CELL = 2;
 /** Grip lost on fully churned ground. */
 const LOSS = 0.3;
 /** Churn added per second by a fully spinning wheel on fully wet ground. */
@@ -25,6 +25,20 @@ export class ChurnMap {
 
   private key(x: number, z: number): number {
     return (Math.floor(x / CELL) + 32768) * 65536 + (Math.floor(z / CELL) + 32768);
+  }
+
+  /** Every churned square: its centre and how churned it is (for drawing the ruts). */
+  *squares(): Generator<{ x: number; z: number; churn: number }> {
+    for (const [k, churn] of this.cells) {
+      const ix = Math.floor(k / 65536) - 32768;
+      const iz = (k % 65536) - 32768;
+      yield { x: (ix + 0.5) * CELL, z: (iz + 0.5) * CELL, churn };
+    }
+  }
+
+  /** Squares churned so far: changes whenever a new one is started. */
+  get count(): number {
+    return this.cells.size;
   }
 
   /** How churned the ground is at (x, z), 0..1. */

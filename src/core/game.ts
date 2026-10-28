@@ -6,6 +6,7 @@ import { environmentFor, presetHours, type Conditions } from '../data/environmen
 import { episodeWeatherAt } from '../data/weatherTimeline';
 import { scoreRun, type RunScore } from '../sim/runScore';
 import { SectionTimes, type SectionTime } from '../sim/sectionTimes';
+import { strandedPose } from '../sim/stranded';
 import {
   Traffic,
   createTrafficBody,
@@ -14,7 +15,14 @@ import {
   type TrafficEvent,
 } from '../sim/traffic';
 import type RAPIER from '@dimforge/rapier3d-compat';
-import { clockTime, episodeOrder, episodes, type EpisodeDef, type EpisodeId } from '../data/episodes';
+import {
+  clockTime,
+  episodeOrder,
+  episodes,
+  type EpisodeDef,
+  type EpisodeId,
+  type StrandedDriverDef,
+} from '../data/episodes';
 import { usePalette } from '../render/colors';
 import { qualityPresets } from '../data/quality';
 import type { DamageMode } from '../data/damage';
@@ -37,6 +45,7 @@ import { Exploration } from '../sim/exploration';
 import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
+import { RutsView } from '../render/ruts';
 import { TrailerView } from '../render/trailerView';
 import { CargoDrumView } from '../render/cargoDrumView';
 import { canCouple, trailers, type TrailerTuning } from '../data/trailers';
@@ -157,6 +166,9 @@ export class Game {
   private readonly trafficCars = new Map<OncomingCar, { body: RAPIER.RigidBody; view: StuckVehicleView }>();
   private readonly trafficLooks = new Map<string, VehicleId>();
   private churnNoted = false;
+  private readonly ruts: RutsView;
+  /** Stranded drivers winched out so far this run. */
+  private strandedFreed = new Set<string>();
   /** Gates driven on a gate trail (Crawler Creek). */
   readonly gateCount: GateCount;
   readonly hud: Hud;
@@ -214,6 +226,7 @@ export class Game {
     this.episode = setup.def;
     this.replay = setup.replay;
     this.checkpoint = setup.checkpoint;
+    this.strandedFreed = new Set(setup.checkpoint.stranded);
     this.progress = { ...setup.progress };
     this.run = new EpisodeRun(setup.def, setup.checkpoint, !setup.replay);
     // Test mode: no deadline, and a replay's clock starts at the hour its light shows.
@@ -267,11 +280,14 @@ export class Game {
     this.finds = new Finds(world.map.finds ?? [], this.checkpoint.taken);
     const rescue = setup.def.rescue;
     for (const s of sim.stuck.values()) {
-      const drawn = new StuckVehicleView(s, vehicles[rescue?.look ?? 'shortie'].tuning);
+      const look = setup.def.stranded?.find((d) => d.id === s.def.id)?.look ?? rescue?.look ?? 'shortie';
+      const drawn = new StuckVehicleView(s, vehicles[look].tuning);
       drawn.model.root.name = `stuck-${s.def.id}`;
       this.stuckViews.push(drawn);
       view.scene.add(drawn.model.root);
     }
+    this.ruts = new RutsView(sim.churn, (x, z) => world.terrain.heightAt(x, z));
+    view.scene.add(this.ruts.mesh);
     this.findMarkers = new FindMarkers(world);
     this.findMarkers.show(this.finds.defs, this.finds.taken);
     view.scene.add(this.findMarkers.group);
@@ -397,7 +413,12 @@ export class Game {
       (e) =>
         e.vehicle === LOCAL_VEHICLE && this.audio.trailerBump(e.speed, sim.trailers.get(e.id)?.drums ?? 0),
     );
-    sim.events.on('rescued', () => {
+    sim.events.on('rescued', ({ id }) => {
+      const stranded = this.episode.stranded?.find((d) => d.id === id);
+      if (stranded) {
+        this.onStrandedFreed(stranded);
+        return;
+      }
       this.run.rescued = true;
       const r = this.episode.rescue;
       if (r) {
@@ -567,6 +588,11 @@ export class Game {
       sim.addSurprises(planSurprises(world, def.surprises, checkpoint.seed), checkpoint.surprises);
     // Someone bogged on the way, still waiting unless they were out by the camp.
     if (def.rescue) sim.addStuckVehicle(def.rescue, checkpoint.rescued);
+    for (const d of def.stranded ?? []) {
+      const track = world.map.tracks.find((t) => t.id === d.track);
+      const points = track?.points.map(([x, z]) => [x, z] as const);
+      if (points) sim.addStuckVehicle(strandedPose(d, points), checkpoint.stranded?.includes(d.id));
+    }
     progress(0.92, 'Building meshes');
     await nextFrame();
     // Sign lettering uses the web font; wait for it (but never block on a slow network).
@@ -745,7 +771,13 @@ export class Game {
       this.history.clear();
       this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
       this.sim.surprises?.reset(this.checkpoint.surprises);
-      for (const s of this.sim.stuck.values()) s.reset(this.checkpoint.rescued);
+      this.strandedFreed = new Set(this.checkpoint.stranded);
+      for (const s of this.sim.stuck.values())
+        s.reset(
+          this.episode.stranded?.some((d) => d.id === s.def.id)
+            ? this.strandedFreed.has(s.def.id)
+            : this.checkpoint.rescued,
+        );
       applyCheckpoint(this.vehicle, this.checkpoint);
       if (this.checkpoint.delivery) this.sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
       this.syncDeliveryViews();
@@ -1280,6 +1312,7 @@ export class Game {
         this.sim.surprises?.happened(),
         this.sim.deliveryState(),
       );
+      if (this.episode.stranded) this.checkpoint.stranded = [...this.strandedFreed];
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();
@@ -1351,6 +1384,23 @@ export class Game {
       );
       this.audio.discovery();
     }
+  }
+
+  private onStrandedFreed(d: StrandedDriverDef): void {
+    this.strandedFreed.add(d.id);
+    const c = this.vehicle.condition;
+    const r = d.reward;
+    c.jerryCans += r.jerryCans ?? 0;
+    c.plugs += r.plugs ?? 0;
+    c.spares += r.spares ?? 0;
+    const given = [
+      r.jerryCans && `${r.jerryCans} jerry can${r.jerryCans === 1 ? '' : 's'}`,
+      r.plugs && `${r.plugs} tyre plug${r.plugs === 1 ? '' : 's'}`,
+      r.spares && `${r.spares} spare wheel${r.spares === 1 ? '' : 's'}`,
+    ].filter(Boolean);
+    this.hud.toast(`${d.name}: out of the bog. They give you ${given.join(' and ')}`, 3200);
+    this.showHistory(d.freed);
+    this.audio.discovery();
   }
 
   private onTraffic(e: TrafficEvent): void {
@@ -1535,6 +1585,7 @@ export class Game {
     this.syncDeliveryViews();
     for (const s of this.stuckViews) s.update();
     for (const { view } of this.trafficCars.values()) view.update();
+    this.ruts.update(frameDt);
     for (const t of this.trailerViews.values()) t.update(this.loop.paused ? 1 : alpha);
     for (const d of this.drumViews.values()) d.update();
     this.model.applyCondition(v.condition);

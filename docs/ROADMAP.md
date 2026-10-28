@@ -5,10 +5,10 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 1. **Remove Episodes 2–4.** Set `episodeOrder` in `src/data/episodes.ts` to `['creb']`, empty `upcomingEpisodes` and drop the "Further north" list in `src/ui/welcome.ts`. In `src/sim/save/save.ts`, send a save whose `episode` is no longer offered back to the CREB. Delete `e2e/coach.spec.ts`, `e2e/frenchmans.spec.ts` and the Lakefield/coach parts of other specs (`e2e/launch.spec.ts` clicks the coach episode). Once nothing imports them, delete `src/data/episodes/coach*`, `lakefield*`, `frenchmans*`, their maps in `src/data/maps.ts`, and the trailer code only they use (keep `src/sim/stuckVehicle.ts` for step 7). Update README.md's episode table and sections.
 2. ~~**Section times.**~~ Done in v0.65.
 3. **Ghost car.** Record the car's position and heading every 0.25 s on each run; save the best run's trace; on later runs draw a faded copy of the car following it (no physics).
-4. **Changing track conditions.** Clay churned up by wheelspin done in v0.70 (`src/sim/world/churn.ts`; ruts drawn on the track still to do). Still to do: each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
+4. **Changing track conditions.** Clay churned up by wheelspin done in v0.70 (`src/sim/world/churn.ts`), drawn as ruts in v0.71. Still to do: each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
 5. ~~**Engine strain.**~~ Heat done in v0.67; the bow wave in deep crossings taken too fast in v0.70.
 6. ~~**Tyre pressures.**~~ Done in v0.67; the timed compressor in v0.70.
-7. **Other traffic.** ~~Oncoming 4WDs on narrow sections that you pull over for~~ (done in v0.69, `src/sim/traffic.ts`). Still to do: now and then a stranded driver to winch out for fuel or plugs, reusing `src/sim/stuckVehicle.ts`.
+7. **Other traffic.** ~~Oncoming 4WDs on narrow sections that you pull over for~~ (done in v0.69, `src/sim/traffic.ts`). Stranded drivers to winch out for fuel or plugs done in v0.71 (`src/sim/stranded.ts`).
 8. ~~**Night finish.**~~ Done in v0.66.
 
 # Other follow-up work

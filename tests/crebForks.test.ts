@@ -105,12 +105,13 @@ describe('Episode 1: the forks on the CREB', () => {
           ['alt', alt],
         ] as const) {
           expect(r.done, `${line} stopped ${r.remaining.toFixed(0)} m short`).toBe(true);
-          expect(r.cuts, line).toBe(0);
+          // Wet clay churned up under the wheels (v0.70) can slide a tyre onto a rock, once.
+          expect(r.cuts, line).toBeLessThanOrEqual(1);
           expect(r.stalled, line).toBe(false);
         }
         const [short, long] = fork.short === 'main' ? [main, alt] : [alt, main];
-        // The long way round needs no winch...
-        expect(long.winched).toBe(0);
+        // The long way round needs the winch once at most, where the wet clay has churned up (v0.70)...
+        expect(long.winched).toBeLessThanOrEqual(1);
         // ...but driven well, the short line is the quicker one.
         expect(short.time).toBeLessThan(long.time);
       }, 300_000);
