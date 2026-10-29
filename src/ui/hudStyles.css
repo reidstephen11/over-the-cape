@@ -719,6 +719,11 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
   display: none;
 }
 
+/* Menus hide the camera buttons; the styles' own display rules must not bring them back. */
+#ui[data-hud] .camera-help[hidden] {
+  display: none !important;
+}
+
 #ui[data-hud] .camera-help button {
   margin: 0;
   border-color: rgba(255, 255, 255, 0.24);
@@ -938,7 +943,7 @@ body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
   }
 }
 
-@media (orientation: portrait) and (max-width: 374px) {
+@media (orientation: portrait) and (max-width: 389px) {
   .touch-mode #ui[data-hud='dash'] .hud {
     --speedo: 64px;
     --dial: 44px;
@@ -1622,6 +1627,17 @@ body:not(.touch-mode) #ui[data-hud='edge'] .history-card:not(.reading) {
   .touch-mode #ui[data-hud='edge'] .inst-cluster {
     left: 0;
     right: 0;
+  }
+
+  /* Between the top-left buttons and the camera buttons, narrower on a small phone. */
+  .touch-mode #ui[data-hud='edge'] .inst-compass {
+    left: calc(max(12px, env(safe-area-inset-left)) + 136px);
+    right: calc(max(12px, env(safe-area-inset-right)) + 98px);
+    max-width: 112px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    transform: none;
   }
 
   .touch-mode #ui[data-hud='edge'] .hud-stack {

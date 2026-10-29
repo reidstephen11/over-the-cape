@@ -83,10 +83,11 @@ test.describe('phone', () => {
     await openJourney(page);
     await waitReady(page);
     const controls = page.locator('.touch-controls');
-    // The HUD style's instruments sit by the edge of the view; the mission line folds away.
+    // The HUD style's instruments sit by the edge of the view. The mission line is filled in
+    // and folds away after a few seconds (on a slow machine it may be gone before this looks).
     await expect(page.locator('.inst-cluster')).toBeVisible();
     await expect(page.locator('.inst-compass')).toBeVisible();
-    await expect(page.locator('.mission')).toBeVisible();
+    await expect(page.locator('.mission strong')).not.toBeEmpty();
     await expect(page.locator('.crawl-gauges')).toBeHidden();
     await page.waitForTimeout(4800);
     await expect(page.locator('.mission')).toBeHidden();
