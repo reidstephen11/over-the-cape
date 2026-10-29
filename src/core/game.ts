@@ -802,6 +802,14 @@ export class Game {
       this.settings.controller,
       // Test mode shows the whole map.
       this.dev ? null : this.seen,
+      // Finds still there, unless an unfound place beside one already has its own mark.
+      this.finds.defs.filter(
+        (f) =>
+          !this.finds.taken.has(f.id) &&
+          !this.world.pois.some(
+            (q) => !this.exploration.discovered.has(q.id) && Math.hypot(q.x - f.x, q.z - f.z) < 30,
+          ),
+      ),
     );
     this.loop.paused = true;
     this.audio.mapOpened();

@@ -11,6 +11,13 @@ import type { FindDef, FlatDef, PoiDef, PropDef, TrackDef } from '../../sim/worl
  *   Linesman's hut – down the range's west flank from the range top, following the old
  *                    line's poles, with a full 20 L jerry can: a longer trip with a greasy
  *                    climb back up to the track.
+ *
+ * And three with no sign or hut (v1.05), left by other travellers where people stop: the
+ * paper map shows a question mark near each once you've seen the ground close by.
+ *
+ *   Roaring Meg Falls – a spare wheel at the end of the falls track.
+ *   Range lookout     – a full jerry can at the back of the lookout's flat.
+ *   Wujal Wujal Falls – two tyre plugs at the end of the falls track.
  */
 
 const BATTER = 0.5;
@@ -80,6 +87,33 @@ export const crebFinds: FindDef[] = [
     radius: 7,
     gives: { jerryCans: 1 },
     taken: 'A full 20 L jerry can from the linesman’s hut',
+  },
+  {
+    id: 'roaring-meg-falls-spare',
+    name: 'Spare wheel',
+    x: 81,
+    z: 488,
+    radius: 7,
+    gives: { spares: 1 },
+    taken: 'A spare wheel someone left by Roaring Meg Falls',
+  },
+  {
+    id: 'lookout-jerry-can',
+    name: 'Jerry can',
+    x: -12,
+    z: -289,
+    radius: 7,
+    gives: { jerryCans: 1 },
+    taken: 'A full 20 L jerry can stashed at the lookout',
+  },
+  {
+    id: 'wujal-falls-plugs',
+    name: 'Tyre plugs',
+    x: -98,
+    z: -655,
+    radius: 7,
+    gives: { plugs: 2 },
+    taken: 'Two tyre plugs left at Wujal Wujal Falls',
   },
 ];
 

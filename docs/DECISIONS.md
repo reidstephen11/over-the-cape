@@ -1768,3 +1768,15 @@ The second of Steef's three picks from Over The Hill, where the map starts blank
 **Drawing** (`src/ui/paperMap.ts`). The base map is drawn as before; over it, blank paper with the seen cells cut out as circles, blurred 3 px so the edge looks pencilled rather than square. The frame (border, title, north arrow and scale) moved to its own layer drawn on top, so the blank paper doesn't cover it. Places found keep their icon and name. A place not found yet, within 250 m of seen ground, shows a pencilled question mark. The orientation lessons count as places, so a few question marks crowd the start of a new run; they clear as you drive the lessons. Test mode shows the whole map.
 
 **Also.** The unit test for the welcome screen's starting choice now expects the packed load added in v1.01.
+
+## v1.05: hidden finds
+
+The last of Steef's three picks from Over The Hill, where crates sit at scenic spots for anyone who looks round.
+
+**Three more finds with no sign or hut** (`src/data/episodes/crebFinds.ts`), at places people stop, left by other travellers: a spare wheel at the end of the Roaring Meg Falls track, a full jerry can at the back of the range lookout's flat, and two tyre plugs at the end of the Wujal Wujal Falls track. They use the existing finds: stop within 7 m and it goes on board, once, kept in camp checkpoints. The spare wheel is the first find that gives a spare; it lies flat on its crate (`src/render/finds.ts`). Each spot was checked for slope (under 15°) so the car can stop beside it. The lookout's crate is closer to the main line than the huts' (the test now asks for 15 m beyond a find's reach, not 30), since the car pulls off the track into the lookout anyway; the falls tracks are dead ends you only drive to see the falls.
+
+**On the map.** The paper map now also puts a question mark near anything still to be loaded once you've seen the ground close by, unless an unfound place beside it already has one. Once the place is found the question mark stays beside its name until the find is loaded, so a hut you passed without stopping still shows something is there.
+
+With the packing list (v1.01), these give a light-packed run a way to make up a spare or fuel on the way, at the cost of the time spent on the side trips.
+
+**Prompt.** The roadside prompt said a find was "by the hut"; it now says "on a crate", which fits the huts and the new finds.
