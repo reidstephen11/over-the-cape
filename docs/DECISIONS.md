@@ -1633,3 +1633,14 @@ The other two directions from the HUD review, B and C, are now built, and Settin
 - **Small text.** Instrument text is never drawn below 9.5 px on screen in any style; the kit's small phone gauges drop their value and the watch its label.
 - **Trailer line.** In v0.90 the trailer's line (drums and weight, or how far away it was left) stayed in the hidden status strip and so disappeared. It now sits in the stack with the place and mission lines, as a paper line in every style.
 - **Tests.** The browser tests that looked for the old phone strip, the status strip and the old gauge panel now check the new instruments: `e2e/touch.spec.ts` (instruments visible, overlap checks over the new elements), `e2e/vehicleGauges.spec.ts` (the old panel's readings, read while hidden, plus the tyre lamp) and `e2e/m5-ui.spec.ts` (the speedometer follows the units setting).
+
+## v0.93: HUD fixes found by the v0.92 tests
+
+The browser tests run after v0.92 found two layout faults, and a check of the narrow phone sizes found a third.
+
+- **Camera buttons over the pause menu.** On a computer the Dash, Edge and Field kit styles laid the camera buttons out with `display: flex`, which beat the `hidden` attribute the game sets when a menu opens, so View and Reset view stayed on top of the pause menu. A shared rule now keeps them hidden (`#ui[data-hud] .camera-help[hidden]`).
+- **Dash dials on a 375 px phone.** Upright on a 375 px wide phone (iPhone SE or mini) the Dash cluster ran 8 px into the compass. The smaller phone dials now apply below 390 px wide instead of below 375 px.
+- **Edge compass tape on a narrow phone.** Upright, the tape was centred on the screen and ran into the pause, map and full-screen buttons on phones narrower than 390 px. It now sits centred in the space between those buttons and the camera buttons, and narrows to fit (102 px on a 360 px phone).
+- **Test.** `e2e/touch.spec.ts` no longer expects the mission line to be on screen when the phone test first looks: it folds away 4.5 seconds after it appears, and on a slow test machine that can happen while the page is still loading. It checks the line was filled in and is gone after the wait.
+
+Still red and not from the HUD: `e2e/night.spec.ts` and the "Dark falls" step in `e2e/episode.spec.ts` expect the CREB to end before 8 pm (the grace to 8 pm came in v0.66); the Joystick only test sees full throttle when the stick is pulled back, probably reverse because the car had barely moved first (not yet checked); `e2e/devMode.spec.ts` drives less than 8 m in 30 s with the loaded trailer. The 19 unit test failures are the same physics and terrain tests as before.
