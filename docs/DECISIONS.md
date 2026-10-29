@@ -1566,3 +1566,9 @@ Stephen's v0.83 shots (upright and sideways) had the TEMP/fuel/tyres card, the c
 - **Place and time.** Clock and road name on one line, gone after 4½ seconds (tap the strip to see them again). An urgent deadline stays.
 - **Pitch/roll.** Hidden on the phone until the lean is about 20° pitch / 16° roll, or the belly is on the ground. Speed and gear stay on the status strip.
 - **Chrome.** Thinner compass; smaller Pause/Map/Lights and View; HAND/4WD/TOOLS/USE in a tight two-by-two under the right thumb. Warnings keep their rail.
+
+## v0.87: winch rocks on Big Red
+
+Stephen could not get the Camel Trophy Ninety up Big Red in the dry with low range and both lockers. The climb itself already works on the crown: an autopilot crawl (low, both lockers, precision crawl, sensible throttle through crawl control) reaches the top in 117 s at heat 0.62, well under HIGH, and a standing start on either pinch continues. High range still dies on the first pinch (~23°, 113 m short). Heat is not the stall.
+
+What was missing was a recovery. Rainforest trees sit at the foot and the crest, but the face is bare: 104–112 m along had none within 28 m, and the few beside the pinches were 16–20 m off the line, so a hook pulled sideways. Four marked rocks now stand 4 m right of the crown at 62, 88, 128 and 152 m along — ahead of each pinch, within the 30 m cable of a stall, so USE on a phone hooks one and IN pulls the car up the climb, not into the left gutter. Grade, dry-clay grip and the Ninety's torque are unchanged; open diffs and high range stay tough.

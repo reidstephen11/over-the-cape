@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { environmentAt } from '../src/data/environment';
+import { camelTuning } from '../src/data/camel';
+import { environmentAt, lateAfternoon } from '../src/data/environment';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { hiluxTuning } from '../src/data/hilux';
@@ -25,6 +26,7 @@ import { DT, driveLeg, driver, runLeg } from './helpers/drive';
 const world = buildWorld(crebMap);
 const wet = environmentAt(crebEpisode.startHour, crebEpisode.weather);
 const { trackOf, scene } = driver(world, wet);
+const dry = driver(world, lateAfternoon);
 
 describe('Episode 1: the CREB Track', () => {
   it('is a long, narrow map with about 6.5 km of track from Daintree Village to the Lions Den', () => {
@@ -360,6 +362,84 @@ describe('Episode 1: the CREB Track', () => {
     for (const camp of world.pois.filter((p) => p.reset))
       expect(t.surfaceAt(camp.reset!.x, camp.reset!.z), camp.id).not.toBe(SurfaceId.BlackSoil);
   });
+
+  it('plants marked winch rocks along Big Red, just right of the crown and ahead of each pinch', () => {
+    const track = trackOf('big-red');
+    for (const along of [62, 88, 128, 152]) {
+      const p = trailPoint(track, along);
+      const rock = world.scatter.rocks.find(
+        (r) => r.anchor && r.solid && Math.hypot(r.x - p.x, r.z - p.z) < 6,
+      );
+      expect(rock, `along ${along}`).toBeDefined();
+      const at = trailProgress(track, rock!.x, rock!.z);
+      expect(at.along, `along ${along}`).toBeGreaterThan(along - 4);
+      expect(at.distance, `along ${along}`).toBeGreaterThan(3);
+      expect(at.distance, `along ${along}`).toBeLessThan(6);
+    }
+  });
+
+  it('climbs Big Red in the dry in the Camel Trophy Ninety in low range with both lockers, without boiling', async () => {
+    const s = await dry.scene('big-red', false, 'both', camelTuning);
+    try {
+      await driveLeg(s, s.track, false, 200);
+      expect(s.v.condition.engineHeat).toBeLessThan(0.85);
+    } finally {
+      s.sim.physics.free();
+    }
+  }, 300_000);
+
+  it('stops the Camel Trophy Ninety on Big Red in high range in the dry', async () => {
+    const s = await dry.scene('big-red', false, 'high', camelTuning);
+    try {
+      const r = await runLeg(s, s.track, false, 90);
+      expect(r.done).toBe(false);
+      expect(r.remaining).toBeGreaterThan(60);
+    } finally {
+      s.sim.physics.free();
+    }
+  }, 300_000);
+
+  it('winches the Camel Trophy Ninety up Big Red from a stall on either pinch', async () => {
+    const track = trackOf('big-red');
+    for (const from of [40, 110]) {
+      const sim = new Simulation(await loadRapier(), world, lateAfternoon);
+      try {
+        const start = trailPoint(track, from);
+        const v = sim.addVehicle(
+          'p',
+          sim.poseAt(start.x, start.z, start.headingDeg, camelTuning.wheelRadius),
+          camelTuning,
+        );
+        const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
+        for (let i = 0; i < 90; i++) sim.step(inputs, DT);
+        v.toggleRange();
+        v.precisionCrawl = true;
+        for (const axle of ['front', 'rear'] as const) if (!v.differentials[axle]) v.toggleDiff(axle);
+        const along0 = trailProgress(track, v.position.x, v.position.z).along;
+        const anchors = sim.findAnchors('p');
+        expect(anchors.length, `${from} m: USE finds nothing in cable range`).toBeGreaterThan(0);
+        const best = sim.toolsOf('p').bestAnchor(v, anchors);
+        expect(best, `${from} m`).toBeTruthy();
+        const at = trailProgress(track, best!.point.x, best!.point.z);
+        expect(at.along, `${from} m: USE should pick a rock ahead`).toBeGreaterThan(along0 + 8);
+        expect(best!.point.y, `${from} m`).toBeGreaterThan(v.position.y);
+        sim.attachTo('p', best!);
+        expect(sim.toolsOf('p').winch.attached).toBe(true);
+        for (let t = 0; t < 18; t += DT) {
+          for (const axle of ['front', 'rear'] as const) if (!v.differentials[axle]) v.toggleDiff(axle);
+          inputs.set('p', { ...emptyInput(), throttle: 1, winchIn: true });
+          sim.step(inputs, DT);
+        }
+        const along1 = trailProgress(track, v.position.x, v.position.z).along;
+        expect(
+          along1 - along0,
+          `${from} m: winch advanced ${(along1 - along0).toFixed(1)} m`,
+        ).toBeGreaterThan(6);
+      } finally {
+        sim.physics.free();
+      }
+    }
+  }, 180_000);
 
   it('creeps Big Red on the crown in low range with both lockers, and stalls in the left gutter or in high range', async () => {
     const driveLine = async (lateral: number, lockers: 'both' | 'high', limit: number) => {
