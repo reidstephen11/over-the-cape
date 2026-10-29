@@ -2,8 +2,10 @@ import * as THREE from 'three';
 import { NO_WATER, type Terrain } from '../sim/world/terrain';
 import { CREEK_MARGIN } from '../sim/world/flood';
 import type { WaterCurrent } from '../sim/world/current';
+import type { EnvironmentConfig } from '../data/environment';
 import { pal } from './colors';
 import { patchFog } from './fog';
+import { sunDirection } from './sky';
 
 const TILE = 128;
 
@@ -22,6 +24,16 @@ export class WaterMesh {
   /** A storm's creek rise (m) and current (a multiple of their own), each creek by its share. */
   private readonly rise = { value: 0 };
   private readonly flowScale = { value: 1 };
+  /** The sky's colours, for the water's reflection of it (see createMaterial). */
+  private readonly sky = {
+    waterSkyHorizon: { value: new THREE.Color() },
+    waterSkyZenith: { value: new THREE.Color() },
+    waterSkyGround: { value: new THREE.Color() },
+    waterSunGlow: { value: new THREE.Color() },
+    waterSunDir: { value: new THREE.Vector3(0, 1, 0) },
+    waterGlowSize: { value: 0.1 },
+    waterCloudLight: { value: 1 },
+  };
 
   /**
    * creekDistance (metres to the creek, per cell) tells puddles from the creek; without it all
@@ -131,6 +143,18 @@ export class WaterMesh {
     this.flowScale.value = flowScale;
   }
 
+  /** The sky the water reflects: the same colours the sky dome is drawn with. */
+  setSky(env: EnvironmentConfig): void {
+    const u = this.sky;
+    u.waterSkyHorizon.value.set(env.sky.horizon);
+    u.waterSkyZenith.value.set(env.sky.zenith);
+    u.waterSkyGround.value.set(env.sky.groundColor);
+    u.waterSunGlow.value.set(env.sky.sunGlow);
+    u.waterGlowSize.value = env.sky.sunGlowSize;
+    u.waterCloudLight.value = env.cloudLight;
+    sunDirection(env, u.waterSunDir.value);
+  }
+
   private addMesh(
     m: { pos: number[]; col: number[]; flow: number[]; rise: number[] },
     material: THREE.Material,
@@ -171,6 +195,7 @@ export class WaterMesh {
       shader.uniforms.waterTime = this.time;
       shader.uniforms.waterRise = this.rise;
       shader.uniforms.waterFlowScale = this.flowScale;
+      Object.assign(shader.uniforms, this.sky);
       shader.vertexShader =
         `attribute vec2 waterFlow; attribute float waterRiseShare; uniform float waterRise; uniform float waterFlowScale;
         varying vec3 vWaterPosition; varying vec2 vWaterFlow; varying float vWaterSilt;\n${shader.vertexShader}`.replace(
@@ -195,6 +220,18 @@ export class WaterMesh {
         float waterFlecks(vec2 p, vec2 dir) {
           vec2 q = vec2(dot(p, dir), dot(p, vec2(-dir.y, dir.x)));
           return smoothstep(0.7, 1.0, sin(q.x * 0.8 + sin(q.y * 1.7)) * sin(q.y * 3.4 + sin(q.x * 0.5)));
+        }
+        uniform vec3 waterSkyHorizon; uniform vec3 waterSkyZenith; uniform vec3 waterSkyGround;
+        uniform vec3 waterSunGlow; uniform vec3 waterSunDir; uniform float waterGlowSize; uniform float waterCloudLight;
+        // The sky dome's colour in a world direction (src/render/sky.ts without its stars, and
+        // with its clouds spread out evenly, as the blurred reflection map shows them).
+        vec3 waterSky(vec3 d) {
+          float up = d.y;
+          vec3 col = mix(waterSkyHorizon, waterSkyZenith, pow(smoothstep(0.0, 1.0, up), 0.55));
+          col = mix(col, mix(waterSkyHorizon, vec3(0.91, 0.93, 0.91) * waterCloudLight, 0.55), 0.06 * smoothstep(0.025, 0.17, up));
+          col = mix(col, waterSkyGround, smoothstep(0.0, -0.08, up));
+          float s = max(dot(d, waterSunDir), 0.0);
+          return col + waterSunGlow * pow(s, 1.0 / waterGlowSize) * 0.55;
         }
         \n${shader.fragmentShader}`
           .replace(
@@ -221,6 +258,21 @@ export class WaterMesh {
           normal = normalize(normal + mat3(viewMatrix) * vec3(wave.x, 0.0, wave.y));
         `,
           )
+          // Light from the sky, worked out from the sky's own colours rather than looked up in
+          // the filtered sky map the other materials use: that lookup was over half the cost
+          // of drawing the water, which fills much of a phone's screen at a crossing.
+          .replace(
+            '#include <lights_fragment_maps>',
+            `
+          #if defined( USE_ENVMAP ) && defined( RE_IndirectSpecular )
+            iblIrradiance += PI * envMapIntensity * mix(waterSkyGround, mix(waterSkyHorizon, waterSkyZenith, 0.5),
+              0.5 + 0.5 * inverseTransformDirection(geometryNormal, viewMatrix).y);
+            vec3 skyRay = reflect(-geometryViewDir, geometryNormal);
+            skyRay = normalize(mix(skyRay, geometryNormal, pow4(material.roughness)));
+            radiance += envMapIntensity * waterSky(inverseTransformDirection(skyRay, viewMatrix));
+          #endif
+        `,
+          )
           .replace(
             '#include <opaque_fragment>',
             `
@@ -231,6 +283,6 @@ export class WaterMesh {
         `,
           );
     };
-    return patchFog(material, offset ? 'flowing-water-v3' : 'puddle-water-v3');
+    return patchFog(material, offset ? 'flowing-water-v4' : 'puddle-water-v4');
   }
 }

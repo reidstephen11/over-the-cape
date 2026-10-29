@@ -1693,3 +1693,15 @@ Steef saw panel gaps on the 40 Series, mostly round the rear of the roof. Close-
 - **Under the doors.** A dark gap showed between the doors' bottom edge and the step. A painted sill now runs from the front guard to the rear wheel opening, as on the real car.
 
 The body stays at about 71,000 triangles.
+
+## v0.99: smoother near water
+
+Steef: "performance is starting to get really choppy on mobile when near and on the water (rivers, creeks)".
+
+**What was measured.** Built and served locally, in a phone-sized landscape window on the software renderer, at the Daintree crossing and on a dry ridge. The game's own code near water costs almost nothing: particles (splash, wake rings) under 0.05 ms a frame, the water's update 0.01 ms, sound and HUD a fraction of a millisecond. The cost is the GPU drawing the water. Looking down on the river so it fills the screen, the water alone took 66 ms a frame there; without the filtered sky map (the reflection lookup every shiny material uses) it took 29 ms. The ripples and foam are about 15 ms and shadows on the water about 5 ms. Water is see-through, so it is drawn on top of the riverbed: every pixel of river is drawn twice, and on a phone, where the screen is the bottleneck, that is where the frame rate drops.
+
+**Fix.** The water works out its sky reflection from the sky dome's own colours (horizon, zenith, ground below the horizon, the sun's glow and an even share of cloud) instead of looking it up in the filtered sky map. The sky map is only a blurred copy of that same gradient, so the reflection matches. Before/after screenshots at 10 am, 5.36 pm, 6.36 pm and in a storm match to within one colour level over the river. The water alone now takes 28 ms in the same view (57% less), and a whole frame looking down on the river 13% less. Ripples, foam, flood colour, shadows and the see-through edge are unchanged, as are the puddles, which share the material.
+
+**Test hook.** `__game.breakdown()` now also gives each scene group's draw time in milliseconds (`ms`), waiting for the GPU to finish, so the next performance question can be answered the same way.
+
+**Not done.** The ground uses the same filtered sky map over the whole screen everywhere; the same change there would make every frame cheaper on a phone, but it changes the look of all the land, so it is left for a separate update.
