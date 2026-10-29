@@ -16,7 +16,7 @@ import {
 } from './terrain';
 import type { CreekInfo, GullyInfo, StaticBox, TerrainFeatures, TrackInfo } from './features';
 import { buildDetailPatch, type DetailPatch } from './detail';
-import { onBridge } from './bridges';
+import { BEARING, onBridge } from './bridges';
 import {
   roughHole,
   roughPatch,
@@ -601,8 +601,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     }
     // A 12 m smooth fills a ~6 m creek dip. Ramp the profile to the bed at the creek's
     // bank slope so a ford is a slope into the water, not a weir the later channel skip
-    // would leave standing across the road.
+    // would leave standing across the road. A bridge's deck follows this profile, so leave
+    // its linearized span (already a straight line between the abutments) alone: ramping it
+    // would drop the boards into the creek, as the Bloomfield River bridge did after v0.88.
     for (let k = 0; k < poly.count; k++) {
+      const s = poly.s[k];
+      if (def.bridges?.some((b) => s >= b.from - BEARING && s <= b.to + BEARING)) continue;
       const ix = Math.round(poly.xs[k] + halfX);
       const iz = Math.round(poly.zs[k] + halfZ);
       if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;

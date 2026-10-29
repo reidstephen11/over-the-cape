@@ -1656,3 +1656,13 @@ Stephen, on the live build, got the Big Red arrival card (Discovered / history n
 The POI now sits on the first waypoint of the `big-red` track, at the foot, still with a 30 m radius: the last stretch of the paddock road and the "Big Red — crown" sign are inside it; the west-line junction, the midpoint of the face and the crest are not. Bob's Hill had the same placement (POI on the middle waypoint, ~86 m up from the start) and is moved to its foot the same way. The concrete's POI is still halfway down the descent; moving it to the top would overlap the range lookout, so it is left.
 
 Checked headlessly: `Exploration.check` at the start of each climb discovers it, and the same check at the midpoint does not.
+
+## v0.96: Bloomfield River bridge stays above the water
+
+Stephen, on the live build, asked how to get past the Bloomfield River: "the bridge is down." It is meant to be a timber deck at Wujal Wujal, pinned at 7.5 m, that you just drive over. There is no ford, detour, tide or winch.
+
+**What was wrong.** v0.88 ramped every track/creek meeting down to the bed so a ford would not hide a wall under the water. The Bloomfield bridge's deck follows the track profile, and that span is a creek meeting, so the same ramp dropped the boards onto the riverbed: mid-span the deck sat at 1.45 m with the water at 3.2 m (~1.75 m underwater). From the camp it looked like a collapsed bridge going down into the river. The water there is about 1.8 m deep and running at 1.5 m/s, so dropping in is a dead end, not a crossing.
+
+**Fix.** The ford ramp still applies to real fords (paddock creeks, Donovan's, the Bloomfield Track's creeks, the Little Annan). It skips a bridge's linearized span, including the short bearings onto the abutments, so the boards stay on the 7.5 m line and the river still runs under them. Drive straight over.
+
+**Test.** `tests/creb.test.ts`: along the Bloomfield span the deck stays above 6.5 m and at least 2 m above the water, and the river under it is still more than a metre deep.
