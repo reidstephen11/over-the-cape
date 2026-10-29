@@ -33,6 +33,13 @@ export interface MenuActions {
  * Main menu.
  * Works with mouse, keyboard (arrows + Enter, Esc) and gamepad (D-pad + Cross, Circle).
  */
+/** One reading at the top of the pause menu: a label, the value, and a short note. */
+export interface PauseStatusCell {
+  label: string;
+  value: string;
+  note?: string;
+}
+
 export class PauseMenu {
   readonly el: HTMLElement;
   isOpen = false;
@@ -45,6 +52,7 @@ export class PauseMenu {
   /** Opened from the touch controls: the Controls page lists those instead of the keyboard. */
   private touch = false;
   private device: 'keyboard' | 'gamepad' | 'touch' = 'keyboard';
+  private status: readonly PauseStatusCell[] = [];
 
   constructor(
     root: HTMLElement,
@@ -100,6 +108,11 @@ export class PauseMenu {
           : 'Enter Select · Esc Back';
   }
 
+  /** The time, fuel and what's on board, shown above the main page's buttons. */
+  setStatus(cells: readonly PauseStatusCell[]): void {
+    this.status = cells;
+  }
+
   /** The vehicle being driven, ticked on the Vehicle page. */
   setVehicle(id: VehicleId): void {
     this.vehicle = id;
@@ -122,6 +135,7 @@ export class PauseMenu {
     if (page === 'main') {
       card.classList.add('pause-main');
       card.innerHTML = `<h2>Paused</h2><p class="pause-episode"></p>
+        <div class="pause-status"></div>
         <div class="pause-buttons">
           <button data-focus data-act="resume">Resume</button>
           <button data-focus data-act="map">Map</button>
@@ -133,7 +147,16 @@ export class PauseMenu {
         </div>
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>`;
       (card.querySelector('.pause-episode') as HTMLElement).textContent = this.episodeName;
-      (card.querySelector('small') as HTMLElement).textContent = this.campsiteName;
+      const status = card.querySelector('.pause-status') as HTMLElement;
+      for (const c of this.status) {
+        const cell = document.createElement('div');
+        cell.innerHTML = '<span></span><b></b><small></small>';
+        cell.querySelector('span')!.textContent = c.label;
+        cell.querySelector('b')!.textContent = c.value;
+        cell.querySelector('small')!.textContent = c.note ?? '';
+        status.appendChild(cell);
+      }
+      (card.querySelector('[data-act="camp"] small') as HTMLElement).textContent = this.campsiteName;
       (card.querySelector('.vehicle-name') as HTMLElement).textContent = vehicles[this.vehicle].tuning.name;
     } else if (page === 'vehicle') {
       card.innerHTML = `<h2>Vehicle</h2>

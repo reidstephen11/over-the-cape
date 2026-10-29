@@ -68,7 +68,7 @@ import { ToolMenu, type ToolOption } from '../ui/toolMenu';
 import { TouchControls, isTouchDevice } from '../ui/touchControls';
 import { touchTuning } from '../data/touch';
 import { PaperMap } from '../ui/paperMap';
-import { Fade, PauseMenu } from '../ui/menus';
+import { Fade, PauseMenu, type PauseStatusCell } from '../ui/menus';
 import { HistoryCard, ResultCard, type ResultButton } from '../ui/episodeCards';
 import { FreeCamera } from '../debug/freeCamera';
 import { DebugOverlay } from '../debug/overlay';
@@ -79,6 +79,7 @@ import { buildAudioFrame } from '../audio/frame';
 import { GameLoop } from './loop';
 import { ToolController } from './toolController';
 import { buildHudState } from './hudState';
+import { applyHudStyle } from '../data/hudStyles';
 import { damageMessage } from './damageMessages';
 import { installHook } from './testHook';
 
@@ -308,6 +309,8 @@ export class Game {
 
     this.hud = new Hud(uiRoot, (action) => this.input.requestDriveAction(action));
     this.hud.units = settings.units;
+    this.hud.style = settings.hudStyle;
+    applyHudStyle(settings.hudStyle);
     this.hud.setControllerType(settings.controller);
     this.hud.onCameraReset = () => this.chase.recenter();
     this.hud.onCameraPreset = () => this.chase.cyclePreset();
@@ -716,6 +719,8 @@ export class Game {
     if (this.settings.damage !== this.sim.damage) this.sim.setDamage(this.settings.damage);
     this.pause.setSettings(this.settings);
     this.hud.units = this.settings.units;
+    this.hud.style = this.settings.hudStyle;
+    applyHudStyle(this.settings.hudStyle);
     this.hud.setControllerType(this.settings.controller);
     this.input.setTouchDrive(this.settings.touchDrive);
     this.touch.setDriveScheme(this.settings.touchDrive);
@@ -755,8 +760,44 @@ export class Game {
 
   openPause(): void {
     const camp = this.world.pois.find((p) => p.id === this.exploration.lastCampsite);
+    this.pause.setStatus(this.pauseStatus());
     this.pause.open(camp?.name ?? '', this.input.activeDevice === 'touch');
     this.loop.paused = true;
+  }
+
+  /** The time, fuel, spares and tyres, at the top of the pause menu. */
+  private pauseStatus(): PauseStatusCell[] {
+    const c = this.vehicle.condition;
+    const d = this.episode.deadline;
+    const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+    const cells: PauseStatusCell[] = [];
+    if (this.run.timed) {
+      const dark = d && this.run.hour >= d.hour;
+      cells.push({
+        label: 'Time',
+        value: clockTime(this.run.hour),
+        note: !d
+          ? ''
+          : dark
+            ? `Finish by ${clockTime(d.hour + (d.graceHours ?? 0))}`
+            : `Dark at ${clockTime(d.hour)}`,
+      });
+    }
+    cells.push({ label: 'Fuel', value: `${Math.round(c.fuel)} L`, note: plural(c.jerryCans, 'jerry can') });
+    const planks = this.sim.toolsOf(LOCAL_VEHICLE).planks.carried;
+    cells.push({
+      label: 'On board',
+      value: plural(c.spares, 'spare'),
+      note: `${plural(c.plugs, 'plug')} · ${plural(planks, 'plank')}`,
+    });
+    const flats = c.tyres.filter((t) => t <= 0.05).length;
+    const leaking = c.tyres.filter((t, i) => t > 0.05 && (t < 0.97 || c.tyreFault[i] !== 'none')).length;
+    cells.push({
+      label: 'Tyres',
+      value: c.lowPressure ? 'Let down' : 'Road pressure',
+      note: flats ? plural(flats, 'flat') : leaking ? `${leaking} losing air` : 'All holding air',
+    });
+    return cells;
   }
 
   closePause(): void {
@@ -1648,6 +1689,8 @@ export class Game {
       jackAvailable: tools.jack.state === 'available',
     });
     this.hud.el.classList.toggle('tool-menu-open', this.toolMenu.isOpen);
+    // After dusk the HUD dims like a dash's lights.
+    this.hud.night = this.replay ? this.replay.time === 'night' : this.run.hour >= 18.4 || this.run.hour < 6;
     this.applyPinnedHazards();
     this.hud.update(
       buildHudState({
@@ -1682,6 +1725,12 @@ export class Game {
               ? `Dark · by ${clockTime(this.episode.deadline.hour + this.episode.deadline.graceHours)}`
               : (this.episode.deadline?.label ?? ''),
           urgent: this.run.hoursLeft() < 0.5,
+          hour: this.run.timed ? this.run.hour : null,
+          darkHour: this.run.timed ? (this.episode.deadline?.hour ?? null) : null,
+          finishHour:
+            this.run.timed && this.episode.deadline
+              ? this.episode.deadline.hour + (this.episode.deadline.graceHours ?? 0)
+              : null,
         },
         supplies: true,
       }),

@@ -1,5 +1,6 @@
 import { defaultController, isControllerType, type ControllerType } from '../../data/controllers';
 import { defaultTouchDrive, isTouchDriveScheme, type TouchDriveScheme } from '../../data/touch';
+import { defaultHudStyle, isHudStyle, type HudStyle } from '../../data/hudStyles';
 import { SAVE_KEY } from '../../core/config';
 import type { CrawlBests } from '../crawlRuns';
 import type { Checkpoint } from '../episode';
@@ -22,6 +23,8 @@ export interface Settings {
   damage: DamageMode;
   /** How the on-screen stick drives on a phone. Missing on older saves: pedals. */
   touchDrive: TouchDriveScheme;
+  /** How the HUD and the menus look. Missing on older saves: the dash cluster. */
+  hudStyle: HudStyle;
 }
 
 /** How far you've got in one episode. */
@@ -60,6 +63,7 @@ export const defaultSettings: Settings = {
   units: 'kmh',
   damage: 'mild',
   touchDrive: defaultTouchDrive,
+  hudStyle: defaultHudStyle,
 };
 
 /** Minimal storage interface so tests can pass a fake. */
@@ -108,6 +112,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
         units: st.units === 'mph' ? 'mph' : 'kmh',
         damage: isDamageMode(st.damage) ? st.damage : defaultSettings.damage,
         touchDrive: isTouchDriveScheme(st.touchDrive) ? st.touchDrive : defaultTouchDrive,
+        hudStyle: isHudStyle(st.hudStyle) ? st.hudStyle : defaultHudStyle,
       },
       vehicle: isVehicleId(data.vehicle) ? data.vehicle : 'shortie',
       episode: isEpisodeId(data.episode) ? data.episode : episodeOrder[0],
