@@ -306,10 +306,13 @@ describe('Episode 1: the CREB Track', () => {
     }
     for (const b of world.map.bogs) {
       expect(b.deep, b.id).toBe(true);
-      expect(b.depth, b.id).toBeGreaterThan(0.6);
-      // Authored bogs are not planted with trees by the shared scatter, so a marked boulder stands in reach.
+      // Creek-bank bogs are sticky but shallower, so a locked crawl can just get through.
+      expect(b.depth, b.id).toBeGreaterThan(b.id.includes('-creek-') ? 0.3 : 0.6);
+      // Authored bogs are not planted with trees by the shared scatter, so a marked boulder
+      // stands in reach. Creek-bank bogs share the far-bank rock within the 30 m cable.
+      const reach = b.id.includes('-creek-') ? winchTuning.cableLength : 16;
       const anchor = world.scatter.rocks.find(
-        (r) => r.anchor && r.solid && Math.hypot(r.x - b.x, r.z - b.z) < 16,
+        (r) => r.anchor && r.solid && Math.hypot(r.x - b.x, r.z - b.z) < reach,
       );
       expect(anchor, b.id).toBeDefined();
     }

@@ -823,6 +823,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const a = (b.rotationDeg * Math.PI) / 180;
     const c = Math.cos(a);
     const s = Math.sin(a);
+    const creekBog = b.id.includes('-creek-');
     const R = Math.max(b.radiusX, b.radiusZ) * 1.6 + PATCH_REACH;
     for (let iz = Math.floor(b.z - R + halfZ); iz <= Math.ceil(b.z + R + halfZ); iz++)
       for (let ix = Math.floor(b.x - R + halfX); ix <= Math.ceil(b.x + R + halfX); ix++) {
@@ -833,11 +834,24 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
         const rz = (-x * s + z * c) / b.radiusZ;
         const r = Math.sqrt(rx * rx + rz * rz) + noise3.noise((ix - halfX) / 4, (iz - halfZ) / 4) * 0.18;
         const i = iz * resX + ix;
-        addPatch(i, (r - 1.12) * Math.min(b.radiusX, b.radiusZ), GroundTint.Mud, GroundTint.Mud, 0, 1);
+        addPatch(
+          i,
+          (r - 1.12) * Math.min(b.radiusX, b.radiusZ),
+          creekBog ? GroundTint.BlackSoil : GroundTint.Mud,
+          creekBog ? GroundTint.Pothole : GroundTint.Mud,
+          creekBog ? 0.55 : 0,
+          1,
+        );
         if (r > 1.5) continue;
-        const dip =
+        let dip =
           b.depth * (1 - smoothstep(0.35, 1.05, r)) -
-          0.06 * noise2.noise((ix - halfX) / 1.7, (iz - halfZ) / 1.7) * (r < 1 ? 1 : 0);
+          (creekBog ? 0.11 : 0.06) * noise2.noise((ix - halfX) / 1.7, (iz - halfZ) / 1.7) * (r < 1 ? 1 : 0);
+        // Wheel ruts down a creek-bank bog, so it reads as used wet mud rather than a smooth dish.
+        if (creekBog && r < 1) {
+          const lateral = Math.abs(rx * b.radiusX);
+          const rut = 1 - smoothstep(0.35, 0.95, Math.abs(lateral - 0.75));
+          dip += 0.08 * rut * (1 - smoothstep(0.4, 1, r));
+        }
         bogDip.set(i, Math.max(bogDip.get(i) ?? -Infinity, dip));
         if (r < 1.12) bogMask[i] = Math.max(bogMask[i], b.deep ? 2 : 1);
       }

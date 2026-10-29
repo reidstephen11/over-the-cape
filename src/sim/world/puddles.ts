@@ -2,7 +2,7 @@ import { puddleTuning as P, type EnvironmentConfig } from '../../data/environmen
 import { SurfaceId } from '../../data/surfaces';
 import { trailPoint, trailProgress } from './crawlTrail';
 import { mulberry32 } from './rng';
-import { GroundTint } from './terrain';
+import { GroundTint, NO_WATER } from './terrain';
 import type { World } from './world';
 
 export interface Puddle {
@@ -55,6 +55,40 @@ export function addPuddles(world: World, env: EnvironmentConfig): Puddle[] {
     for (const { i, r } of cells)
       if (r < 1.15 && t.heights[i] < level + 0.1) t.water[i] = level - env.waterLevelOffset;
     puddles.push({ x: b.x, z: b.z, level, depth: level - bottom });
+  }
+  // Creek-bank bogs: a shallow puddle in the hollow, drawn as water, but the floor stays
+  // sticky black soil. Filling to the rim and painting Water would make them a second creek.
+  for (const b of world.map.bogs) {
+    if (!b.id.includes('-creek-')) continue;
+    const a = (b.rotationDeg * Math.PI) / 180;
+    const [ca, sa] = [Math.cos(a), Math.sin(a)];
+    const R = Math.ceil(Math.max(b.radiusX, b.radiusZ) * 1.2);
+    const cells: Array<{ i: number; r: number }> = [];
+    for (let iz = Math.round(b.z + t.halfZ) - R; iz <= Math.round(b.z + t.halfZ) + R; iz++)
+      for (let ix = Math.round(b.x + t.halfX) - R; ix <= Math.round(b.x + t.halfX) + R; ix++) {
+        if (ix < 1 || iz < 1 || ix >= t.resX - 1 || iz >= t.resZ - 1) continue;
+        const x = ix - t.halfX - b.x,
+          z = iz - t.halfZ - b.z;
+        const r = Math.hypot((x * ca + z * sa) / b.radiusX, (-x * sa + z * ca) / b.radiusZ);
+        if (r < 1.15) cells.push({ i: index(ix, iz), r });
+      }
+    // Water in the ruts, following the ground. A single pond level on a bank either
+    // skips (the downhill rim sits below the floor) or becomes a second creek.
+    let wet = 0;
+    let low = Infinity;
+    const stride = t.resX;
+    for (const { i, r } of cells) {
+      if (r > 0.88) continue;
+      const h = t.heights[i];
+      const avg = (t.heights[i - 1] + t.heights[i + 1] + t.heights[i - stride] + t.heights[i + stride]) / 4;
+      if (!(h < avg - 0.02)) continue;
+      const level = Math.min(avg - 0.01, h + 0.08);
+      if (!(level > h + 0.02)) continue;
+      if (t.water[i] <= NO_WATER) t.water[i] = level - env.waterLevelOffset;
+      wet++;
+      low = Math.min(low, h);
+    }
+    if (wet) puddles.push({ x: b.x, z: b.z, level: low + 0.08, depth: 0.08 });
   }
   for (const track of f.tracks) {
     const d = track.def;

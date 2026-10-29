@@ -824,6 +824,9 @@ export const crebMap: MapDef = {
     { x: -64.16, z: 2318.11, radius: 0.85, anchor: true, sink: 0.4 },
     { x: 139.38, z: 2007.23, radius: 0.85, anchor: true, sink: 0.4 },
     { x: -63.96, z: 1724.18, radius: 0.85, anchor: true, sink: 0.4 },
+    // Far bank of paddock-creek-north, 4 m right of the track at 918 m: within the
+    // 30 m cable of a stall in either bank bog, so USE / IN pulls out to the north.
+    { x: -230.92, z: 1616.84, radius: 0.85, anchor: true, sink: 0.4 },
     { x: -106.06, z: 1257.06, radius: 0.85, anchor: true, sink: 0.4 },
     { x: 150.75, z: -916.7, radius: 0.85, anchor: true, sink: 0.4 },
     { x: -32.51, z: -1683.41, radius: 0.85, anchor: true, sink: 0.4 },

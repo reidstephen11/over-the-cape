@@ -191,11 +191,30 @@ function roadBog(id: string, x: number, z: number, headingDeg: number, radiusX: 
   return { id, x, z, radiusX, radiusZ, rotationDeg: headingDeg, depth: 0.72, deep: true, winchTrees: true };
 }
 
+/**
+ * Sticky black soil on a creek bank: full track width, short along it, shallower than the
+ * winch-only hollows so a locked crawl with momentum can just get through. radiusZ is along
+ * the track; keep the exit short so the climb itself stays gravel and the mud is a punch-through.
+ */
+function creekBankBog(
+  id: string,
+  x: number,
+  z: number,
+  headingDeg: number,
+  depth: number,
+  radiusZ = 4.8,
+): BogDef {
+  return { id, x, z, radiusX: 7, radiusZ, rotationDeg: headingDeg, depth, deep: true, winchTrees: true };
+}
+
 /** On-road bogs, in the hollows where the water lies. Ids keep the `-mud-` shape the track surveys already use. */
 export const crebRoadBogs: BogDef[] = [
   roadBog('upper-daintree-road-mud-0', -73.55, 2327.02, 11.8, 6.2, 7),
   roadBog('paddock-road-mud-0', 125.54, 2012.66, 52.7, 7, 8),
   roadBog('paddock-road-mud-1', -52.39, 1731.12, -73.6, 7, 8),
+  // Paddock-creek-north: mud on the entry ramp and the top of the exit bank, not in the water.
+  creekBankBog('paddock-road-creek-entry', -228.85, 1642.0, -31.6, 0.4),
+  creekBankBog('paddock-road-creek-exit', -234.91, 1616.62, 3.1, 0.36, 3.6),
   roadBog('big-red-bypass-mud-0', -106.66, 1271.54, -19, 5.2, 7),
   roadBog('bloomfield-track-mud-0', 140.13, -908.51, 36.4, 7.2, 8),
   roadBog('bloomfield-track-mud-1', -46.05, -1677.72, 48.9, 7.2, 8),
