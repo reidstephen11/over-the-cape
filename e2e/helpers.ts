@@ -62,7 +62,12 @@ export async function lowGraphics(page: Page): Promise<void> {
     if (!localStorage.getItem('overthecape.save.v1'))
       localStorage.setItem(
         'overthecape.save.v1',
-        JSON.stringify({ version: 1, settings: { quality: 'low' } }),
+        // Every vehicle open (v1.06 locks most behind challenges).
+        JSON.stringify({
+          version: 1,
+          settings: { quality: 'low' },
+          unlocked: ['perentie', 'hilux', 'unimog', 'troopy', 'patrol', 'lc79', 'sooty80'],
+        }),
       );
   });
 }
