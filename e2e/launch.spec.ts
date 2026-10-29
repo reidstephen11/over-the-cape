@@ -46,6 +46,7 @@ test('New Journey opens episode setup and keeps vehicle, difficulty and replay c
         settings: { quality: 'low', damage: 'realistic' },
         episodes: { creb: { completed: true } },
         replay: { time: 'dusk', weather: 'rain' },
+        unlocked: ['perentie', 'hilux'],
       }),
     ),
   );
