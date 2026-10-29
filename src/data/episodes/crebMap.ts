@@ -206,7 +206,24 @@ const baseTracks: TrackDef[] = [
     surface: 'gravel',
     ruts: 0,
     camber: 0.2,
-    bridges: [{ from: 24, to: 76, kind: 'deck', width: 4.8, kerb: 0.3 }],
+    bridges: [
+      {
+        from: 24,
+        to: 76,
+        kind: 'deck',
+        width: 4.8,
+        kerb: 0.3,
+        // After the wet: a hole on the right, then the left, then a gap down the middle
+        // to straddle. Remaining strips are ~2.85 m (the Unimog is 2.18 m over the tyres);
+        // the centre hole is 0.72 m, so a 1.45 m track sits a wheel on each side.
+        // About 9 m of whole deck between holes so there is time to pick the next line.
+        gaps: [
+          { from: 32, to: 37.5, left: 0.45, right: 2.55 },
+          { from: 47, to: 52.5, left: -2.55, right: -0.45 },
+          { from: 61, to: 66.5, left: -0.36, right: 0.36 },
+        ],
+      },
+    ],
   },
   {
     id: 'bloomfield-track',
@@ -768,6 +785,15 @@ export const crebMap: MapDef = {
       radius: 22,
       reset: { x: 81, z: -672, headingDeg: 0 },
       note: 'Beside the bridge at Wujal Wujal',
+    },
+    {
+      id: 'bloomfield-bridge',
+      name: 'Bloomfield River bridge',
+      kind: 'feature',
+      x: 99,
+      z: -732,
+      radius: 22,
+      note: 'Boards missing after the wet; pick a line',
     },
     { id: 'wujal-falls', name: 'Wujal Wujal Falls', kind: 'landmark', x: -113, z: -657, radius: 26 },
     { id: 'rossville', name: 'Rossville', kind: 'landmark', x: -110, z: -1500, radius: 34 },

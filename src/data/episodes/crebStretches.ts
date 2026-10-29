@@ -344,6 +344,7 @@ export const stretchCreeks: CreekDef[] = [
  * The route drive (scripts/creb-drive.ts) and the tests crawl through them, as a driver would.
  */
 export const crawlStretches: Record<string, ReadonlyArray<readonly [number, number]>> = {
+  'bloomfield-bridge': [[24, 76]],
   'upper-daintree-road': [
     [80, 160],
     [200, 270],
@@ -489,6 +490,7 @@ export const stretchProps: PropDef[] = [
   { kind: 'signpost', x: -211.88, z: 1654.97, headingDeg: 133, text: 'Creek' },
   { kind: 'signpost', x: -93.52, z: 1296.4, headingDeg: 158, text: 'Bog, then pinch' },
   { kind: 'signpost', x: -12.5, z: 802, headingDeg: 150, text: 'Washout' },
+  { kind: 'signpost', x: 101.3, z: -726, headingDeg: 195, text: 'Missing boards' },
   { kind: 'signpost', x: -101.76, z: 923.41, headingDeg: 198, text: 'Ledge — low range' },
   { kind: 'signpost', x: 128.74, z: -881.05, headingDeg: 205, text: 'Bog — winch' },
   { kind: 'signpost', x: -99.07, z: -1435.33, headingDeg: 155, text: 'Steep clay — low range' },

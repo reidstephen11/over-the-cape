@@ -13,6 +13,8 @@ export class Autopilot {
   lowRange = false;
   /** Stay in low range on a climb once it has dropped into it, as a driver would. */
   holdLowOnClimbs = false;
+  /** Look-ahead along the path (m). 0 = the default speed-based 5–12 m. */
+  lookAhead = 0;
   done = false;
 
   constructor(
@@ -42,7 +44,7 @@ export class Autopilot {
       }
     }
     this.index = best;
-    const look = Math.min(12, Math.max(5, 4 + Math.abs(v.speed) * 0.8));
+    const look = this.lookAhead > 0 ? this.lookAhead : Math.min(12, Math.max(5, 4 + Math.abs(v.speed) * 0.8));
     let target = path[path.length - 1];
     for (let i = this.index; i < path.length; i++) {
       if (Math.hypot(path[i][0] - p.x, path[i][1] - p.z) >= look) {

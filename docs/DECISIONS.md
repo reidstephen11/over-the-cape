@@ -1666,3 +1666,19 @@ Stephen, on the live build, asked how to get past the Bloomfield River: "the bri
 **Fix.** The ford ramp still applies to real fords (paddock creeks, Donovan's, the Bloomfield Track's creeks, the Little Annan). It skips a bridge's linearized span, including the short bearings onto the abutments, so the boards stay on the 7.5 m line and the river still runs under them. Drive straight over.
 
 **Test.** `tests/creb.test.ts`: along the Bloomfield span the deck stays above 6.5 m and at least 2 m above the water, and the river under it is still more than a metre deep.
+
+## v0.97: Bloomfield River bridge, missing boards
+
+Stephen asked for the Wujal Wujal timber to stay a crossing but become a driving challenge: missing sections, a line to pick, careful and slow, readable, and beatable without the winch or lockers. Falling through should drop you in the river with a fair reset, not a soft-lock.
+
+**The line.** The deck stays at 7.5 m over the river (v0.96). Three holes are cut out of it, longer than a wheelbase so you cannot skip them by straddling along the car:
+
+- 32–37.5 m: the right half is gone. A 2.85 m strip remains on the left.
+- 47–52.5 m: the left half is gone. The same width on the right.
+- 61–66.5 m: a 0.72 m gap down the middle. Both wheel tracks still have board; you straddle it.
+
+A remaining strip of 2.85 m fits every vehicle (the Unimog is 2.18 m over the tyres) with about 30 cm a side, so a phone stick can hold the line at a crawl. About 9 m of whole deck sits between the holes, time to pick the next line. The centre hole is narrow enough that a 1.45 m track sits a wheel on each side with ~20 cm of slop. No timber is drawn or collided in a hole: the boards you see are the boards you drive on. Outer kerbs stay on remaining boards; they stop at a broken inner edge so the drop is visible. Stringers and headstocks only sit under remaining deck, so a wheel in a hole falls through to the water.
+
+**How you play it.** A sign “Missing boards” stands on the south approach. Reaching the timber shows a note: crawl, keep the wheels on the boards you can see, right hole then left then straddle the middle; off the boards is the river; restart from the camp if you go in. The camp is 50 m behind, already saved. Low range and precision crawl are enough; lockers and the winch are not needed. Phone crawl (4WD → CRAWL) holds a walking pace while you steer.
+
+**Tests.** `tests/creb.test.ts`: along the weaving line a ray finds wood at deck height; in each hole it falls more than 2 m to the riverbed; a car put down in a hole lands in the river. The short-wheelbase 4WD crawls the weaving line without taking water. The old high-range centreline drive is gone, because that line now drops through the first hole.

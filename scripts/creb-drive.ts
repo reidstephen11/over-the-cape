@@ -16,6 +16,7 @@ import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
 import { Simulation } from '../src/sim/sim';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
+import { approachDeckSteer } from '../src/sim/world/bridges';
 import { buildWorld, campsite } from '../src/sim/world/world';
 import { addPuddles } from '../src/sim/world/puddles';
 import { prepareFlood } from '../src/sim/world/flood';
@@ -54,7 +55,7 @@ const legs: [string, Mode][] = [
   ['range-top', 'bush'],
   ['concrete-descent', 'crawl'],
   ['donovans-creek', 'bush'],
-  ['bloomfield-bridge', 'bush'],
+  ['bloomfield-bridge', 'crawl'],
   ['bloomfield-track', 'road'],
 ];
 
@@ -89,8 +90,10 @@ for (let i = 0; i < 90; i++) sim.step(inputs, DT);
 let total = 0;
 for (const [trackId, mode] of legs) {
   const track = world.features.tracks.find((t) => t.def.id === trackId)!;
+  const gapBridge = track.def.bridges?.find((b) => b.gaps?.length);
   let path = Array.from({ length: Math.ceil(track.poly.length / 0.5) + 1 }, (_, i) => {
-    const p = trailPoint(track, Math.min(track.poly.length, i * 0.5));
+    const s = Math.min(track.poly.length, i * 0.5);
+    const p = trailPoint(track, s, gapBridge ? approachDeckSteer(gapBridge, s) : 0);
     return [p.x, p.z] as [number, number];
   });
   // Taking the bypass, leave the paddock road where the bypass branches off it.
@@ -115,6 +118,7 @@ for (const [trackId, mode] of legs) {
     ];
   }
   const pilot = new Autopilot(path, mode === 'road' ? 9 : mode === 'bush' ? 4.5 : 1.2);
+  if (gapBridge) pilot.lookAhead = 2.5;
   const zones = crawlStretches[trackId] ?? [];
   let crawl = mode === 'crawl';
   if (crawl && v.drivetrain.range === 'high' && Math.abs(v.speed) < 5) v.toggleRange();

@@ -17,12 +17,17 @@ export const DT = 1 / 60;
 const deg = 180 / Math.PI;
 export type Lockers = 'open' | 'rear' | 'both' | 'high';
 
-export function pathFor(track: TrackInfo, back = false) {
+export function pathAlong(track: TrackInfo, lateralAt: (s: number) => number = () => 0, back = false) {
   const path = Array.from({ length: Math.ceil(track.poly.length / 0.5) + 1 }, (_, i) => {
-    const p = trailPoint(track, Math.min(track.poly.length, i * 0.5));
+    const s = Math.min(track.poly.length, i * 0.5);
+    const p = trailPoint(track, s, lateralAt(s));
     return [p.x, p.z] as [number, number];
   });
   return back ? path.reverse() : path;
+}
+
+export function pathFor(track: TrackInfo, back = false) {
+  return pathAlong(track, () => 0, back);
 }
 
 /**
@@ -186,11 +191,14 @@ export async function runLeg(
   limit = 110,
   winch = false,
   planks?: GullyDef,
+  path?: ReadonlyArray<readonly [number, number]>,
+  lookAhead = 0,
 ) {
   const { sim, v, inputs } = s;
   const high = v.drivetrain.range === 'high';
-  const path = pathFor(track, back);
+  path ??= pathFor(track, back);
   const pilot = new Autopilot(path, high ? 1.5 : 0.7);
+  if (lookAhead > 0) pilot.lookAhead = lookAhead;
   const recovery = winch ? new WinchRecovery(sim, v, path) : null;
   const bridge = planks ? new PlankCrossing(sim, v, planks) : null;
   pilot.lowRange = !high;
@@ -251,8 +259,10 @@ export async function driveLeg(
   limit = 110,
   winch = false,
   planks?: GullyDef,
+  path?: ReadonlyArray<readonly [number, number]>,
+  lookAhead = 0,
 ) {
-  const result = await runLeg(s, track, back, limit, winch, planks);
+  const result = await runLeg(s, track, back, limit, winch, planks, path, lookAhead);
   if (!result.done) throw new Error(`${track.def.id} stopped ${result.remaining.toFixed(1)} m from the end`);
   return result;
 }
