@@ -10,7 +10,7 @@ import { patrolTuning } from '../src/data/patrol';
 import { lc79Tuning } from '../src/data/lc79';
 import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
-import { deckTop } from '../src/sim/world/bridges';
+import { approachDeckSteer, deckTop, onDeckBoards } from '../src/sim/world/bridges';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
@@ -23,7 +23,7 @@ import { winchTuning } from '../src/data/tools';
 import { crebWashout } from '../src/data/episodes/crebStretches';
 import { Autopilot } from '../src/sim/input/autopilot';
 import { Exploration } from '../src/sim/exploration';
-import { DT, driveLeg, driver, runLeg } from './helpers/drive';
+import { DT, driveLeg, driver, pathAlong, runLeg } from './helpers/drive';
 
 const world = buildWorld(crebMap);
 const wet = environmentAt(crebEpisode.startHour, crebEpisode.weather);
@@ -179,6 +179,70 @@ describe('Episode 1: the CREB Track', () => {
     expect(deepestUnder, 'the river still runs under the span').toBeGreaterThan(1);
     expect(lowestDeck).toBeGreaterThan(6.5);
   });
+
+  it('has missing boards on the Bloomfield River bridge: the safe line is timber, the holes drop through', async () => {
+    const track = trackOf('bloomfield-bridge');
+    const b = track.def.bridges![0];
+    expect(b.gaps?.length).toBe(3);
+    const sim = new Simulation(await loadRapier(), world, wet);
+    const R = sim.R;
+    sim.physics.world.step();
+    const hit = (x: number, z: number) => {
+      const ray = new R.Ray({ x, y: 60, z }, { x: 0, y: -1, z: 0 });
+      const h = sim.physics.world.castRay(ray, 100, true);
+      return h ? 60 - h.timeOfImpact : null;
+    };
+    try {
+      // Wheels on the weaving line stay on wood at deck height. A centre gap is
+      // straddled, so the car's middle is over the hole and the tyres are not.
+      const halfTrack = 1.45 / 2;
+      for (let s = b.from; s <= b.to; s += 0.8) {
+        const lat = approachDeckSteer(b, s);
+        for (const [side, wheel] of [
+          ['left', lat - halfTrack],
+          ['right', lat + halfTrack],
+        ] as const) {
+          expect(onDeckBoards(b, s, wheel), `${side} wheel at ${s.toFixed(1)}`).toBe(true);
+          const p = trailPoint(track, s, wheel);
+          const y = hit(p.x, p.z);
+          expect(y, `${side} timber at ${s.toFixed(1)}`).not.toBeNull();
+          expect(y!, `${side} timber at ${s.toFixed(1)}`).toBeCloseTo(deckTop(track, b, s), 1);
+        }
+      }
+      // Each hole has no deck: a ray falls through to the riverbed.
+      for (const g of b.gaps!) {
+        const s = (g.from + g.to) / 2;
+        const lat = (g.left + g.right) / 2;
+        expect(onDeckBoards(b, s, lat), `hole at ${s.toFixed(1)}`).toBe(false);
+        const p = trailPoint(track, s, lat);
+        const y = hit(p.x, p.z);
+        expect(y, `drop at ${s.toFixed(1)}`).not.toBeNull();
+        expect(deckTop(track, b, s) - y!, `drop at ${s.toFixed(1)}`).toBeGreaterThan(2);
+      }
+      // A car put down on a hole lands in the river, not on invisible boards.
+      const hole = b.gaps![0];
+      const mid = trailPoint(track, (hole.from + hole.to) / 2, (hole.left + hole.right) / 2);
+      const pose = sim.poseAt(mid.x, mid.z, 0, vehicleTuning.wheelRadius);
+      expect(pose.y).toBeLessThan(deckTop(track, b, (hole.from + hole.to) / 2));
+    } finally {
+      sim.physics.free();
+    }
+  });
+
+  it('crawls the Bloomfield River bridge along the remaining boards', async () => {
+    const track = trackOf('bloomfield-bridge');
+    const b = track.def.bridges![0];
+    const path = pathAlong(track, (s) => approachDeckSteer(b, s));
+    const s = await scene('bloomfield-bridge', false, 'open', vehicleTuning);
+    try {
+      const r = await driveLeg(s, track, false, 180, false, undefined, path, 2.5);
+      expect(r.tilt).toBeLessThan(20);
+      expect(s.v.condition.flood.stalled).toBe(false);
+      expect(r.water).toBeLessThan(0.1);
+    } finally {
+      s.sim.physics.free();
+    }
+  }, 300_000);
 
   it('strews the bar with boulders and scour holes across the straight line, leaving a line between them', () => {
     const t = world.terrain;
@@ -554,7 +618,6 @@ describe('Episode 1: the CREB Track', () => {
     ['bobs-hill', 'both', 200],
     ['concrete-descent', 'both', 300],
     ['donovans-creek', 'both', 200],
-    ['bloomfield-bridge', 'high', 60],
   ];
   for (const [id, lockers, limit] of legs)
     it(`drives ${id} in the wet in the short-wheelbase 4WD`, async () => {

@@ -181,6 +181,10 @@ export const crebEpisode: EpisodeDef = {
       title: 'Wujal Wujal',
       text: 'The Lutheran Church set up a mission on the Bloomfield River in 1886, and the Kuku Nyungkal people still living on their country were moved onto it. In 1979 Kuku Yalanji people began to resettle here, and the place took the name Wujal Wujal.',
     },
+    'bloomfield-bridge': {
+      title: 'Bloomfield River bridge',
+      text: 'The wet has pulled boards out of the deck. Crawl it, and keep your wheels on the timber you can see: a hole on the right, then the left, then a gap down the middle you straddle. Off the boards is a drop into the river. Restart from the camp if you go in.',
+    },
     'wujal-falls': {
       title: 'Wujal Wujal Falls',
       text: 'Wujal Wujal is usually translated as “many falls”. Upstream of the community the Bloomfield River drops about 40 metres over the falls. They are a sacred women’s place for the community: look from the track and leave the water alone.',

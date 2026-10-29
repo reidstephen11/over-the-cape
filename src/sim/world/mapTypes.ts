@@ -264,6 +264,21 @@ export interface TrackBridgeDef {
   kerb?: number;
   rise?: number;
   ramp?: number;
+  /**
+   * Missing boards: each hole is `from`..`to` metres along the track and `left`..`right`
+   * metres right of the centreline. No timber is drawn or collided there, so a wheel in
+   * the hole drops through. A hole longer than a wheelbase cannot be straddled along the
+   * track: go around it, or straddle a narrow centre hole with a wheel on each side.
+   */
+  gaps?: readonly TrackBridgeGapDef[];
+}
+
+/** A hole in a bridge deck (metres along the track, metres right of the centreline). */
+export interface TrackBridgeGapDef {
+  from: number;
+  to: number;
+  left: number;
+  right: number;
 }
 
 /**
