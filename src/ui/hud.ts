@@ -267,6 +267,9 @@ export class Hud {
     });
     this.suppliesEl = this.el.querySelector('.status-supplies') as HTMLElement;
     this.trailerEl = this.el.querySelector('.status-trailer') as HTMLElement;
+    // The trailer line sits with the place and mission lines next to the instruments.
+    this.trailerEl.classList.add('paper');
+    this.stack.appendChild(this.trailerEl);
     this.gateEl = this.el.querySelector('.gate-count') as HTMLElement;
     this.status = this.el.querySelector('.status') as HTMLElement;
     this.rangeEl = this.el.querySelector('.status-range') as HTMLElement;

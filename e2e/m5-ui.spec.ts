@@ -84,9 +84,9 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   await page.locator('[data-act="back"]').click();
   await page.locator('[data-act="resume"]').click();
   expect(await page.evaluate(() => window.__game!.ui().paused)).toBe(false);
-  // The speed in the status strip follows the units setting.
-  await expect(page.locator('.status-speed-value')).toBeVisible();
-  await expect(page.locator('.status-speed-value')).toContainText('mph');
+  // The speedometer follows the units setting.
+  await expect(page.locator('.inst-cluster')).toBeVisible();
+  await expect(page.locator('.inst-cluster')).toContainText('mph');
 
   // Tool menu.
   await page.evaluate(() => window.__game!.teleport(-90, 2560, 27));
@@ -109,7 +109,7 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   await openJourney(page);
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.episode())).toMatchObject({ camp: 'daintree-village' });
-  await expect(page.locator('.status-speed-value')).toContainText('mph');
+  await expect(page.locator('.inst-cluster')).toContainText('mph');
   expect(errors).toEqual([]);
 });
 

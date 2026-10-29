@@ -83,22 +83,13 @@ test.describe('phone', () => {
     await openJourney(page);
     await waitReady(page);
     const controls = page.locator('.touch-controls');
-    // Compact strip on a phone; the full TEMP/FUEL dials stay folded until tap or a warning.
-    await expect(page.locator('.vehicle-strip')).toBeVisible();
-    await expect(page.locator('.vehicle-gauges')).not.toHaveClass(/\bopen\b/);
-    await expect(page.locator('[data-dial="temp"]')).toBeHidden();
-    await expect(page.locator('.supplies')).toBeVisible();
+    // The HUD style's instruments sit by the edge of the view; the mission line folds away.
+    await expect(page.locator('.inst-cluster')).toBeVisible();
+    await expect(page.locator('.inst-compass')).toBeVisible();
     await expect(page.locator('.mission')).toBeVisible();
     await expect(page.locator('.crawl-gauges')).toBeHidden();
     await page.waitForTimeout(4800);
     await expect(page.locator('.mission')).toBeHidden();
-    await page.locator('.vehicle-strip').click();
-    await expect(page.locator('.mission')).toBeVisible();
-    await expect(page.locator('.vehicle-gauges')).toHaveClass(/\bopen\b/);
-    await expect(page.locator('[data-dial="temp"]')).toBeVisible();
-    await page.locator('.vehicle-strip').click();
-    await expect(page.locator('.vehicle-gauges')).not.toHaveClass(/\bopen\b/);
-    await expect(page.locator('[data-dial="temp"]')).toBeHidden();
     await expect(controls).toBeVisible();
     // No saved settings: a phone starts on the low graphics preset.
     expect(await page.evaluate(() => window.__game!.quality())).toBe('low');
@@ -201,7 +192,7 @@ test.describe('phone', () => {
     await page.evaluate(() => window.__game!.pinHazards({ swept: true, flooded: true }));
     await expect(page.locator('.alert')).toHaveCount(2);
     const warned =
-      '.alert, .touch-btn, .touch-stick-base, .hud button, .compass, .status, .supplies, .mission, .camera-help, .crawl-gauges, .prompt';
+      '.alert, .touch-btn, .touch-stick-base, .hud button, .inst-cluster, .inst-compass, .hud-stack > *, .camera-help, .crawl-gauges, .prompt';
     for (const size of [
       { width: 844, height: 390 },
       { width: 915, height: 412 },
@@ -294,10 +285,9 @@ test.describe('phone on the CREB', () => {
     await page.evaluate(() => window.__game!.setInput({ throttle: 1 }));
     await expect(page.locator('.prompt', { hasText: 'Release the handbrake' })).toBeVisible();
     await expect(page.locator('.crawl-gauges')).toBeHidden();
-    await expect(page.locator('.vehicle-strip')).toBeVisible();
-    await expect(page.locator('.supplies')).toBeVisible();
+    await expect(page.locator('.inst-cluster')).toBeVisible();
     const panels =
-      '.touch-btn, .touch-stick-base, .hud button, .compass, .status, .camera-help, .prompt, .crawl-gauges, .mission, .supplies';
+      '.touch-btn, .touch-stick-base, .hud button, .inst-cluster, .inst-compass, .hud-stack > *, .camera-help, .prompt, .crawl-gauges';
     // With 4WD's pile open, then closed.
     for (const open of [true, false]) {
       if (!open) await f.tap('.touch-pile-toggle');
@@ -314,9 +304,8 @@ test.describe('phone on the CREB', () => {
           await waitSim(page, 0.2);
           const where = `${open ? 'open' : 'closed'} ${view} ${size.width}×${size.height}`;
           expect(await overlapping(page, panels), where).toEqual([]);
-          // The status strip and camera buttons stay one row high (they once stretched down the screen).
-          for (const panel of ['.status', '.camera-help'])
-            expect((await page.locator(panel).boundingBox())!.height, `${where} ${panel}`).toBeLessThan(60);
+          // The camera buttons stay one row high (they once stretched down the screen).
+          expect((await page.locator('.camera-help').boundingBox())!.height, where).toBeLessThan(60);
         }
       }
       await page.evaluate(() => window.__game!.cameraPreset('follow'));
@@ -373,5 +362,5 @@ test('desktop shows no touch controls', async ({ page }) => {
   await openJourney(page);
   await waitReady(page);
   await expect(page.locator('.touch-controls')).toBeHidden();
-  await expect(page.locator('.status-drive').first()).toBeVisible();
+  await expect(page.locator('.inst-cluster')).toBeVisible();
 });

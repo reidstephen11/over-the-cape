@@ -13,8 +13,8 @@ export const hudStyleLabels: Record<HudStyle, string> = {
   kit: 'Field kit',
 };
 
-/** The styles that can be picked so far; the Settings row shows once there is a choice. */
-export const pickableHudStyles: readonly HudStyle[] = ['dash'];
+/** The styles that can be picked in Settings. */
+export const pickableHudStyles: readonly HudStyle[] = hudStyles;
 
 export function isHudStyle(v: unknown): v is HudStyle {
   return typeof v === 'string' && (pickableHudStyles as readonly string[]).includes(v);

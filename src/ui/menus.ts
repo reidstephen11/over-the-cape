@@ -7,6 +7,7 @@ import type { VehicleId } from '../data/vehicle';
 import { vehicleOrder, vehicles } from '../data/vehicles';
 import type { EpisodeDef } from '../data/episodes';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
+import { hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
 
 /** What each damage setting does, and which ways an episode can end with it. */
 export const damageNotes: Record<DamageMode, string> = {
@@ -182,6 +183,7 @@ export class PauseMenu {
         ${slider('ambienceVolume', 'Ambience volume')}
         <div class="setting-row controller-setting">Controller type<div class="seg">${controllerTypes.map((c) => `<button data-focus data-controller="${c}" class="${s.controller === c ? 'on' : ''}" aria-pressed="${s.controller === c}">${controllers[c].label}</button>`).join('')}</div></div>
         <div class="setting-row">Units<div class="seg"><button data-focus data-units="kmh" class="${s.units === 'kmh' ? 'on' : ''}">km/h</button><button data-focus data-units="mph" class="${s.units === 'mph' ? 'on' : ''}">mph</button></div></div>
+        <div class="setting-row">HUD style<div class="seg">${pickableHudStyles.map((h) => `<button data-focus data-hud-style="${h}" class="${s.hudStyle === h ? 'on' : ''}" aria-pressed="${s.hudStyle === h}">${hudStyleLabels[h]}</button>`).join('')}</div></div>
         <div class="setting-row">Damage<div class="seg">${damageModes
           .map(
             (m) =>
@@ -256,6 +258,10 @@ export class PauseMenu {
     } else if (t.dataset.units) {
       this.settings.units = t.dataset.units as Settings['units'];
       this.actions.changeSettings({ units: this.settings.units });
+      this.show('settings');
+    } else if (t.dataset.hudStyle) {
+      this.settings.hudStyle = t.dataset.hudStyle as HudStyle;
+      this.actions.changeSettings({ hudStyle: this.settings.hudStyle });
       this.show('settings');
     } else if (t.dataset.damage) {
       this.settings.damage = t.dataset.damage as DamageMode;

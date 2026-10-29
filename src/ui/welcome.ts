@@ -18,6 +18,7 @@ import {
   type Settings,
 } from '../sim/save/save';
 import { isTouchDevice } from './touchControls';
+import { applyHudStyle, hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
 import { damageNotes } from './menus';
 
 type Group =
@@ -28,6 +29,7 @@ type Group =
   | 'quality'
   | 'volume'
   | 'units'
+  | 'hudStyle'
   | 'episode'
   | 'start'
   | 'setup'
@@ -185,9 +187,13 @@ export class WelcomeScreen {
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
+        <section class="title-setting"><h3>HUD style</h3><div class="welcome-options seg">${pickableHudStyles.map((h) => setting('hudStyle', h, hudStyleLabels[h], this.settings.hudStyle === h)).join('')}</div></section>
         <p class="title-settings-version" title="Build ${BUILD_LABEL}">${GAME_VERSION}</p>
       </div><p class="title-input-hint">${hint}</p>`;
-      this.setRows(['back', 'quality', 'touchDrive', 'volume', 'controller', 'units'], focusGroup ?? 'back');
+      this.setRows(
+        ['back', 'quality', 'touchDrive', 'volume', 'controller', 'units', 'hudStyle'],
+        focusGroup ?? 'back',
+      );
       return;
     }
     this.el.innerHTML = `<div class="title-home">${this.logo}${
@@ -312,6 +318,8 @@ export class WelcomeScreen {
         return v === this.settings.quality;
       case 'units':
         return v === this.settings.units;
+      case 'hudStyle':
+        return v === this.settings.hudStyle;
       case 'episode':
         return v === this.choice.episode;
       case 'start':
@@ -350,11 +358,20 @@ export class WelcomeScreen {
       this.render();
       return;
     }
-    if (group === 'quality' || group === 'units' || group === 'controller' || group === 'touchDrive') {
+    if (
+      group === 'quality' ||
+      group === 'units' ||
+      group === 'controller' ||
+      group === 'touchDrive' ||
+      group === 'hudStyle'
+    ) {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
       else if (group === 'controller') this.settings.controller = value as ControllerType;
       else if (group === 'touchDrive') this.settings.touchDrive = value as TouchDriveScheme;
-      else this.settings.units = value as Settings['units'];
+      else if (group === 'hudStyle') {
+        this.settings.hudStyle = value as HudStyle;
+        applyHudStyle(this.settings.hudStyle);
+      } else this.settings.units = value as Settings['units'];
       this.persistSettings();
       this.render(group);
       return;
