@@ -7,7 +7,7 @@ import type { Checkpoint } from '../episode';
 import type { TyreFault } from '../vehicle/condition';
 import type { VehicleId } from '../../data/vehicle';
 import { isVehicleId } from '../../data/vehicles';
-import { episodeOrder, isEpisodeId, type EpisodeId } from '../../data/episodes';
+import { episodeOrder, isEpisodeId, type EpisodeId, type EpisodeLoadout } from '../../data/episodes';
 import { isTimeOfDay, isWeather, type Conditions } from '../../data/environment';
 import { isDamageMode, type DamageMode } from '../../data/damage';
 import { readDeliveryState } from '../trailerState';
@@ -52,6 +52,8 @@ export interface SaveData {
   replay: Conditions | null;
   /** Best scored run per crawl trail. */
   crawlBests?: CrawlBests;
+  /** The load last packed for each vehicle (src/data/packing.ts). */
+  packs?: Partial<Record<VehicleId, EpisodeLoadout>>;
 }
 
 export const defaultSettings: Settings = {
@@ -122,6 +124,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
           ? { time: replay.time, weather: replay.weather }
           : null,
       crawlBests: readBests(data.crawlBests),
+      packs: readPacks(data.packs),
     };
   } catch {
     return null;
@@ -176,7 +179,27 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     rescued: c.rescued === true,
     ...(Array.isArray(c.stranded) ? { stranded: strings(c.stranded) } : {}),
     ...(c.delivery ? { delivery: readDeliveryState(c.delivery) } : {}),
+    ...(c.packed ? { packed: readLoad(c.packed) } : {}),
   };
+}
+
+function readLoad(raw: unknown): EpisodeLoadout {
+  const l = (raw ?? {}) as Partial<EpisodeLoadout>;
+  const count = (x: unknown) => Math.max(0, Math.round(num(x)));
+  return {
+    fuel: Math.max(0, num(l.fuel)),
+    jerryCans: count(l.jerryCans),
+    spares: count(l.spares),
+    plugs: count(l.plugs),
+  };
+}
+
+function readPacks(raw: unknown): Partial<Record<VehicleId, EpisodeLoadout>> {
+  const out: Partial<Record<VehicleId, EpisodeLoadout>> = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const [id, l] of Object.entries(raw as Record<string, unknown>))
+    if (isVehicleId(id)) out[id] = readLoad(l);
+  return out;
 }
 
 const strings = (raw: unknown): string[] =>

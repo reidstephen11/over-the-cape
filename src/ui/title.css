@@ -344,6 +344,48 @@
   outline: 2px solid var(--title-gold);
   outline-offset: 3px;
 }
+.welcome .pack-row {
+  display: grid;
+  grid-template-columns: 1fr 44px 64px 44px;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+.welcome .pack-label {
+  color: var(--title-white);
+  font-size: 14px;
+}
+.welcome .pack-step {
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  padding: 0;
+  text-align: center;
+}
+.welcome .pack-count {
+  text-align: center;
+  font-weight: 700;
+  color: var(--title-white);
+}
+.welcome .pack-weight {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 4px;
+  color: var(--title-white);
+  font-size: 13px;
+}
+.welcome .pack-bar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: #e6d4ad22;
+  overflow: hidden;
+}
+.welcome .pack-bar i {
+  display: block;
+  height: 100%;
+  background: var(--title-gold);
+}
 .welcome summary:focus-visible,
 .loading summary:focus-visible {
   outline-color: var(--title-gold);

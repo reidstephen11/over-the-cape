@@ -36,7 +36,7 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
   loading.setSubtitle(map.name);
   loading.briefing(
     def,
-    vehicleLoadout(def.loadout, choice.vehicle),
+    (!checkpoint && choice.load) || vehicleLoadout(def.loadout, choice.vehicle),
     choice.replay,
     checkpoint ? (map.pois.find((p) => p.id === checkpoint.camp)?.name ?? null) : null,
     choice.damage,

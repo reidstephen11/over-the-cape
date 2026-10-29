@@ -8,7 +8,9 @@ import { timeLabels, timesOfDay, weatherLabels, weathers, type TimeOfDay } from 
 import { clockTime, episodeOrder, episodes, type EpisodeId } from '../data/episodes';
 import { maps } from '../data/maps';
 import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
-import { vehicleOrder, vehicles } from '../data/vehicles';
+import { vehicleLoadout, vehicleOrder, vehicles } from '../data/vehicles';
+import type { EpisodeLoadout } from '../data/episodes';
+import { fitPack, loadKg, packLimitKg, stepPack } from '../data/packing';
 import {
   defaultSettings,
   loadSave,
@@ -37,7 +39,23 @@ type Group =
   | 'damage'
   | 'time'
   | 'weather'
+  | 'pack'
+  | 'packFuel'
+  | 'packCans'
+  | 'packSpares'
+  | 'packPlugs'
+  | 'packStandard'
   | 'drive';
+
+/** The packing list's rows: what each is, and how it reads. */
+const packItems: { item: keyof EpisodeLoadout; group: Group; label: string; show: (n: number) => string }[] =
+  [
+    { item: 'fuel', group: 'packFuel', label: 'Fuel in the tank', show: (n) => `${Math.round(n)} L` },
+    { item: 'jerryCans', group: 'packCans', label: 'Jerry cans (20 L)', show: (n) => String(n) },
+    { item: 'spares', group: 'packSpares', label: 'Spare wheels', show: (n) => String(n) },
+    { item: 'plugs', group: 'packPlugs', label: 'Tyre plugs', show: (n) => String(n) },
+  ];
+const packGroups = packItems.map((p) => p.group);
 
 /** The full choice: the launch, plus the damage setting (it decides how an episode can end). */
 export interface WelcomeChoice extends LaunchChoice {
@@ -69,6 +87,9 @@ export class WelcomeScreen {
   private raf = 0;
   private done = false;
   private setupOpen = false;
+  private packOpen = false;
+  /** The load last packed for each vehicle, kept in the save when a run starts. */
+  private readonly packs: NonNullable<SaveData['packs']>;
   /** Test mode (`?dev`): every episode open, and conditions to pick for any of them. */
   private readonly dev = isDevMode();
 
@@ -79,6 +100,7 @@ export class WelcomeScreen {
     private readonly onDrive: (choice: WelcomeChoice, audio?: AudioContext) => void,
   ) {
     this.choice = { ...initial };
+    this.packs = { ...save?.packs };
     this.settings = {
       ...defaultSettings,
       quality: isTouchDevice() ? 'low' : defaultSettings.quality,
@@ -292,6 +314,7 @@ export class WelcomeScreen {
                 : ''
             }
         </section>
+        ${this.packHtml()}
         ${this.dev ? '<p class="welcome-note dev-note">Test mode: every episode is open, and nothing you do is saved.</p>' : ''}
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>
       </div>`;
@@ -301,9 +324,51 @@ export class WelcomeScreen {
       'start',
       'setup',
       ...(this.setupOpen ? (['vehicle', 'damage', 'time', 'weather'] as const) : []),
+      'pack',
+      ...(this.packOpen ? [...packGroups, 'packStandard' as const] : []),
       'drive',
     ];
     this.setRows(groups, keep ?? 'drive');
+  }
+
+  /** The load for a new run: last packed for this vehicle, or the standard one. */
+  private get load(): EpisodeLoadout {
+    const standard = episodes[this.choice.episode].loadout;
+    const v = this.choice.vehicle;
+    return fitPack(this.choice.load ?? this.packs[v] ?? vehicleLoadout(standard, v), standard, v);
+  }
+
+  /** The packing list: a row of − and + for each item, and the weight against the limit. */
+  private packHtml(): string {
+    const standard = episodes[this.choice.episode].loadout;
+    const v = this.choice.vehicle;
+    const l = this.load;
+    const kg = Math.round(loadKg(l, v));
+    const limit = Math.round(packLimitKg(standard, v));
+    const base = Math.round(loadKg(vehicleLoadout(standard, v), v));
+    const summary = `${Math.round(l.fuel)} L · ${l.jerryCans} can${l.jerryCans === 1 ? '' : 's'} · ${l.spares} spare${l.spares === 1 ? '' : 's'} · ${l.plugs} plug${l.plugs === 1 ? '' : 's'}`;
+    const step = (item: keyof EpisodeLoadout, group: Group, dir: 1 | -1, label: string) =>
+      `<button type="button" class="welcome-option pack-step" data-group="${group}" data-value="${item}:${dir}" aria-label="${dir > 0 ? 'More' : 'Less'} ${label.toLowerCase()}"${stepPack(l, item, dir, standard, v) ? '' : ' disabled'}>${dir > 0 ? '+' : '−'}</button>`;
+    const rows = packItems
+      .map(
+        (p) =>
+          `<div class="pack-row" data-pack="${p.item}"><span class="pack-label">${p.label}</span>${step(p.item, p.group, -1, p.label)}<output class="pack-count">${p.show(l[p.item])}</output>${step(p.item, p.group, 1, p.label)}</div>`,
+      )
+      .join('');
+    const weight =
+      kg > base
+        ? `${kg - base} kg heavier than the standard load`
+        : kg < base
+          ? `${base - kg} kg lighter than the standard load`
+          : 'The standard load';
+    return `<button type="button" class="welcome-setup-toggle" data-group="pack" aria-expanded="${this.packOpen}" aria-controls="welcome-pack"><span>Packing</span><span>${summary} <b aria-hidden="true">${this.packOpen ? '−' : '+'}</b></span></button>
+        <section id="welcome-pack" class="welcome-section welcome-setup welcome-pack" ${this.packOpen ? '' : 'hidden'}>
+            <h2>What you take</h2>
+            ${rows}
+            <div class="pack-weight"><span>Load ${kg} kg of ${limit} kg</span><span class="pack-bar"><i style="width:${Math.min(100, Math.round((100 * kg) / limit))}%"></i></span></div>
+            <p class="welcome-note">${weight}. Weight sinks the car deeper in the mud, slows it on the climbs and works the engine harder. The finish scores the fuel and kit you keep out of what you packed. A run restarted from a camp keeps its load; a new run takes this one.</p>
+            <div class="welcome-options seg"><button type="button" class="welcome-option" data-group="packStandard" data-value="standard">Standard load</button></div>
+        </section>`;
   }
 
   /** Is this option the one chosen in its group? */
@@ -382,15 +447,55 @@ export class WelcomeScreen {
       this.render('setup');
       return;
     }
+    if (group === 'pack') {
+      this.packOpen = !this.packOpen;
+      this.render('pack');
+      return;
+    }
+    if (packGroups.includes(group) || group === 'packStandard') {
+      const standard = episodes[this.choice.episode].loadout;
+      const v = this.choice.vehicle;
+      const [item, dir] = value.split(':') as [keyof EpisodeLoadout, string];
+      const next =
+        group === 'packStandard'
+          ? vehicleLoadout(standard, v)
+          : stepPack(this.load, item, dir === '1' ? 1 : -1, standard, v);
+      if (next) {
+        this.choice.load = next;
+        this.packs[v] = next;
+      }
+      // Stay on the button pressed, even when it can't go further now.
+      const col = this.col;
+      const row = this.row;
+      this.render(group);
+      if (group !== 'packStandard') this.focusPackStep(group, value, row, col);
+      return;
+    }
     if (group === 'episode') {
       this.choice.episode = value as EpisodeId;
       this.choice.resume = false;
     } else if (group === 'start') this.choice.resume = value === 'resume';
-    else if (group === 'vehicle') this.choice.vehicle = value as WelcomeChoice['vehicle'];
-    else if (group === 'damage') this.choice.damage = value as DamageMode;
+    else if (group === 'vehicle') {
+      this.choice.vehicle = value as WelcomeChoice['vehicle'];
+      // Each vehicle keeps its own packing.
+      this.choice.load = undefined;
+      this.choice.load = this.load;
+    } else if (group === 'damage') this.choice.damage = value as DamageMode;
     else if (group === 'time') this.time = value as TimeOfDay | 'story';
     else if (group === 'weather') this.weather = value as (typeof weathers)[number];
     this.render(group);
+  }
+
+  /** Back on the − or + just pressed, or the nearest one still open. */
+  private focusPackStep(group: Group, value: string, row: number, col: number): void {
+    const flat = this.rows.flat();
+    const same = flat.find((b) => b.dataset.group === group && b.dataset.value === value);
+    const at = same ?? this.rows[row]?.[Math.min(col, (this.rows[row]?.length ?? 1) - 1)];
+    if (!at) return;
+    this.row = this.rows.findIndex((r) => r.includes(at));
+    this.col = this.rows[this.row].indexOf(at);
+    this.refresh();
+    at.focus({ preventScroll: true });
   }
 
   /** Mark the chosen option in each group, and the focused one. */

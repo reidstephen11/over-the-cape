@@ -23,13 +23,15 @@ import {
   episodes,
   type EpisodeDef,
   type EpisodeId,
+  type EpisodeLoadout,
   type StrandedDriverDef,
 } from '../data/episodes';
 import { usePalette } from '../render/colors';
 import { qualityPresets } from '../data/quality';
 import type { DamageMode } from '../data/damage';
 import type { VehicleId } from '../data/vehicle';
-import { vehicles } from '../data/vehicles';
+import { vehicleLoadout, vehicles } from '../data/vehicles';
+import { packWeights } from '../data/packing';
 import { cameraTuning } from '../data/camera';
 import { buildWorldSteps, type World } from '../sim/world/world';
 import { addPuddles } from '../sim/world/puddles';
@@ -101,6 +103,8 @@ export interface LaunchChoice {
   damage?: DamageMode;
   /** Title-screen settings, also applied in test mode without writing to the real save. */
   settings?: Settings;
+  /** What a new run sets out with (else the standard load). */
+  load?: EpisodeLoadout;
 }
 
 /** The episode being played: its story, where this run starts, and progress on them all. */
@@ -109,6 +113,8 @@ interface EpisodeSetup {
   checkpoint: Checkpoint;
   replay: Conditions | null;
   progress: Partial<Record<EpisodeId, EpisodeProgress>>;
+  /** The load last packed for each vehicle. */
+  packs: Partial<Record<VehicleId, EpisodeLoadout>>;
 }
 
 /**
@@ -149,6 +155,7 @@ export class Game {
   checkpoint: Checkpoint;
   /** Progress on every episode, kept in the save. */
   private readonly progress: Partial<Record<EpisodeId, EpisodeProgress>>;
+  private readonly packs: Partial<Record<VehicleId, EpisodeLoadout>>;
   readonly history: HistoryCard;
   readonly result: ResultCard;
   /** The clock time the light was last set for, and whether it was dark enough for the lamps. */
@@ -238,6 +245,7 @@ export class Game {
     this.checkpoint = setup.checkpoint;
     this.strandedFreed = new Set(setup.checkpoint.stranded);
     this.progress = { ...setup.progress };
+    this.packs = setup.packs;
     this.run = new EpisodeRun(setup.def, setup.checkpoint, !setup.replay);
     // Test mode: no deadline, and a replay's clock starts at the hour its light shows.
     if (this.dev) {
@@ -271,6 +279,7 @@ export class Game {
     // The run starts at its checkpoint's camp, with what was on board there.
     const camp = exploration.lastCampsite || world.map.spawnCampsite;
     sim.addVehicle(LOCAL_VEHICLE, sim.campsitePose(camp, tuning.wheelRadius), tuning);
+    this.vehicle.packing = packWeights(setup.def.loadout, vehicleId);
     sim.setDamage(settings.damage);
     sim.fuelScale = setup.def.fuelScale;
     applyCheckpoint(this.vehicle, this.checkpoint);
@@ -574,7 +583,14 @@ export class Game {
     const checkpoint =
       choice.resume && saved && mapDef.pois.some((p) => p.id === saved.camp && p.kind === 'campsite')
         ? saved
-        : startCheckpoint(def, mapDef.spawnCampsite, choice.vehicle, seed > 0 ? seed : undefined);
+        : startCheckpoint(
+            def,
+            mapDef.spawnCampsite,
+            choice.vehicle,
+            seed > 0 ? seed : undefined,
+            choice.load,
+          );
+    const packs = { ...save?.packs, ...(choice.load ? { [choice.vehicle]: choice.load } : {}) };
     // Replays keep the conditions picked; the story's own run has its storm (if any).
     const storm = choice.replay ? undefined : def.storm;
     const weather = choice.replay
@@ -630,7 +646,7 @@ export class Game {
       exploration,
       save?.crawlBests ?? {},
       choice.vehicle,
-      { def, checkpoint, replay: choice.replay, progress: episodeProgress },
+      { def, checkpoint, replay: choice.replay, progress: episodeProgress, packs },
       audioContext,
     );
   }
@@ -679,6 +695,7 @@ export class Game {
       episodes: this.progress,
       replay: episode === this.episode.id ? this.replay : null,
       crawlBests: this.crawlRuns.bests,
+      packs: this.packs,
     });
     if (!ok && this.storageOk) {
       this.storageOk = false;
@@ -896,6 +913,7 @@ export class Game {
     this.tool.cancel();
     this.crawlRuns.cancel();
     this.sim.replaceVehicle(LOCAL_VEHICLE, def.tuning);
+    this.vehicle.packing = packWeights(this.episode.loadout, id);
     this.sim.switchOffEngine(LOCAL_VEHICLE);
     this.view.scene.remove(this.model.root);
     this.model.dispose();
@@ -1267,7 +1285,7 @@ export class Game {
     const deadline = this.episode.deadline?.hour;
     const score = scoreRun({
       condition: this.vehicle.condition,
-      startFuel: this.episode.loadout.fuel + this.episode.loadout.jerryCans * 20,
+      packed: this.checkpoint.packed ?? vehicleLoadout(this.episode.loadout, this.vehicleId),
       minutes,
       hoursSpare: this.run.timed && deadline !== undefined ? deadline - this.run.hour : null,
       targetMinutes: 30,
@@ -1422,6 +1440,7 @@ export class Game {
         this.finds.taken,
         this.sim.surprises?.happened(),
         this.sim.deliveryState(),
+        this.checkpoint.packed,
       );
       if (this.episode.stranded) this.checkpoint.stranded = [...this.strandedFreed];
       this.keepCheckpoint();

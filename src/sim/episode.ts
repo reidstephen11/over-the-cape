@@ -1,6 +1,7 @@
 import type { DamageMode } from '../data/damage';
 import { sweptTuning } from '../data/surfaces';
-import type { EpisodeDef, FailReason } from '../data/episodes';
+import type { EpisodeDef, EpisodeLoadout, FailReason } from '../data/episodes';
+import { fitPack } from '../data/packing';
 import type { VehicleId } from '../data/vehicle';
 import { vehicleLoadout } from '../data/vehicles';
 import type { TyreFault } from './vehicle/condition';
@@ -38,6 +39,8 @@ export interface Checkpoint {
   stranded?: string[];
   /** Trailer poses, cargo and loose drums as they were at this camp (absent in older saves). */
   delivery?: DeliveryState;
+  /** What the run set out with (absent in saves from before packing: the standard load). */
+  packed?: EpisodeLoadout;
 }
 
 export type EpisodeStatus = 'driving' | 'complete' | 'failed';
@@ -178,6 +181,7 @@ export function checkpointAt(
   taken: Iterable<string> = [],
   surprises: Iterable<string> = [],
   delivery?: DeliveryState,
+  packed?: EpisodeLoadout,
 ): Checkpoint {
   const c = v.condition;
   return {
@@ -196,6 +200,7 @@ export function checkpointAt(
     surprises: [...surprises],
     rescued: run.rescued && !!run.def.rescue,
     ...(delivery ? { delivery } : {}),
+    ...(packed ? { packed } : {}),
   };
 }
 
@@ -236,8 +241,8 @@ export function applyCheckpoint(v: Vehicle, c: Checkpoint): void {
 }
 
 /**
- * The checkpoint an episode starts from, with the episode's load and the vehicle's own
- * extras. Only here: changing vehicle later carries the load across as it is (fuel that
+ * The checkpoint an episode starts from, with what was packed (else the episode's load and
+ * the vehicle's own extras). Only here: changing vehicle later carries the load across as it is (fuel that
  * won't fit the new tank stays behind), so changing back and forth never adds anything.
  */
 export function startCheckpoint(
@@ -245,8 +250,9 @@ export function startCheckpoint(
   spawnCamp: string,
   vehicle: VehicleId,
   seed = newRunSeed(),
+  pack?: EpisodeLoadout,
 ): Checkpoint {
-  const l = vehicleLoadout(def.loadout, vehicle);
+  const l = pack ? fitPack(pack, def.loadout, vehicle) : vehicleLoadout(def.loadout, vehicle);
   return {
     camp: spawnCamp,
     hour: def.startHour,
@@ -262,5 +268,6 @@ export function startCheckpoint(
     seed,
     surprises: [],
     rescued: false,
+    packed: { ...l },
   };
 }
