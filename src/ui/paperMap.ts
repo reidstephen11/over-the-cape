@@ -9,7 +9,7 @@ import { trailPoint } from '../sim/world/crawlTrail';
 import { gateColours } from '../data/palette';
 import { seenTuning, type SeenGround } from '../sim/seenGround';
 
-/** An unfound place (not a roadside sign) within this of ground you've seen is a question mark (m). */
+/** An unfound place within this of ground you've seen shows as a question mark (m). */
 const HINT_RANGE = 250;
 const PAPER = '#F3EBDA';
 
@@ -566,8 +566,7 @@ export class PaperMap {
     if (this.frame) g.drawImage(this.frame, 0, 0);
     if (seen)
       for (const p of this.world.pois)
-        if (p.kind !== 'signpost' && !discovered.has(p.id) && seen.near(p.x, p.z, HINT_RANGE))
-          this.drawHint(g, p);
+        if (!discovered.has(p.id) && seen.near(p.x, p.z, HINT_RANGE)) this.drawHint(g, p);
     const pois = this.world.pois.filter((p) => discovered.has(p.id));
     const labels = placeMapLabels(
       pois.map((p) => {
