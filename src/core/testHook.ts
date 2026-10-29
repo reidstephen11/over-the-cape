@@ -132,7 +132,7 @@ export interface GameHook {
   /** Is the park brake on? */
   parkBrake(): boolean;
   /** Draw calls and triangles per top-level scene group (renders the scene once per group). */
-  breakdown(): Record<string, { calls: number; triangles: number }>;
+  breakdown(): Record<string, { calls: number; triangles: number; ms: number }>;
   /** Audio state, levels and what's playing. */
   audio(): AudioInfo;
   /** Debug: play a bird call now. */
@@ -271,11 +271,19 @@ export function installHook(game: Game): void {
       const r = g.view.renderer;
       const scene = g.view.scene;
       const kids = scene.children.filter((c) => c.visible);
-      const out: Record<string, { calls: number; triangles: number }> = {};
+      const out: Record<string, { calls: number; triangles: number; ms: number }> = {};
+      const gl = r.getContext();
+      const pixel = new Uint8Array(4);
       const measure = (name: string, only: THREE.Object3D, siblings: THREE.Object3D[]) => {
         for (const k of siblings) k.visible = k === only || k === g.view.camera || k.type.endsWith('Light');
         r.render(scene, g.view.camera);
-        out[name] = { calls: r.info.render.calls, triangles: r.info.render.triangles };
+        // Time a second render, waiting for the GPU to finish it (reading a pixel waits).
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        const t0 = performance.now();
+        r.render(scene, g.view.camera);
+        gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        const ms = performance.now() - t0;
+        out[name] = { calls: r.info.render.calls, triangles: r.info.render.triangles, ms };
         for (const k of siblings) k.visible = true;
       };
       kids.forEach((c, i) => measure(c.name || `${c.type}#${i}`, c, kids));

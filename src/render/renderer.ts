@@ -89,6 +89,7 @@ export class GameRenderer {
       new WaterCurrent(world.features.creeks),
       world.features.creekRise,
     );
+    this.water.setSky(env);
     this.scene.add(this.water.group);
     this.vegetation = new Vegetation(world, quality);
     this.scene.add(this.vegetation.group);
@@ -151,6 +152,7 @@ export class GameRenderer {
     this.sky.setEnvironment(env);
     this.horizon.setEnvironment(env);
     this.updateReflections(env);
+    this.water.setSky(env);
     this.renderer.toneMapping =
       env.toneMapping === 'agx' ? THREE.AgXToneMapping : THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = env.exposure;
