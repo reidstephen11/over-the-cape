@@ -4,7 +4,7 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 
 1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. Trailers stay in test mode only; removing their code is the owner's call.
 2. ~~**Section times.**~~ Done in v0.65.
-3. **Ghost car.** Record the car's position and heading every 0.25 s on each run; save the best run's trace; on later runs draw a faded copy of the car following it (no physics).
+3. ~~**Ghost car.**~~ Done in v1.00 (`src/sim/ghost.ts`): the quickest finish follows you as a pale car; the pause menu shows the gap. Still open: a live gap on the driving HUD and a setting to hide it.
 4. **Changing track conditions.** Clay churned up by wheelspin done in v0.70 (`src/sim/world/churn.ts`), drawn as ruts in v0.71. Still to do: each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
 5. ~~**Engine strain.**~~ Heat done in v0.67; the bow wave in deep crossings taken too fast in v0.70.
 6. ~~**Tyre pressures.**~~ Done in v0.67; the timed compressor in v0.70.

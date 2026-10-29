@@ -6,6 +6,8 @@ import { environmentFor, presetHours, type Conditions } from '../data/environmen
 import { episodeWeatherAt } from '../data/weatherTimeline';
 import { scoreRun, type RunScore } from '../sim/runScore';
 import { SectionTimes, type SectionTime } from '../sim/sectionTimes';
+import { GhostGap, GhostRecorder, loadGhost, minSec, saveGhost, type GhostTrace } from '../sim/ghost';
+import { GhostView } from '../render/ghostView';
 import { strandedPose } from '../sim/stranded';
 import {
   Traffic,
@@ -163,6 +165,13 @@ export class Game {
   /** Optional scored runs on the crawl trails. */
   readonly crawlRuns: CrawlRuns;
   readonly sectionTimes: SectionTimes;
+  /** This run's path, and the best run's car following its own (null before a first finish). */
+  private readonly ghostRecorder: GhostRecorder;
+  private ghostTrace: GhostTrace | null;
+  private ghost: GhostView | null = null;
+  private ghostGap: GhostGap | null = null;
+  /** Seconds behind the ghost (negative: ahead). */
+  private ghostBehind = 0;
   readonly traffic: Traffic;
   private readonly trafficCars = new Map<OncomingCar, { body: RAPIER.RigidBody; view: StuckVehicleView }>();
   private readonly trafficLooks = new Map<string, VehicleId>();
@@ -286,6 +295,14 @@ export class Game {
       drawn.model.root.name = `stuck-${s.def.id}`;
       this.stuckViews.push(drawn);
       view.scene.add(drawn.model.root);
+    }
+    this.ghostRecorder = new GhostRecorder(setup.checkpoint.elapsed);
+    this.ghostTrace = loadGhost(setup.def.id);
+    if (this.ghostTrace) {
+      this.ghost = new GhostView(this.ghostTrace, vehicles[this.ghostTrace.vehicle].tuning);
+      this.ghost.update(this.run.elapsed);
+      this.ghostGap = new GhostGap(this.ghostTrace, setup.checkpoint.elapsed);
+      view.scene.add(this.ghost.model.root);
     }
     this.ruts = new RutsView(sim.churn, (x, z) => world.terrain.heightAt(x, z));
     view.scene.add(this.ruts.mesh);
@@ -628,6 +645,8 @@ export class Game {
     this.sim.switchOffEngine(LOCAL_VEHICLE);
     // A run under way can be continued from the main menu, even before the first camp.
     this.keepCheckpoint();
+    if (this.ghostTrace)
+      this.hud.toast(`Your best run (${minSec(this.ghostTrace.seconds)}) drives with you as a ghost`, 4000);
   }
 
   /** Turn the engine over on the starter, as the first press of the pedal does. */
@@ -790,6 +809,14 @@ export class Game {
       value: plural(c.spares, 'spare'),
       note: `${plural(c.plugs, 'plug')} · ${plural(planks, 'plank')}`,
     });
+    if (this.ghostTrace) {
+      const gap = Math.round(this.ghostBehind);
+      cells.push({
+        label: 'Ghost',
+        value: gap === 0 ? 'Level' : `${minSec(gap)} ${gap > 0 ? 'behind' : 'ahead'}`,
+        note: `Best run ${minSec(this.ghostTrace.seconds)}`,
+      });
+    }
     const flats = c.tyres.filter((t) => t <= 0.05).length;
     const leaking = c.tyres.filter((t, i) => t > 0.05 && (t < 0.97 || c.tyreFault[i] !== 'none')).length;
     cells.push({
@@ -831,6 +858,8 @@ export class Game {
       this.findMarkers.show(this.finds.defs, this.finds.taken);
       this.exploration.lastCampsite = this.checkpoint.camp;
       this.run.restart(this.checkpoint);
+      this.ghostRecorder.rewind(this.checkpoint.elapsed);
+      this.ghostGap?.reset();
       this.noteHour = this.run.hour;
       this.updateEnvironment(true);
       this.crawlRuns.cancel();
@@ -1243,7 +1272,7 @@ export class Game {
       hoursSpare: this.run.timed && deadline !== undefined ? deadline - this.run.hour : null,
       targetMinutes: 30,
     });
-    const scoreLines = this.scoreStats(score, was, minutes);
+    const scoreLines = [...this.scoreStats(score, was, minutes), ...this.keepGhost()];
     this.progress[this.episode.id] = {
       completed: true,
       bestMinutes: Math.min(was.bestMinutes ?? Infinity, Math.round(minutes * 10) / 10),
@@ -1275,6 +1304,41 @@ export class Game {
         else this.loop.paused = this.pause.isOpen || this.map.isOpen;
       },
     );
+  }
+
+  /** Add this run's pose to its ghost trace. */
+  private recordGhost(): void {
+    const v = this.vehicle;
+    const p = v.body.translation();
+    const q = v.body.rotation();
+    const suspension = v.wheels.reduce((sum, w) => sum + w.suspension, 0) / v.wheels.length;
+    this.ghostRecorder.record(this.run.elapsed, {
+      x: p.x,
+      y: p.y,
+      z: p.z,
+      qx: q.x,
+      qy: q.y,
+      qz: q.z,
+      qw: q.w,
+      suspension,
+    });
+  }
+
+  /** At the finish: keep this run as the ghost if it's the first or the quickest. Returns the finish line. */
+  private keepGhost(): string[] {
+    const was = this.ghostTrace;
+    if (was && this.run.elapsed >= was.seconds) {
+      const behind = Math.round(this.run.elapsed - was.seconds);
+      return [`Ghost ahead by ${minSec(behind)}`];
+    }
+    const trace = this.ghostRecorder.trace(this.vehicleId, this.run.elapsed);
+    if (!trace) return ['Ghost not saved: this run was resumed from a camp after the game was closed'];
+    // Test mode leaves the real save alone.
+    if (!this.dev && !saveGhost(this.episode.id, trace))
+      return ['Ghost not saved: browser storage is full or blocked'];
+    this.ghostTrace = trace;
+    if (!was) return ['Ghost saved: race this run next time'];
+    return [`Ghost beaten by ${minSec(was.seconds - this.run.elapsed)}: this run is the new ghost`];
   }
 
   private onFailed(): void {
@@ -1325,7 +1389,9 @@ export class Game {
     this.inputs.set(LOCAL_VEHICLE, inp);
     this.sim.step(this.inputs, dt);
     this.run.tick(dt);
+    if (this.run.status === 'driving') this.recordGhost();
     const p = this.vehicle.body.translation();
+    if (this.ghostGap) this.ghostBehind = this.ghostGap.update(p.x, p.z, this.run.elapsed);
     // A campsite puts the engine and suspension right and patches punctures.
     if (
       this.sim.damage !== 'off' &&
@@ -1630,6 +1696,7 @@ export class Game {
     this.syncDeliveryViews();
     for (const s of this.stuckViews) s.update();
     for (const { view } of this.trafficCars.values()) view.update();
+    this.ghost?.update(this.run.elapsed);
     this.ruts.update(frameDt);
     for (const t of this.trailerViews.values()) t.update(this.loop.paused ? 1 : alpha);
     for (const d of this.drumViews.values()) d.update();

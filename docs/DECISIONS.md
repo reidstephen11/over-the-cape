@@ -1705,3 +1705,19 @@ Steef: "performance is starting to get really choppy on mobile when near and on 
 **Test hook.** `__game.breakdown()` now also gives each scene group's draw time in milliseconds (`ms`), waiting for the GPU to finish, so the next performance question can be answered the same way.
 
 **Not done.** The ground uses the same filtered sky map over the whole screen everywhere; the same change there would make every frame cheaper on a phone, but it changes the look of all the land, so it is left for a separate update.
+
+## v1.00: ghost car
+
+Steef picked the ghost car from the remaining ideas, to race your best run on the CREB Track (ROADMAP item 3).
+
+**Recording.** Every run records the car's position, its full rotation (so it climbs and leans with the ground) and the wheels' mean suspension travel every 0.25 s of driving time, the run's own clock that stops while paused (`src/sim/ghost.ts`). Restarting from a camp drops the recording after that camp's time, so the trace stays one continuous drive. A run resumed from a saved camp after the game was closed has no record of the driving before it, so it makes no ghost; the finish card says so.
+
+**Which run is the ghost.** The first finish, then any finish quicker than the ghost. It is the quickest run, not the highest score, because the ghost is about racing. The vehicle of that run is kept with it, so a ghost in the Troopy stays a Troopy when you race it in the 40. Test mode can race a ghost but never saves one.
+
+**Saving.** The trace is kept under its own browser key (`overthecape.save.v1.ghost.creb`), apart from the main save, because a long run is several hundred kilobytes (about 30 bytes a pose, 14,400 poses an hour). If storage is full, the finish card says the ghost was not saved and nothing else is affected.
+
+**Drawing.** The ghost is the same detailed vehicle model in one pale blue-white, see-through material with a faint glow so it stays visible at dusk and at night (`src/render/ghostView.ts`). It has no physics: it cannot be hit and drives straight through you. Between poses it is blended smoothly. Once its run is over it waits at the finish.
+
+**How far ahead.** The pause menu has a Ghost cell: how far behind or ahead you are, comparing your time with the ghost's time at the nearest point of its path, and the ghost's total time. The finish card says by how much you beat it, or how far ahead it finished.
+
+**Not done.** No live gap on the driving HUD (the pause menu only), and no setting to hide the ghost. Both are small follow-ups if wanted.
