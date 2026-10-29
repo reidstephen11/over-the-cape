@@ -1572,3 +1572,15 @@ Stephen's v0.83 shots (upright and sideways) had the TEMP/fuel/tyres card, the c
 Stephen could not get the Camel Trophy Ninety up Big Red in the dry with low range and both lockers. The climb itself already works on the crown: an autopilot crawl (low, both lockers, precision crawl, sensible throttle through crawl control) reaches the top in 117 s at heat 0.62, well under HIGH, and a standing start on either pinch continues. High range still dies on the first pinch (~23°, 113 m short). Heat is not the stall.
 
 What was missing was a recovery. Rainforest trees sit at the foot and the crest, but the face is bare: 104–112 m along had none within 28 m, and the few beside the pinches were 16–20 m off the line, so a hook pulled sideways. Four marked rocks now stand 4 m right of the crown at 62, 88, 128 and 152 m along — ahead of each pinch, within the 30 m cable of a stall, so USE on a phone hooks one and IN pulls the car up the climb, not into the left gutter. Grade, dry-clay grip and the Ninety's torque are unchanged; open diffs and high range stay tough.
+
+## v0.88: Paddock Road creek is a ford, not a hidden wall
+
+Stephen, playtesting v0.87 on the phone, could not get into the water on Paddock Road: "It is like there is a block there." A later note: he could get through, but only by staying hard left, and the visuals did not match the hazard.
+
+**What the block was.** `paddock-creek-north` (~897–903 m along paddock-road, world about −232.5, 1634). Not a prop, a water trigger, or a scripted barrier. Creek carving raises a weir when the paddock hollow sits below the water (`lower` floor out to 8 m). Track grading then skips the channel (`inCreek` of halfWidth+0.5 m), so that weir stays, while the 12 m profile smooth has filled the dip just outside it. The result on the centre line and the right wheel track was a 0.5–1.5 m step at the water (50–67°). The step sat under 0.8 m of water, so it looked like a clear creek; far-LOD terrain also averaged it into a slope. Downstream (hard left) the water is about a metre lower and matches the hollow, which is how a line around it got through. The south paddock creek and the Bloomfield / Donovan’s fords already ramped in.
+
+**Fix.** The road now ramps to the bed at the creek’s bank slope (~19°) across the carriageway, and the channel skip is only the wet bed. A steep, slippery, deep ford is still a challenge; there is no hidden wall. The same ramp is applied at every track/creek meeting, so a perched weir cannot recur. No winch anchor was added: the centre line is the way through.
+
+**Before.** Camel Trophy Ninety, wet, low range, both lockers, crawl, centre line 872→928 m: stuck at 894.6 m, 32.8 m short, never entered the water (`maxWater` 0).
+
+**After.** The same Camel crawl 872→928 m finishes in 34 s, along 925.5 m, `maxWater` 0.71 m. The short-wheelbase 4WD does the same, and both paddock creeks. Geometry test: no 0.4 m / 40° lip at the water on the centre line or the wheel tracks of paddock-road, bloomfield-track or donovans-creek. The north entry is now a ~0.3 m / 36° bank into the water, not a 1 m wall.

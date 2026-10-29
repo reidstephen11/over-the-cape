@@ -38,6 +38,12 @@ const CREEK_WALL_SLOPE = 1.5;
 const MUD_EDGE = 0.4;
 /** Beside a track, ground the grading cut or built up by more than this (m) is a bank. */
 const BANK_CUT = 0.4;
+/**
+ * How far out from the water a creek's banks are filled or a ford ramps to the bed (m).
+ * Inside this, creek carving may raise a weir when the paddock sits below the water;
+ * track grading must cut a ramp through that weir or the channel skip leaves a wall.
+ */
+const CREEK_BANK_RAMP = 8;
 
 interface Grid {
   resX: number;
@@ -505,7 +511,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       const lower = W + Math.min(0.35, (d - hw) * bankSlope * 0.9);
       let h = heights[i];
       if (h > upper) h = upper;
-      if (d < hw + 8 && h < lower) h = lower;
+      if (d < hw + CREEK_BANK_RAMP && h < lower) h = lower;
       heights[i] = h;
     }
   }
@@ -593,6 +599,27 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
             st.rise * (smoothstep(st.at - 0.6, st.at + 0.6, s) - smoothstep(st.at + 0.6, st.at + 14, s));
       }
     }
+    // A 12 m smooth fills a ~6 m creek dip. Ramp the profile to the bed at the creek's
+    // bank slope so a ford is a slope into the water, not a weir the later channel skip
+    // would leave standing across the road.
+    for (let k = 0; k < poly.count; k++) {
+      const ix = Math.round(poly.xs[k] + halfX);
+      const iz = Math.round(poly.zs[k] + halfZ);
+      if (ix < 0 || iz < 0 || ix >= resX || iz >= resZ) continue;
+      const i = iz * resX + ix;
+      if (creekOwner[i] < 0) continue;
+      const cHw = creekHalfAt[i];
+      if (cHw <= 0 || creekDist[i] > cHw + CREEK_BANK_RAMP) continue;
+      const c = creekLines[creekOwner[i]];
+      const u = atParam(c.poly.u, creekParam[i]);
+      profile[k] = fordRamp(
+        attrAt(c.water, u) - attrAt(c.depth, u),
+        cHw,
+        creekDist[i],
+        attrAt(c.bankSlope, u),
+        profile[k],
+      );
+    }
     const shoulders = def.batter ? batterShoulders(def, poly, profile, sampleH) : undefined;
     tracks.push({ def, poly, profile, shoulders });
     rawProfiles.push(raw);
@@ -647,9 +674,11 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const def = t.def;
     const d = trackDist[i];
     const p = trackParam[i];
-    // Leave the creek channel alone; the profile already dips to the bed.
-    const inCreek = creekDist[i] <= creekHalfAt[i] + 0.5;
-    if (inCreek) continue;
+    // Leave the wet channel as carved. The old skip of halfWidth+0.5 m kept a weir
+    // the banks had raised, and the smoothed profile just outside it was a metre lower,
+    // so the water's edge was a wall you could not see (the water covered the step).
+    const creekHw = creekHalfAt[i];
+    if (creekOwner[i] >= 0 && creekHw > 0 && creekDist[i] <= creekHw) continue;
     // So is the ground under a bridge.
     if (def.bridges && onBridge(def, atParam(t.poly.s, p))) continue;
     const hw = def.width / 2;
@@ -705,6 +734,19 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
           addPatch(i, patch.edge, inner, rim, patch.rim, 0, centre);
         } else addPatch(i, Math.max(patch.edge, d - hw - 0.5), inner, rim, patch.rim, 0);
       }
+    }
+    // Cut a visible bank through a perched weir, or fill a hollow up to the bed, at the
+    // creek's bank slope, so the centre line (and both wheel tracks) ramp into the water.
+    if (creekOwner[i] >= 0 && creekHw > 0 && creekDist[i] < creekHw + CREEK_BANK_RAMP) {
+      const c = creekLines[creekOwner[i]];
+      const u = atParam(c.poly.u, creekParam[i]);
+      target = fordRamp(
+        attrAt(c.water, u) - attrAt(c.depth, u),
+        creekHw,
+        creekDist[i],
+        attrAt(c.bankSlope, u),
+        target,
+      );
     }
     const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + shoulderAt(t, p), d);
     heights[i] = h + (target - h) * w;
@@ -1151,6 +1193,16 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       mudHoles,
     },
   };
+}
+
+/**
+ * Height of a ford at distance `d` from the creek: the bed at the water, then a ramp at
+ * `bankSlope`. A road above the bed is cut down to that ramp; one below is filled up to
+ * it. Either way the water's edge is at the bed, never a step.
+ */
+function fordRamp(bed: number, halfWidth: number, d: number, bankSlope: number, road: number): number {
+  const rise = Math.max(0, d - halfWidth) * bankSlope;
+  return road >= bed ? Math.min(road, bed + rise) : Math.max(road, bed - rise);
 }
 
 /** Linear interpolation through [distance, value] pairs, holding the end values. */
