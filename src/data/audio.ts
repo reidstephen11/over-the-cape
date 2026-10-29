@@ -252,6 +252,24 @@ export interface EngineSynthTuning {
     flutterHz: number;
     flutterGain: number;
   };
+  /**
+   * Extra limiter character near `limiterRpm` (bounce rhythm, strain, lift-off crackle).
+   * Without this, every other firing is dropped at random above the limiter.
+   */
+  limiter?: {
+    /** Rpm below limiterRpm where strain and intake start to build. */
+    approach: number;
+    kind: 'ignition' | 'fuel';
+    /** Repeating cycle: 0 fire, 1 cut, 2 a weak burn. */
+    pattern: readonly number[];
+    bouncePop: number;
+    intake: number;
+    valves: number;
+    grit: number;
+    block: number;
+    overrunPop: number;
+    dump: number;
+  };
   outputGain: number;
 }
 
@@ -263,8 +281,8 @@ type PipeTuning = { length: number; reflection: number; dampingHz: number };
  */
 export const engineSynthTuning: EngineSynthTuning = {
   idleRpm: 800,
-  /** Above this the ignition cuts out every other firing (rev limiter). */
-  limiterRpm: 4450,
+  /** Matches the 40 Series' 4300 rpm redline so the bounce is heard while the physics cuts. */
+  limiterRpm: 4300,
   firingOrder: [1, 5, 3, 6, 2, 4],
   /**
    * Exhaust manifold runners, cylinders 1..6: extra delay (ms) and pulse strength. The
@@ -342,6 +360,22 @@ export const engineSynthTuning: EngineSynthTuning = {
    * second mesh and second harmonic levels, shaft-rate wobble and random flutter.
    */
   whine: { teeth: [43, 31], second: 0.5, harmonic: 0.25, shaftAm: 0.3, wobble: 0.15, gain: 0.05 },
+  /**
+   * Petrol ignition-cut bounce at the limiter: an uneven fire/cut stutter, intake roar and
+   * valvetrain thrash on the way in, and pops / crackles if you lift off still at redline.
+   */
+  limiter: {
+    approach: 260,
+    kind: 'ignition',
+    pattern: [0, 1, 0, 0, 1, 0, 1, 1],
+    bouncePop: 0.2,
+    intake: 0.7,
+    valves: 0.85,
+    grit: 0.22,
+    block: 0.18,
+    overrunPop: 0.14,
+    dump: 0,
+  },
   outputGain: 1,
 };
 
@@ -623,7 +657,8 @@ export const td42SynthTuning: EngineSynthTuning = {
  */
 export const v8DieselSynthTuning: EngineSynthTuning = {
   idleRpm: 680,
-  limiterRpm: 4250,
+  /** Matches the 1VD's 4100 rpm cut so the fuel-cut chop is heard while the physics limits. */
+  limiterRpm: 4100,
   firingOrder: [1, 8, 7, 3, 6, 5, 4, 2],
   runners: {
     delayMs: [0.3, 1.9, 0.15, 1.75, 0.15, 1.75, 0.3, 1.9],
@@ -686,6 +721,22 @@ export const v8DieselSynthTuning: EngineSynthTuning = {
     hiss: 0.5,
     flutterHz: 15,
     flutterGain: 0.09,
+  },
+  /**
+   * Diesel fuel-cut chop at the limiter: a steadier on-off than petrol, extra turbo dump
+   * and a bit of mechanical strain. Pops stay rare and small — not petrol backfires.
+   */
+  limiter: {
+    approach: 240,
+    kind: 'fuel',
+    pattern: [0, 0, 1, 1],
+    bouncePop: 0.04,
+    intake: 0.45,
+    valves: 0.55,
+    grit: 0.16,
+    block: 0.14,
+    overrunPop: 0.03,
+    dump: 0.7,
   },
   outputGain: 0.85,
 };
