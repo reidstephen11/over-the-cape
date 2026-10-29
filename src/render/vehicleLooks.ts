@@ -30,8 +30,8 @@ export interface VehicleLook {
 }
 
 const fortySeriesHeadlamps: Vec3[] = [
-  { x: -0.683, y: 0.5, z: -1.814 },
-  { x: 0.683, y: 0.5, z: -1.814 },
+  { x: -0.427, y: 0.515, z: -1.7 },
+  { x: 0.427, y: 0.515, z: -1.7 },
 ];
 
 export const vehicleLooks: Record<VehicleId, VehicleLook> = {

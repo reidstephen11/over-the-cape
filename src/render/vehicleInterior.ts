@@ -22,17 +22,17 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
       b.block(side * 0.56, 0.55, z, 0.025, 0.09, 0.025, new THREE.Color('#858A83'), M.Metal, Z.Trim);
   }
   for (const x of [-0.38, 0.38]) {
-    b.block(x, 0.47, 0.21, 0.52, 0.15, 0.58, seat, M.Fabric, Z.Trim, 0.055);
+    b.block(x, 0.47, 0.35, 0.52, 0.15, 0.58, seat, M.Fabric, Z.Trim, 0.055);
     b.push().rotate(-0.12, 0, 0);
-    b.block(x, 0.78, 0.44, 0.52, 0.59, 0.13, seat, M.Fabric, Z.Trim, 0.045);
+    b.block(x, 0.78, 0.58, 0.52, 0.59, 0.13, seat, M.Fabric, Z.Trim, 0.045);
     b.pop();
-    for (const dx of [-0.12, 0.12]) b.block(x + dx, 0.55, 0.19, 0.015, 0.009, 0.45, dark, M.Fabric, Z.Trim);
-    for (const dx of [-0.15, 0.15]) b.block(x + dx, 0.35, 0.19, 0.025, 0.17, 0.46, metal, M.Metal, Z.Trim);
-    b.block(x + Math.sign(x) * 0.24, 0.57, 0.22, 0.035, 0.13, 0.045, dark, M.Rubber, Z.Trim);
+    for (const dx of [-0.12, 0.12]) b.block(x + dx, 0.55, 0.33, 0.015, 0.009, 0.45, dark, M.Fabric, Z.Trim);
+    for (const dx of [-0.15, 0.15]) b.block(x + dx, 0.35, 0.33, 0.025, 0.17, 0.46, metal, M.Metal, Z.Trim);
+    b.block(x + Math.sign(x) * 0.24, 0.57, 0.36, 0.035, 0.13, 0.045, dark, M.Rubber, Z.Trim);
     b.block(
       x + Math.sign(x) * 0.24,
       0.64,
-      0.22,
+      0.36,
       0.036,
       0.025,
       0.047,
@@ -41,24 +41,24 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
       Z.Trim,
     );
   }
-  b.block(0, 0.83, -0.47, 1.4, 0.27, 0.22, dark, M.Rubber, Z.Trim, 0.018);
-  b.block(0.36, 0.87, -0.343, 0.43, 0.19, 0.02, metal, M.Metal, Z.Trim, 0.014);
+  b.block(0, 0.83, -0.31, 1.4, 0.27, 0.18, dark, M.Rubber, Z.Trim, 0.018);
+  b.block(0.36, 0.87, -0.203, 0.43, 0.19, 0.02, metal, M.Metal, Z.Trim, 0.014);
   addDialFaces(b, cabin, redlineRpm);
   for (const x of [-0.5, -0.4, -0.3, 0.03]) {
     b.slot = M.Rubber;
     b.push()
-      .translate(x, 0.81, -0.335)
+      .translate(x, 0.81, -0.195)
       .rotate(Math.PI / 2, 0, 0);
     b.geometry(new THREE.CylinderGeometry(0.014, 0.014, 0.022, 10), dark);
     b.pop();
   }
-  b.block(-0.34, 0.91, -0.342, 0.38, 0.08, 0.012, ivory.clone().multiplyScalar(0.5), M.Paint, Z.Trim);
-  b.block(-0.34, 0.91, -0.331, 0.12, 0.012, 0.012, metal, M.Metal, Z.Trim);
+  b.block(-0.34, 0.91, -0.202, 0.38, 0.08, 0.012, ivory.clone().multiplyScalar(0.5), M.Paint, Z.Trim);
+  b.block(-0.34, 0.91, -0.191, 0.12, 0.012, 0.012, metal, M.Metal, Z.Trim);
   addSteeringColumn(b, cabin);
-  b.block(0, 0.36, -0.01, 0.31, 0.16, 0.83, dark, M.Rubber, Z.Trim, 0.025);
+  b.block(0, 0.36, 0.13, 0.31, 0.16, 0.83, dark, M.Rubber, Z.Trim, 0.025);
   for (const [x, h, z] of [
-    [0.02, 0.68, 0.04],
-    [-0.12, 0.57, 0.19],
+    [0.02, 0.68, 0.18],
+    [-0.12, 0.57, 0.33],
   ]) {
     b.rod({ x, y: 0.42, z: z + 0.07 }, { x, y: h, z }, 0.009, metal);
     b.slot = M.Rubber;
@@ -69,8 +69,8 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
   for (const side of [-1, 1]) {
     b.block(side * 0.57, 0.65, 1.23, 0.32, 0.12, 0.86, seat, M.Fabric, Z.Trim, 0.025);
     b.block(side * 0.7, 0.66, 1.23, 0.08, 0.32, 0.86, seat, M.Fabric, Z.Trim, 0.025);
-    b.block(side * 0.748, 0.66, -0.01, 0.012, 0.43, 0.9, dark, M.Fabric, Z.Trim);
-    b.block(side * 0.73, 0.71, 0.15, 0.05, 0.035, 0.19, dark, M.Rubber, Z.Trim);
-    b.rod({ x: side * 0.72, y: 0.61, z: -0.21 }, { x: side * 0.69, y: 0.61, z: -0.15 }, 0.009, metal);
+    b.block(side * 0.748, 0.6, 0.1, 0.012, 0.6, 0.76, dark, M.Fabric, Z.Trim);
+    b.block(side * 0.73, 0.71, 0.3, 0.05, 0.035, 0.19, dark, M.Rubber, Z.Trim);
+    b.rod({ x: side * 0.72, y: 0.61, z: -0.07 }, { x: side * 0.69, y: 0.61, z: -0.01 }, 0.009, metal);
   }
 }
