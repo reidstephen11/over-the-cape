@@ -41,7 +41,8 @@
 
 #ui[data-hud] .inst-cluster.no-engine .inst-temp,
 #ui[data-hud] .inst-cluster.no-engine .inst-fuel,
-#ui[data-hud] .inst-cluster.no-clock .inst-clock {
+#ui[data-hud] .no-clock .inst-clock,
+#ui[data-hud] .no-clock .inst-clocknote {
   display: none;
 }
 
@@ -263,7 +264,9 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
   }
 }
 
-/* ---------- Dash cluster (A) ---------- */
+/* ---------- Style variables: the shared skin below takes its colours and type from these ---------- */
+
+/* Dash cluster (A): warm white and amber on dark glass. */
 #ui[data-hud='dash'] {
   --dash-face: #0f100f;
   --dash-bezel: #4a4740;
@@ -271,45 +274,112 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
   --dash-needle: #ff8f3f;
   --dash-hub: #1d1c1a;
   --dash-red: #e0452c;
-  --dash-red-lit: #ff5a3c;
+  --hud-red: #ff5a3c;
   --dash-window: #1b1a17;
-  --dash-glass: rgba(14, 13, 12, 0.66);
-  --dash-text: #efe8d6;
-  --dash-soft: #b9b09c;
-  --dash-amber: #ffb03a;
-  --dash-green: #5fd47a;
-  --dash-blue: #7db3ff;
-  --dash-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
-  --dash-body: 'Barlow', 'Segoe UI', system-ui, sans-serif;
-  --dash-serif: 'Source Serif 4', Georgia, serif;
+  --hud-glass: rgba(14, 13, 12, 0.66);
+  --hud-panel: rgba(14, 13, 12, 0.88);
+  --hud-line: rgba(255, 255, 255, 0.14);
+  --hud-fill: rgba(255, 255, 255, 0.04);
+  --hud-accent-fill: rgba(255, 176, 58, 0.14);
+  --hud-copy: #e4ddcb;
+  --hud-on-accent: #1b1408;
+  --hud-lamp-bg: rgba(10, 10, 9, 0.74);
+  --hud-red-bg: rgba(60, 12, 8, 0.8);
+  --hud-button: rgba(14, 13, 12, 0.6);
+  --hud-button-line: rgba(255, 255, 255, 0.28);
+  --hud-text: #efe8d6;
+  --hud-soft: #b9b09c;
+  --hud-accent: #ffb03a;
+  --hud-green: #5fd47a;
+  --hud-blue: #7db3ff;
+  --hud-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --hud-body: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --hud-serif: 'Source Serif 4', Georgia, serif;
 }
 
-/* The game's panels take the dash colours; the paper map keeps its own. */
-#ui[data-hud='dash'] .hud,
-#ui[data-hud='dash'] .touch-controls,
-#ui[data-hud='dash'] .pause,
-#ui[data-hud='dash'] .tool-menu,
-#ui[data-hud='dash'] .result,
-#ui[data-hud='dash'] .history-card,
-#ui[data-hud='dash'] .error-panel {
-  --paper: rgba(14, 13, 12, 0.8);
+/* Edge lines (B): white type straight on the view, with a soft shadow. */
+#ui[data-hud='edge'] {
+  --hud-text: #ffffff;
+  --hud-soft: rgba(255, 255, 255, 0.78);
+  --hud-accent: #ffc04d;
+  --hud-green: #7be08e;
+  --hud-blue: #8cc0ff;
+  --hud-red: #ff6a4d;
+  --hud-glass: rgba(0, 0, 0, 0.34);
+  --hud-panel: rgba(12, 12, 12, 0.84);
+  --hud-line: rgba(255, 255, 255, 0.2);
+  --hud-fill: transparent;
+  --hud-accent-fill: rgba(255, 192, 77, 0.12);
+  --hud-copy: rgba(255, 255, 255, 0.9);
+  --hud-on-accent: #1a1406;
+  --hud-lamp-bg: transparent;
+  --hud-red-bg: rgba(70, 14, 8, 0.6);
+  --hud-button: rgba(0, 0, 0, 0.24);
+  --hud-button-line: rgba(255, 255, 255, 0.62);
+  --hud-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+  --hud-display: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --hud-body: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --hud-serif: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Field kit (C): typed paper slips, Dymo tape and ink. */
+#ui[data-hud='kit'] {
+  --kit-paper: #f3ecda;
+  --kit-line: #c9bfa6;
+  --kit-ink: #22201c;
+  --kit-red: #b8321f;
+  --hud-text: var(--kit-ink);
+  --hud-soft: #5c5446;
+  --hud-accent: var(--kit-red);
+  --hud-green: #2f6b3a;
+  --hud-blue: #2b4f8a;
+  --hud-red: var(--kit-red);
+  --hud-glass: var(--kit-paper);
+  --hud-panel: var(--kit-paper);
+  --hud-line: var(--kit-line);
+  --hud-fill: rgba(255, 255, 255, 0.4);
+  --hud-accent-fill: rgba(184, 50, 31, 0.1);
+  --hud-copy: var(--kit-ink);
+  --hud-on-accent: var(--kit-paper);
+  --hud-lamp-bg: #151515;
+  --hud-red-bg: #8f1f12;
+  --hud-button: rgba(243, 236, 218, 0.9);
+  --hud-button-line: transparent;
+  --hud-display: 'Courier Prime', 'Courier New', monospace;
+  --hud-body: 'Courier Prime', 'Courier New', monospace;
+  --hud-serif: 'Source Serif 4', Georgia, serif;
+}
+
+/* ---------- Shared skin ---------- */
+
+/* The game's panels take the style's colours; the paper map keeps its own. */
+#ui[data-hud] .hud,
+#ui[data-hud] .touch-controls,
+#ui[data-hud] .pause,
+#ui[data-hud] .tool-menu,
+#ui[data-hud] .result,
+#ui[data-hud] .history-card,
+#ui[data-hud] .error-panel {
+  --paper: var(--hud-panel);
   --paper-dark: rgba(255, 255, 255, 0.08);
-  --ink: var(--dash-text);
-  --ink-soft: var(--dash-soft);
-  --accent: var(--dash-amber);
-  --font: var(--dash-body);
-  --font-hand: var(--dash-display);
-  color: var(--dash-text);
-  font-family: var(--dash-body);
+  --ink: var(--hud-text);
+  --ink-soft: var(--hud-soft);
+  --accent: var(--hud-accent);
+  --font: var(--hud-body);
+  --font-hand: var(--hud-display);
+  color: var(--hud-text);
+  font-family: var(--hud-body);
 }
 
-#ui[data-hud='dash'] .paper {
-  background: var(--dash-glass);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+#ui[data-hud] .paper {
+  background: var(--hud-glass);
+  border: 1px solid var(--hud-line);
   border-radius: 10px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
-  color: var(--dash-text);
+  color: var(--hud-text);
 }
+
+/* ---------- Dash cluster (A): instruments ---------- */
 
 /* The binnacle: speedo, TEMP, FUEL and the clock in one dark housing. */
 #ui[data-hud='dash'] .hud {
@@ -356,7 +426,7 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
 
 #ui[data-hud='dash'] .inst-cluster text {
   fill: var(--dash-tick);
-  font-family: var(--dash-display);
+  font-family: var(--hud-display);
   font-weight: 600;
 }
 
@@ -367,11 +437,11 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
 
 #ui[data-hud='dash'] .inst-cluster .end,
 #ui[data-hud='dash'] .inst-cluster .value {
-  fill: var(--dash-soft);
+  fill: var(--hud-soft);
 }
 
 #ui[data-hud='dash'] .inst-cluster .value.red {
-  fill: var(--dash-red-lit);
+  fill: var(--hud-red);
 }
 
 #ui[data-hud='dash'] .inst-cluster .danger {
@@ -397,15 +467,15 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
 }
 
 #ui[data-hud='dash'] .inst-cluster .hot .needle {
-  stroke: var(--dash-red-lit);
+  stroke: var(--hud-red);
 }
 
 #ui[data-hud='dash'] .inst-cluster .hot .hub {
-  stroke: var(--dash-red-lit);
+  stroke: var(--hud-red);
 }
 
 #ui[data-hud='dash'] .inst-cluster .hot .label {
-  fill: var(--dash-red-lit);
+  fill: var(--hud-red);
 }
 
 #ui[data-hud='dash'] .inst-cluster .window {
@@ -415,7 +485,7 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
 }
 
 #ui[data-hud='dash'] .inst-cluster .gear {
-  fill: var(--dash-amber);
+  fill: var(--hud-accent);
   font-weight: 700;
 }
 
@@ -452,55 +522,77 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
 }
 
 #ui[data-hud='dash'] .inst-compass .marks path {
-  fill: var(--dash-amber);
+  fill: var(--hud-accent);
 }
 
 #ui[data-hud='dash'] .inst-compass text {
-  font-family: var(--dash-display);
+  font-family: var(--hud-display);
 }
 
 #ui[data-hud='dash'] .inst-compass .cmaj {
-  fill: var(--dash-text);
+  fill: var(--hud-text);
   font-size: 12px;
   font-weight: 700;
 }
 
 #ui[data-hud='dash'] .inst-compass .cmin {
-  fill: var(--dash-soft);
+  fill: var(--hud-soft);
   font-size: 10px;
   font-weight: 600;
 }
 
+/* ---------- Shared skin: lamps, the stack, prompts and notes ---------- */
+
+/* Towing: the trailer and its load, a line in the stack. */
+#ui[data-hud] .hud-stack .status-trailer {
+  padding: 4px 10px;
+  color: var(--hud-text);
+  font: 600 13px var(--hud-body);
+}
+
+#ui[data-hud] .hud-stack .status-trailer svg {
+  width: 18px;
+  height: 18px;
+}
+
+#ui[data-hud] .hud-stack .status-trailer.warn {
+  color: var(--hud-accent);
+}
+
+#ui[data-hud] .hud-stack .status-trailer.bad {
+  color: var(--hud-red);
+}
+
 /* Lamps: a word lit in its colour, like the warning lights on a dash. */
-#ui[data-hud='dash'] .lamp {
+#ui[data-hud] .lamp {
   padding: 4px 7px 3px;
   border: 1px solid currentColor;
   border-radius: 4px;
-  background: rgba(10, 10, 9, 0.74);
-  font: 700 11px/1 var(--dash-display);
+  background: var(--hud-lamp-bg);
+  font: 700 11px/1 var(--hud-display);
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
-#ui[data-hud='dash'] .lamp.amber {
-  color: var(--dash-amber);
+#ui[data-hud] .lamp.amber {
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .lamp.green {
-  color: var(--dash-green);
+#ui[data-hud] .lamp.green {
+  color: var(--hud-green);
 }
 
-#ui[data-hud='dash'] .lamp.blue {
-  color: var(--dash-blue);
+#ui[data-hud] .lamp.blue {
+  color: var(--hud-blue);
 }
 
-#ui[data-hud='dash'] .lamp.red {
-  color: var(--dash-red-lit);
-  background: rgba(60, 12, 8, 0.78);
+#ui[data-hud] .lamp.red {
+  color: var(--hud-red);
+  background: var(--hud-red-bg);
 }
 
 /* Short lines by the dials: the road or course name, the mission. */
-#ui[data-hud='dash'] .hud-stack .course-hint {
+#ui[data-hud] .hud-stack .course-hint {
   max-width: min(360px, 100%);
   padding: 0;
   gap: 4px;
@@ -510,197 +602,199 @@ body:not(.touch-mode) #ui[data-hud] .history-card {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
 }
 
-#ui[data-hud='dash'] .hud-stack .course-hint strong {
-  font: 700 12px/1.2 var(--dash-display);
+#ui[data-hud] .hud-stack .course-hint strong {
+  font: 700 12px/1.2 var(--hud-display);
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-#ui[data-hud='dash'] .hud-stack .course-hint.brief span {
+#ui[data-hud] .hud-stack .course-hint.brief span {
   padding: 6px 10px;
-  background: var(--dash-glass);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--hud-glass);
+  border: 1px solid var(--hud-line);
   border-radius: 8px;
-  font: 400 13px/1.4 var(--dash-body);
-  color: #e4ddcb;
+  font: 400 13px/1.4 var(--hud-body);
+  color: var(--hud-copy);
   text-shadow: none;
 }
 
-#ui[data-hud='dash'] .hud-stack .mission {
+#ui[data-hud] .hud-stack .mission {
   padding: 6px 12px 7px;
   max-width: min(360px, 100%);
 }
 
-#ui[data-hud='dash'] .hud-stack .mission strong {
-  font: 500 15px/1.25 var(--dash-body);
+#ui[data-hud] .hud-stack .mission strong {
+  font: 500 15px/1.25 var(--hud-body);
 }
 
-#ui[data-hud='dash'] .hud-stack .mission-clock {
-  font: 600 12px var(--dash-display);
+#ui[data-hud] .hud-stack .mission-clock {
+  font: 600 12px var(--hud-display);
   letter-spacing: 0.06em;
-  color: var(--dash-soft);
+  color: var(--hud-soft);
   text-transform: uppercase;
 }
 
-#ui[data-hud='dash'] .hud-stack .mission-clock.urgent {
-  color: var(--dash-red-lit);
+#ui[data-hud] .hud-stack .mission-clock.urgent {
+  color: var(--hud-red);
 }
 
 /* Prompts, messages and cards. */
-#ui[data-hud='dash'] .prompt {
+#ui[data-hud] .prompt {
   padding: 5px 14px 6px 6px;
-  font: 600 15px var(--dash-body);
+  font: 600 15px var(--hud-body);
 }
 
-#ui[data-hud='dash'] .prompt .key {
-  border: 1px solid var(--dash-amber);
+#ui[data-hud] .prompt .key {
+  border: 1px solid var(--hud-accent);
   border-radius: 5px;
-  color: var(--dash-amber);
+  color: var(--hud-accent);
   background: linear-gradient(
     90deg,
-    rgba(255, 176, 58, 0.35) var(--progress),
+    color-mix(in srgb, var(--hud-accent) 40%, transparent) var(--progress),
     rgba(255, 255, 255, 0.06) var(--progress)
   );
-  font: 700 15px var(--dash-display);
+  font: 700 15px var(--hud-display);
   letter-spacing: 0.04em;
 }
 
-#ui[data-hud='dash'] .toast {
-  font: 600 13px var(--dash-body);
+#ui[data-hud] .toast {
+  font: 600 13px var(--hud-body);
 }
 
-#ui[data-hud='dash'] .discovery-icon {
-  color: var(--dash-amber);
+#ui[data-hud] .discovery-icon {
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .discovery-label {
-  font-family: var(--dash-display);
-  color: var(--dash-amber);
+#ui[data-hud] .discovery-label {
+  font-family: var(--hud-display);
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .discovery-name {
-  font: 600 21px var(--dash-serif);
+#ui[data-hud] .discovery-name {
+  font: 600 21px var(--hud-serif);
 }
 
-#ui[data-hud='dash'] .alert {
-  font-family: var(--dash-display);
+#ui[data-hud] .alert {
+  font-family: var(--hud-display);
   letter-spacing: 0.04em;
   box-shadow: none;
 }
 
-#ui[data-hud='dash'] .alert .mark {
-  background: var(--dash-red-lit);
+#ui[data-hud] .alert .mark {
+  background: var(--hud-red);
   color: #160806;
 }
 
-#ui[data-hud='dash'] .alert.critical {
-  border-color: var(--dash-red-lit);
-  background: rgba(60, 12, 8, 0.82);
+#ui[data-hud] .alert.critical {
+  border-color: var(--hud-red);
+  background: var(--hud-red-bg);
 }
 
-#ui[data-hud='dash'] .crawl-gauges {
+#ui[data-hud] .crawl-gauges {
   background: rgba(10, 10, 9, 0.66);
 }
 
-#ui[data-hud='dash'] .gate-count,
-#ui[data-hud='dash'] .crawl-run {
-  font-family: var(--dash-display);
+#ui[data-hud] .gate-count,
+#ui[data-hud] .crawl-run {
+  font-family: var(--hud-display);
   letter-spacing: 0.04em;
 }
 
-#ui[data-hud='dash'] .crawl-run strong {
-  font: 700 18px var(--dash-display);
-  color: var(--dash-amber);
+#ui[data-hud] .crawl-run strong {
+  font: 700 18px var(--hud-display);
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .crawl-run-points {
-  color: var(--dash-amber);
+#ui[data-hud] .crawl-run-points {
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .camera-help {
-  color: var(--dash-soft);
-  font-family: var(--dash-display);
+#ui[data-hud] .camera-help {
+  color: var(--hud-soft);
+  font-family: var(--hud-display);
   letter-spacing: 0.04em;
 }
 
-#ui[data-hud='dash'] .camera-help .camera-hint {
+#ui[data-hud] .camera-help .camera-hint {
   display: none;
 }
 
-#ui[data-hud='dash'] .camera-help button {
+#ui[data-hud] .camera-help button {
   margin: 0;
   border-color: rgba(255, 255, 255, 0.24);
-  color: var(--dash-text);
+  color: var(--hud-text);
 }
 
-#ui[data-hud='dash'] .camera-help button:hover,
-#ui[data-hud='dash'] .camera-help button:focus-visible {
+#ui[data-hud] .camera-help button:hover,
+#ui[data-hud] .camera-help button:focus-visible {
   background: rgba(255, 255, 255, 0.08);
 }
 
 /* History and lesson notes. */
-#ui[data-hud='dash'] .history-card {
+#ui[data-hud] .history-card {
   padding: 14px 18px 14px;
-  background: rgba(14, 13, 12, 0.86);
+  background: var(--hud-panel);
   border-radius: 12px;
 }
 
-#ui[data-hud='dash'] .history-card small {
-  font: 700 11px/1 var(--dash-display);
+#ui[data-hud] .history-card small {
+  font: 700 11px/1 var(--hud-display);
   letter-spacing: 0.14em;
-  color: var(--dash-amber);
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .history-card strong {
+#ui[data-hud] .history-card strong {
   margin: 4px 0 4px;
-  font: 600 22px/1.15 var(--dash-serif);
+  font: 600 22px/1.15 var(--hud-serif);
 }
 
-#ui[data-hud='dash'] .history-card p {
-  font: 400 14px/1.5 var(--dash-body);
-  color: #e4ddcb;
+#ui[data-hud] .history-card p {
+  font: 400 14px/1.5 var(--hud-body);
+  color: var(--hud-copy);
 }
 
-#ui[data-hud='dash'] .history-card.reading {
+#ui[data-hud] .history-card.reading {
   border-bottom: 0;
 }
 
-#ui[data-hud='dash'] .history-card.reading p {
+#ui[data-hud] .history-card.reading p {
   font-size: 15.5px;
 }
 
-#ui[data-hud='dash'] .history-card .history-hint {
-  font: 600 12px var(--dash-display);
+#ui[data-hud] .history-card .history-hint {
+  font: 600 12px var(--hud-display);
   letter-spacing: 0.06em;
-  color: var(--dash-soft);
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .history-card .history-do {
-  font: 600 18px/1.45 var(--dash-body);
-  color: var(--dash-text);
+#ui[data-hud] .history-card .history-do {
+  font: 600 18px/1.45 var(--hud-body);
+  color: var(--hud-text);
 }
 
-#ui[data-hud='dash'] .history-card .history-do kbd {
+#ui[data-hud] .history-card .history-do kbd {
   margin: 0 1px;
-  border: 1px solid var(--dash-amber);
+  border: 1px solid var(--hud-accent);
   border-radius: 5px;
-  color: var(--dash-amber);
-  font-family: var(--dash-display);
+  color: var(--hud-accent);
+  font-family: var(--hud-display);
   letter-spacing: 0.04em;
 }
 
-#ui[data-hud='dash'] .history-card.lesson .history-text {
+#ui[data-hud] .history-card.lesson .history-text {
   font-size: 13.5px;
-  color: var(--dash-soft);
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .history-close {
-  color: var(--dash-soft);
+#ui[data-hud] .history-close {
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .history-backdrop {
+#ui[data-hud] .history-backdrop {
   background: rgba(10, 8, 6, 0.42);
 }
+
+/* ---------- Dash cluster (A): night and layouts ---------- */
 
 /* After dusk the panels dim like a dash's lights, so they never outshine the headlights. */
 #ui[data-hud='dash'] .hud.night .inst-cluster,
@@ -793,21 +887,21 @@ body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
   height: 30px;
 }
 
-.touch-mode #ui[data-hud='dash'] .lamp {
+.touch-mode #ui[data-hud] .lamp {
   font-size: 11px;
   padding: 3px 6px 2px;
 }
 
-.touch-mode #ui[data-hud='dash'] .hud-stack .mission strong {
+.touch-mode #ui[data-hud] .hud-stack .mission strong {
   font-size: 13px;
 }
 
-.touch-mode #ui[data-hud='dash'] .alert {
+.touch-mode #ui[data-hud] .alert {
   padding: 2px 8px 3px 3px;
   font-size: 12px;
 }
 
-.touch-mode #ui[data-hud='dash'] .alert-rail .toast {
+.touch-mode #ui[data-hud] .alert-rail .toast {
   padding: 3px 8px;
   font-size: 12px;
   text-align: left;
@@ -886,67 +980,69 @@ body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
   }
 }
 
-/* Thumb buttons in the same dark glass. */
-#ui[data-hud='dash'] .touch-btn {
-  color: var(--dash-text);
-  background: rgba(14, 13, 12, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+/* ---------- Shared skin: touch controls, menus and title ---------- */
+
+/* Thumb buttons in the style's glass. */
+#ui[data-hud] .touch-btn {
+  color: var(--hud-text);
+  background: var(--hud-button);
+  border: 1px solid var(--hud-button-line);
   border-radius: 9px;
   box-shadow: none;
-  font-family: var(--dash-display);
+  font-family: var(--hud-display);
   font-weight: 700;
   letter-spacing: 0.06em;
 }
 
-#ui[data-hud='dash'] .touch-btn.down {
+#ui[data-hud] .touch-btn.down {
   transform: translateY(1px);
   filter: brightness(1.3);
 }
 
-#ui[data-hud='dash'] .touch-btn[aria-pressed='true'] {
-  color: var(--dash-amber);
-  border-color: var(--dash-amber);
-  background: rgba(255, 176, 58, 0.16);
+#ui[data-hud] .touch-btn[aria-pressed='true'] {
+  color: var(--hud-accent);
+  border-color: var(--hud-accent);
+  background: var(--hud-accent-fill);
 }
 
-#ui[data-hud='dash'] .touch-pile-toggle[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 0 0 1px var(--dash-text);
+#ui[data-hud] .touch-pile-toggle[aria-expanded='true'] {
+  background: var(--hud-line);
+  box-shadow: inset 0 0 0 1px var(--hud-text);
 }
 
-#ui[data-hud='dash'] .touch-pile-marks i {
+#ui[data-hud] .touch-pile-marks i {
   border-color: rgba(255, 255, 255, 0.35);
-  color: var(--dash-soft);
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .touch-pile-marks i.on {
-  border-color: var(--dash-amber);
-  background: var(--dash-amber);
-  color: #1b1408;
+#ui[data-hud] .touch-pile-marks i.on {
+  border-color: var(--hud-accent);
+  background: var(--hud-accent);
+  color: var(--hud-on-accent);
 }
 
-#ui[data-hud='dash'] .touch-stick-base {
+#ui[data-hud] .touch-stick-base {
   border: 2px solid rgba(255, 255, 255, 0.3);
   background: rgba(12, 12, 11, 0.32);
 }
 
-#ui[data-hud='dash'] .touch-stick-knob {
+#ui[data-hud] .touch-stick-knob {
   background: radial-gradient(circle at 50% 40%, #3a3834, #121110);
   border: 2px solid rgba(255, 255, 255, 0.55);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
-#ui[data-hud='dash'] .touch-stick-axis {
-  font-family: var(--dash-display);
+#ui[data-hud] .touch-stick-axis {
+  font-family: var(--hud-display);
   letter-spacing: 0.08em;
   color: rgba(239, 232, 214, 0.75);
 }
 
-#ui[data-hud='dash'] .touch-gas {
+#ui[data-hud] .touch-gas {
   background: rgba(40, 70, 44, 0.78);
 }
 
-#ui[data-hud='dash'] .touch-brake {
+#ui[data-hud] .touch-brake {
   background: rgba(96, 34, 22, 0.78);
 }
 
@@ -988,233 +1084,1248 @@ body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
   }
 }
 
-/* The pause menu: a dark panel on the right. */
-#ui[data-hud='dash'] .pause {
+/* The pause menu: a panel on the right. */
+#ui[data-hud] .pause {
   background: linear-gradient(90deg, rgba(8, 8, 7, 0.1), rgba(8, 8, 7, 0.55));
 }
 
-#ui[data-hud='dash'] .pause-card {
+#ui[data-hud] .pause-card {
   width: min(420px, 92vw);
   padding: 22px 22px 18px;
-  background: rgba(14, 13, 12, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--hud-panel);
+  border: 1px solid var(--hud-line);
   border-radius: 16px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-  font-family: var(--dash-display);
+  font-family: var(--hud-display);
 }
 
-#ui[data-hud='dash'] .pause-card h2 {
+#ui[data-hud] .pause-card h2 {
   text-align: left;
-  font: 700 30px/1 var(--dash-display);
+  font: 700 30px/1 var(--hud-display);
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
-#ui[data-hud='dash'] .pause-episode {
+#ui[data-hud] .pause-episode {
   order: -1;
   margin: 0 0 2px;
   text-align: left;
-  font: 700 12px var(--dash-display);
+  font: 700 12px var(--hud-display);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--dash-amber);
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .pause-card button {
-  font: 600 17px var(--dash-display);
+#ui[data-hud] .pause-card button {
+  font: 600 17px var(--hud-display);
   letter-spacing: 0.03em;
-  color: var(--dash-text);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--hud-text);
+  background: var(--hud-fill);
+  border: 1px solid var(--hud-line);
   border-radius: 8px;
 }
 
-#ui[data-hud='dash'] .pause-card button small {
-  font: 400 12px var(--dash-body);
-  color: var(--dash-soft);
+#ui[data-hud] .pause-card button small {
+  font: 400 12px var(--hud-body);
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .pause-card button:hover,
-#ui[data-hud='dash'] .pause-card button.focused,
-#ui[data-hud='dash'] .pause-card input.focused {
+#ui[data-hud] .pause-card button:hover,
+#ui[data-hud] .pause-card button.focused,
+#ui[data-hud] .pause-card input.focused {
   outline: none;
-  border-color: var(--dash-amber);
-  box-shadow: inset 3px 0 0 var(--dash-amber);
+  border-color: var(--hud-accent);
+  box-shadow: inset 3px 0 0 var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .pause-card button.on {
-  color: var(--dash-amber);
-  border-color: var(--dash-amber);
-  background: rgba(255, 176, 58, 0.14);
+#ui[data-hud] .pause-card button.on {
+  color: var(--hud-accent);
+  border-color: var(--hud-accent);
+  background: var(--hud-accent-fill);
 }
 
-#ui[data-hud='dash'] .pause-card button.on small {
-  color: var(--dash-amber);
+#ui[data-hud] .pause-card button.on small {
+  color: var(--hud-accent);
 }
 
-#ui[data-hud='dash'] .pause-card .setting-row {
+#ui[data-hud] .pause-card .setting-row {
   font-weight: 600;
   letter-spacing: 0.03em;
 }
 
-#ui[data-hud='dash'] .pause-card .menu-note,
-#ui[data-hud='dash'] .pause-card .build-label {
-  font-family: var(--dash-body);
-  color: var(--dash-soft);
+#ui[data-hud] .pause-card .menu-note,
+#ui[data-hud] .pause-card .build-label {
+  font-family: var(--hud-body);
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .pause-card table.controls {
-  font-family: var(--dash-body);
+#ui[data-hud] .pause-card table.controls {
+  font-family: var(--hud-body);
 }
 
-#ui[data-hud='dash'] .pause-card table.controls th,
-#ui[data-hud='dash'] .pause-card table.controls td {
-  border-bottom-color: rgba(255, 255, 255, 0.12);
+#ui[data-hud] .pause-card table.controls th,
+#ui[data-hud] .pause-card table.controls td {
+  border-bottom-color: var(--hud-line);
 }
 
-#ui[data-hud='dash'] .pause-status div {
-  background: rgba(255, 255, 255, 0.05);
+#ui[data-hud] .pause-status div {
+  background: var(--hud-fill);
   border-radius: 8px;
 }
 
-#ui[data-hud='dash'] .pause-status span,
-#ui[data-hud='dash'] .pause-status small {
-  color: var(--dash-soft);
+#ui[data-hud] .pause-status span,
+#ui[data-hud] .pause-status small {
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .pause-status b {
+#ui[data-hud] .pause-status b {
   font-weight: 600;
 }
 
 /* End-of-run card. */
-#ui[data-hud='dash'] .result {
+#ui[data-hud] .result {
   background: rgba(8, 8, 7, 0.5);
 }
 
-#ui[data-hud='dash'] .result-card {
-  background: rgba(14, 13, 12, 0.92);
+#ui[data-hud] .result-card {
+  background: var(--hud-panel);
   border-radius: 16px;
 }
 
-#ui[data-hud='dash'] .result-card h2 {
-  font: 700 34px var(--dash-display);
+#ui[data-hud] .result-card h2 {
+  font: 700 34px var(--hud-display);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
-#ui[data-hud='dash'] .result-card.failed h2 {
-  color: var(--dash-red-lit);
+#ui[data-hud] .result-card.failed h2 {
+  color: var(--hud-red);
 }
 
-#ui[data-hud='dash'] .result-card small,
-#ui[data-hud='dash'] .result-stats {
-  color: var(--dash-soft);
+#ui[data-hud] .result-card small,
+#ui[data-hud] .result-stats {
+  color: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .result-stats {
-  border-top-color: rgba(255, 255, 255, 0.18);
+#ui[data-hud] .result-stats {
+  border-top-color: var(--hud-line);
 }
 
-#ui[data-hud='dash'] .result-buttons button {
-  font: 600 17px var(--dash-display);
-  color: var(--dash-text);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+#ui[data-hud] .result-buttons button {
+  font: 600 17px var(--hud-display);
+  color: var(--hud-text);
+  background: var(--hud-fill);
+  border: 1px solid var(--hud-line);
   border-radius: 8px;
 }
 
-#ui[data-hud='dash'] .result-buttons button:hover,
-#ui[data-hud='dash'] .result-buttons button.focused {
+#ui[data-hud] .result-buttons button:hover,
+#ui[data-hud] .result-buttons button.focused {
   outline: none;
-  border-color: var(--dash-amber);
-  box-shadow: inset 3px 0 0 var(--dash-amber);
+  border-color: var(--hud-accent);
+  box-shadow: inset 3px 0 0 var(--hud-accent);
 }
 
 /* Tool menu: the centre card and the options in dark glass. */
-#ui[data-hud='dash'] .tool-menu {
+#ui[data-hud] .tool-menu {
   background: rgba(8, 8, 7, 0.3);
 }
 
-/* Title, settings, journey and briefing: the camp at dusk stays, the type matches the dash. */
-#ui[data-hud='dash'] .welcome,
-#ui[data-hud='dash'] .loading {
-  --title-gold: var(--dash-amber);
+/* Title, settings, journey and briefing: the camp at dusk stays, the type matches the HUD. */
+#ui[data-hud] .welcome,
+#ui[data-hud] .loading {
+  --title-gold: var(--hud-accent);
   --title-white: #f6efdc;
-  --title-muted: var(--dash-soft);
+  --title-muted: var(--hud-soft);
 }
 
-#ui[data-hud='dash'] .welcome .title-logo h1 {
-  font-family: var(--dash-display);
+#ui[data-hud] .welcome .title-logo h1 {
+  font-family: var(--hud-display);
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 0.9;
 }
 
-#ui[data-hud='dash'] .title-menu button {
-  font-family: var(--dash-display);
+#ui[data-hud] .title-menu button {
+  font-family: var(--hud-display);
   font-weight: 600;
   letter-spacing: 0.14em;
 }
 
-#ui[data-hud='dash'] .title-begin,
-#ui[data-hud='dash'] .title-back,
-#ui[data-hud='dash'] .title-version,
-#ui[data-hud='dash'] .title-input-hint {
-  font-family: var(--dash-display);
+#ui[data-hud] .title-begin,
+#ui[data-hud] .title-back,
+#ui[data-hud] .title-version,
+#ui[data-hud] .title-input-hint {
+  font-family: var(--hud-display);
 }
 
-#ui[data-hud='dash'] .title-panel,
-#ui[data-hud='dash'] .loading .loading-card.paper {
-  background: rgba(14, 13, 12, 0.86);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+#ui[data-hud] .title-panel,
+#ui[data-hud] .loading .loading-card.paper {
+  background: var(--hud-panel);
+  border: 1px solid var(--hud-line);
   border-radius: 14px;
 }
 
-#ui[data-hud='dash'] .welcome .welcome-card h1,
-#ui[data-hud='dash'] .title-settings h2,
-#ui[data-hud='dash'] .welcome .welcome-section h2,
-#ui[data-hud='dash'] .loading .briefing h2 {
-  font-family: var(--dash-display);
+#ui[data-hud] .welcome .welcome-card h1,
+#ui[data-hud] .title-settings h2,
+#ui[data-hud] .welcome .welcome-section h2,
+#ui[data-hud] .loading .briefing h2 {
+  font-family: var(--hud-display);
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
-#ui[data-hud='dash'] .welcome .welcome-option {
-  font-family: var(--dash-display);
+#ui[data-hud] .welcome .welcome-option {
+  font-family: var(--hud-display);
   font-weight: 600;
   letter-spacing: 0.03em;
   font-size: 15px;
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: var(--hud-fill);
+  border-color: var(--hud-line);
   border-radius: 8px;
 }
 
-#ui[data-hud='dash'] .welcome .welcome-option small {
-  font-family: var(--dash-body);
+#ui[data-hud] .welcome .welcome-option small {
+  font-family: var(--hud-body);
   letter-spacing: 0;
 }
 
-#ui[data-hud='dash'] .welcome .welcome-option.on {
-  background: rgba(255, 176, 58, 0.12);
+#ui[data-hud] .welcome .welcome-option.on {
+  background: var(--hud-accent-fill);
 }
 
-#ui[data-hud='dash'] .welcome .welcome-drive,
-#ui[data-hud='dash'] .loading .welcome-drive {
-  font-family: var(--dash-display);
+#ui[data-hud] .welcome .welcome-drive,
+#ui[data-hud] .loading .welcome-drive {
+  font-family: var(--hud-display);
   font-size: 17px;
   border-radius: 8px;
-  color: #1b1408;
+  color: var(--hud-on-accent);
 }
 
-#ui[data-hud='dash'] .welcome-card,
-#ui[data-hud='dash'] .title-settings,
-#ui[data-hud='dash'] .loading-card {
-  font-family: var(--dash-body);
+#ui[data-hud] .welcome-card,
+#ui[data-hud] .title-settings,
+#ui[data-hud] .loading-card {
+  font-family: var(--hud-body);
 }
 
-#ui[data-hud='dash'] .welcome .welcome-trip {
-  border-color: rgba(255, 255, 255, 0.14);
+#ui[data-hud] .welcome .welcome-trip {
+  border-color: var(--hud-line);
+}
+
+/* ---------- Edge lines (B): instruments ---------- */
+
+#ui[data-hud='edge'] .inst-cluster,
+#ui[data-hud='edge'] .inst-compass,
+#ui[data-hud='edge'] .hud-stack,
+#ui[data-hud='edge'] .camera-help {
+  color: var(--hud-text);
+  text-shadow: var(--hud-shadow);
+  font-family: var(--hud-body);
+}
+
+#ui[data-hud='edge'] .inst-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#ui[data-hud='edge'] .inst-figure {
+  font-size: 13px;
+  color: var(--hud-soft);
+  white-space: nowrap;
+}
+
+#ui[data-hud='edge'] .inst-figure b {
+  margin-right: 3px;
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--hud-text);
+  font-variant-numeric: tabular-nums;
+}
+
+#ui[data-hud='edge'] .inst-speed .gear {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--hud-soft);
+  white-space: nowrap;
+}
+
+#ui[data-hud='edge'] .inst-clock {
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#ui[data-hud='edge'] .inst-clock .value {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--hud-soft);
+}
+
+#ui[data-hud='edge'] .inst-clock .value.late {
+  color: var(--hud-accent);
+}
+
+#ui[data-hud='edge'] .inst-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#ui[data-hud='edge'] .inst-scale .label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--hud-soft);
+}
+
+#ui[data-hud='edge'] .inst-scale .value {
+  font-size: 12px;
+  color: var(--hud-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#ui[data-hud='edge'] .inst-scale svg {
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+/* The tape fades out at both ends. */
+#ui[data-hud='edge'] .inst-compass {
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+#ui[data-hud='edge'] .inst-compass svg {
+  display: block;
+  overflow: hidden;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+#ui[data-hud='edge'] .inst-scale .end {
+  font: 500 10px var(--hud-body);
+  fill: var(--hud-soft);
+}
+
+#ui[data-hud='edge'] .inst-scale .base {
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 1.2;
+}
+
+#ui[data-hud='edge'] .inst-scale .danger {
+  stroke: var(--hud-red);
+  stroke-width: 2.2;
+}
+
+#ui[data-hud='edge'] .inst-scale .ticks line {
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 1;
+}
+
+#ui[data-hud='edge'] .inst-scale .mark {
+  fill: var(--hud-text);
+}
+
+#ui[data-hud='edge'] .inst-scale.hot .mark {
+  fill: var(--hud-red);
+}
+
+#ui[data-hud='edge'] .inst-scale.hot .label {
+  color: var(--hud-red);
+}
+
+#ui[data-hud='edge'] .inst-compass line {
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 1;
+}
+
+#ui[data-hud='edge'] .inst-compass .cmaj {
+  font: 600 11px var(--hud-body);
+  fill: var(--hud-text);
+}
+
+#ui[data-hud='edge'] .inst-compass .cmin {
+  font: 500 9.5px var(--hud-body);
+  fill: var(--hud-soft);
+}
+
+#ui[data-hud='edge'] .inst-compass .lubber,
+#ui[data-hud='edge'] .inst-compass .marks circle {
+  fill: var(--hud-accent);
+}
+
+/* Lamps: a lit dot and the word, no box. */
+#ui[data-hud='edge'] .lamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font: 600 12px/1 var(--hud-body);
+  letter-spacing: 0.1em;
+  text-shadow:
+    0 0 3px rgba(0, 0, 0, 0.9),
+    0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+#ui[data-hud='edge'] .lamp::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+
+#ui[data-hud='edge'] .lamp.red {
+  background: none;
+}
+
+#ui[data-hud='edge'] .inst-lamps {
+  gap: 6px 12px;
+}
+
+/* Panels are a light shade at most, so the view shows through. */
+#ui[data-hud='edge'] .hud .paper,
+#ui[data-hud='edge'] .touch-controls .paper {
+  border: 0;
+  border-radius: 6px;
+  box-shadow: none;
+  text-shadow: var(--hud-shadow);
+}
+
+#ui[data-hud='edge'] .hud-stack .mission,
+#ui[data-hud='edge'] .hud-stack .course-hint.brief span {
+  background: none;
+  padding-left: 0;
+  padding-right: 0;
+  text-shadow: var(--hud-shadow);
+}
+
+#ui[data-hud='edge'] .history-card {
+  border-radius: 10px;
+  text-shadow: none;
+}
+
+#ui[data-hud='edge'] .history-card strong {
+  font: 500 24px/1.15 var(--hud-body);
+}
+
+#ui[data-hud='edge'] .history-card.reading {
+  border-radius: 16px 16px 0 0;
+}
+
+#ui[data-hud='edge'] .touch-btn {
+  text-shadow: var(--hud-shadow);
+  font-weight: 600;
+}
+
+#ui[data-hud='edge'] .crawl-gauges {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Computer: one band along the bottom edge, the compass tape along the top. */
+#ui[data-hud='edge'] .hud {
+  --edge-band: 66px;
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .inst-cluster {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--edge-band);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 28px 14px;
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.45));
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .inst-scales {
+  gap: 28px;
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .inst-compass {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .hud-stack {
+  top: 58px;
+  left: 24px;
+  width: min(420px, calc(100vw - 48px));
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .camera-help {
+  top: 14px;
+  left: 18px;
+  right: auto;
+  bottom: auto;
+  display: flex;
+  gap: 6px;
+  padding: 0;
+  background: none;
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .crawl-gauges {
+  right: 24px;
+  bottom: calc(var(--edge-band) + 14px);
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .hud:not(.hidden) .prompts {
+  bottom: calc(var(--edge-band) + 14px + var(--note-height, 0px));
+}
+
+body:not(.touch-mode) #ui[data-hud='edge'] .history-card,
+body:not(.touch-mode) #ui[data-hud='edge'] .history-card:not(.reading) {
+  left: 50%;
+  bottom: calc(var(--edge-band, 66px) + 14px);
+  width: min(600px, calc(100vw - 32px));
+}
+
+/* Phones: the figures and scales in two lines under the top buttons, the tape between them. */
+.touch-mode #ui[data-hud='edge'] .inst-cluster {
+  top: calc(max(8px, env(safe-area-inset-top)) + 40px);
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: space-between;
+  align-items: center;
+  row-gap: 4px;
+  column-gap: 18px;
+  padding: 6px 12px 10px;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0));
+}
+
+.touch-mode #ui[data-hud='edge'] .inst-scales {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.touch-mode #ui[data-hud='edge'] .inst-figure b {
+  font-size: 21px;
+}
+
+.touch-mode #ui[data-hud='edge'] .inst-compass {
+  top: max(10px, calc(env(safe-area-inset-top) + 10px));
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@media (orientation: portrait) {
+  .touch-mode #ui[data-hud='edge'] .inst-cluster {
+    left: 0;
+    right: 0;
+  }
+
+  .touch-mode #ui[data-hud='edge'] .hud-stack {
+    top: calc(max(8px, env(safe-area-inset-top)) + 40px + 76px);
+    left: max(12px, env(safe-area-inset-left));
+    max-width: min(300px, 64vw);
+  }
+
+  .touch-mode #ui[data-hud='edge'] .notices,
+  .touch-mode #ui[data-hud='edge'] .gate-count,
+  .touch-mode #ui[data-hud='edge'] .crawl-run,
+  .touch-mode #ui[data-hud='edge'] .crawl-gauges,
+  .touch-mode #ui[data-hud='edge'] .hud.cockpit .crawl-gauges {
+    top: calc(max(8px, env(safe-area-inset-top)) + 40px + 76px);
+    right: max(12px, env(safe-area-inset-right));
+    left: auto;
+    transform: none;
+  }
+
+  .touch-mode #ui[data-hud='edge'] .notices {
+    max-width: 34vw;
+  }
+}
+
+@media (orientation: landscape) {
+  .touch-mode #ui[data-hud='edge'] .inst-cluster {
+    left: max(4px, env(safe-area-inset-left));
+    background: none;
+  }
+
+  .touch-mode #ui[data-hud='edge'] .hud-stack {
+    top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+    left: calc(max(4px, env(safe-area-inset-left)) + 330px);
+    max-width: min(300px, calc(100vw - 330px - 170px));
+  }
+
+  .touch-mode #ui[data-hud='edge'] .gate-count,
+  .touch-mode #ui[data-hud='edge'] .crawl-run {
+    top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+    left: auto;
+    right: max(12px, env(safe-area-inset-right));
+    transform: none;
+  }
+}
+
+/* Menus: a full-height column on the right, items divided by thin lines. */
+#ui[data-hud='edge'] .pause {
+  padding: 0;
+}
+
+#ui[data-hud='edge'] .pause-card {
+  align-self: stretch;
+  width: min(400px, 100vw);
+  max-height: none;
+  padding: 56px 28px 26px;
+  background: rgba(10, 10, 10, 0.82);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+#ui[data-hud='edge'] .pause-card h2 {
+  font: 300 34px/1 var(--hud-body);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+#ui[data-hud='edge'] .pause-episode {
+  color: var(--hud-soft);
+  font: 500 12px var(--hud-body);
+}
+
+#ui[data-hud='edge'] .pause-buttons {
+  gap: 0;
+}
+
+#ui[data-hud='edge'] .pause-card button {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0;
+  background: none;
+  font: 500 18px var(--hud-body);
+  letter-spacing: 0;
+}
+
+#ui[data-hud='edge'] .pause-card .seg button {
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+#ui[data-hud='edge'] .pause-card button:hover,
+#ui[data-hud='edge'] .pause-card button.focused,
+#ui[data-hud='edge'] .pause-card input.focused {
+  color: var(--hud-accent);
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+#ui[data-hud='edge'] .pause-status div {
+  padding: 6px 0;
+  background: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0;
+}
+
+#ui[data-hud='edge'] .pause-status b {
+  font-weight: 500;
+}
+
+@media (max-height: 640px) {
+  #ui[data-hud='edge'] .pause-card {
+    padding-top: 18px;
+  }
+}
+
+@media (max-width: 720px) {
+  #ui[data-hud='edge'] .pause {
+    justify-items: end;
+  }
+}
+
+#ui[data-hud='edge'] .welcome .title-logo h1 {
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+#ui[data-hud='edge'] .title-menu button {
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-shadow: var(--hud-shadow);
+}
+
+#ui[data-hud='edge'] .title-panel,
+#ui[data-hud='edge'] .loading .loading-card.paper {
+  background: linear-gradient(90deg, rgba(10, 10, 10, 0.55), rgba(10, 10, 10, 0.82));
+  border: 0;
+  border-radius: 0;
+}
+
+#ui[data-hud='edge'] .welcome .welcome-card h1,
+#ui[data-hud='edge'] .title-settings h2,
+#ui[data-hud='edge'] .welcome .welcome-section h2,
+#ui[data-hud='edge'] .loading .briefing h2 {
+  font-weight: 300;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+#ui[data-hud='edge'] .welcome .welcome-option {
+  font-weight: 500;
+  border-radius: 0;
+  background: none;
+  border-width: 0 0 1px;
+}
+
+/* ---------- Field kit (C): instruments ---------- */
+
+#ui[data-hud='kit'] .hud {
+  --gauge: 92px;
+  --brass: 104px;
+  --watch: 128px;
+}
+
+.touch-mode #ui[data-hud='kit'] .hud {
+  --gauge: 56px;
+  --brass: 54px;
+  --watch: 64px;
+}
+
+#ui[data-hud='kit'] .inst-cluster,
+#ui[data-hud='kit'] .inst-compass {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#ui[data-hud='kit'] .inst-cluster {
+  align-items: flex-start;
+}
+
+#ui[data-hud='kit'] .inst-compass {
+  align-items: flex-end;
+}
+
+#ui[data-hud='kit'] .inst-pair {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+#ui[data-hud='kit'] .inst-temp,
+#ui[data-hud='kit'] .inst-fuel {
+  width: var(--gauge);
+  height: var(--gauge);
+}
+
+#ui[data-hud='kit'] .inst-brass {
+  width: var(--brass);
+  height: var(--brass);
+}
+
+#ui[data-hud='kit'] .inst-clock {
+  width: var(--watch);
+  height: var(--watch);
+}
+
+#ui[data-hud='kit'] .inst-pair svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+}
+
+#ui[data-hud='kit'] .inst-pair .face {
+  fill: #f1e8d2;
+}
+
+#ui[data-hud='kit'] .inst-pair .ticks {
+  stroke: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .inst-pair text {
+  fill: var(--kit-ink);
+  font-family: var(--hud-body);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+#ui[data-hud='kit'] .inst-pair .danger {
+  fill: none;
+  stroke: var(--kit-red);
+  stroke-width: 4.5;
+}
+
+#ui[data-hud='kit'] .inst-pair .needle {
+  stroke: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .inst-pair .hub {
+  fill: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .inst-pair .hot .needle {
+  stroke: var(--kit-red);
+}
+
+#ui[data-hud='kit'] .inst-pair .hot .label {
+  fill: var(--kit-red);
+}
+
+#ui[data-hud='kit'] .inst-clock .case {
+  fill: #b9b6ae;
+}
+
+#ui[data-hud='kit'] .inst-clock .bezel-ring {
+  fill: #1d1d1b;
+}
+
+#ui[data-hud='kit'] .inst-clock .dark {
+  fill: none;
+  stroke: var(--kit-red);
+  stroke-width: 9;
+}
+
+#ui[data-hud='kit'] .inst-clock .bezel {
+  fill: #fff;
+  letter-spacing: 0.06em;
+}
+
+#ui[data-hud='kit'] .inst-clock .face {
+  fill: #20211f;
+  stroke: #55534d;
+  stroke-width: 1;
+}
+
+#ui[data-hud='kit'] .inst-clock .ticks,
+#ui[data-hud='kit'] .inst-clock .hand {
+  stroke: #ede4cc;
+}
+
+#ui[data-hud='kit'] .inst-clock .pin {
+  fill: var(--kit-red);
+}
+
+#ui[data-hud='kit'] .inst-brass .face {
+  stroke: #7a5b1c;
+  stroke-width: 1;
+}
+
+#ui[data-hud='kit'] .inst-brass .cl.n,
+#ui[data-hud='kit'] .inst-brass .north,
+#ui[data-hud='kit'] .inst-brass .marks path {
+  fill: var(--kit-red);
+}
+
+#ui[data-hud='kit'] .inst-brass .south {
+  fill: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .inst-brass .lubber {
+  fill: #3b2a12;
+}
+
+#ui[data-hud='kit'] .inst-brass .pin {
+  fill: #7a5b1c;
+}
+
+/* Typed paper slips: the speed and gear, and the dark hours under the watch. */
+#ui[data-hud='kit'] .inst-slip {
+  padding: 3px 8px 2px;
+  background: var(--kit-paper);
+  color: var(--kit-ink);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  font: 400 13px/1.2 var(--hud-body);
+  white-space: nowrap;
+}
+
+#ui[data-hud='kit'] .inst-slip b {
+  font-size: 19px;
+}
+
+#ui[data-hud='kit'] .inst-clocknote {
+  font-weight: 700;
+  font-size: 12px;
+}
+
+#ui[data-hud='kit'] .inst-clocknote.late {
+  color: var(--kit-red);
+}
+
+#ui[data-hud='kit'] .inst-clocknote:empty {
+  display: none;
+}
+
+/* Lamps: Dymo tape. */
+#ui[data-hud='kit'] .lamp {
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  font: 700 12px/1 var(--hud-body);
+  letter-spacing: 0.12em;
+}
+
+#ui[data-hud='kit'] .lamp.amber {
+  color: #ffc04d;
+}
+
+#ui[data-hud='kit'] .lamp.green {
+  color: #8fe0a0;
+}
+
+#ui[data-hud='kit'] .lamp.blue {
+  color: #9cc4ff;
+}
+
+#ui[data-hud='kit'] .lamp.red {
+  color: #f4f4f0;
+}
+
+/* Paper slips for the place, the mission, prompts and messages. */
+#ui[data-hud='kit'] .hud .paper,
+#ui[data-hud='kit'] .touch-controls .paper,
+#ui[data-hud='kit'] .history-card {
+  border: 0;
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#ui[data-hud='kit'] .hud-stack .course-hint strong {
+  padding: 5px 9px 4px;
+  background: var(--kit-paper);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  text-shadow: none;
+  letter-spacing: 0.04em;
+}
+
+#ui[data-hud='kit'] .hud-stack .course-hint.brief span {
+  border-radius: 2px;
+  border: 0;
+  border-left: 4px solid var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .hud-stack .mission strong {
+  font-family: var(--hud-serif);
+  font-weight: 600;
+}
+
+#ui[data-hud='kit'] .history-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, var(--kit-line) 0 6px, transparent 6px 10px);
+}
+
+#ui[data-hud='kit'] .history-card small {
+  color: var(--kit-red);
+}
+
+#ui[data-hud='kit'] .history-card p {
+  font-family: var(--hud-serif);
+}
+
+#ui[data-hud='kit'] .history-card .history-do {
+  padding: 6px 8px;
+  background: #efe6cc;
+  border-left: 4px solid var(--kit-ink);
+  font-family: var(--hud-body);
+  font-weight: 700;
+}
+
+#ui[data-hud='kit'] .history-card .history-do kbd {
+  border-color: var(--kit-ink);
+  background: var(--kit-ink);
+  color: var(--kit-paper);
+}
+
+#ui[data-hud='kit'] .history-card.reading {
+  border-radius: 4px 4px 0 0;
+}
+
+#ui[data-hud='kit'] .prompt .key {
+  border-color: var(--kit-ink);
+  color: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .crawl-gauges {
+  background: var(--kit-paper);
+}
+
+#ui[data-hud='kit'] .touch-btn {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+#ui[data-hud='kit'] .touch-btn[aria-pressed='true'] {
+  color: var(--kit-paper);
+  background: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .touch-pile-marks i {
+  border-color: rgba(34, 32, 28, 0.4);
+}
+
+/* At night the paper is lit by the dash lamp, not the sun. */
+#ui[data-hud='kit'] .hud.night .inst-cluster,
+#ui[data-hud='kit'] .hud.night .inst-compass,
+#ui[data-hud='kit'] .hud.night .hud-stack,
+#ui[data-hud='kit'] .hud.night .crawl-gauges {
+  filter: brightness(0.8);
+}
+
+/* Computer: the gauges bottom left, the compass and watch bottom right, notes between them. */
+body:not(.touch-mode) #ui[data-hud='kit'] .inst-cluster {
+  left: 24px;
+  bottom: 22px;
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .inst-compass {
+  right: 24px;
+  bottom: 22px;
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .hud-stack {
+  left: 24px;
+  bottom: calc(22px + var(--gauge) + 40px);
+  width: min(520px, calc(100vw - 48px));
+  flex-direction: column-reverse;
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .camera-help {
+  top: 14px;
+  left: 18px;
+  right: auto;
+  bottom: auto;
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .crawl-gauges {
+  right: 24px;
+  bottom: calc(22px + var(--watch) + 36px);
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .history-card,
+body:not(.touch-mode) #ui[data-hud='kit'] .history-card:not(.reading) {
+  left: 50%;
+  bottom: 22px;
+  width: min(540px, calc(100vw - 640px));
+}
+
+@media (max-width: 1180px) {
+  body:not(.touch-mode) #ui[data-hud='kit'] .history-card,
+  body:not(.touch-mode) #ui[data-hud='kit'] .history-card:not(.reading) {
+    bottom: calc(22px + var(--watch) + 44px);
+    width: min(540px, calc(100vw - 32px));
+  }
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .hud.cockpit .inst-cluster,
+body:not(.touch-mode) #ui[data-hud='kit'] .hud.cockpit .inst-compass {
+  transform: scale(0.75);
+  opacity: 0.9;
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .hud.cockpit .inst-cluster {
+  transform-origin: bottom left;
+}
+
+body:not(.touch-mode) #ui[data-hud='kit'] .hud.cockpit .inst-compass {
+  transform-origin: bottom right;
+}
+
+/* Phones: the gauges top left, the compass and watch top right, under the top buttons. */
+.touch-mode #ui[data-hud='kit'] .inst-cluster {
+  top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+  left: max(8px, env(safe-area-inset-left));
+  flex-direction: column-reverse;
+}
+
+.touch-mode #ui[data-hud='kit'] .inst-compass {
+  top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+  right: max(8px, env(safe-area-inset-right));
+}
+
+.touch-mode #ui[data-hud='kit'] .inst-slip {
+  font-size: 12px;
+}
+
+.touch-mode #ui[data-hud='kit'] .inst-slip b {
+  font-size: 16px;
+}
+
+.touch-mode #ui[data-hud='kit'] .inst-clocknote {
+  font-size: 11px;
+}
+
+.touch-mode #ui[data-hud='kit'] .lamp {
+  font-size: 11px;
+  padding: 3px 6px;
+}
+
+/* Typewriter letters run wide: prompts by the thumbs stay short. */
+.touch-mode #ui[data-hud='kit'] .prompt {
+  font-size: 13px;
+}
+
+@media (orientation: portrait) {
+  .touch-mode #ui[data-hud='kit'] .hud-stack {
+    top: calc(max(8px, env(safe-area-inset-top)) + 44px + var(--gauge) + 34px);
+    left: max(8px, env(safe-area-inset-left));
+    max-width: min(300px, 64vw);
+  }
+
+  .touch-mode #ui[data-hud='kit'] .notices,
+  .touch-mode #ui[data-hud='kit'] .gate-count,
+  .touch-mode #ui[data-hud='kit'] .crawl-run,
+  .touch-mode #ui[data-hud='kit'] .crawl-gauges,
+  .touch-mode #ui[data-hud='kit'] .hud.cockpit .crawl-gauges {
+    top: calc(max(8px, env(safe-area-inset-top)) + 44px + var(--watch) + 30px);
+    right: max(8px, env(safe-area-inset-right));
+    left: auto;
+    transform: none;
+  }
+
+  .touch-mode #ui[data-hud='kit'] .notices {
+    max-width: 34vw;
+  }
+}
+
+@media (orientation: landscape) {
+  .touch-mode #ui[data-hud='kit'] .hud-stack {
+    top: calc(max(8px, env(safe-area-inset-top)) + 44px);
+    left: calc(max(8px, env(safe-area-inset-left)) + var(--gauge) * 2 + 32px);
+    max-width: min(300px, calc(100vw - var(--gauge) * 2 - var(--brass) - var(--watch) - 90px));
+  }
+
+  .touch-mode #ui[data-hud='kit'] .gate-count,
+  .touch-mode #ui[data-hud='kit'] .crawl-run {
+    top: calc(max(8px, env(safe-area-inset-top)) + 44px + var(--watch) + 28px);
+    left: auto;
+    right: max(8px, env(safe-area-inset-right));
+    transform: none;
+  }
+}
+
+/* Menus: a field notebook, ruled, with a leather spine. */
+#ui[data-hud='kit'] .pause {
+  background: linear-gradient(90deg, rgba(8, 8, 7, 0.1), rgba(8, 8, 7, 0.5));
+}
+
+#ui[data-hud='kit'] .pause-card,
+#ui[data-hud='kit'] .result-card {
+  background: repeating-linear-gradient(var(--kit-paper) 0 25px, var(--kit-line) 25px 26px);
+  border: 0;
+  border-left: 22px solid #6f5a38;
+  border-radius: 3px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  color: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .pause-card h2,
+#ui[data-hud='kit'] .result-card h2 {
+  font: 600 30px/1 var(--hud-serif);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+#ui[data-hud='kit'] .pause-episode {
+  color: var(--kit-red);
+}
+
+#ui[data-hud='kit'] .pause-card button,
+#ui[data-hud='kit'] .result-buttons button {
+  font: 700 16px var(--hud-body);
+  letter-spacing: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+}
+
+#ui[data-hud='kit'] .pause-card .seg button {
+  border-color: var(--kit-line);
+  font-size: 14px;
+}
+
+#ui[data-hud='kit'] .pause-card button:hover,
+#ui[data-hud='kit'] .pause-card button.focused,
+#ui[data-hud='kit'] .pause-card input.focused,
+#ui[data-hud='kit'] .result-buttons button:hover,
+#ui[data-hud='kit'] .result-buttons button.focused {
+  border-color: var(--kit-ink);
+  box-shadow: inset 4px 0 0 var(--kit-red);
+  background: rgba(255, 255, 255, 0.45);
+}
+
+#ui[data-hud='kit'] .pause-card button.on {
+  background: var(--kit-ink);
+  color: var(--kit-paper);
+}
+
+#ui[data-hud='kit'] .pause-card button.on small {
+  color: var(--kit-paper);
+}
+
+#ui[data-hud='kit'] .pause-status div {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px dashed var(--kit-line);
+  border-radius: 2px;
+}
+
+#ui[data-hud='kit'] .pause-status span {
+  color: var(--kit-red);
+  font-weight: 700;
+}
+
+/* Title: the type stays light on the photograph; the cards are paper. */
+#ui[data-hud='kit'] .welcome,
+#ui[data-hud='kit'] .loading {
+  --title-gold: #e8c977;
+  --title-white: #f8ebd4;
+  --title-muted: #d9d0bd;
+}
+
+#ui[data-hud='kit'] .welcome .title-logo h1 {
+  font-family: var(--hud-serif);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+#ui[data-hud='kit'] .title-panel,
+#ui[data-hud='kit'] .loading .loading-card.paper {
+  --title-gold: var(--kit-red);
+  --title-white: var(--kit-ink);
+  --title-muted: #5c5446;
+  background: var(--kit-paper);
+  border: 0;
+  border-left: 18px solid #6f5a38;
+  border-radius: 3px;
+  color: var(--kit-ink);
+}
+
+#ui[data-hud='kit'] .welcome .welcome-card h1,
+#ui[data-hud='kit'] .title-settings h2,
+#ui[data-hud='kit'] .welcome .welcome-section h2,
+#ui[data-hud='kit'] .loading .briefing h2 {
+  font-family: var(--hud-serif);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+#ui[data-hud='kit'] .welcome .welcome-option {
+  border-color: var(--kit-line);
+  border-radius: 2px;
+}
+
+#ui[data-hud='kit'] .welcome .welcome-trip {
+  border-color: var(--kit-line);
 }
 
 @media (prefers-reduced-motion: reduce) {
