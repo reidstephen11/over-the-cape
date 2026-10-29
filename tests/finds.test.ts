@@ -20,7 +20,7 @@ const finds = crebMap.finds ?? [];
 
 describe('Finds off the CREB’s main line', () => {
   it('puts a jerry can and tyre plugs at the end of two side tracks, by their huts', () => {
-    expect(finds.map((f) => f.id)).toEqual(['line-camp-plugs', 'linesmans-jerry-can']);
+    expect(finds.map((f) => f.id).slice(0, 2)).toEqual(['line-camp-plugs', 'linesmans-jerry-can']);
     for (const [trackId, findId] of [
       ['line-camp-track', 'line-camp-plugs'],
       ['linesmans-track', 'linesmans-jerry-can'],
@@ -43,12 +43,36 @@ describe('Finds off the CREB’s main line', () => {
       expect(main, trackId).toBeDefined();
       expect(Math.abs(world.terrain.heightAt(start.x, start.z) - t.profile[0]), trackId).toBeLessThan(0.3);
     }
-    // Nothing to find on the main line itself: every find is well off it.
+    // Nothing to find on the main line itself: every find is off it (the lookout's, where
+    // the car pulls off the track, the least).
     const route = ['creb-ridge', 'range-top'].map(trackOf);
     for (const f of finds)
       for (const r of route)
         for (let k = 0; k < r.poly.count; k++)
-          expect(Math.hypot(r.poly.xs[k] - f.x, r.poly.zs[k] - f.z), f.id).toBeGreaterThan(f.radius + 30);
+          expect(Math.hypot(r.poly.xs[k] - f.x, r.poly.zs[k] - f.z), f.id).toBeGreaterThan(f.radius + 15);
+  });
+
+  it('hides three more with no sign, at the falls tracks’ ends and the lookout', () => {
+    const hidden = finds.slice(2);
+    expect(hidden.map((f) => f.id)).toEqual([
+      'roaring-meg-falls-spare',
+      'lookout-jerry-can',
+      'wujal-falls-plugs',
+    ]);
+    for (const [trackId, findId] of [
+      ['roaring-meg-falls', 'roaring-meg-falls-spare'],
+      ['wujal-falls', 'wujal-falls-plugs'],
+    ]) {
+      const t = trackOf(trackId);
+      const end = trailPoint(t, t.poly.length);
+      const f = finds.find((x) => x.id === findId)!;
+      expect(Math.hypot(end.x - f.x, end.z - f.z), trackId).toBeLessThan(f.radius);
+    }
+    const lookout = crebMap.pois.find((p) => p.id === 'creb-lookout')!;
+    const f = finds.find((x) => x.id === 'lookout-jerry-can')!;
+    expect(Math.hypot(lookout.x - f.x, lookout.z - f.z)).toBeLessThan(lookout.radius);
+    // Flat enough to stop beside and load.
+    for (const h of hidden) expect(world.terrain.slopeDegAt(h.x, h.z), h.id).toBeLessThan(15);
   });
 
   it('loads a find once, only when stopped beside it, and puts it back from a checkpoint', async () => {

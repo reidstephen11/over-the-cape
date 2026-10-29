@@ -157,7 +157,7 @@ export function buildHudState(i: HudInputs): HudState {
         keys: i.find.inReach ? 'Stop' : '!',
         text: i.find.inReach
           ? `Stop here to load the ${i.find.name.toLowerCase()}`
-          : `${i.find.name} by the hut — pull up beside it`,
+          : `${i.find.name} on a crate — pull up beside it`,
       });
     if (i.trailer?.tyres?.some((h) => h < 1))
       prompts.push({ keys: '!', text: 'Trailer tyre flat — stop and repair it in Tools' });

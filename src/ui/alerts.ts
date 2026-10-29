@@ -99,7 +99,7 @@ const RULES: Rule[] = [
   },
   {
     id: 'find',
-    pattern: /^(.*) by the hut — pull up beside it$/,
+    pattern: /^(.*) on a crate — pull up beside it$/,
     critical: false,
     rank: 7,
     text: (m) => `${shortName(m[1])} — pull up`,

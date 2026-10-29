@@ -79,7 +79,7 @@ describe('phone warnings', () => {
   });
 
   it('shortens a find and an unknown sentence', () => {
-    expect(warningView('Jerry can by the hut — pull up beside it').text).toBe('Jerry can — pull up');
+    expect(warningView('Jerry can on a crate — pull up beside it').text).toBe('Jerry can — pull up');
     expect(warningView('Something long is happening — and here is the rest of it').text).toBe(
       'Something long is happ…',
     );

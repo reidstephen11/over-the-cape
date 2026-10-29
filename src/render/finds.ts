@@ -31,6 +31,16 @@ function plugTin(b: MeshBuilder): void {
   b.pop();
 }
 
+/** A spare wheel and tyre lying flat. */
+function spareWheel(b: MeshBuilder): void {
+  b.push().translate(0, 0.12, 0);
+  b.cylinder(0.38, 0.38, 0.24, 14, new THREE.Color('#1F1F1F'));
+  b.pop();
+  b.push().translate(0, 0.125, 0);
+  b.cylinder(0.22, 0.22, 0.245, 10, new THREE.Color('#B9B9B4'));
+  b.pop();
+}
+
 /**
  * What's waiting at each find: a timber crate by the track with the jerry can or tin on
  * it, so it can be seen as you pull up. The crate stays; the load goes when it's taken.
@@ -50,7 +60,7 @@ export class FindMarkers {
       crates.pop();
       const b = new MeshBuilder(78);
       b.push().translate(f.x, y + 0.6, f.z);
-      (f.gives.jerryCans ? jerryCan : plugTin)(b);
+      (f.gives.jerryCans ? jerryCan : f.gives.spares ? spareWheel : plugTin)(b);
       b.pop();
       const mesh = new THREE.Mesh(b.build(), material);
       mesh.castShadow = true;

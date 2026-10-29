@@ -529,6 +529,8 @@ export class PaperMap {
     device: 'keyboard' | 'gamepad' | 'touch' = 'keyboard',
     controller: ControllerType = defaultController,
     seen: SeenGround | null = null,
+    /** Things still to be loaded: a question mark too, near seen ground. */
+    unfound: readonly { x: number; z: number }[] = [],
   ): void {
     const opening = !this.isOpen;
     this.el.classList.remove('hidden');
@@ -556,7 +558,7 @@ export class PaperMap {
       this.ctx.fillStyle = '#F3EBDA';
       this.ctx.fillRect(0, 0, this.width, this.height);
       void this.prepare().then(() => {
-        if (this.isOpen) this.open(discovered, player, device, controller, seen);
+        if (this.isOpen) this.open(discovered, player, device, controller, seen, unfound);
       });
       return;
     }
@@ -567,6 +569,7 @@ export class PaperMap {
     if (seen)
       for (const p of this.world.pois)
         if (!discovered.has(p.id) && seen.near(p.x, p.z, HINT_RANGE)) this.drawHint(g, p);
+    if (seen) for (const f of unfound) if (seen.near(f.x, f.z, HINT_RANGE)) this.drawHint(g, f);
     const pois = this.world.pois.filter((p) => discovered.has(p.id));
     const labels = placeMapLabels(
       pois.map((p) => {
@@ -702,7 +705,7 @@ export class PaperMap {
   }
 
   /** A pencilled question mark where something hasn't been found yet. */
-  private drawHint(g: CanvasRenderingContext2D, p: PoiDef): void {
+  private drawHint(g: CanvasRenderingContext2D, p: { x: number; z: number }): void {
     const [x, y] = this.toMap(p.x, p.z);
     g.fillStyle = 'rgba(243, 235, 218, 0.85)';
     g.beginPath();
