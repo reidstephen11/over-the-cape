@@ -1,5 +1,6 @@
 import { engineSynthTuning, type EngineSynthTuning } from '../../data/audio';
 import { Biquad, DcBlock, Noise, OnePole, Pipe, clamp01 } from './dsp';
+import { limiterFiring, limiterProximity } from './limiter';
 
 /** What the engine is doing, read once per audio block. */
 export interface EngineInputs {
@@ -129,6 +130,10 @@ export class EngineSynth {
   private readonly dump: OnePole;
   private readonly turboHiss: Biquad;
   private readonly dumpBand: Biquad;
+  /** Firing count while bouncing, so the limiter pattern is a rhythm not random skips. */
+  private fires = 0;
+  /** Remaining crackle pops after a lift-off at the limiter. */
+  private crackle = 0;
 
   constructor(sampleRate: number, seed = 0x2f40, tuning: EngineSynthTuning = engineSynthTuning) {
     const sr = (this.sr = sampleRate);
@@ -279,6 +284,7 @@ export class EngineSynth {
       if (this.theta >= 720) this.theta -= 720;
       const pressure = T.pressure.idle + (1 - T.pressure.idle) * Math.pow(manifold, 0.8);
       const overrun = manifold < 0.05 && rpm > T.overrun.fromRpm && falling > 0.5;
+      const proximity = T.limiter ? limiterProximity(rpm, T.limiterRpm, T.limiter.approach) : 0;
 
       // Exhaust pulses and intake suction per cylinder.
       let pulses = 0;
@@ -288,7 +294,7 @@ export class EngineSynth {
         let a = this.age[k] + dTheta;
         if (a >= 720) {
           a -= 720;
-          this.fire(k, degPerSec, combustion, pressure, idleness, overrun, inp.misfire, rpm);
+          this.fire(k, degPerSec, combustion, pressure, idleness, overrun, inp.misfire, rpm, proximity);
         }
         this.age[k] = a;
         const pk = this.amp[k] * pulse(a - this.offset[k], this.rise[k], this.decay[k]);
@@ -297,8 +303,11 @@ export class EngineSynth {
         suction += pulse(a - T.intake.openDeg, T.intake.riseDeg, T.intake.decayDeg);
       }
 
-      // Gas rushing past the valves is turbulent: rougher under load.
-      const rough = T.turbulence.idle + (T.turbulence.load - T.turbulence.idle) * manifold;
+      // Gas rushing past the valves is turbulent: rougher under load, harsher at the limiter.
+      const rough =
+        T.turbulence.idle +
+        (T.turbulence.load - T.turbulence.idle) * manifold +
+        (T.limiter?.grit ?? 0) * proximity;
       const flow = 1 + rough * n.next();
       pulses *= flow;
       pulsesB *= flow;
@@ -322,11 +331,16 @@ export class EngineSynth {
         this.tickAge -= this.tickDeg;
         if (rpm > 60) impulse = (0.55 + 0.45 * n.unit()) * (0.35 + 0.65 * clamp01(rpm / 4000));
       }
-      const tick = this.tickA.process(impulse) + 0.7 * this.tickB.process(impulse);
+      const tick =
+        (this.tickA.process(impulse) + 0.7 * this.tickB.process(impulse)) *
+        (1 + (T.limiter?.valves ?? 0) * proximity);
 
-      // Intake: carburettor and air-cleaner roar, louder with throttle and revs.
+      // Intake: carburettor and air-cleaner roar, louder with throttle and revs, and at the limiter.
       const revs = clamp01(rpm / 4000);
-      const intakeLevel = Math.pow(manifold, 1.5) * (0.25 + 0.75 * revs);
+      const intakeLevel =
+        Math.pow(manifold, 1.5) *
+        (0.25 + 0.75 * revs) *
+        (1 + (T.limiter?.intake ?? 0) * proximity * manifold);
       const intake = this.intakeBand.process(n.next()) * (0.3 + suction) * intakeLevel * T.intake.noiseGain;
       const honk = this.honk.process(this.intakeDc.process(suction)) * intakeLevel * T.intake.honkGain;
       const fan = this.fan.process(n.next()) * revs * revs * T.fan.gain;
@@ -388,14 +402,19 @@ export class EngineSynth {
         this.flutterPhase -= Math.floor(this.flutterPhase);
         const flutter = 0.35 + 0.65 * Math.max(0, Math.sin(2 * Math.PI * this.flutterPhase));
         turbo =
-          tone * spin * spin * U.gain + this.dumpBand.process(n.next()) * dump * flutter * U.flutterGain;
+          tone * spin * spin * U.gain +
+          this.dumpBand.process(n.next()) *
+            dump *
+            flutter *
+            U.flutterGain *
+            (1 + (T.limiter?.dump ?? 0) * proximity);
       }
 
       const mix =
         exhaust * T.exhaust.gain +
         turbo +
         knock +
-        body * T.block.gain +
+        body * T.block.gain * (1 + (T.limiter?.block ?? 0) * proximity) +
         tick * T.valves.gain +
         intake +
         honk +
@@ -419,6 +438,7 @@ export class EngineSynth {
     overrun: boolean,
     misfire: number,
     rpm: number,
+    proximity: number,
   ): void {
     const n = this.noise;
     const T = this.T;
@@ -428,7 +448,33 @@ export class EngineSynth {
     let sharp = 1;
     if (!combustion) a = T.pressure.compression;
     else if (n.unit() < misfire) a = T.pressure.compression;
-    else if (rpm > T.limiterRpm && n.unit() < 0.5) a = T.pressure.compression;
+    else if (T.limiter && rpm >= T.limiterRpm) {
+      const L = T.limiter;
+      const popping = overrun ? 0 : L.bouncePop;
+      let action = limiterFiring(rpm, T.limiterRpm, this.fires++, L.pattern, popping, n.unit());
+      if (overrun && proximity > 0.55) {
+        if (this.crackle > 0) {
+          this.crackle--;
+          if (n.unit() < 0.55) action = 'pop';
+        } else if (n.unit() < L.overrunPop) {
+          this.crackle = L.kind === 'ignition' ? 2 + ((n.unit() * 5) | 0) : 1 + ((n.unit() * 2) | 0);
+          action = 'pop';
+        }
+      }
+      if (action === 'cut') a = T.pressure.compression;
+      else if (action === 'weak') a = pressure * 0.4;
+      else if (action === 'pop') {
+        a = T.overrun.popGain * (L.kind === 'fuel' ? 0.45 : 1);
+        sharp = L.kind === 'fuel' ? 0.7 : 0.5;
+      } else {
+        a = pressure;
+        if (T.knock) {
+          const K = T.knock;
+          this.knock =
+            (K.idle * idleness + K.load * clamp01(pressure) * (1 - idleness)) * (0.75 + 0.5 * n.unit());
+        }
+      }
+    } else if (rpm > T.limiterRpm && n.unit() < 0.5) a = T.pressure.compression;
     else if (overrun && n.unit() < T.overrun.misfire) a = T.pressure.compression;
     else if (overrun && n.unit() < T.overrun.popChance) {
       a = T.overrun.popGain;

@@ -1586,3 +1586,9 @@ Stephen, playtesting v0.87 on the phone, could not get into the water on Paddock
 **Before.** Camel Trophy Ninety, wet, low range, both lockers, crawl, centre line 872→928 m: stuck at 894.6 m, 32.8 m short, never entered the water (`maxWater` 0).
 
 **After.** The same Camel crawl 872→928 m crosses on the centre line without the winch, through the water and both bank bogs, in 48 s at heat 0.57. The short-wheelbase 4WD does the same (47 s, heat 0.60), and both paddock creeks. High range on the north creek reaches the far-bank mud and stops there. Geometry test: no 0.4 m / 40° lip at the water on the centre line or the wheel tracks of paddock-road, bloomfield-track or donovans-creek. The north entry is now a ~0.3 m / 36° bank into the water, not a 1 m wall.
+
+## v0.89: limiter character on the short-wheelbase 4WD and the LC79
+
+Stephen likes how those two sound when they are revving hard, and asked for that to go further at the absolute limit — bouncing off the limiter, flat out — without changing the rest of the drive.
+
+The old limiter was a random skip of every other firing, and it sat 150 rpm above the physics redline, so it barely spoke while the engine was actually cutting. Both now bounce at the same rpm the drivetrain cuts (4300 on the 40 Series petrol six, 4100 on the 1VD V8 diesel). Extra intake roar, valvetrain thrash and exhaust grit only blend in over the last ~250 rpm. The bounce itself is a repeating cut rhythm, not random: the petrol six uses an uneven ignition-cut stutter with pops mixed in; the V8 uses a steadier two-on, two-off fuel cut, with only rare small puffs and extra turbo dump on lift-off. Lift off still at redline and the six crackles and bangs; the diesel flutters and splutters, not petrol backfires. Other vehicles keep the old random cut. The mix still goes through the same soft clip, engine bus and volume sliders; nothing new is allocated per sample besides a couple of counters.

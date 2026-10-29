@@ -4,6 +4,7 @@ import { firingHz } from '../src/audio/mix';
 import {
   dieselSixSynthTuning,
   dieselSynthTuning,
+  engineSynthTuning,
   petrolFourSynthTuning,
   troopyDieselSynthTuning,
   td42SynthTuning,
@@ -285,6 +286,25 @@ describe('engine synthesiser', () => {
     const real = render(2, inp, v8());
     expect(burble(real)).toBeGreaterThan(0.05);
     expect(burble(real)).toBeGreaterThan(20 * burble(render(2, inp, v8(even))));
+  });
+
+  it('the short-wheelbase six and LC79 V8 stay inside full scale while bouncing off the limiter', () => {
+    for (const [tuning, rpm] of [
+      [engineSynthTuning, 4300],
+      [v8DieselSynthTuning, 4100],
+    ] as const) {
+      for (const inp of [
+        { rpm, throttle: 1, load: 1 },
+        { rpm, throttle: 0, load: 0.2 },
+        { rpm: rpm - 800, throttle: 0.5, load: 0.5 },
+      ]) {
+        const x = render(1, inp, new EngineSynth(SR, 3, tuning));
+        let peak = 0;
+        for (const v of x) peak = Number.isFinite(v) ? Math.max(peak, Math.abs(v)) : Infinity;
+        expect(peak).toBeLessThanOrEqual(1);
+        expect(rms(x, SR / 4)).toBeGreaterThan(0.01);
+      }
+    }
   });
 
   it("the LC79's turbos whistle under boost and are gone without them", () => {
