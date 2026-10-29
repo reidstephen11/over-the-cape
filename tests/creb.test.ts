@@ -10,6 +10,7 @@ import { patrolTuning } from '../src/data/patrol';
 import { lc79Tuning } from '../src/data/lc79';
 import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
+import { deckTop } from '../src/sim/world/bridges';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
@@ -156,6 +157,27 @@ describe('Episode 1: the CREB Track', () => {
     }
     expect(wettest).toBeGreaterThan(0.5);
     expect(wettest).toBeLessThan(0.85);
+  });
+
+  it('carries the Bloomfield River on a timber deck above the water, not a sagging ford', () => {
+    // v0.88's ford ramp was applied to every track/creek meeting, including this span, so
+    // the boards followed the riverbed ~1.75 m underwater. Drive over the timber.
+    const track = trackOf('bloomfield-bridge');
+    const b = track.def.bridges![0];
+    let lowestDeck = Infinity;
+    let deepestUnder = 0;
+    for (let s = b.from; s <= b.to; s += 1) {
+      const p = trailPoint(track, s);
+      const deck = deckTop(track, b, s);
+      lowestDeck = Math.min(lowestDeck, deck);
+      const water = world.terrain.waterSurfaceAt(p.x, p.z);
+      if (water !== null) {
+        expect(deck, `deck at ${s.toFixed(0)} m`).toBeGreaterThan(water + 2);
+        deepestUnder = Math.max(deepestUnder, world.terrain.waterDepthAt(p.x, p.z));
+      }
+    }
+    expect(deepestUnder, 'the river still runs under the span').toBeGreaterThan(1);
+    expect(lowestDeck).toBeGreaterThan(6.5);
   });
 
   it('strews the bar with boulders and scour holes across the straight line, leaving a line between them', () => {
