@@ -28,6 +28,8 @@ const BELT = 0.74; // the tub's top edge, where the hardtop sits
 const WIN_LOW = 0.99;
 const WIN_TOP = 1.38;
 const CAP = 1.45; // lower edge of the white roof cap
+/** Panels under the roof cap run up into it by this, so no seam shows below its edge. */
+const TUCK = CAP + 0.02;
 /** Top of the roof at its edges; it crowns 35 mm higher down the middle. */
 export const ROOF = 1.56;
 /** Front face of the grille panel. */
@@ -42,7 +44,7 @@ const GUARD_FRONT = -1.61;
 const GUARD_OUT = HW - 0.025; // the guard's face; its lip stands out to HW
 const LAMP_X = 0.427;
 const LAMP_Y = 0.515;
-const TUB_R = 0.12; // the tub's rear corners
+const TUB_R = 0.22; // the tub's rear corners, flush with the hardtop's
 const TOP_R = 0.22; // the hardtop's rounder rear corners, round the curved windows
 /** Top face of the flat bonnet. */
 export const BONNET_TOP = 0.835;
@@ -176,20 +178,23 @@ function planProfile(
     bevelSize: size,
     bevelOffset: -size,
     bevelSegments: 4,
-    curveSegments: 20,
+    curveSegments: zone === Z.Roof ? 8 : 20,
   });
   let g = toCreasedNormals(raw, Math.PI / 5);
   g.rotateX(-Math.PI / 2);
   b.slot = M.Paint;
   if (zone === Z.Roof) {
-    g = subdivideSurface(g, (_c, n) => Math.abs(n.y) > 0.999, 2);
+    // Crown the top, fading to nothing at the lower edge so the cap still sits flush on the
+    // body. Every face is split alike, so the top and its rounded edges share their seams.
+    g = subdivideSurface(g, () => true, 1);
     const pos = g.getAttribute('position'),
       norm = g.getAttribute('normal');
     for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i);
-      pos.setY(i, pos.getY(i) + 0.035 * Math.max(0, 1 - (x / HW) ** 2));
+      const x = pos.getX(i),
+        t = THREE.MathUtils.clamp((pos.getY(i) + bevel) / (y1 - y0), 0, 1);
+      pos.setY(i, pos.getY(i) + t * 0.035 * Math.max(0, 1 - (x / HW) ** 2));
       const n = new THREE.Vector3(
-        norm.getX(i) + ((0.07 * x) / (HW * HW)) * norm.getY(i),
+        norm.getX(i) + ((t * 0.07 * x) / (HW * HW)) * norm.getY(i),
         norm.getY(i),
         norm.getZ(i),
       ).normalize();
@@ -572,8 +577,8 @@ function sides(b: VehicleBuilder, livery: Livery): void {
       sideShape(
         [
           [DOOR_Z - 0.01, BELT],
-          [DOOR_Z - 0.01, CAP],
-          [TAIL - TOP_R - 0.1, CAP],
+          [DOOR_Z - 0.01, TUCK],
+          [TAIL - TOP_R - 0.1, TUCK],
           [TAIL - TOP_R - 0.1, BELT],
         ],
         [
@@ -674,6 +679,20 @@ function sides(b: VehicleBuilder, livery: Livery): void {
       );
     }
     b.block(side * (BW + 0.012), 0.69, DOOR_REAR - 0.12, 0.018, 0.035, 0.13, chrome, M.Metal, Z.Sides, 0.008);
+    // Painted sill under the doors, from the guard to the rear wheel opening, so no gap shows
+    // between the door's bottom edge and the step.
+    b.block(
+      side * (BW - 0.02),
+      (STEP + LOW) / 2 + 0.005,
+      0.05,
+      0.03,
+      LOW - STEP,
+      1.36,
+      body,
+      M.Paint,
+      Z.Sides,
+      0.006,
+    );
     // Ribbed step under the door, from the guard back to the door's rear edge.
     b.block(
       side * (BW - 0.1),
@@ -724,10 +743,10 @@ function rear(b: VehicleBuilder, livery: Livery): void {
     );
     b.block(
       side * (DOOR_X + 0.025),
-      (BELT + CAP) / 2,
+      (BELT + TUCK) / 2,
       TAIL - 0.02,
       0.06,
-      CAP - BELT,
+      TUCK - BELT,
       0.04,
       body,
       M.Paint,
@@ -753,7 +772,7 @@ function rear(b: VehicleBuilder, livery: Livery): void {
     };
     band(BELT, WIN_LOW, TOP_R, body, M.Paint);
     band(WIN_LOW, WIN_TOP, TOP_R - 0.01, glass, M.Glass);
-    band(WIN_TOP, CAP, TOP_R, body, M.Paint);
+    band(WIN_TOP, TUCK, TOP_R, body, M.Paint);
     // The corner window starts on the side, ahead of the curve.
     const zs = TAIL - TOP_R - 0.1;
     b.block(
@@ -769,10 +788,10 @@ function rear(b: VehicleBuilder, livery: Livery): void {
     );
     b.block(
       side * (BW - 0.02),
-      (WIN_TOP + CAP) / 2,
+      (WIN_TOP + TUCK) / 2,
       zs + 0.05,
       0.04,
-      CAP - WIN_TOP,
+      TUCK - WIN_TOP,
       0.1,
       body,
       M.Paint,
@@ -789,28 +808,13 @@ function rear(b: VehicleBuilder, livery: Livery): void {
       M.Glass,
       Z.Glass,
     );
-    // The tub's top ledge round its tighter corner, under the hardtop's rounder one.
-    const ledge = new THREE.Shape();
-    const sx = side;
-    ledge.moveTo(sx * (BW - TOP_R), -(TAIL - TOP_R));
-    ledge.lineTo(sx * BW, -(TAIL - TOP_R));
-    ledge.lineTo(sx * BW, -(TAIL - TUB_R));
-    ledge.absarc(sx * (BW - TUB_R), -(TAIL - TUB_R), TUB_R, side > 0 ? 0 : Math.PI, -Math.PI / 2, side > 0);
-    ledge.lineTo(sx * (BW - TOP_R), -TAIL);
-    const lg = new THREE.ExtrudeGeometry(ledge, { depth: 0.012, bevelEnabled: false, curveSegments: 8 });
-    lg.rotateX(-Math.PI / 2);
-    b.slot = M.Paint;
-    b.tag = Z.Rear;
-    b.push().translate(0, BELT - 0.006, 0);
-    b.geometry(lg, body);
-    b.pop();
     // Rear barn doors from the tub floor to the roof, each with a round-cornered window.
     const door = new THREE.Shape(
       rounded([
         [side * 0.005, LOW + 0.01],
         [side * DOOR_X, LOW + 0.01, 0.03],
-        [side * DOOR_X, CAP - 0.01, 0.03],
-        [side * 0.005, CAP - 0.01],
+        [side * DOOR_X, TUCK - 0.005, 0.03],
+        [side * 0.005, TUCK - 0.005],
       ]),
     );
     door.holes.push(
@@ -873,7 +877,18 @@ function roof(b: VehicleBuilder, livery: Livery): void {
     0.03,
   );
   for (const side of [-1, 1])
-    b.block(side * (BW + 0.02), CAP + 0.008, 0.75, 0.012, 0.016, 2.1, cream, M.Paint, Z.Roof, 0.005);
+    b.block(
+      side * (BW + 0.02),
+      CAP + 0.008,
+      (DOOR_Z + TAIL - TOP_R - 0.02) / 2,
+      0.012,
+      0.016,
+      TAIL - TOP_R - 0.02 - DOOR_Z,
+      cream,
+      M.Paint,
+      Z.Roof,
+      0.005,
+    );
 }
 
 /** The short-wheelbase body in a livery; `extras` adds what that livery carries on top. */
@@ -898,5 +913,5 @@ export function buildVehicleBody(
   addVehicleInterior(b, tuning.engine.redlineRpm);
   addVehicleEquipment(b, tuning, wheel, extras?.aerialSide);
   extras?.add(b);
-  return cleanGeometry(subdivideSurface(b.build(), (c, n) => n.y > 0.95 && c.y > 0.7, 1));
+  return cleanGeometry(subdivideSurface(b.build(), (c, n) => n.y > 0.95 && c.y > 0.7 && c.y < CAP, 1));
 }
