@@ -1,0 +1,1229 @@
+/*
+ * HUD styles (Settings → HUD style). The page carries the style on #ui[data-hud]; the id
+ * keeps these rules ahead of the older per-element rules in styles.css.
+ *
+ * Shared by every style: the instruments replace the old status strip, fuel panel and
+ * compass strip; history and lesson notes sit along the bottom of the screen; the title
+ * and pause menus sit on the right, clear of the car.
+ */
+
+/* ---------- Shared layout ---------- */
+#ui[data-hud] .hud-readout {
+  display: none;
+}
+
+#ui[data-hud] .hud-stack {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
+}
+
+#ui[data-hud] .hud-stack > .paper {
+  position: static;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  max-width: 100%;
+  margin: 0;
+  opacity: 1;
+}
+
+#ui[data-hud] .inst-cluster,
+#ui[data-hud] .inst-compass {
+  position: absolute;
+  pointer-events: none;
+}
+
+#ui[data-hud] .inst-cluster.no-engine .inst-temp,
+#ui[data-hud] .inst-cluster.no-engine .inst-fuel,
+#ui[data-hud] .inst-cluster.no-clock .inst-clock {
+  display: none;
+}
+
+#ui[data-hud] .inst-lamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+#ui[data-hud] .inst-lamps:empty {
+  display: none;
+}
+
+#ui[data-hud] .lamp.blink {
+  animation: blink 0.8s steps(2) infinite;
+}
+
+/* The course or road hint shows under its name for a few seconds, then just the name. */
+#ui[data-hud] .course-hint:not(.brief) span,
+#ui[data-hud] .course-hint small {
+  display: none;
+}
+
+/* A mission line in the stack: the clock dial already shows the time. */
+#ui[data-hud] .mission small {
+  display: none;
+}
+
+/* Phone warnings and notices: one short line each, in the stack under the lamps. */
+#ui[data-hud] .alert-rail {
+  display: none;
+}
+
+.touch-mode #ui[data-hud] .alert-rail {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  max-width: 100%;
+  transform: none;
+}
+
+.touch-mode #ui[data-hud] .alert-rail .toast {
+  max-width: 100%;
+}
+
+/* Prompts move up while a note is along the bottom. */
+#ui[data-hud] .prompts {
+  transition: bottom 0.25s;
+}
+
+body:not(.touch-mode) #ui[data-hud] .hud:not(.hidden) .prompts {
+  bottom: calc(22px + var(--note-height, 0px));
+}
+
+/* History and lesson notes along the bottom. */
+#ui[data-hud] .history-card {
+  top: auto;
+  right: auto;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  width: min(600px, calc(100vw - 32px));
+  max-height: 46vh;
+  overflow: auto;
+  animation: note-up 0.35s ease-out;
+}
+
+@keyframes note-up {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+/* With a mouse the note sits in the gap right of the dials, so the dials stay in view. */
+body:not(.touch-mode) #ui[data-hud] .history-card {
+  left: calc(50% + 120px);
+  width: min(560px, calc(100vw - 520px));
+}
+
+@media (max-width: 1060px) {
+  body:not(.touch-mode) #ui[data-hud] .history-card {
+    left: 50%;
+    bottom: calc(22px + 200px);
+    width: min(560px, calc(100vw - 32px));
+  }
+}
+
+/* Read with the game stopped on a touch screen: a sheet up from the bottom edge. */
+#ui[data-hud] .history-card.reading {
+  position: fixed;
+  inset: auto 0 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  width: min(760px, 100vw);
+  height: auto;
+  max-height: 72vh;
+  max-height: 72dvh;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  border-radius: 16px 16px 0 0;
+}
+
+#ui[data-hud] .history-do:empty {
+  display: none;
+}
+
+#ui[data-hud] .history-do {
+  display: block;
+  margin: 2px 0 8px;
+}
+
+#ui[data-hud] .history-text {
+  display: block;
+}
+
+#ui[data-hud] .history-do kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 0.4em;
+  text-align: center;
+  font: inherit;
+  font-weight: 700;
+}
+
+/* Menus on the right, clear of the car. */
+#ui[data-hud] .pause {
+  justify-items: end;
+  padding: max(16px, env(safe-area-inset-top)) max(5vw, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) 16px;
+}
+
+#ui[data-hud] .welcome[data-screen='journey'],
+#ui[data-hud] .welcome[data-screen='settings'] {
+  align-items: flex-end;
+}
+
+/* The journey page is one column down the right: the trip first, then the episode list.
+   A phone held sideways keeps the two columns, which fit its height. */
+@media (min-height: 501px) {
+  #ui[data-hud] .welcome .welcome-card {
+    width: min(600px, 100%);
+  }
+
+  #ui[data-hud] .welcome .welcome-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  #ui[data-hud] .welcome .welcome-trip {
+    grid-row: 1;
+    padding: 0 0 18px;
+    border-left: 0;
+    border-bottom: 1px solid #c5c5c833;
+  }
+}
+
+@media (max-width: 720px) {
+  #ui[data-hud] .pause {
+    justify-items: center;
+    padding: 12px;
+  }
+}
+
+/* What you have, at the top of the pause menu. */
+.pause-status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0 0 4px;
+}
+
+.pause-status:empty {
+  display: none;
+}
+
+.pause-status div {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 10px;
+  min-width: 0;
+}
+
+.pause-status span {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pause-status b {
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.pause-status small {
+  font-size: 12px;
+}
+
+@media (max-height: 640px) {
+  .pause-status div {
+    padding: 3px 8px;
+  }
+
+  .pause-status b {
+    font-size: 13px;
+  }
+}
+
+/* Phones held sideways: the four readings in one row, without their notes. */
+@media (max-height: 500px) and (min-width: 700px) {
+  .pause-status {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .pause-status small {
+    display: none;
+  }
+}
+
+/* ---------- Dash cluster (A) ---------- */
+#ui[data-hud='dash'] {
+  --dash-face: #0f100f;
+  --dash-bezel: #4a4740;
+  --dash-tick: #efe8d6;
+  --dash-needle: #ff8f3f;
+  --dash-hub: #1d1c1a;
+  --dash-red: #e0452c;
+  --dash-red-lit: #ff5a3c;
+  --dash-window: #1b1a17;
+  --dash-glass: rgba(14, 13, 12, 0.66);
+  --dash-text: #efe8d6;
+  --dash-soft: #b9b09c;
+  --dash-amber: #ffb03a;
+  --dash-green: #5fd47a;
+  --dash-blue: #7db3ff;
+  --dash-display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --dash-body: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --dash-serif: 'Source Serif 4', Georgia, serif;
+}
+
+/* The game's panels take the dash colours; the paper map keeps its own. */
+#ui[data-hud='dash'] .hud,
+#ui[data-hud='dash'] .touch-controls,
+#ui[data-hud='dash'] .pause,
+#ui[data-hud='dash'] .tool-menu,
+#ui[data-hud='dash'] .result,
+#ui[data-hud='dash'] .history-card,
+#ui[data-hud='dash'] .error-panel {
+  --paper: rgba(14, 13, 12, 0.8);
+  --paper-dark: rgba(255, 255, 255, 0.08);
+  --ink: var(--dash-text);
+  --ink-soft: var(--dash-soft);
+  --accent: var(--dash-amber);
+  --font: var(--dash-body);
+  --font-hand: var(--dash-display);
+  color: var(--dash-text);
+  font-family: var(--dash-body);
+}
+
+#ui[data-hud='dash'] .paper {
+  background: var(--dash-glass);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  color: var(--dash-text);
+}
+
+/* The binnacle: speedo, TEMP, FUEL and the clock in one dark housing. */
+#ui[data-hud='dash'] .hud {
+  --speedo: 132px;
+  --dial: 84px;
+}
+
+#ui[data-hud='dash'] .inst-cluster {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px 10px 10px;
+  background: rgba(10, 10, 9, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+#ui[data-hud='dash'] .inst-speedo {
+  width: var(--speedo);
+  height: var(--speedo);
+  margin-right: 6px;
+}
+
+#ui[data-hud='dash'] .inst-dial {
+  width: var(--dial);
+  height: var(--dial);
+}
+
+#ui[data-hud='dash'] .inst-cluster svg {
+  display: block;
+  overflow: visible;
+}
+
+#ui[data-hud='dash'] .inst-cluster .face {
+  fill: var(--dash-face);
+  stroke: var(--dash-bezel);
+  stroke-width: 2.5;
+}
+
+#ui[data-hud='dash'] .inst-cluster .ticks {
+  stroke: var(--dash-tick);
+}
+
+#ui[data-hud='dash'] .inst-cluster text {
+  fill: var(--dash-tick);
+  font-family: var(--dash-display);
+  font-weight: 600;
+}
+
+#ui[data-hud='dash'] .inst-cluster .label {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+#ui[data-hud='dash'] .inst-cluster .end,
+#ui[data-hud='dash'] .inst-cluster .value {
+  fill: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .inst-cluster .value.red {
+  fill: var(--dash-red-lit);
+}
+
+#ui[data-hud='dash'] .inst-cluster .danger {
+  fill: none;
+  stroke: var(--dash-red);
+  stroke-width: 5;
+}
+
+#ui[data-hud='dash'] .inst-cluster .dark {
+  fill: none;
+  stroke: var(--dash-red);
+  stroke-width: 6;
+}
+
+#ui[data-hud='dash'] .inst-cluster .needle {
+  stroke: var(--dash-needle);
+}
+
+#ui[data-hud='dash'] .inst-cluster .hub {
+  fill: var(--dash-hub);
+  stroke: var(--dash-needle);
+  stroke-width: 1.5;
+}
+
+#ui[data-hud='dash'] .inst-cluster .hot .needle {
+  stroke: var(--dash-red-lit);
+}
+
+#ui[data-hud='dash'] .inst-cluster .hot .hub {
+  stroke: var(--dash-red-lit);
+}
+
+#ui[data-hud='dash'] .inst-cluster .hot .label {
+  fill: var(--dash-red-lit);
+}
+
+#ui[data-hud='dash'] .inst-cluster .window {
+  fill: var(--dash-window);
+  stroke: var(--dash-bezel);
+  stroke-width: 1;
+}
+
+#ui[data-hud='dash'] .inst-cluster .gear {
+  fill: var(--dash-amber);
+  font-weight: 700;
+}
+
+#ui[data-hud='dash'] .inst-cluster .hand {
+  stroke: var(--dash-tick);
+}
+
+#ui[data-hud='dash'] .inst-cluster .pin {
+  fill: var(--dash-needle);
+}
+
+#ui[data-hud='dash'] .inst-compass {
+  width: 160px;
+  height: 40px;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35));
+}
+
+#ui[data-hud='dash'] .inst-compass svg {
+  display: block;
+}
+
+#ui[data-hud='dash'] .inst-compass line {
+  stroke: var(--dash-tick);
+}
+
+#ui[data-hud='dash'] .inst-compass .lubber {
+  stroke: var(--dash-needle);
+  stroke-width: 1.6;
+}
+
+#ui[data-hud='dash'] .inst-compass .rim {
+  stroke: var(--dash-bezel);
+  stroke-width: 1.5;
+}
+
+#ui[data-hud='dash'] .inst-compass .marks path {
+  fill: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .inst-compass text {
+  font-family: var(--dash-display);
+}
+
+#ui[data-hud='dash'] .inst-compass .cmaj {
+  fill: var(--dash-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#ui[data-hud='dash'] .inst-compass .cmin {
+  fill: var(--dash-soft);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Lamps: a word lit in its colour, like the warning lights on a dash. */
+#ui[data-hud='dash'] .lamp {
+  padding: 4px 7px 3px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: rgba(10, 10, 9, 0.74);
+  font: 700 11px/1 var(--dash-display);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+#ui[data-hud='dash'] .lamp.amber {
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .lamp.green {
+  color: var(--dash-green);
+}
+
+#ui[data-hud='dash'] .lamp.blue {
+  color: var(--dash-blue);
+}
+
+#ui[data-hud='dash'] .lamp.red {
+  color: var(--dash-red-lit);
+  background: rgba(60, 12, 8, 0.78);
+}
+
+/* Short lines by the dials: the road or course name, the mission. */
+#ui[data-hud='dash'] .hud-stack .course-hint {
+  max-width: min(360px, 100%);
+  padding: 0;
+  gap: 4px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+#ui[data-hud='dash'] .hud-stack .course-hint strong {
+  font: 700 12px/1.2 var(--dash-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#ui[data-hud='dash'] .hud-stack .course-hint.brief span {
+  padding: 6px 10px;
+  background: var(--dash-glass);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font: 400 13px/1.4 var(--dash-body);
+  color: #e4ddcb;
+  text-shadow: none;
+}
+
+#ui[data-hud='dash'] .hud-stack .mission {
+  padding: 6px 12px 7px;
+  max-width: min(360px, 100%);
+}
+
+#ui[data-hud='dash'] .hud-stack .mission strong {
+  font: 500 15px/1.25 var(--dash-body);
+}
+
+#ui[data-hud='dash'] .hud-stack .mission-clock {
+  font: 600 12px var(--dash-display);
+  letter-spacing: 0.06em;
+  color: var(--dash-soft);
+  text-transform: uppercase;
+}
+
+#ui[data-hud='dash'] .hud-stack .mission-clock.urgent {
+  color: var(--dash-red-lit);
+}
+
+/* Prompts, messages and cards. */
+#ui[data-hud='dash'] .prompt {
+  padding: 5px 14px 6px 6px;
+  font: 600 15px var(--dash-body);
+}
+
+#ui[data-hud='dash'] .prompt .key {
+  border: 1px solid var(--dash-amber);
+  border-radius: 5px;
+  color: var(--dash-amber);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 176, 58, 0.35) var(--progress),
+    rgba(255, 255, 255, 0.06) var(--progress)
+  );
+  font: 700 15px var(--dash-display);
+  letter-spacing: 0.04em;
+}
+
+#ui[data-hud='dash'] .toast {
+  font: 600 13px var(--dash-body);
+}
+
+#ui[data-hud='dash'] .discovery-icon {
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .discovery-label {
+  font-family: var(--dash-display);
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .discovery-name {
+  font: 600 21px var(--dash-serif);
+}
+
+#ui[data-hud='dash'] .alert {
+  font-family: var(--dash-display);
+  letter-spacing: 0.04em;
+  box-shadow: none;
+}
+
+#ui[data-hud='dash'] .alert .mark {
+  background: var(--dash-red-lit);
+  color: #160806;
+}
+
+#ui[data-hud='dash'] .alert.critical {
+  border-color: var(--dash-red-lit);
+  background: rgba(60, 12, 8, 0.82);
+}
+
+#ui[data-hud='dash'] .crawl-gauges {
+  background: rgba(10, 10, 9, 0.66);
+}
+
+#ui[data-hud='dash'] .gate-count,
+#ui[data-hud='dash'] .crawl-run {
+  font-family: var(--dash-display);
+  letter-spacing: 0.04em;
+}
+
+#ui[data-hud='dash'] .crawl-run strong {
+  font: 700 18px var(--dash-display);
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .crawl-run-points {
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .camera-help {
+  color: var(--dash-soft);
+  font-family: var(--dash-display);
+  letter-spacing: 0.04em;
+}
+
+#ui[data-hud='dash'] .camera-help .camera-hint {
+  display: none;
+}
+
+#ui[data-hud='dash'] .camera-help button {
+  margin: 0;
+  border-color: rgba(255, 255, 255, 0.24);
+  color: var(--dash-text);
+}
+
+#ui[data-hud='dash'] .camera-help button:hover,
+#ui[data-hud='dash'] .camera-help button:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* History and lesson notes. */
+#ui[data-hud='dash'] .history-card {
+  padding: 14px 18px 14px;
+  background: rgba(14, 13, 12, 0.86);
+  border-radius: 12px;
+}
+
+#ui[data-hud='dash'] .history-card small {
+  font: 700 11px/1 var(--dash-display);
+  letter-spacing: 0.14em;
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .history-card strong {
+  margin: 4px 0 4px;
+  font: 600 22px/1.15 var(--dash-serif);
+}
+
+#ui[data-hud='dash'] .history-card p {
+  font: 400 14px/1.5 var(--dash-body);
+  color: #e4ddcb;
+}
+
+#ui[data-hud='dash'] .history-card.reading {
+  border-bottom: 0;
+}
+
+#ui[data-hud='dash'] .history-card.reading p {
+  font-size: 15.5px;
+}
+
+#ui[data-hud='dash'] .history-card .history-hint {
+  font: 600 12px var(--dash-display);
+  letter-spacing: 0.06em;
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .history-card .history-do {
+  font: 600 18px/1.45 var(--dash-body);
+  color: var(--dash-text);
+}
+
+#ui[data-hud='dash'] .history-card .history-do kbd {
+  margin: 0 1px;
+  border: 1px solid var(--dash-amber);
+  border-radius: 5px;
+  color: var(--dash-amber);
+  font-family: var(--dash-display);
+  letter-spacing: 0.04em;
+}
+
+#ui[data-hud='dash'] .history-card.lesson .history-text {
+  font-size: 13.5px;
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .history-close {
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .history-backdrop {
+  background: rgba(10, 8, 6, 0.42);
+}
+
+/* After dusk the panels dim like a dash's lights, so they never outshine the headlights. */
+#ui[data-hud='dash'] .hud.night .inst-cluster,
+#ui[data-hud='dash'] .hud.night .inst-compass,
+#ui[data-hud='dash'] .hud.night .hud-stack,
+#ui[data-hud='dash'] .hud.night .crawl-gauges,
+#ui[data-hud='dash'] .hud.night .camera-help {
+  filter: brightness(0.78);
+}
+
+#ui[data-hud='dash'] .hud.night .inst-compass {
+  filter: brightness(0.78) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35));
+}
+
+/* Computer: the binnacle bottom left, the compass top centre, the lines stacked above the dials. */
+body:not(.touch-mode) #ui[data-hud='dash'] .inst-cluster {
+  left: 24px;
+  bottom: 24px;
+}
+
+body:not(.touch-mode) #ui[data-hud='dash'] .inst-compass {
+  top: 16px;
+  left: calc(50% - 80px);
+}
+
+body:not(.touch-mode) #ui[data-hud='dash'] .hud-stack {
+  left: 24px;
+  bottom: calc(24px + var(--speedo) + 30px);
+  width: min(560px, calc(100vw - 48px));
+  flex-direction: column-reverse;
+}
+
+body:not(.touch-mode) #ui[data-hud='dash'] .camera-help {
+  top: 14px;
+  left: 18px;
+  right: auto;
+  bottom: auto;
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  opacity: 0.85;
+}
+
+body:not(.touch-mode) #ui[data-hud='dash'] .crawl-gauges {
+  right: 24px;
+  bottom: 24px;
+}
+
+/* The driver's seat: the dash is in view, so the binnacle shrinks into the corner. */
+body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .inst-cluster {
+  left: 10px;
+  bottom: 10px;
+  transform: scale(0.72);
+  transform-origin: bottom left;
+  opacity: 0.85;
+}
+
+body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .hud-stack {
+  left: 10px;
+  bottom: calc(10px + (var(--speedo) + 22px) * 0.72 + 8px);
+}
+
+body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
+  top: 10px;
+  left: 10px;
+  right: auto;
+  bottom: auto;
+}
+
+/* Phones: the binnacle top left under the buttons, the lines under it, the thumbs clear. */
+.touch-mode #ui[data-hud='dash'] .hud {
+  --speedo: 74px;
+  --dial: 50px;
+}
+
+.touch-mode #ui[data-hud='dash'] .inst-cluster {
+  gap: 4px;
+  padding: 5px 8px 5px 5px;
+  border-radius: 12px;
+  top: calc(max(8px, env(safe-area-inset-top)) + 38px);
+  left: max(8px, env(safe-area-inset-left));
+}
+
+.touch-mode #ui[data-hud='dash'] .inst-speedo {
+  margin-right: 4px;
+}
+
+.touch-mode #ui[data-hud='dash'] .inst-compass {
+  width: 112px;
+  height: 30px;
+}
+
+.touch-mode #ui[data-hud='dash'] .lamp {
+  font-size: 11px;
+  padding: 3px 6px 2px;
+}
+
+.touch-mode #ui[data-hud='dash'] .hud-stack .mission strong {
+  font-size: 13px;
+}
+
+.touch-mode #ui[data-hud='dash'] .alert {
+  padding: 2px 8px 3px 3px;
+  font-size: 12px;
+}
+
+.touch-mode #ui[data-hud='dash'] .alert-rail .toast {
+  padding: 3px 8px;
+  font-size: 12px;
+  text-align: left;
+}
+
+@media (orientation: portrait) {
+  .touch-mode #ui[data-hud='dash'] .inst-compass {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px + 28px);
+    right: max(8px, env(safe-area-inset-right));
+  }
+
+  .touch-mode #ui[data-hud='dash'] .hud-stack {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px + var(--speedo) + 18px);
+    left: max(8px, env(safe-area-inset-left));
+    max-width: min(300px, 64vw);
+  }
+
+  .touch-mode #ui[data-hud='dash'] .notices {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px + var(--speedo) + 18px);
+    max-width: 34vw;
+  }
+
+  .touch-mode #ui[data-hud='dash'] .gate-count,
+  .touch-mode #ui[data-hud='dash'] .crawl-run {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px + 66px);
+    left: auto;
+    right: max(8px, env(safe-area-inset-right));
+    transform: none;
+  }
+
+  .touch-mode #ui[data-hud='dash'] .crawl-gauges,
+  .touch-mode #ui[data-hud='dash'] .hud.cockpit .crawl-gauges {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px + var(--speedo) + 18px);
+  }
+}
+
+@media (orientation: portrait) and (max-width: 374px) {
+  .touch-mode #ui[data-hud='dash'] .hud {
+    --speedo: 64px;
+    --dial: 44px;
+  }
+
+  .touch-mode #ui[data-hud='dash'] .inst-compass {
+    width: 100px;
+    height: 27px;
+  }
+}
+
+@media (orientation: landscape) {
+  .touch-mode #ui[data-hud='dash'] .hud {
+    --speedo: 68px;
+    --dial: 46px;
+  }
+
+  .touch-mode #ui[data-hud='dash'] .inst-compass {
+    top: max(8px, env(safe-area-inset-top));
+    left: calc(50% - 56px);
+  }
+
+  .touch-mode #ui[data-hud='dash'] .hud-stack {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px);
+    left: calc(max(8px, env(safe-area-inset-left)) + 6px * 2 + var(--speedo) + var(--dial) * 3 + 30px);
+    max-width: min(320px, calc(100vw - 2 * (var(--speedo) + var(--dial) * 3) - 80px));
+  }
+
+  .touch-mode #ui[data-hud='dash'] .notices {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px);
+  }
+
+  .touch-mode #ui[data-hud='dash'] .gate-count,
+  .touch-mode #ui[data-hud='dash'] .crawl-run {
+    top: calc(max(8px, env(safe-area-inset-top)) + 38px + 44px);
+    left: auto;
+    right: max(8px, env(safe-area-inset-right));
+    transform: none;
+  }
+}
+
+/* Thumb buttons in the same dark glass. */
+#ui[data-hud='dash'] .touch-btn {
+  color: var(--dash-text);
+  background: rgba(14, 13, 12, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 9px;
+  box-shadow: none;
+  font-family: var(--dash-display);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+#ui[data-hud='dash'] .touch-btn.down {
+  transform: translateY(1px);
+  filter: brightness(1.3);
+}
+
+#ui[data-hud='dash'] .touch-btn[aria-pressed='true'] {
+  color: var(--dash-amber);
+  border-color: var(--dash-amber);
+  background: rgba(255, 176, 58, 0.16);
+}
+
+#ui[data-hud='dash'] .touch-pile-toggle[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 0 0 1px var(--dash-text);
+}
+
+#ui[data-hud='dash'] .touch-pile-marks i {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .touch-pile-marks i.on {
+  border-color: var(--dash-amber);
+  background: var(--dash-amber);
+  color: #1b1408;
+}
+
+#ui[data-hud='dash'] .touch-stick-base {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(12, 12, 11, 0.32);
+}
+
+#ui[data-hud='dash'] .touch-stick-knob {
+  background: radial-gradient(circle at 50% 40%, #3a3834, #121110);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+#ui[data-hud='dash'] .touch-stick-axis {
+  font-family: var(--dash-display);
+  letter-spacing: 0.08em;
+  color: rgba(239, 232, 214, 0.75);
+}
+
+#ui[data-hud='dash'] .touch-gas {
+  background: rgba(40, 70, 44, 0.78);
+}
+
+#ui[data-hud='dash'] .touch-brake {
+  background: rgba(96, 34, 22, 0.78);
+}
+
+/* Thumb buttons at least 44 px, as touch screens need; the top row slim but tappable. */
+.touch-mode #ui[data-hud] .touch-grid {
+  grid-template-columns: repeat(2, 56px);
+  gap: 6px;
+}
+
+.touch-mode #ui[data-hud] .touch-grid .touch-btn {
+  height: 46px;
+  font-size: 12px;
+}
+
+.touch-mode #ui[data-hud] .touch-pile {
+  grid-template-columns: repeat(4, 50px);
+  gap: 5px;
+}
+
+.touch-mode #ui[data-hud] .touch-pile .touch-btn {
+  height: 44px;
+  font-size: 11px;
+}
+
+.touch-mode #ui[data-hud] .touch-top .touch-btn,
+.touch-mode #ui[data-hud] .camera-help button {
+  height: 32px;
+  min-width: 40px;
+}
+
+/* The lights come on by themselves at dusk and are in Tools; the installed app is already full screen. */
+.touch-mode #ui[data-hud] .touch-top [data-tap='lights'] {
+  display: none;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  #ui[data-hud] .touch-fullscreen {
+    display: none;
+  }
+}
+
+/* The pause menu: a dark panel on the right. */
+#ui[data-hud='dash'] .pause {
+  background: linear-gradient(90deg, rgba(8, 8, 7, 0.1), rgba(8, 8, 7, 0.55));
+}
+
+#ui[data-hud='dash'] .pause-card {
+  width: min(420px, 92vw);
+  padding: 22px 22px 18px;
+  background: rgba(14, 13, 12, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  font-family: var(--dash-display);
+}
+
+#ui[data-hud='dash'] .pause-card h2 {
+  text-align: left;
+  font: 700 30px/1 var(--dash-display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+#ui[data-hud='dash'] .pause-episode {
+  order: -1;
+  margin: 0 0 2px;
+  text-align: left;
+  font: 700 12px var(--dash-display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .pause-card button {
+  font: 600 17px var(--dash-display);
+  letter-spacing: 0.03em;
+  color: var(--dash-text);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+
+#ui[data-hud='dash'] .pause-card button small {
+  font: 400 12px var(--dash-body);
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .pause-card button:hover,
+#ui[data-hud='dash'] .pause-card button.focused,
+#ui[data-hud='dash'] .pause-card input.focused {
+  outline: none;
+  border-color: var(--dash-amber);
+  box-shadow: inset 3px 0 0 var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .pause-card button.on {
+  color: var(--dash-amber);
+  border-color: var(--dash-amber);
+  background: rgba(255, 176, 58, 0.14);
+}
+
+#ui[data-hud='dash'] .pause-card button.on small {
+  color: var(--dash-amber);
+}
+
+#ui[data-hud='dash'] .pause-card .setting-row {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+#ui[data-hud='dash'] .pause-card .menu-note,
+#ui[data-hud='dash'] .pause-card .build-label {
+  font-family: var(--dash-body);
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .pause-card table.controls {
+  font-family: var(--dash-body);
+}
+
+#ui[data-hud='dash'] .pause-card table.controls th,
+#ui[data-hud='dash'] .pause-card table.controls td {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+#ui[data-hud='dash'] .pause-status div {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+#ui[data-hud='dash'] .pause-status span,
+#ui[data-hud='dash'] .pause-status small {
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .pause-status b {
+  font-weight: 600;
+}
+
+/* End-of-run card. */
+#ui[data-hud='dash'] .result {
+  background: rgba(8, 8, 7, 0.5);
+}
+
+#ui[data-hud='dash'] .result-card {
+  background: rgba(14, 13, 12, 0.92);
+  border-radius: 16px;
+}
+
+#ui[data-hud='dash'] .result-card h2 {
+  font: 700 34px var(--dash-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+#ui[data-hud='dash'] .result-card.failed h2 {
+  color: var(--dash-red-lit);
+}
+
+#ui[data-hud='dash'] .result-card small,
+#ui[data-hud='dash'] .result-stats {
+  color: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .result-stats {
+  border-top-color: rgba(255, 255, 255, 0.18);
+}
+
+#ui[data-hud='dash'] .result-buttons button {
+  font: 600 17px var(--dash-display);
+  color: var(--dash-text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+}
+
+#ui[data-hud='dash'] .result-buttons button:hover,
+#ui[data-hud='dash'] .result-buttons button.focused {
+  outline: none;
+  border-color: var(--dash-amber);
+  box-shadow: inset 3px 0 0 var(--dash-amber);
+}
+
+/* Tool menu: the centre card and the options in dark glass. */
+#ui[data-hud='dash'] .tool-menu {
+  background: rgba(8, 8, 7, 0.3);
+}
+
+/* Title, settings, journey and briefing: the camp at dusk stays, the type matches the dash. */
+#ui[data-hud='dash'] .welcome,
+#ui[data-hud='dash'] .loading {
+  --title-gold: var(--dash-amber);
+  --title-white: #f6efdc;
+  --title-muted: var(--dash-soft);
+}
+
+#ui[data-hud='dash'] .welcome .title-logo h1 {
+  font-family: var(--dash-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 0.9;
+}
+
+#ui[data-hud='dash'] .title-menu button {
+  font-family: var(--dash-display);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+#ui[data-hud='dash'] .title-begin,
+#ui[data-hud='dash'] .title-back,
+#ui[data-hud='dash'] .title-version,
+#ui[data-hud='dash'] .title-input-hint {
+  font-family: var(--dash-display);
+}
+
+#ui[data-hud='dash'] .title-panel,
+#ui[data-hud='dash'] .loading .loading-card.paper {
+  background: rgba(14, 13, 12, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+}
+
+#ui[data-hud='dash'] .welcome .welcome-card h1,
+#ui[data-hud='dash'] .title-settings h2,
+#ui[data-hud='dash'] .welcome .welcome-section h2,
+#ui[data-hud='dash'] .loading .briefing h2 {
+  font-family: var(--dash-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+#ui[data-hud='dash'] .welcome .welcome-option {
+  font-family: var(--dash-display);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+}
+
+#ui[data-hud='dash'] .welcome .welcome-option small {
+  font-family: var(--dash-body);
+  letter-spacing: 0;
+}
+
+#ui[data-hud='dash'] .welcome .welcome-option.on {
+  background: rgba(255, 176, 58, 0.12);
+}
+
+#ui[data-hud='dash'] .welcome .welcome-drive,
+#ui[data-hud='dash'] .loading .welcome-drive {
+  font-family: var(--dash-display);
+  font-size: 17px;
+  border-radius: 8px;
+  color: #1b1408;
+}
+
+#ui[data-hud='dash'] .welcome-card,
+#ui[data-hud='dash'] .title-settings,
+#ui[data-hud='dash'] .loading-card {
+  font-family: var(--dash-body);
+}
+
+#ui[data-hud='dash'] .welcome .welcome-trip {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ui[data-hud] .history-card,
+  #ui[data-hud] .lamp.blink {
+    animation: none;
+  }
+
+  #ui[data-hud] .prompts {
+    transition: none;
+  }
+}

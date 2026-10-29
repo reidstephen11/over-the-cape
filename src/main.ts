@@ -1,6 +1,7 @@
 import { registerSW } from 'virtual:pwa-register';
 import './ui/styles.css';
 import './ui/title.css';
+import './ui/hudStyles.css';
 import { choiceFromSave } from './core/launch';
 
 if (import.meta.env.PROD && location.pathname.startsWith('/over-the-cape')) {
@@ -14,6 +15,7 @@ if (import.meta.env.PROD && location.pathname.startsWith('/over-the-cape')) {
 import { episodes } from './data/episodes';
 import { maps } from './data/maps';
 import { vehicleLoadout } from './data/vehicles';
+import { applyHudStyle, defaultHudStyle } from './data/hudStyles';
 import { loadSave } from './sim/save/save';
 import { LoadingScreen } from './ui/loading';
 import { WelcomeScreen, type WelcomeChoice } from './ui/welcome';
@@ -61,6 +63,7 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
 function boot(): void {
   const uiEl = document.getElementById('ui') as HTMLElement;
   const save = loadSave();
+  applyHudStyle(save?.settings.hudStyle ?? defaultHudStyle);
   const choice: WelcomeChoice = { ...choiceFromSave(save), damage: save?.settings.damage ?? 'mild' };
   new WelcomeScreen(uiEl, choice, save, (c, audio) => void play(c, audio));
 }

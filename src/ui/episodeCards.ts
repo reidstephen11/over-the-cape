@@ -1,5 +1,29 @@
 import { controlInstruction, type ControlInstruction, type InputDevice } from '../data/controlInstructions';
 import { controllers, defaultController, type ControllerType } from '../data/controllers';
+import { glyphsFor } from '../data/controls';
+
+/** The CREB's four lessons, in the order the signs come on the road out of the village. */
+const LESSONS: readonly ControlInstruction[] = ['range', 'precision', 'locks', 'winch'];
+
+/** On-screen button names that a touch lesson tells you to tap. */
+const TOUCH_KEYS = ['F LOCK', 'R LOCK', 'CRAWL', '4WD', 'LOW', 'USE', 'OUT', 'IN'];
+
+const escapeHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** A lesson's instruction with each key or button drawn as a key cap. */
+export function instructionHtml(instruction: string, keys: readonly string[]): string {
+  const tokens = [...new Set(keys.filter((k) => k.trim().length > 0))].sort((a, b) => b.length - a.length);
+  if (tokens.length === 0) return escapeHtml(instruction);
+  const alternatives = tokens.map((t) => t.replace(/[.*+?^$|()[\]{}\\]/g, '\\$&')).join('|');
+  const pattern = new RegExp(`(?<![\\w])(${alternatives})(?![\\w])`, 'g');
+  let out = '';
+  let at = 0;
+  for (const m of instruction.matchAll(pattern)) {
+    out += `${escapeHtml(instruction.slice(at, m.index))}<kbd>${escapeHtml(m[0])}</kbd>`;
+    at = (m.index ?? 0) + m[0].length;
+  }
+  return out + escapeHtml(instruction.slice(at));
+}
 
 interface HistoryNote {
   title: string;
@@ -11,8 +35,9 @@ interface HistoryNote {
 /**
  * Episode cards: the history note shown on reaching a place, and the result card when the
  * mission is done or the episode ends early (centred, with buttons, the game paused behind
- * it). With a mouse or a pad the note sits top right while you keep driving; on a touch
- * screen, where there is no room beside the buttons, it is read with the game stopped.
+ * it). The note sits along the bottom of the screen. With a mouse or a pad you keep driving
+ * while it's up; on a touch screen, where it covers the buttons, it is read with the game
+ * stopped. A lesson card leads with what to press, drawn as keys, then says why.
  */
 export class HistoryCard {
   readonly el: HTMLElement;
@@ -36,7 +61,7 @@ export class HistoryCard {
     root.appendChild(this.backdrop);
     this.el = document.createElement('div');
     this.el.className = 'history-card paper hidden';
-    this.el.innerHTML = `<small>History</small><strong></strong><p></p><span class="history-close" aria-hidden="true">×</span><span class="history-hint">Tap to carry on</span>`;
+    this.el.innerHTML = `<small class="history-kind">History</small><strong></strong><p><span class="history-do"></span><span class="history-text"></span></p><span class="history-close" aria-hidden="true">×</span><span class="history-hint">Tap to carry on</span>`;
     this.el.addEventListener('click', () => this.next());
     root.appendChild(this.el);
   }
@@ -66,14 +91,16 @@ export class HistoryCard {
     this.el.classList.toggle('reading', !!n?.reading);
     this.backdrop.classList.toggle('hidden', !n?.reading);
     if (!n) {
+      this.setNoteHeight(0);
       if (wasReading) this.onRead();
       return;
     }
     this.el.querySelector('strong')!.textContent = n.title;
     this.shown.push(n.title);
     const text = this.noteText(n);
-    this.el.querySelector('p')!.textContent = text;
+    this.fill(n);
     this.updateHint();
+    this.setNoteHeight(n.reading ? 0 : this.el.offsetHeight + 12);
     if (n.reading) return;
     // About 200 words a minute, and at least 12 s.
     const words = text.split(/\s+/).length;
@@ -90,8 +117,35 @@ export class HistoryCard {
     if (this.device === device && this.controller === controller) return;
     this.device = device;
     this.controller = controller;
-    if (this.current) this.el.querySelector('p')!.textContent = this.noteText(this.current);
+    if (this.current) this.fill(this.current);
     this.updateHint();
+    if (this.current && !this.current.reading) this.setNoteHeight(this.el.offsetHeight + 12);
+  }
+
+  /** How much of the bottom edge the note takes, so the prompts can sit above it. */
+  private setNoteHeight(px: number): void {
+    document.documentElement.style.setProperty('--note-height', `${Math.round(px)}px`);
+  }
+
+  /** The note's words: a lesson's instruction first, with its keys drawn as keys. */
+  private fill(note: HistoryNote): void {
+    const lesson = note.instruction ? LESSONS.indexOf(note.instruction) : -1;
+    this.el.classList.toggle('lesson', !!note.instruction);
+    this.el.querySelector('.history-kind')!.textContent = note.instruction
+      ? lesson >= 0
+        ? `Lesson ${lesson + 1} of ${LESSONS.length}`
+        : 'Lesson'
+      : 'History';
+    const doEl = this.el.querySelector('.history-do') as HTMLElement;
+    if (note.instruction) {
+      const instruction = controlInstruction(note.instruction, this.device, this.controller);
+      const keys =
+        this.device === 'touch'
+          ? TOUCH_KEYS
+          : Object.values(glyphsFor(this.device, this.controller)).filter((k): k is string => !!k);
+      doEl.innerHTML = `${instructionHtml(instruction, keys)} `;
+    } else doEl.textContent = '';
+    this.el.querySelector('.history-text')!.textContent = note.text;
   }
 
   private noteText(note: HistoryNote): string {
