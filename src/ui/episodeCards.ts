@@ -35,9 +35,9 @@ interface HistoryNote {
 /**
  * Episode cards: the history note shown on reaching a place, and the result card when the
  * mission is done or the episode ends early (centred, with buttons, the game paused behind
- * it). The note sits along the bottom of the screen. With a mouse or a pad you keep driving
- * while it's up; on a touch screen, where it covers the buttons, it is read with the game
- * stopped. A lesson card leads with what to press, drawn as keys, then says why.
+ * it). The note is a small card in the top right corner, under any discovery card, and you
+ * keep driving while it's up; a click or tap closes it. A note can instead be read with the
+ * game stopped (`reading`). A lesson card leads with what to press, drawn as keys, then says why.
  */
 export class HistoryCard {
   readonly el: HTMLElement;
@@ -50,9 +50,13 @@ export class HistoryCard {
   private controller: ControllerType = defaultController;
   private timer = 0;
 
-  /** `onRead` runs when the last note read with the game stopped is closed. */
+  /**
+   * `root` takes the backdrop for a note read with the game stopped; `host` (the HUD's corner
+   * stack) takes the card. `onRead` runs when the last note read with the game stopped is closed.
+   */
   constructor(
     root: HTMLElement,
+    host: HTMLElement,
     private readonly onRead: () => void,
   ) {
     this.backdrop = document.createElement('div');
@@ -63,7 +67,7 @@ export class HistoryCard {
     this.el.className = 'history-card paper hidden';
     this.el.innerHTML = `<small class="history-kind">History</small><strong></strong><p><span class="history-do"></span><span class="history-text"></span></p><span class="history-close" aria-hidden="true">×</span><span class="history-hint">Tap to carry on</span>`;
     this.el.addEventListener('click', () => this.next());
-    root.appendChild(this.el);
+    host.appendChild(this.el);
   }
 
   get isShown(): boolean {
@@ -91,7 +95,6 @@ export class HistoryCard {
     this.el.classList.toggle('reading', !!n?.reading);
     this.backdrop.classList.toggle('hidden', !n?.reading);
     if (!n) {
-      this.setNoteHeight(0);
       if (wasReading) this.onRead();
       return;
     }
@@ -100,7 +103,6 @@ export class HistoryCard {
     const text = this.noteText(n);
     this.fill(n);
     this.updateHint();
-    this.setNoteHeight(n.reading ? 0 : this.el.offsetHeight + 12);
     if (n.reading) return;
     // About 200 words a minute, and at least 12 s.
     const words = text.split(/\s+/).length;
@@ -119,12 +121,6 @@ export class HistoryCard {
     this.controller = controller;
     if (this.current) this.fill(this.current);
     this.updateHint();
-    if (this.current && !this.current.reading) this.setNoteHeight(this.el.offsetHeight + 12);
-  }
-
-  /** How much of the bottom edge the note takes, so the prompts can sit above it. */
-  private setNoteHeight(px: number): void {
-    document.documentElement.style.setProperty('--note-height', `${Math.round(px)}px`);
   }
 
   /** The note's words: a lesson's instruction first, with its keys drawn as keys. */
