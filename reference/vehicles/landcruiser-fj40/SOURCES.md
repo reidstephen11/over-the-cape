@@ -6,19 +6,19 @@ Game ids: `shortie`, and the body of `camel` (the Camel Trophy car is this body 
 
 ## Dimensions
 
-|                  | Published  | In the current model                                            |
-| ---------------- | ---------- | --------------------------------------------------------------- |
-| Wheelbase        | 2,285 mm   | 2.30 m (`AXLE` in `src/render/vehicleBody.ts`)                  |
-| Length           | 3,840.5 mm | about 4.10 m, bumper to bumper                                  |
-| Width            | 1,666.2 mm | 1.665 m (`HW`)                                                  |
-| Height, hardtop  | 2,000 mm   | about 2.14 m (roof at y = 1.64, ground 0.50 m below the origin) |
-| Height, soft top | 1,950.7 mm | the game is the hardtop                                         |
+|                  | Published  | In the current model                                                       |
+| ---------------- | ---------- | -------------------------------------------------------------------------- |
+| Wheelbase        | 2,285 mm   | 2.30 m (`AXLE` in `src/render/vehicleBody.ts`, set by the physics)         |
+| Length           | 3,840.5 mm | 3.58 m grille to tail (v0.91); about 4.08 m over the bull bar and rear bar |
+| Width            | 1,666.2 mm | 1.665 m over the guard lips (`HW`); 1.60 m body (`BW`)                     |
+| Height, hardtop  | 2,000 mm   | about 1.97 m stock, 2.09 m on the game's lift and tyres (v0.91)            |
+| Height, soft top | 1,950.7 mm | the game is the hardtop                                                    |
 
 Other published heights: Toyota's 1962–1970 Chassis and Body Repair Manual gives 1,930 mm for the hardtop and 3,870 mm for the length, and Toyota's 75 Years vehicle lineage page gives 3,840 × 1,665 × 1,950 mm. The 1,930 mm figure is for the 1960s cars, so keep 2,000 mm for the 1970s hardtop the game copies, but treat the height as uncertain by about 70 mm. ([Toyota 75 Years](https://www.toyota-global.com/company/history_of_toyota/75years/vehicle_lineage/car/id60012611/); the manual is cited for its figures only.)
 
 Sources: wheelbase also in the English Wikipedia infobox for the [J40](<https://en.wikipedia.org/wiki/Toyota_Land_Cruiser_(J40)>). Length, width and height are the 40 Series infobox on the Japanese Wikipedia, [トヨタ・ランドクルーザー](https://ja.wikipedia.org/wiki/%E3%83%88%E3%83%A8%E3%82%BF%E3%83%BB%E3%83%A9%E3%83%B3%E3%83%89%E3%82%AF%E3%83%AB%E3%83%BC%E3%82%B6%E3%83%BC), which cites Toyota's 1984 Vehicle Identification Manual (catalog 97913-84) for the model family. The model measures are read off `src/render/vehicleBody.ts` and `src/data/vehicle.ts` (origin 0.12 m above the parked hubs, so the ground sits one wheel radius, 0.38 m, below that).
 
-**Check these first.** The width matches. The wheelbase is 15 mm over 2,285 mm, too small to chase before the length and the height. The bumper-to-bumper length is about 260 mm longer than 3,840.5 mm, and the hardtop is about 140 mm taller than 2,000 mm. The lamps and the grille are the right kind for this generation.
+**Check these first.** Since v0.91 the width, height and the front layout match the photographs (see the v0.91 notes in `docs/DECISIONS.md`). What still rests on three-quarter views is the door position along the car and the height of the lower door and tub edges: a true side photograph under a free licence would settle both.
 
 ## Gaps
 

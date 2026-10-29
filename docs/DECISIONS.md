@@ -1604,3 +1604,21 @@ Steef reviewed three HUD and menu directions (A Dash cluster, B Edge lines, C Fi
 - **Menus on the right.** The journey page is one column on the right (two columns when the phone is sideways, which fits its height). The pause menu is on the right and starts with Time, Fuel, On board and Tyres; sideways on a phone these are one row without their notes.
 - **Night.** The cluster dims a little after dark so it doesn't glare.
 - **Kept for the tests.** The old elements (status speed, mission, supplies, vehicle strip, alert) stay in the page, hidden, so the browser tests that read their text still pass.
+
+## v0.91: the 40 Series rebuilt from the photo pack
+
+Steef asked for the most accurate FJ40 the photo pack allows (Cursor's PR #95, merged into `reference/vehicles/landcruiser-fj40/` in #96). The body in `src/render/vehicleBody.ts` was redrawn from those photographs and the published sizes, not reshaped from memory.
+
+**Compared.** `side.jpg` (green 1978), `side-1977.jpg`, `front-white.jpg` (the nearest straight front), `rear-34-left.jpg` and the research copy `exterior-rear-3q-01.jpg` (red 1982, nearly side-on), `rear-34-hardtop.jpg`, `rear-34-orange-1977.jpg` and `exterior-rear-01.jpg` (yellow, straight rear), each against a studio render from a similar camera, before and after. Heights were read off the photographs relative to the wheel hubs (the lift carries them up unchanged); lengths along the side came from a perspective fit through both hubs, checked by the rear opening coming out centred on the axle. `layout-guide.svg` was used only for the overall box, as its own notes say.
+
+**What moved.**
+
+- **Front.** The old model had the headlamps out on the guards (x ±0.683) behind a full-width face, which read as a Land Rover. The FJ40 has a narrower upright grille panel (1.15 m wide) holding both 7 inch lamps (x ±0.427) in one surround with the black TOYOTA grille between them and two mesh slots below. The bonnet narrows from the cowl to the grille, with a raised centre panel, louvres at the back corners and a nose that rolls down over a dark air slot.
+- **Guards.** Separate flared front guards: a flat shelf at hub + 0.63 m from the cowl to a rounded nose carrying the indicator, a wide opening, and a back edge that runs down to a ribbed step under the door, with a rolled lip all round. The lips are the 1.665 m published width; the cowl, doors, tub and hardtop are 1.60 m.
+- **Cab.** The door and windscreen moved 0.13–0.23 m back (door from z −0.30 to +0.50); the dash, seats, wheel and the driver's eye moved back 0.14 m with them. Windows are 0.39 m tall between hub + 0.99 and + 1.38 m, with a tall body-colour panel under them and the hardtop joint at + 0.74 m. Hardtop sides and window frames are now body colour; only the roof cap is white, as on every car in the pack.
+- **Height.** The roof is 0.08 m lower: about 1.97 m stock (2,000 mm published for the 1970s hardtop, 1,930 mm for the 1960s), 2.09 m in the game on the lift and bigger tyres. The roof rack and planks dropped with it.
+- **Lower edges.** Doors and the tub end at hub + 0.28 m instead of + 0.08, so the chassis shows under them as on the real car; the rear opening is a 0.5 m radius round the axle.
+- **Rear.** Two barn doors from the tub floor to the roof with round-cornered windows, rounder hardtop corners (0.22 m) with the curved windows starting on the side, and the tub's tighter corners under them.
+- **Kit.** The bull bar's hoop now frames the grille between the lamps and its side loops pass above the lamps to the guards; the mid rail that hid the badge is gone. The headlight beams start at the new lamps.
+
+**Still differs.** The game keeps its 2.30 m wheelbase (physics) against 2,285 mm. The body is 3.58 m from the grille to the tail; the factory bumpers would make it about 3.84 m, but the game carries a bull bar and a rear bar instead. The lower-door and tub edge heights and the door positions come from three-quarter views, not a true side photograph, so treat them as good to about 50 mm. The step, hinges, handles and badges are simplified. Triangles stayed the same (about 71,000 for the body with its kit).
