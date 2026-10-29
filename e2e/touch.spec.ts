@@ -314,8 +314,8 @@ test.describe('phone on the CREB', () => {
       await waitSim(page, 0.3);
       await shot(page, 'touch', open ? 'portrait-4wd-open' : 'portrait-creb');
     }
-    // A history note stops the game and is read in the middle of the screen, the buttons
-    // hidden; tapping it carries on.
+    // A history note is a small card in the top right; driving carries on and the buttons
+    // stay. Tapping it closes it.
     for (const size of [
       { width: 390, height: 844 },
       { width: 740, height: 360 },
@@ -323,29 +323,18 @@ test.describe('phone on the CREB', () => {
       await page.setViewportSize(size);
       await page.evaluate(() => window.__game!.showNote('creb-lookout'));
       await expect(page.locator('.history-card')).toBeVisible();
-      await expect(page.locator('.history-backdrop')).toBeVisible();
-      await expect(page.locator('.touch-controls')).toBeHidden();
-      expect(await page.evaluate(() => window.__game!.ui().paused)).toBe(true);
-      // The whole note fits (its layout box: it unfolds as it opens).
-      const box = await page.evaluate(() => {
-        const el = document.querySelector<HTMLElement>('.history-card')!;
-        return {
-          top: el.offsetTop,
-          bottom: el.offsetTop + el.offsetHeight,
-          hidden: el.scrollHeight - el.clientHeight,
-        };
-      });
-      expect(box.top, `${size.width}×${size.height}`).toBeGreaterThanOrEqual(0);
-      expect(box.bottom, `${size.width}×${size.height}`).toBeLessThanOrEqual(size.height);
-      expect(box.hidden, `${size.width}×${size.height}`).toBeLessThanOrEqual(0);
-      await shot(page, 'touch', `history-${size.width}`);
-      const t0 = await page.evaluate(() => window.__game!.simTime());
-      await page.waitForTimeout(1000);
-      expect(await page.evaluate(() => window.__game!.simTime())).toBe(t0);
-      await f.tap('.history-card');
-      await expect.poll(() => page.evaluate(() => window.__game!.historyReading())).toBe(false);
+      await expect(page.locator('.history-backdrop')).toBeHidden();
       await expect(page.locator('.touch-controls')).toBeVisible();
-      await expect.poll(() => page.evaluate(() => window.__game!.simTime())).toBeGreaterThan(t0);
+      expect(await page.evaluate(() => window.__game!.ui().paused)).toBe(false);
+      const box = await page.evaluate(() =>
+        document.querySelector<HTMLElement>('.history-card')!.getBoundingClientRect().toJSON(),
+      );
+      expect(box.right, `${size.width}×${size.height}`).toBeGreaterThan(size.width * 0.9);
+      expect(box.left, `${size.width}×${size.height}`).toBeGreaterThan(size.width * 0.45);
+      expect(box.top, `${size.width}×${size.height}`).toBeLessThan(size.height * 0.4);
+      await shot(page, 'touch', `history-${size.width}`);
+      await f.tap('.history-card');
+      await expect(page.locator('.history-card')).toBeHidden();
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(() => window.__game!.cameraPreset('cockpit'));

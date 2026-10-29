@@ -1735,3 +1735,11 @@ Steef picked three ideas from Over The Hill: packing before you leave, a map tha
 **Score.** "Fuel and kit" now counts what is left out of what was packed: fuel as before against the packed fuel and cans (it used the episode's 70 L, whatever the vehicle), kit as spares plus a third of the plugs against the same of the pack (it was against a fixed two). A standard-load run that uses a plug now loses a few points it didn't before; packing more no longer makes the kit score easier to keep.
 
 **Changed for every run.** Even on the standard load, the car gets lighter as it burns fuel (about 25 kg over a CREB run), which it didn't before.
+
+## v1.02: history and lesson notes in the top right corner
+
+Steef found the lesson card ("Lesson 1 of 4, Low range") at the bottom of the screen covered the track, and the bottom right is where the low-range crawl gauges go. History and lesson notes, and messages, now sit small in the top right corner in every HUD style, on a computer and on a phone. This replaces the v0.90 choice of putting history notes along the bottom.
+
+**Where.** The note card moved into the HUD's top-right stack (`.notices`), under the Discovered card and the messages, so they stack in one column instead of overlapping. On a computer it is 320 px wide; on a phone about half the screen width (260 px at most) with smaller type, and it scrolls if a note is longer than about a third of the screen upright (40% sideways), so it stays clear of the thumb buttons and the prompt above them. The prompts no longer move up for a note.
+
+**Phones keep driving.** A note used to stop the game on a phone and come up as a sheet from the bottom, because there was no room for it beside the buttons. In the corner there is room, so the game no longer stops: the note shows while you drive and closes on a tap or after its reading time, as on a computer. The stop-and-read mode is still in `HistoryCard` (`reading`) but nothing uses it now.

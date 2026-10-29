@@ -374,7 +374,7 @@ export class Game {
     );
     this.pause.setVehicle(vehicleId);
     this.pause.setEpisode(setup.def);
-    this.history = new HistoryCard(uiRoot, () => {
+    this.history = new HistoryCard(uiRoot, this.hud.notices, () => {
       this.loop.paused = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
     });
     this.result = new ResultCard(uiRoot);
@@ -1199,15 +1199,10 @@ export class Game {
 
   // --- The episode ------------------------------------------------------------
 
-  /**
-   * A place's history note. On a touch screen there is no room for it beside the buttons,
-   * so the game stops while it's read; tapping it carries on.
-   */
+  /** A place's history note or a lesson: a small card in the top right; driving carries on. */
   showHistory(note: { title: string; text: string; instruction?: ControlInstruction }): void {
-    const reading = this.input.activeDevice === 'touch';
     this.history.setInput(this.input.activeDevice, this.settings.controller);
-    this.history.show(note.title, note.text, reading, note.instruction);
-    if (reading) this.loop.paused = true;
+    this.history.show(note.title, note.text, false, note.instruction);
   }
 
   /**
