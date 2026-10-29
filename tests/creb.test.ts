@@ -21,6 +21,7 @@ import { addPuddles } from '../src/sim/world/puddles';
 import { winchTuning } from '../src/data/tools';
 import { crebWashout } from '../src/data/episodes/crebStretches';
 import { Autopilot } from '../src/sim/input/autopilot';
+import { Exploration } from '../src/sim/exploration';
 import { DT, driveLeg, driver, runLeg } from './helpers/drive';
 
 const world = buildWorld(crebMap);
@@ -74,6 +75,21 @@ describe('Episode 1: the CREB Track', () => {
       const r = camp.reset!;
       expect(world.terrain.slopeDegAt(r.x, r.z), camp.id).toBeLessThan(12);
       expect(world.terrain.waterSurfaceAt(r.x, r.z), camp.id).toBeNull();
+    }
+  });
+
+  it('discovers Big Red and Bob’s Hill at the foot of the climb, not halfway up', () => {
+    for (const id of ['big-red', 'bobs-hill'] as const) {
+      const track = trackOf(id);
+      const poi = world.pois.find((p) => p.id === id)!;
+      const start = trailPoint(track, 0);
+      const mid = trailPoint(track, track.poly.length / 2);
+      expect(Math.hypot(poi.x - start.x, poi.z - start.z), `${id} at foot`).toBeLessThanOrEqual(poi.radius);
+      expect(Math.hypot(poi.x - mid.x, poi.z - mid.z), `${id} not at mid`).toBeGreaterThan(poi.radius);
+      const atFoot = new Exploration(world.pois, { discovered: [], lastCampsite: 'daintree-village' });
+      expect(atFoot.check(start.x, start.z).discovered.map((p) => p.id)).toContain(id);
+      const atMid = new Exploration(world.pois, { discovered: [], lastCampsite: 'daintree-village' });
+      expect(atMid.check(mid.x, mid.z).discovered.map((p) => p.id)).not.toContain(id);
     }
   });
 

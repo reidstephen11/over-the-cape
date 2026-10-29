@@ -1648,3 +1648,11 @@ Still red and not from the HUD: `e2e/night.spec.ts` and the "Dark falls" step in
 ## v0.94: phone prompts clear of the stick
 
 The v0.93 test rerun found one more overlap. The HUD skin set every prompt to 15 px, which beat the smaller phone size in `src/ui/styles.css`, so on an upright 375 px phone "Release the handbrake" reached over the stick. Prompts on a touch screen are back to 13 px (12 px upright, with the base layout's padding), and upright the prompt column stops 170 px short of the screen width, so a long prompt wraps onto a second line instead of reaching the stick. Field kit's typewriter letters are the widest: its prompt wraps on phones up to about 390 px. Measured in all three styles at 360×640, 375×667, 390×844 and 740×360: the prompt's left edge is at least 15 px right of the stick in each.
+
+## v0.95: Big Red arrival at the foot
+
+Stephen, on the live build, got the Big Red arrival card (Discovered / history note) when he was about halfway up the dune. It is not a summit trigger: discovery fires the first time the car enters the POI's radius (`Exploration.check` in `src/sim/exploration.ts`). The Big Red POI sat at (22, 1226), on the middle waypoint of the climb, about 73 m from the foot at (11, 1298) and well outside the 30 m radius, so you had to climb the first pinch before it counted as arriving.
+
+The POI now sits on the first waypoint of the `big-red` track, at the foot, still with a 30 m radius: the last stretch of the paddock road and the "Big Red — crown" sign are inside it; the west-line junction, the midpoint of the face and the crest are not. Bob's Hill had the same placement (POI on the middle waypoint, ~86 m up from the start) and is moved to its foot the same way. The concrete's POI is still halfway down the descent; moving it to the top would overlap the range lookout, so it is left.
+
+Checked headlessly: `Exploration.check` at the start of each climb discovers it, and the same check at the midpoint does not.
