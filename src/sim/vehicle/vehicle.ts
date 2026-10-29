@@ -12,6 +12,7 @@ import { crashTuning, type VehicleTuning } from '../../data/vehicle';
 import { nextHeadlightMode, type HeadlightMode } from '../../data/headlights';
 import { damageTuning } from '../../data/damage';
 import { floodTuning } from '../../data/tools';
+import { carriedKg, type PackWeights } from '../../data/packing';
 import type { ChurnMap } from '../world/churn';
 import { Groups, groups, type Physics } from '../physics';
 import type { VehicleInput } from '../input/vehicleInput';
@@ -101,6 +102,14 @@ export class Vehicle {
   readonly colliders: RAPIER.Collider[] = [];
   readonly drivetrain = createDrivetrainState();
   readonly condition = createCondition();
+  /**
+   * What the packing weighs against the standard load the tuned mass carries (null: no
+   * packing, the tuned mass as it is). Fuel burnt and cans emptied lighten the car again.
+   */
+  packing: PackWeights | null = null;
+  /** Weight on board beyond the standard load (kg, negative when packed light). */
+  payload = 0;
+  private massPayload = 0;
   readonly differentials = { front: false, rear: false };
   precisionCrawl = false;
   readonly wheels: WheelState[];
@@ -287,7 +296,28 @@ export class Vehicle {
       this.controller.setWheelMaxSuspensionForce(i, t.maxSuspensionForce);
       this.controller.setWheelSideFrictionStiffness(i, 1);
     }
-    this.body.setAdditionalMassProperties(t.mass, t.com, t.inertia, { x: 0, y: 0, z: 0, w: 1 }, true);
+    this.setMass();
+  }
+
+  /** The tuned mass plus the payload. */
+  get mass(): number {
+    return this.tuning.mass + this.payload;
+  }
+
+  private setMass(): void {
+    const t = this.tuning;
+    const k = this.mass / t.mass;
+    const inertia = { x: t.inertia.x * k, y: t.inertia.y * k, z: t.inertia.z * k };
+    this.body.setAdditionalMassProperties(this.mass, t.com, inertia, { x: 0, y: 0, z: 0, w: 1 }, true);
+    this.massPayload = this.payload;
+  }
+
+  /** Weigh what's on board now, and give the body that mass once it has changed by a kilo. */
+  private weighLoad(): void {
+    const c = this.condition;
+    const p = this.packing;
+    this.payload = p ? carriedKg(c, p.spareKg) - p.baseKg : 0;
+    if (Math.abs(this.payload - this.massPayload) >= 1) this.setMass();
   }
 
   get position(): Vec3 {
@@ -413,6 +443,7 @@ export class Vehicle {
   /** Apply one step of driver input. Call before the physics world steps. */
   step(input: VehicleInput, dt: number): void {
     this.snapshot();
+    this.weighLoad();
     const t = this.tuning;
     const c = this.controller;
     const q = this.body.rotation();
@@ -581,7 +612,7 @@ export class Vehicle {
       (throttle === 0 || cranking) && brake === 0 && stopped && !this.freeRoll ? t.holdBrakeForce : 0;
     // Hill-start assist: pulling away on a slope, the brakes stay on while the engine
     // and converter build up enough drive to hold the car (for at most a moment).
-    const pull = 9.81 * t.mass * fwd.y * (reverse ? -1 : 1);
+    const pull = 9.81 * this.mass * fwd.y * (reverse ? -1 : 1);
     if (
       throttle > 0 &&
       Math.abs(this.speed) < 0.3 &&
@@ -661,7 +692,11 @@ export class Vehicle {
     const flex = this.articulationBlend;
     const extraDroop = t.crawling.extraDroop * flex;
     const parkedSag = 9.81 / (4 * t.springStiffness);
-    const stiffness = t.springStiffness / (1 + extraDroop / parkedSag);
+    // Rapier scales the springs with the body's mass: hold them at the tuned mass's, so a
+    // heavy load squats the car.
+    const stiffness = (t.springStiffness * (t.mass / this.mass)) / (1 + extraDroop / parkedSag);
+    // A heavier car presses its tyres deeper into the mud.
+    const loadSink = Math.min(1.6, Math.max(0.7, (this.mass / t.mass) ** 3));
     const barScale = 1 + (t.crawling.antiRollScale - 1) * flex;
 
     // Suspension: condition multiplier, mud sink and anti-roll bars. A bar shifts load
@@ -675,7 +710,7 @@ export class Vehicle {
       const wj = this.wheels[j];
       let shift = 0;
       if (wi.contact && wj.contact) {
-        const springRate = stiffness * t.mass;
+        const springRate = stiffness * this.mass;
         shift = (k * barScale * (wj.suspension - wi.suspension)) / springRate;
         shift = Math.max(-0.08, Math.min(0.08, shift));
       }
@@ -685,7 +720,9 @@ export class Vehicle {
     for (let i = 0; i < 4; i++) {
       const w = this.wheels[i];
       const sinkTarget = w.contact
-        ? surfaces[w.surface].sink * Math.min(1, 0.4 + w.spin + (Math.abs(this.speed) < 2 ? 0.4 : 0))
+        ? surfaces[w.surface].sink *
+          loadSink *
+          Math.min(1, 0.4 + w.spin + (Math.abs(this.speed) < 2 ? 0.4 : 0))
         : 0;
       w.sink += (sinkTarget - w.sink) * Math.min(1, dt * (sinkTarget > w.sink ? 0.8 : 2.5));
       c.setWheelMaxSuspensionTravel(i, t.suspensionTravel + extraDroop);
@@ -750,7 +787,7 @@ export class Vehicle {
       fz -= k * (rz + across * right.z);
     }
     this.body.applyImpulse({ x: fx * dt, y: fy * dt, z: fz * dt }, true);
-    this.afloat = depth > 0 ? this.applyLift(q, fwd, right, dt) / (t.mass * 9.81) : 0;
+    this.afloat = depth > 0 ? this.applyLift(q, fwd, right, dt) / (this.mass * 9.81) : 0;
     // Lifted off its tyres and drifting downstream: the current has the vehicle.
     const flowSpeed = Math.hypot(flow.x, flow.z);
     const downstream = flowSpeed > 0.1 ? (vel.x * flow.x + vel.z * flow.z) / flowSpeed : 0;
