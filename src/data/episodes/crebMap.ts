@@ -695,8 +695,10 @@ export const crebMap: MapDef = {
       id: 'big-red',
       name: 'Big Red',
       kind: 'feature',
-      x: 22,
-      z: 1226,
+      // Foot of the climb (first waypoint), so the arrival card and history note
+      // fire as you reach the dune, not halfway up the face.
+      x: bigRed[0][0],
+      z: bigRed[0][1],
       radius: 30,
       note: 'Red clay climb; the bypass goes round to the west',
     },
@@ -724,8 +726,9 @@ export const crebMap: MapDef = {
       id: 'bobs-hill',
       name: 'Bob’s Hill',
       kind: 'feature',
-      x: -22,
-      z: 144,
+      // Same as Big Red: at the foot, not halfway up the pinch.
+      x: bobsHill[0][0],
+      z: bobsHill[0][1],
       radius: 30,
       note: 'Steep, rutted and rocky',
     },
