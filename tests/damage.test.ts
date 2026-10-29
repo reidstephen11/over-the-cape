@@ -95,6 +95,60 @@ describe('mechanical damage', () => {
     expect(damageMessage(tyres[0], vehicleTuning, 'realistic')).toContain('pinched in a hole');
   });
 
+  it('lets a let-down tyre take a harder landing, and rolls it off its rim in a hard corner', async () => {
+    // A 1.4 m drop onto rock cuts a pumped-up tyre but not a let-down one.
+    for (const low of [false, true]) {
+      const { s, events } = await damageScene('realistic', { ground: rock });
+      s.vehicle.condition.lowPressure = low;
+      drop(s, 1.4);
+      expect(events.some((e) => e.part === 'tyre')).toBe(!low);
+      s.physics.world.free();
+    }
+    const corner = async (low: boolean, kmh: number, steer: number) => {
+      const { s, events } = await damageScene('realistic', { speed: kmh / 3.6 });
+      s.vehicle.condition.lowPressure = low;
+      s.run(5, () => ({ throttle: s.vehicle.speed < kmh / 3.6 ? 0.7 : 0, steer }));
+      s.physics.world.free();
+      return events.filter((e) => e.part === 'tyre');
+    };
+    // A hard corner at 30 km/h rolls a soft tyre off; pumped up, or a gentler bend, it stays on.
+    const rolled = await corner(true, 30, 0.3);
+    expect(rolled.length).toBeGreaterThan(0);
+    expect(rolled.every((e) => e.fault === 'rim' && e.cause === 'corner')).toBe(true);
+    expect(damageMessage(rolled[0], vehicleTuning, 'realistic')).toContain('off its rim');
+    expect(await corner(false, 30, 0.3)).toEqual([]);
+    expect(await corner(true, 40, 0.15)).toEqual([]);
+  });
+
+  it('picks up a sharp stone now and then, less often let down, never on the concrete', async () => {
+    const S = damageTuning.tyre.sharpRockPerKm;
+    const usual = S.rock;
+    // Many times the real chance, so a short drive shows it.
+    S.rock = 8;
+    const drive = async (low: boolean, smooth = false) => {
+      let n = 0;
+      for (let k = 0; k < 10; k++) {
+        const ground = { ...rock, smoothAt: () => smooth };
+        const { s, events } = await damageScene('realistic', { ground, speed: 20 / 3.6 });
+        // Each run a different seed.
+        for (let r = 0; r < k * 7; r++) s.vehicle.rand();
+        s.vehicle.condition.lowPressure = low;
+        s.run(10, () => ({ throttle: s.vehicle.speed < 20 / 3.6 ? 0.5 : 0 }));
+        n += events.filter((e) => e.cause === 'sharp' && e.fault === 'puncture').length;
+        s.physics.world.free();
+      }
+      return n;
+    };
+    try {
+      const pumped = await drive(false);
+      expect(pumped).toBeGreaterThan(5);
+      expect(await drive(true)).toBeLessThan(pumped * 0.7);
+      expect(await drive(false, true)).toBe(0);
+    } finally {
+      S.rock = usual;
+    }
+  });
+
   it('lets a realistic tyre go flat: that corner sits lower and drags the car towards it', async () => {
     const flatAt = async (wheel: number | null) => {
       const s = await makeScene({ tuning: vehicleTuning });

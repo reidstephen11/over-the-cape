@@ -28,8 +28,11 @@ export interface FloodState {
   submerged: boolean;
 }
 
-/** How a cut tyre is hurt: a puncture leaks slowly and takes a plug; a torn sidewall needs a spare. */
-export type TyreFault = 'none' | 'puncture' | 'sidewall';
+/**
+ * How a cut tyre is hurt: a puncture leaks slowly and takes a plug; a torn sidewall, or a
+ * soft tyre rolled off its rim in a corner, needs a spare.
+ */
+export type TyreFault = 'none' | 'puncture' | 'sidewall' | 'rim';
 
 export interface VehicleCondition {
   engine: number;

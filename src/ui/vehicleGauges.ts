@@ -171,7 +171,8 @@ export class VehicleGauges {
       el.hidden = !tyre;
       if (!tyre) continue;
       const percent = Math.round(clamp(tyre.inflation) * 100);
-      const fault = tyre.fault === 'sidewall' ? 'torn sidewall' : 'puncture';
+      const fault =
+        tyre.fault === 'sidewall' ? 'torn sidewall' : tyre.fault === 'rim' ? 'off the rim' : 'puncture';
       const label = `${front ? 'Front' : 'Rear'} ${left ? 'left' : 'right'} tyre`;
       const text = `${percent}% air remaining${tyre.fault !== 'none' ? `, ${fault}` : ''}`;
       el.setAttribute('aria-label', label);

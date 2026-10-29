@@ -180,7 +180,8 @@ export class Vehicle {
   readonly intakePos = v3();
   private sputterRand = 0;
   /** Seeded so the simulation stays deterministic. */
-  private readonly rand: () => number;
+  /** This vehicle's own random numbers (seeded by its id, so a run repeats). */
+  readonly rand: () => number;
   readonly prevPosition = v3();
   readonly prevRotation: Quat = { x: 0, y: 0, z: 0, w: 1 };
   /** Biggest velocity change in the last step (m/s), for impacts/dents. */

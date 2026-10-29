@@ -153,7 +153,7 @@ function readProgress(raw: unknown): EpisodeProgress {
   };
 }
 
-const faults: readonly TyreFault[] = ['none', 'puncture', 'sidewall'];
+const faults: readonly TyreFault[] = ['none', 'puncture', 'sidewall', 'rim'];
 
 function readCheckpoint(raw: unknown): Checkpoint | null {
   const c = raw as Partial<Checkpoint> | null | undefined;

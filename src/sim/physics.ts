@@ -38,6 +38,8 @@ export interface GroundQuery {
   waterFlowAt?(x: number, z: number, out: { x: number; z: number }): { x: number; z: number };
   /** Depth (m) of a pothole or washout at a point, 0 where there is none. */
   holeAt?(x: number, z: number): number;
+  /** Laid smooth (the concrete strips), with no sharp stones on it. */
+  smoothAt?(x: number, z: number): boolean;
 }
 
 export const flatDirt: GroundQuery = {

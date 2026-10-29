@@ -12,11 +12,23 @@ export interface DamageEvent {
   wheel: number;
   health: number;
   /**
-   * What did it: a rock cut, wheelspin wearing through on rock, a pothole or washout hit at
-   * speed, a hard landing, a chassis knock, a crash, upside down, water.
+   * What did it: a rock cut, a sharp rock picked up by chance, wheelspin wearing through on
+   * rock, a pothole or washout hit at speed, a soft tyre rolled off its rim cornering, a
+   * hard landing, a chassis knock, a crash, upside down, water.
    */
-  cause: 'rock' | 'spin' | 'hole' | 'landing' | 'knock' | 'crash' | 'inverted' | 'water' | 'overheat';
-  /** Tyres: a slow puncture or a torn sidewall. */
+  cause:
+    | 'rock'
+    | 'sharp'
+    | 'spin'
+    | 'hole'
+    | 'corner'
+    | 'landing'
+    | 'knock'
+    | 'crash'
+    | 'inverted'
+    | 'water'
+    | 'overheat';
+  /** Tyres: a slow puncture, a torn sidewall or off the rim. */
   fault?: TyreFault;
 }
 
@@ -39,16 +51,31 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     c.tyreFault[i] = fault;
     events.push({ part: 'tyre', wheel: i, health: c.tyres[i], cause, fault });
   };
+  const T = D.tyre;
+  const ground = Math.abs(v.speed);
+  // Sharp stones: a chance for each metre rolled, more on rock and at speed, less let down.
+  const sharp =
+    ground * dt * (0.3 + (0.7 * ground) / (20 / 3.6)) * (c.lowPressure ? T.sharpRockLowPressure : 1);
+  // Sideways acceleration in a corner (m/s²): speed times how fast the car is turning.
+  const lateral = Math.abs(v.speed * v.body.angvel().y);
+  const rimRoll =
+    c.lowPressure && lateral > T.rimRollAccel ? (lateral - T.rimRollAccel) * T.rimRollPerSecond * dt : 0;
   for (let i = 0; i < 4; i++) {
     const hit = v.wheelLandings[i];
     const w = v.wheels[i];
     const intact = c.tyreFault[i] === 'none';
     // A tyre landing hard on rock is cut and starts going down; harder still tears the sidewall.
-    const low = c.lowPressure ? D.tyre.lowPressureCut : 1;
+    const low = c.lowPressure ? T.lowPressureCut : 1;
     if (hit > D.tyre.punctureSpeed * low && w.surface === SurfaceId.Rock && intact)
       cut(i, hit > D.tyre.sidewallSpeed ? 'sidewall' : 'puncture', 'rock');
     // A pothole or washout hit at speed pinches the tyre.
     else if (intact && v.wheelStrikes[i] > D.tyre.strike * low) cut(i, 'puncture', 'hole');
+    // Let down, the outside tyre (the heavier of its axle) can roll off its rim in a hard corner.
+    else if (intact && rimRoll > 0 && w.contact && w.load > v.wheels[i ^ 1].load && v.rand() < rimRoll)
+      cut(i, 'rim', 'corner');
+    // A sharp stone picked up at any pace: a slow puncture.
+    else if (intact && w.contact && sharp > 0 && v.rand() < (sharp * sharpPerKm(v, w)) / 1000)
+      cut(i, 'puncture', 'sharp');
     // Spinning hard on rock wears through the tread.
     else if (intact && w.contact && w.surface === SurfaceId.Rock && w.spin > D.tyre.abrasionSpin) {
       c.abrasion[i] += w.spin * dt;
@@ -58,7 +85,7 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     const seconds =
       mode === 'mild'
         ? D.tyre.deflateSeconds.mild
-        : D.tyre.deflateSeconds[fault === 'sidewall' ? 'sidewall' : 'puncture'];
+        : D.tyre.deflateSeconds[fault === 'sidewall' || fault === 'rim' ? fault : 'puncture'];
     if (c.tyres[i] > c.tyreTarget[i]) c.tyres[i] = Math.max(c.tyreTarget[i], c.tyres[i] - dt / seconds);
     // A heavy landing bends that corner, and so does a hole hit hard enough.
     const bend = (loss: number, cause: DamageEvent['cause']) => {
@@ -105,6 +132,16 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
   // In realistic mode, water drawn in through the intake bends a connecting rod.
   if (mode === 'realistic' && v.floodEvent === 'stalled') hurt(E.floodStall, 'water');
   return events;
+}
+
+/** Sharp-stone punctures per kilometre at 20 km/h under a wheel, by what it's rolling on. */
+function sharpPerKm(v: Vehicle, w: Vehicle['wheels'][number]): number {
+  const S = D.tyre.sharpRockPerKm;
+  const p = w.contactPoint;
+  if (w.surface === SurfaceId.Rock) return v.physics.ground.smoothAt?.(p.x, p.z) ? 0 : S.rock;
+  if (w.surface === SurfaceId.Gravel) return S.gravel;
+  if (w.surface === SurfaceId.Dirt || w.surface === SurfaceId.Clay) return S.firm;
+  return 0;
 }
 
 /**
