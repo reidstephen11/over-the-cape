@@ -12,9 +12,14 @@ import {
 import type { HeadlightMode } from '../data/headlights';
 import { railItems, touchNotice, warningView, type RailItem } from './alerts';
 import { VehicleGauges, type VehicleGaugeState } from './vehicleGauges';
+import { Instruments, type Lamp } from './instruments';
+import { damageTuning } from '../data/damage';
+import { defaultHudStyle, type HudStyle } from '../data/hudStyles';
 
-/** Phone mission line (clock + place) stays this long, then folds away. Tap the strip to see it again. */
+/** The mission line stays this long, then folds away until it changes or time runs short. */
 export const MISSION_FADE_MS = 4500;
+/** A road's or a course's hint shows under its name this long after you reach it. */
+export const HINT_FADE_MS = 8000;
 
 /** Labels already printed on the on-screen buttons. A prompt with only these keys repeats them. */
 const TOUCH_BUTTON_KEYS = new Set([
@@ -63,6 +68,10 @@ export interface EpisodeHud {
   deadline: string;
   /** Under half an hour of game time left. */
   urgent: boolean;
+  /** For the clock dial: the hour now (null while it stands still), when it gets dark and the finish. */
+  hour?: number | null;
+  darkHour?: number | null;
+  finishHour?: number | null;
 }
 
 /** Fuel and what's on board to fix and refill with. */
@@ -131,9 +140,17 @@ export class Hud {
   private controller: ControllerType = defaultController;
   onCameraReset: (() => void) | null = null;
   onCameraPreset: (() => void) | null = null;
-  private readonly compass: HTMLCanvasElement;
-  private readonly cctx: CanvasRenderingContext2D;
   private readonly status: HTMLElement;
+  /** Lamps, phone warnings, the place name and the mission: short lines by the dials. */
+  private readonly stack: HTMLElement;
+  private readonly instruments: Instruments;
+  /** How the HUD looks (Settings). */
+  style: HudStyle = defaultHudStyle;
+  /** Set by the game: after dusk the panels dim, like a dash's lights. */
+  night = false;
+  private lastHintTitle = '';
+  private hintRevealUntil = 0;
+  private lastPalette = '';
   private readonly rangeEl: HTMLElement;
   private readonly speedEl: HTMLElement;
   private readonly gearEl: HTMLElement;
@@ -185,15 +202,12 @@ export class Hud {
   }
   /** Set by the game: the driver's-seat camera is in use. */
   cockpitView = false;
-  private lastCompassKey = '';
   private lastPromptKey = '';
-  private readonly iconImages = new Map<string, HTMLImageElement>();
 
   constructor(root: HTMLElement, driveAction: (action: 'frontDiff' | 'rearDiff' | 'precision') => void) {
     this.el = document.createElement('div');
     this.el.className = 'hud';
     this.el.innerHTML = `
-      <div class="compass paper"><canvas width="840" height="76"></canvas></div>
       <div class="hud-readout">
       <div class="status paper">
         <div class="status-range" title="Transfer range">H</div>
@@ -214,11 +228,12 @@ export class Hud {
         <div class="status-item status-trailer hidden">${icons.trailer}<span class="trailer-text"></span><span class="trailer-kg"></span></div>
         </div>
       </div>
-      <div class="mission paper hidden"><small></small><strong></strong><span class="mission-clock"></span></div>
+      </div>
+      <div class="hud-stack">
       <div class="course-hint paper hidden"><strong></strong><span></span><small></small></div>
+      <div class="mission paper hidden"><small></small><strong></strong><span class="mission-clock"></span></div>
       </div>
       <div class="prompts"></div>
-      <div class="alert-rail" aria-live="polite"><div class="alerts"></div></div>
       <div class="camera-help paper">
         <span class="camera-hint">Drag to orbit · Scroll to zoom</span>
         <button type="button" class="camera-preset" aria-label="Camera view" title="Cycle wheel-placement views: C / hold L1 + click right stick">View<span class="camera-preset-name">: <span>Follow</span></span> <kbd>C</kbd></button>
@@ -228,6 +243,14 @@ export class Hud {
       <div class="crawl-run paper hidden"><strong></strong><span class="crawl-run-time"></span><span class="crawl-run-points"></span></div>
       <div class="notices"><div class="discovery"></div><div class="toasts"></div></div>`;
     root.appendChild(this.el);
+    this.stack = this.el.querySelector('.hud-stack') as HTMLElement;
+    // Phone warnings and notices: a short line each in the stack, under the lamps.
+    const rail = document.createElement('div');
+    rail.className = 'alert-rail';
+    rail.setAttribute('aria-live', 'polite');
+    rail.innerHTML = '<div class="alerts"></div>';
+    this.stack.insertBefore(rail, this.stack.firstChild);
+    this.instruments = new Instruments(this.el, this.stack);
     this.gauges = new CrawlGauges(this.el);
     this.runEl = this.el.querySelector('.crawl-run') as HTMLElement;
     this.missionEl = this.el.querySelector('.mission') as HTMLElement;
@@ -245,8 +268,6 @@ export class Hud {
     this.suppliesEl = this.el.querySelector('.status-supplies') as HTMLElement;
     this.trailerEl = this.el.querySelector('.status-trailer') as HTMLElement;
     this.gateEl = this.el.querySelector('.gate-count') as HTMLElement;
-    this.compass = this.el.querySelector('.compass canvas') as HTMLCanvasElement;
-    this.cctx = this.compass.getContext('2d') as CanvasRenderingContext2D;
     this.status = this.el.querySelector('.status') as HTMLElement;
     this.rangeEl = this.el.querySelector('.status-range') as HTMLElement;
     this.speedEl = this.el.querySelector('.status-speed-value') as HTMLElement;
@@ -290,16 +311,6 @@ export class Hud {
       // Return keyboard control to driving after a pointer click (Space is handbrake).
       if ((e as MouseEvent).detail > 0) (e.currentTarget as HTMLButtonElement).blur();
     });
-    for (const k of ['campsite', 'viewpoint', 'landmark', 'feature'] as const) {
-      const img = new Image();
-      img.src = `data:image/svg+xml;utf8,${encodeURIComponent(
-        icons[k]
-          .replace('currentColor', '#3B2A1E')
-          .replace(/currentColor/g, '#3B2A1E')
-          .replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '),
-      )}`;
-      this.iconImages.set(k, img);
-    }
   }
 
   setVisible(v: boolean): void {
@@ -349,8 +360,26 @@ export class Hud {
 
   update(s: HudState): void {
     this.el.classList.toggle('cockpit', this.cockpitView);
-    this.drawCompass(s);
+    this.el.classList.toggle('night', this.night);
     const touch = document.body.classList.contains('touch-mode');
+    this.instruments.setStyle(this.style, touch, this.units);
+    this.setGaugePalette();
+    const e = s.episode;
+    this.instruments.update({
+      speedKmh: s.gauges.speedKmh,
+      units: this.units,
+      gear: s.gauges.gear,
+      range: s.range,
+      heat: s.supplies ? s.supplies.heat : null,
+      fuel: s.supplies ? s.supplies.fuel : null,
+      tank: s.supplies?.tank ?? 1,
+      hour: e?.hour ?? null,
+      darkHour: e?.darkHour ?? null,
+      finishHour: e?.finishHour ?? null,
+      heading: s.heading,
+      pois: s.pois,
+      lamps: lampsFor(s),
+    });
     const showGauges =
       this.gaugeMode === 'on' ||
       (this.gaugeMode === 'auto' &&
@@ -391,13 +420,19 @@ export class Hud {
       if (index < 2) button.textContent = `${index === 0 ? 'F' : 'R'} ${active[index] ? 'LOCK' : 'OPEN'}`;
     });
     this.courseHint.classList.toggle('hidden', !s.courseHint);
+    const hintTitle = s.courseHint?.title ?? '';
+    if (hintTitle !== this.lastHintTitle) {
+      this.lastHintTitle = hintTitle;
+      this.hintRevealUntil = performance.now() + HINT_FADE_MS;
+    }
+    this.courseHint.classList.toggle('brief', performance.now() < this.hintRevealUntil);
     if (s.courseHint) {
       this.courseHint.querySelector('strong')!.textContent = s.courseHint.title;
       this.courseHint.querySelector('span')!.textContent = s.courseHint.text;
       this.courseHint.querySelector('small')!.textContent = s.courseHint.controls;
     }
     this.planksEl.textContent = `${s.planksCarried}/${s.planksTotal}`;
-    this.drawMission(s.episode, touch);
+    this.drawMission(s.episode);
     this.drawSupplies(s.supplies);
     this.drawTrailer(s.trailer ?? null);
     this.winchEl.classList.toggle('shown', s.winchAttached);
@@ -458,14 +493,14 @@ export class Hud {
     for (const item of items) this.alertsEl.appendChild(alertElement(item));
   }
 
-  private drawMission(e: EpisodeHud | null, touch: boolean): void {
+  private drawMission(e: EpisodeHud | null): void {
     const now = performance.now();
     const place = e ? `${e.mission}|${e.urgent}` : '';
     if (place !== this.lastMissionPlace) {
       this.lastMissionPlace = place;
       this.missionRevealUntil = now + MISSION_FADE_MS;
     }
-    const faded = touch && !!e && !e.urgent && now > this.missionRevealUntil;
+    const faded = !!e && !e.urgent && now > this.missionRevealUntil;
     this.vehicleGauges.setClock(e?.clock ?? '');
     const key = e ? `${e.title}|${e.mission}|${e.clock}|${e.deadline}|${e.urgent}|${faded}` : `:${faded}`;
     if (key === this.lastMissionKey) return;
@@ -547,65 +582,11 @@ export class Hud {
     this.damageEl.title = `Damage: ${parts.join(', ')}`;
   }
 
-  private drawCompass(s: HudState): void {
-    const key = `${s.heading.toFixed(1)}|${s.pois.map((p) => `${p.id}${p.bearing.toFixed(0)}`).join(',')}`;
-    if (key === this.lastCompassKey) return;
-    this.lastCompassKey = key;
-    const c = this.cctx;
-    const w = this.compass.width;
-    const h = this.compass.height;
-    c.clearRect(0, 0, w, h);
-    const span = 180;
-    const pxPerDeg = w / span;
-    const x = (bearing: number) => {
-      let d = bearing - s.heading;
-      d = ((((d + 180) % 360) + 360) % 360) - 180;
-      return w / 2 + d * pxPerDeg;
-    };
-    c.strokeStyle = '#3B2A1E';
-    c.fillStyle = '#3B2A1E';
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-    const labels: Record<number, string> = {
-      0: 'N',
-      45: 'NE',
-      90: 'E',
-      135: 'SE',
-      180: 'S',
-      225: 'SW',
-      270: 'W',
-      315: 'NW',
-    };
-    for (let b = 0; b < 360; b += 5) {
-      const px = x(b);
-      if (px < -10 || px > w + 10) continue;
-      const major = b % 45 === 0;
-      c.lineWidth = major ? 3 : b % 15 === 0 ? 2 : 1.2;
-      c.beginPath();
-      c.moveTo(px, h - 6);
-      c.lineTo(px, h - (major ? 22 : b % 15 === 0 ? 16 : 11));
-      c.stroke();
-      if (labels[b] !== undefined) {
-        c.font = `${labels[b].length === 1 ? 'bold 30px' : '22px'} "Patrick Hand", "Nunito", sans-serif`;
-        c.fillStyle = b === 0 ? '#B5653A' : '#3B2A1E';
-        c.fillText(labels[b], px, 24);
-        c.fillStyle = '#3B2A1E';
-      }
-    }
-    for (const p of s.pois) {
-      const px = x(p.bearing);
-      if (px < 12 || px > w - 12) continue;
-      const img = this.iconImages.get(p.kind);
-      if (img?.complete) c.drawImage(img, px - 13, 32, 26, 26);
-    }
-    // Centre marker.
-    c.fillStyle = '#B5653A';
-    c.beginPath();
-    c.moveTo(w / 2 - 9, h);
-    c.lineTo(w / 2 + 9, h);
-    c.lineTo(w / 2, h - 12);
-    c.closePath();
-    c.fill();
+  /** The pitch and roll gauges are drawn on a canvas: give it the style's colours. */
+  private setGaugePalette(): void {
+    if (this.lastPalette === this.style) return;
+    this.lastPalette = this.style;
+    this.gauges.setPalette(gaugePalettes[this.style]);
   }
 
   /** Short message card (range change, winch attached...). On a phone it is one short line. */
@@ -700,4 +681,136 @@ export function clock(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds - m * 60;
   return `${m}:${s < 10 ? '0' : ''}${s.toFixed(1)}`;
+}
+
+/** Canvas colours for the pitch and roll gauges in each style. */
+const gaugePalettes: Record<HudStyle, Parameters<CrawlGauges['setPalette']>[0]> = {
+  dash: {
+    ink: '#efe8d6',
+    soft: '#b9b09c',
+    accent: '#ff8f3f',
+    paper: '#151412',
+    warn: '#ff5a3c',
+    font: "'Barlow Condensed', 'Arial Narrow', sans-serif",
+  },
+  edge: {
+    ink: '#ffffff',
+    soft: 'rgba(255, 255, 255, 0.7)',
+    accent: '#ffc04d',
+    paper: 'rgba(12, 12, 12, 0.6)',
+    warn: '#ff6a4d',
+    font: "'Barlow', 'Segoe UI', sans-serif",
+  },
+  kit: {
+    ink: '#22201c',
+    soft: '#5c5446',
+    accent: '#b8321f',
+    paper: '#f1e8d2',
+    warn: '#b8321f',
+    font: "'Courier Prime', 'Courier New', monospace",
+  },
+};
+
+const corner = (front: boolean, left: boolean) => `${front ? 'F' : 'R'}${left ? 'L' : 'R'}`;
+
+/**
+ * The lamps: what is switched on first (range, lockers, crawl, handbrake, lights, winch,
+ * tyres let down), then what is wrong (engine, heat, fuel, tyres, damage, the trailer).
+ * Nothing shows while all is off and well.
+ */
+export function lampsFor(s: HudState): Lamp[] {
+  const out: Lamp[] = [];
+  if (s.range === 'low') out.push({ id: 'low', text: 'LOW', tone: 'amber', title: 'Low range' });
+  if (s.frontLocked) out.push({ id: 'flock', text: 'F LOCK', tone: 'amber', title: 'Front diff locked' });
+  if (s.rearLocked) out.push({ id: 'rlock', text: 'R LOCK', tone: 'amber', title: 'Rear diff locked' });
+  if (s.precisionCrawl)
+    out.push({
+      id: 'crawl',
+      text: 'CRAWL',
+      tone: 'amber',
+      title: 'Precision crawl: hold the throttle for walking pace',
+    });
+  if (s.parkBrake) out.push({ id: 'brake', text: 'BRAKE', tone: 'red', title: 'Handbrake on' });
+  if (s.lights === 'high')
+    out.push({ id: 'lights', text: 'HIGH BEAM', tone: 'blue', title: 'Headlights on high beam' });
+  else if (s.lights !== 'off')
+    out.push({ id: 'lights', text: 'LIGHTS', tone: 'green', title: 'Headlights on' });
+  if (s.winchAttached) out.push({ id: 'winch', text: 'WINCH', tone: 'amber', title: 'Winch attached' });
+  const sup = s.supplies;
+  if (sup?.lowPressure)
+    out.push({
+      id: 'trail',
+      text: 'TRAIL',
+      tone: 'amber',
+      title: 'Tyres let down for grip: pump them up for gravel from Tools',
+    });
+  if (s.engine === 2) out.push({ id: 'engine', text: 'STALLED', tone: 'red', title: 'Engine stalled' });
+  else if (s.engine === 1)
+    out.push({ id: 'engine', text: 'FLOODING', tone: 'red', blink: true, title: 'Engine flooding' });
+  const tyreLamp = new Set<string>();
+  if (sup) {
+    if (sup.heat >= 1)
+      out.push({
+        id: 'heat',
+        text: 'ENGINE HOT',
+        tone: 'red',
+        title: 'Engine hot: ease off and let it cool',
+      });
+    else if (sup.heat >= damageTuning.engine.heatWarn)
+      out.push({ id: 'heat', text: 'TEMP HIGH', tone: 'amber', title: 'Engine running hot' });
+    if (sup.fuel / Math.max(1, sup.tank) < 0.15)
+      out.push({
+        id: 'fuel',
+        text: 'FUEL LOW',
+        tone: 'red',
+        title: `Fuel low: ${Math.round(sup.fuel)} L left`,
+      });
+    for (const t of sup.tyres) {
+      const c = corner(t.front, t.left);
+      const where = `${t.front ? 'Front' : 'Rear'} ${t.left ? 'left' : 'right'} tyre`;
+      if (t.inflation <= 0.05) {
+        out.push({ id: `tyre-${c}`, text: `FLAT ${c}`, tone: 'red', title: `${where} flat` });
+        tyreLamp.add(c);
+      } else if (t.fault !== 'none' || t.inflation < 0.97) {
+        const pct = Math.round(Math.max(0, Math.min(1, t.inflation)) * 100);
+        out.push({
+          id: `tyre-${c}`,
+          text: pct >= 97 ? `TYRE ${c}` : `TYRE ${c} ${pct}%`,
+          tone: 'amber',
+          title: `${where}: ${pct}% air${t.fault === 'sidewall' ? ', torn sidewall' : t.fault !== 'none' ? ', puncture' : ''}`,
+        });
+        tyreLamp.add(c);
+      }
+    }
+  }
+  if (s.damage) {
+    if (s.damage.engine < 0.97)
+      out.push({
+        id: 'engine-health',
+        text: `ENGINE ${Math.round(s.damage.engine * 100)}%`,
+        tone: s.damage.engine < 0.45 ? 'red' : 'amber',
+        title: 'Engine damaged: a camp fixes it',
+      });
+    const hurt = s.damage.corners.filter((c) => c.health < 0.97 && !tyreLamp.has(corner(c.front, c.left)));
+    if (hurt.length > 0)
+      out.push({
+        id: 'damage',
+        text: hurt.length === 1 ? `DAMAGE ${corner(hurt[0].front, hurt[0].left)}` : 'DAMAGE',
+        tone: hurt.some((c) => c.health < 0.45) ? 'red' : 'amber',
+        title: 'Suspension damaged: a field repair from Tools, or a camp',
+      });
+  }
+  const t = s.trailer;
+  if (t?.state === 'tipped')
+    out.push({ id: 'trailer', text: 'TRAILER OVER', tone: 'red', title: 'The trailer has tipped over' });
+  else if (t?.state === 'jackknifed')
+    out.push({
+      id: 'trailer',
+      text: 'JACKKNIFE',
+      tone: 'amber',
+      title: 'Jackknifed: pull forward to straighten the trailer',
+    });
+  else if (t?.state === 'towing' && t.overloaded)
+    out.push({ id: 'trailer', text: 'OVERLOAD', tone: 'amber', title: 'Trailer overloaded' });
+  return out;
 }

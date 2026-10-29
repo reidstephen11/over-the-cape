@@ -69,11 +69,13 @@ export class CrawlGauges {
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
   private lastKey = '';
-  private readonly ink: string;
-  private readonly soft: string;
-  private readonly accent: string;
-  private readonly paper: string;
-  private readonly warn = '#a83a2a';
+  private ink: string;
+  private soft: string;
+  private accent: string;
+  private paper: string;
+  private warn = '#a83a2a';
+  /** Figures and labels; the HUD style picks it with the colours. */
+  private font = "'Patrick Hand', 'Nunito', cursive";
   /** Speed units from the settings. */
   units: SpeedUnits = 'kmh';
 
@@ -96,6 +98,24 @@ export class CrawlGauges {
     this.soft = v('--ink-soft', '#6b5442');
     this.accent = v('--accent', '#b5653a');
     this.paper = v('--paper', '#f3ebda');
+  }
+
+  /** Colours and type for the HUD style. Redraws on the next update. */
+  setPalette(p: {
+    ink: string;
+    soft: string;
+    accent: string;
+    paper: string;
+    warn: string;
+    font: string;
+  }): void {
+    this.ink = p.ink;
+    this.soft = p.soft;
+    this.accent = p.accent;
+    this.paper = p.paper;
+    this.warn = p.warn;
+    this.font = p.font;
+    this.lastKey = '';
   }
 
   set visible(on: boolean) {
@@ -125,7 +145,7 @@ export class CrawlGauges {
     this.wheels(g, 262, 60);
     // Speed, gear and revs along the bottom.
     c.fillStyle = this.ink;
-    c.font = "700 19px 'Patrick Hand', 'Nunito', cursive";
+    c.font = `700 19px ${this.font}`;
     c.textAlign = 'left';
     c.textBaseline = 'alphabetic';
     const gear = `${g.range === 'low' ? 'L' : 'H'}${g.gear}`;
@@ -142,11 +162,11 @@ export class CrawlGauges {
     c.fillStyle = g.rpm > g.redline ? this.warn : this.accent;
     c.fillRect(x0 + 1, y + 1, (bw - 2) * f, 8);
     c.fillStyle = this.ink;
-    c.font = "600 12px 'Nunito', sans-serif";
+    c.font = `600 12px ${this.font}`;
     c.fillText(`${Math.round(g.rpm / 10) * 10} rpm`, x0 + bw + 6, H - 10);
     if (g.bodyContact) {
       c.fillStyle = this.warn;
-      c.font = "800 11px 'Nunito', sans-serif";
+      c.font = `800 11px ${this.font}`;
       c.textAlign = 'center';
       c.fillText('BELLY ON ROCK', 262, 126);
     }
@@ -233,10 +253,10 @@ export class CrawlGauges {
     }
     c.restore();
     c.fillStyle = danger ? this.warn : this.ink;
-    c.font = "800 10px 'Nunito', sans-serif";
+    c.font = `800 10px ${this.font}`;
     c.textAlign = 'center';
     c.fillText(label, cx, cy + r - 16);
-    c.font = "700 16px 'Patrick Hand', 'Nunito', cursive";
+    c.font = `700 16px ${this.font}`;
     c.fillText(`${Math.round(Math.abs(angle))}°`, cx, cy + r - 2);
   }
 
@@ -281,7 +301,7 @@ export class CrawlGauges {
       c.strokeRect(x, y, 12, 22);
     });
     c.fillStyle = this.ink;
-    c.font = "800 10px 'Nunito', sans-serif";
+    c.font = `800 10px ${this.font}`;
     c.textAlign = 'center';
     c.fillText('FRONT', cx, cy - 46);
   }
