@@ -7,6 +7,11 @@ import { icons } from './icons';
 import { placeMapLabels, type MapLabel } from './mapLabels';
 import { trailPoint } from '../sim/world/crawlTrail';
 import { gateColours } from '../data/palette';
+import { seenTuning, type SeenGround } from '../sim/seenGround';
+
+/** An unfound place (not a roadside sign) within this of ground you've seen is a question mark (m). */
+const HINT_RANGE = 250;
+const PAPER = '#F3EBDA';
 
 /** The sheet's longer side (canvas px). */
 const SIZE = 1400;
@@ -66,14 +71,19 @@ export function clampMapPan(
 
 /**
  * Fold-out paper map (SPEC §9) drawn on a canvas from the real heightfield: shaded
- * relief, contour lines, creek, forest, tracks and a hand-drawn border. Discovered
- * POIs and campsites get icons and names; undiscovered ones aren't shown.
+ * relief, contour lines, creek, forest, tracks and a hand-drawn border. Only ground the
+ * car has been near is drawn; the rest is blank paper. Discovered POIs and campsites get
+ * icons and names; an undiscovered one near the ground you've seen is a question mark.
  */
 export class PaperMap {
   readonly el: HTMLElement;
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
   private base: HTMLCanvasElement | null = null;
+  /** The border, title, north arrow and scale, drawn over the blank paper. */
+  private frame: HTMLCanvasElement | null = null;
+  /** Blank paper over the ground not yet seen (redrawn on each open). */
+  private fog: HTMLCanvasElement | null = null;
   private readonly noise: Noise2D;
   private readonly iconImages = new Map<string, HTMLImageElement>();
   isOpen = false;
@@ -184,7 +194,11 @@ export class PaperMap {
       this.drawWater(g);
       await yieldFrame();
       this.drawTracks(g);
-      this.drawFrame(g);
+      const f = document.createElement('canvas');
+      f.width = this.width;
+      f.height = this.height;
+      this.drawFrame(f.getContext('2d') as CanvasRenderingContext2D);
+      this.frame = f;
       this.base = c;
     })();
     return this.building;
@@ -514,6 +528,7 @@ export class PaperMap {
     player: { x: number; z: number; heading: number },
     device: 'keyboard' | 'gamepad' | 'touch' = 'keyboard',
     controller: ControllerType = defaultController,
+    seen: SeenGround | null = null,
   ): void {
     const opening = !this.isOpen;
     this.el.classList.remove('hidden');
@@ -541,12 +556,18 @@ export class PaperMap {
       this.ctx.fillStyle = '#F3EBDA';
       this.ctx.fillRect(0, 0, this.width, this.height);
       void this.prepare().then(() => {
-        if (this.isOpen) this.open(discovered, player, device, controller);
+        if (this.isOpen) this.open(discovered, player, device, controller, seen);
       });
       return;
     }
     const g = this.ctx;
     g.drawImage(this.base, 0, 0);
+    if (seen) this.drawFog(g, seen);
+    if (this.frame) g.drawImage(this.frame, 0, 0);
+    if (seen)
+      for (const p of this.world.pois)
+        if (p.kind !== 'signpost' && !discovered.has(p.id) && seen.near(p.x, p.z, HINT_RANGE))
+          this.drawHint(g, p);
     const pois = this.world.pois.filter((p) => discovered.has(p.id));
     const labels = placeMapLabels(
       pois.map((p) => {
@@ -652,6 +673,47 @@ export class PaperMap {
     this.panY = clamped.panY;
     this.canvas.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
     this.view.classList.toggle('zoomed', this.zoom > 1);
+  }
+
+  /** Blank paper over the map, with the ground seen cut out of it, soft-edged. */
+  private drawFog(g: CanvasRenderingContext2D, seen: SeenGround): void {
+    this.fog ??= document.createElement('canvas');
+    const f = this.fog;
+    f.width = this.width;
+    f.height = this.height;
+    const fg = f.getContext('2d') as CanvasRenderingContext2D;
+    const [left, top] = this.toMap(-this.halfX, -this.halfZ);
+    const [right, bottom] = this.toMap(this.halfX, this.halfZ);
+    fg.fillStyle = PAPER;
+    fg.fillRect(left, top, right - left, bottom - top);
+    fg.globalCompositeOperation = 'destination-out';
+    fg.fillStyle = '#000';
+    const r = seenTuning.cell * 0.85 * this.scale;
+    fg.beginPath();
+    for (const [col, row] of seen.cells()) {
+      const [x, y] = this.toMap(...seen.centre(col, row));
+      fg.moveTo(x + r, y);
+      fg.arc(x, y, r, 0, Math.PI * 2);
+    }
+    fg.fill();
+    g.save();
+    g.filter = 'blur(3px)';
+    g.drawImage(f, 0, 0);
+    g.restore();
+  }
+
+  /** A pencilled question mark where something hasn't been found yet. */
+  private drawHint(g: CanvasRenderingContext2D, p: PoiDef): void {
+    const [x, y] = this.toMap(p.x, p.z);
+    g.fillStyle = 'rgba(243, 235, 218, 0.85)';
+    g.beginPath();
+    g.arc(x, y, 15, 0, Math.PI * 2);
+    g.fill();
+    g.font = 'bold 30px "Patrick Hand", "Nunito", sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillStyle = '#7A5A3A';
+    g.fillText('?', x, y + 1);
   }
 
   private drawPoi(g: CanvasRenderingContext2D, p: PoiDef, label: MapLabel): void {

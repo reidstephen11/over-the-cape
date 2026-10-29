@@ -81,12 +81,14 @@ describe('time of day and weather', () => {
       vehicle: 'perentie',
       resume: false,
       replay: null,
+      load: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
     });
     expect(choiceFromSave(null)).toEqual({
       episode: 'creb',
       vehicle: 'shortie',
       resume: false,
       replay: null,
+      load: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
     });
     const checkpoint = startCheckpoint(crebEpisode, 'roaring-meg-camp', 'shortie');
     writeSave(saveData({ episodes: { creb: { completed: false, checkpoint } } }), s);

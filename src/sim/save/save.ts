@@ -180,6 +180,7 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     ...(Array.isArray(c.stranded) ? { stranded: strings(c.stranded) } : {}),
     ...(c.delivery ? { delivery: readDeliveryState(c.delivery) } : {}),
     ...(c.packed ? { packed: readLoad(c.packed) } : {}),
+    ...(typeof c.seen === 'string' ? { seen: c.seen } : {}),
   };
 }
 
