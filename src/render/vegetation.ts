@@ -17,6 +17,8 @@ const SPECIES: TreeSpecies[] = ['ash', 'candlebark', 'snowgum', 'dead', 'rainfor
 const HIDDEN = 3;
 /** Size (m) of the map tiles the trees are batched in. */
 const TREE_TILE = 384;
+/** Seconds for one pass over every tree's detail level. */
+const LOD_PASS = 0.2;
 
 const NOMINAL: Record<TreeSpecies, number> = {
   ash: 28,
@@ -456,6 +458,8 @@ export class Vegetation {
   private readonly coverGeo: number[] = [];
   private readonly coverTiles = new Map<string, number[]>();
   private lodTimer = 0;
+  /** The next tree to check for a change of detail. */
+  private lodNext = 0;
   private quality: QualityPreset;
   private readonly tmpM = new THREE.Matrix4();
   private readonly tmpQ = new THREE.Quaternion();
@@ -605,14 +609,17 @@ export class Vegetation {
 
   update(eye: THREE.Vector3, dt: number): void {
     this.meadow.update(eye, dt);
-    this.lodTimer -= dt;
-    if (this.lodTimer > 0) return;
-    this.lodTimer = 0.2;
+    // Trees change detail in slices, a whole pass every LOD_PASS seconds, rather than all
+    // 45,000 at once: checking them all in one frame was a hitch five times a second on a
+    // phone. A jump (dt of a second or more) does them all now.
+    const list = this.world.scatter.trees;
+    const count = dt >= 1 ? list.length : Math.min(list.length, Math.ceil((list.length * dt) / LOD_PASS));
     const near2 = this.quality.treeLodDistance ** 2;
     const mid2 = this.quality.treeFarDistance ** 2;
     const far2 = (this.quality.drawDistance * 0.9) ** 2;
-    const list = this.world.scatter.trees;
-    for (let i = 0; i < list.length; i++) {
+    for (let n = 0; n < count; n++) {
+      const i = this.lodNext;
+      this.lodNext = i + 1 < list.length ? i + 1 : 0;
       const t = list[i];
       const dx = t.x - eye.x;
       const dz = t.z - eye.z;
@@ -637,6 +644,9 @@ export class Vegetation {
       this.treeLod[i] = lod;
     }
     for (let k = 0; k < this.treeTiles.length; k++) this.treeTiles[k].visible = this.treeShown[k] > 0;
+    this.lodTimer -= dt;
+    if (this.lodTimer > 0) return;
+    this.lodTimer = LOD_PASS;
     this.updateCover(eye);
   }
 

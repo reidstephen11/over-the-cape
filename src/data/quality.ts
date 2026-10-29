@@ -28,7 +28,9 @@ export interface QualityPreset {
 export const qualityPresets: Record<QualityLevel, QualityPreset> = {
   low: {
     shadows: true,
-    shadowMapSize: 1024,
+    // Shadows are soft (radius 3), so 512 looks the same as 1024 here, and drawing the
+    // forest into the shadow map was a quarter of a phone's frame under the trees.
+    shadowMapSize: 512,
     shadowExtent: 40,
     drawDistance: 1800,
     terrainLod: [64, 160, 360],
