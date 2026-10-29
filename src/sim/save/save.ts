@@ -54,6 +54,8 @@ export interface SaveData {
   crawlBests?: CrawlBests;
   /** The load last packed for each vehicle (src/data/packing.ts). */
   packs?: Partial<Record<VehicleId, EpisodeLoadout>>;
+  /** Vehicles opened by their challenges (src/data/unlocks.ts). */
+  unlocked?: VehicleId[];
 }
 
 export const defaultSettings: Settings = {
@@ -125,6 +127,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
           : null,
       crawlBests: readBests(data.crawlBests),
       packs: readPacks(data.packs),
+      unlocked: [...new Set(strings(data.unlocked).filter(isVehicleId))],
     };
   } catch {
     return null;
@@ -181,6 +184,8 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     ...(c.delivery ? { delivery: readDeliveryState(c.delivery) } : {}),
     ...(c.packed ? { packed: readLoad(c.packed) } : {}),
     ...(typeof c.seen === 'string' ? { seen: c.seen } : {}),
+    ...(c.supply === true ? { supply: true } : {}),
+    ...(c.winched === true ? { winched: true } : {}),
   };
 }
 

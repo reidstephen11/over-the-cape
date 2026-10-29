@@ -43,6 +43,10 @@ export interface Checkpoint {
   packed?: EpisodeLoadout;
   /** Ground seen by the camp, for the paper map (src/sim/seenGround.ts; absent before v1.02). */
   seen?: string;
+  /** An Army supply run, towing fuel drums to Wujal Wujal (src/data/unlocks.ts). */
+  supply?: boolean;
+  /** The winch had been used by the camp. */
+  winched?: boolean;
 }
 
 export type EpisodeStatus = 'driving' | 'complete' | 'failed';

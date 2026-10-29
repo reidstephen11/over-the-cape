@@ -1,6 +1,8 @@
 import { episodeOrder, episodes } from '../data/episodes';
 import { fitPack } from '../data/packing';
 import { vehicleLoadout } from '../data/vehicles';
+import { vehicleOpen } from '../data/unlocks';
+import { isDevMode } from '../data/devWeather';
 import type { SaveData } from '../sim/save/save';
 import type { LaunchChoice } from './game';
 
@@ -10,7 +12,8 @@ import type { LaunchChoice } from './game';
  */
 export function choiceFromSave(save: SaveData | null): LaunchChoice {
   const episode = save?.episode ?? episodeOrder[0];
-  const vehicle = save?.vehicle ?? 'shortie';
+  const saved = save?.vehicle ?? 'shortie';
+  const vehicle = vehicleOpen(saved, save?.unlocked ?? [], isDevMode()) ? saved : 'shortie';
   const standard = episodes[episode].loadout;
   return {
     episode,

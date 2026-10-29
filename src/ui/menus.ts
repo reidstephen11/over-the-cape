@@ -5,6 +5,8 @@ import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../d
 import type { Settings } from '../sim/save/save';
 import type { VehicleId } from '../data/vehicle';
 import { vehicleOrder, vehicles } from '../data/vehicles';
+import { isLockedVehicle, vehicleChallenges, vehicleOpen } from '../data/unlocks';
+import { isDevMode } from '../data/devWeather';
 import type { EpisodeDef } from '../data/episodes';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
 import { hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
@@ -49,6 +51,8 @@ export class PauseMenu {
   private settings: Settings;
   private campsiteName = '';
   private vehicle: VehicleId = 'shortie';
+  private unlocked: VehicleId[] = [];
+  private readonly dev = isDevMode();
   private episodeName = '';
   /** Opened from the touch controls: the Controls page lists those instead of the keyboard. */
   private touch = false;
@@ -119,6 +123,12 @@ export class PauseMenu {
     this.vehicle = id;
   }
 
+  /** Vehicles opened by their challenges; the rest show what opens them. */
+  setUnlocked(ids: readonly VehicleId[]): void {
+    this.unlocked = [...ids];
+    if (this.isOpen && this.page === 'vehicle') this.show('vehicle');
+  }
+
   /** The episode being played, named on the main page. */
   setEpisode(def: EpisodeDef): void {
     this.episodeName = `Episode ${def.number} · ${def.title}`;
@@ -162,9 +172,10 @@ export class PauseMenu {
     } else if (page === 'vehicle') {
       card.innerHTML = `<h2>Vehicle</h2>
         ${vehicleOrder
-          .map(
-            (id) =>
-              `<button data-focus data-vehicle="${id}" class="vehicle-choice ${id === this.vehicle ? 'on' : ''}">${vehicles[id].tuning.name}<small>${vehicles[id].blurb}</small></button>`,
+          .map((id) =>
+            vehicleOpen(id, this.unlocked, this.dev) || id === this.vehicle
+              ? `<button data-focus data-vehicle="${id}" class="vehicle-choice ${id === this.vehicle ? 'on' : ''}">${vehicles[id].tuning.name}<small>${vehicles[id].blurb}</small></button>`
+              : `<button class="vehicle-choice locked" disabled>${vehicles[id].tuning.name} · locked<small>${isLockedVehicle(id) ? vehicleChallenges[id].task : ''}</small></button>`,
           )
           .join('')}
         <p class="menu-note">Changing vehicle restarts from your last camp in the new one.</p>

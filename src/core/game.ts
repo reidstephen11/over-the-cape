@@ -55,7 +55,14 @@ import { TrailerView } from '../render/trailerView';
 import { CargoDrumView } from '../render/cargoDrumView';
 import { canCouple, trailers, type TrailerTuning } from '../data/trailers';
 import { trailerMessage } from './trailerMessages';
-import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
+import {
+  applyCheckpoint,
+  checkpointAt,
+  deliveryArrived,
+  EpisodeRun,
+  startCheckpoint,
+  type Checkpoint,
+} from '../sim/episode';
 import { planDuration, planSurprises } from '../sim/world/surprisePlan';
 import { surpriseMessage } from './surpriseMessages';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
@@ -87,6 +94,7 @@ import { buildHudState } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
 import { damageMessage } from './damageMessages';
 import { installHook } from './testHook';
+import { sectionTargetsMet, supplyRun, vehicleChallenges, type LockedVehicleId } from '../data/unlocks';
 
 const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
 
@@ -106,6 +114,8 @@ export interface LaunchChoice {
   settings?: Settings;
   /** What a new run sets out with (else the standard load). */
   load?: EpisodeLoadout;
+  /** A new run is the Army supply run, towing fuel drums to Wujal Wujal. */
+  supply?: boolean;
 }
 
 /** The episode being played: its story, where this run starts, and progress on them all. */
@@ -116,6 +126,8 @@ interface EpisodeSetup {
   progress: Partial<Record<EpisodeId, EpisodeProgress>>;
   /** The load last packed for each vehicle. */
   packs: Partial<Record<VehicleId, EpisodeLoadout>>;
+  /** Vehicles opened by their challenges. */
+  unlocked: VehicleId[];
 }
 
 /**
@@ -189,6 +201,10 @@ export class Game {
   private readonly ruts: RutsView;
   /** Stranded drivers winched out so far this run. */
   private strandedFreed = new Set<string>();
+  /** Vehicles opened by their challenges (src/data/unlocks.ts). */
+  private readonly unlocked: VehicleId[];
+  /** The winch has been used this run (since the start, through restarts from camp). */
+  private winched = false;
   /** Gates driven on a gate trail (Crawler Creek). */
   readonly gateCount: GateCount;
   readonly hud: Hud;
@@ -247,6 +263,8 @@ export class Game {
     this.replay = setup.replay;
     this.checkpoint = setup.checkpoint;
     this.strandedFreed = new Set(setup.checkpoint.stranded);
+    this.unlocked = [...setup.unlocked];
+    this.winched = setup.checkpoint.winched === true;
     this.progress = { ...setup.progress };
     this.packs = setup.packs;
     this.seen = this.seenFrom(setup.checkpoint, world);
@@ -288,10 +306,10 @@ export class Game {
     sim.fuelScale = setup.def.fuelScale;
     applyCheckpoint(this.vehicle, this.checkpoint);
     if (this.checkpoint.delivery) sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
-    else if (this.episode.delivery) {
+    else if (this.episode.delivery || this.checkpoint.supply) {
       const kind = tuning.hitch ? 'no5' : 'box6x4';
       const trailer = sim.addTrailer('delivery', trailers[kind], LOCAL_VEHICLE);
-      trailer.loadDrums(this.episode.delivery.drums);
+      trailer.loadDrums(this.episode.delivery?.drums ?? supplyRun.drums);
       this.checkpoint.delivery = sim.deliveryState();
     }
     this.syncDeliveryViews();
@@ -377,6 +395,7 @@ export class Game {
       settings,
     );
     this.pause.setVehicle(vehicleId);
+    this.pause.setUnlocked(this.unlocked);
     this.pause.setEpisode(setup.def);
     this.history = new HistoryCard(uiRoot, this.hud.notices, () => {
       this.loop.paused = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
@@ -594,6 +613,7 @@ export class Game {
             seed > 0 ? seed : undefined,
             choice.load,
           );
+    if (choice.supply && checkpoint !== saved) checkpoint.supply = true;
     const packs = { ...save?.packs, ...(choice.load ? { [choice.vehicle]: choice.load } : {}) };
     // Replays keep the conditions picked; the story's own run has its storm (if any).
     const storm = choice.replay ? undefined : def.storm;
@@ -650,7 +670,14 @@ export class Game {
       exploration,
       save?.crawlBests ?? {},
       choice.vehicle,
-      { def, checkpoint, replay: choice.replay, progress: episodeProgress, packs },
+      {
+        def,
+        checkpoint,
+        replay: choice.replay,
+        progress: episodeProgress,
+        packs,
+        unlocked: save?.unlocked ?? [],
+      },
       audioContext,
     );
   }
@@ -665,7 +692,12 @@ export class Game {
     this.sim.switchOffEngine(LOCAL_VEHICLE);
     // A run under way can be continued from the main menu, even before the first camp.
     this.keepCheckpoint();
-    if (this.ghostTrace)
+    if (this.checkpoint.supply && this.checkpoint.elapsed === 0)
+      this.hud.toast(
+        `Army supply run: tow the trailer and its ${supplyRun.drums} drums of diesel to the camp at Wujal Wujal`,
+        5000,
+      );
+    else if (this.ghostTrace)
       this.hud.toast(`Your best run (${minSec(this.ghostTrace.seconds)}) drives with you as a ghost`, 4000);
   }
 
@@ -700,6 +732,7 @@ export class Game {
       replay: episode === this.episode.id ? this.replay : null,
       crawlBests: this.crawlRuns.bests,
       packs: this.packs,
+      unlocked: this.unlocked,
     });
     if (!ok && this.storageOk) {
       this.storageOk = false;
@@ -888,6 +921,7 @@ export class Game {
       this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
       this.sim.surprises?.reset(this.checkpoint.surprises);
       this.strandedFreed = new Set(this.checkpoint.stranded);
+      this.winched = this.checkpoint.winched === true;
       for (const s of this.sim.stuck.values())
         s.reset(
           this.episode.stranded?.some((d) => d.id === s.def.id)
@@ -1202,6 +1236,7 @@ export class Game {
   private onToolEvent(e: ToolEvent): void {
     switch (e.type) {
       case 'winchAttached':
+        this.winched = true;
         this.hud.toast(`Winch attached to ${e.anchor.label.toLowerCase()}`);
         break;
       case 'winchDetached':
@@ -1313,7 +1348,12 @@ export class Game {
       hoursSpare: this.run.timed && deadline !== undefined ? deadline - this.run.hour : null,
       targetMinutes: 30,
     });
-    const scoreLines = [...this.scoreStats(score, was, minutes), ...this.keepGhost()];
+    const scoreLines = [
+      ...this.scoreStats(score, was, minutes),
+      ...this.keepGhost(),
+      ...this.unlock('hilux', false),
+      ...(this.winched ? [] : this.unlock('unimog', false)),
+    ];
     this.progress[this.episode.id] = {
       completed: true,
       bestMinutes: Math.min(was.bestMinutes ?? Infinity, Math.round(minutes * 10) / 10),
@@ -1453,8 +1493,10 @@ export class Game {
       this.findMarkers.show(this.finds.defs, this.finds.taken);
       this.hud.toast(`${loaded.taken}: loaded`, 2600);
       this.audio.discovery();
+      if (this.finds.taken.size === this.finds.defs.length) this.unlock('troopy');
     }
     if (found.campsite && found.campsite !== this.episode.goal && this.run.status === 'driving') {
+      const supply = this.checkpoint.supply;
       const camp = this.world.pois.find((q) => q.id === found.campsite);
       this.checkpoint = checkpointAt(
         found.campsite,
@@ -1468,9 +1510,16 @@ export class Game {
       );
       if (this.episode.stranded) this.checkpoint.stranded = [...this.strandedFreed];
       this.checkpoint.seen = this.seen.encode();
+      if (supply) this.checkpoint.supply = true;
+      if (this.winched) this.checkpoint.winched = true;
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();
+    if (this.checkpoint.supply && !this.unlocked.includes('perentie')) {
+      const camp = this.world.pois.find((q) => q.id === supplyRun.goal);
+      if (camp && [...this.sim.trailers.values()].some((t) => deliveryArrived(t, camp, supplyRun.drums)))
+        this.unlock('perentie');
+    }
     const goal = this.world.pois.find((q) => q.id === this.episode.goal);
     const status = goal
       ? this.run.check(this.vehicle, this.sim.damage, goal, this.sim.trailers.values())
@@ -1556,6 +1605,22 @@ export class Game {
     this.hud.toast(`${d.name}: out of the bog. They give you ${given.join(' and ')}`, 3200);
     this.showHistory(d.freed);
     this.audio.discovery();
+    if (d.id === 'ridge-patrol') this.unlock('patrol');
+    else if (d.id === 'donovans-cruiser') this.unlock('lc79');
+  }
+
+  /** Open a vehicle whose challenge is done. Returns its line for the finish screen, if new. */
+  private unlock(id: LockedVehicleId, card = true): string[] {
+    if (this.unlocked.includes(id)) return [];
+    this.unlocked.push(id);
+    this.pause.setUnlocked(this.unlocked);
+    this.save();
+    const name = vehicles[id].tuning.name;
+    if (card) {
+      this.hud.runResult('Vehicle unlocked', name, vehicleChallenges[id].unlocked);
+      this.audio.discovery();
+    }
+    return [`Unlocked: ${name}`];
   }
 
   private onTraffic(e: TrafficEvent): void {
@@ -1596,6 +1661,7 @@ export class Game {
       sectionBests: { ...this.sectionTimes.bests },
     };
     this.save();
+    if (sectionTargetsMet(this.sectionTimes.bests)) this.unlock('sooty80');
   }
 
   private onCrawlRun(e: CrawlRunEvent): void {
