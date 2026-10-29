@@ -67,27 +67,27 @@ export interface VehicleDef {
 
 /** The short-wheelbase 4WD's cab, shared by its Camel Trophy version. */
 const shortieCabin: CabinLayout = {
-  eye: { x: 0.38, y: 1.24, z: 0.3 },
+  eye: { x: 0.38, y: 1.24, z: 0.44 },
   // Looking down a little shows the bonnet and the ground ahead.
   pitch: -0.12,
   dialY: 0.88,
-  dialZ: -0.322,
+  dialZ: -0.182,
   dials: {
     speed: { x: 0.36, radius: 0.068, max: 140, major: 20, minor: 10 },
     rpm: { x: 0.215, radius: 0.039, max: 5000, major: 1000, minor: 500 },
     oil: { x: 0.5, radius: 0.039, max: 1, major: 0.5, minor: 0.25 },
   },
-  lamps: { xs: [0.19, 0.255, 0.32, 0.385, 0.45, 0.515, 0.58], y: 0.795, z: -0.33 },
+  lamps: { xs: [0.19, 0.255, 0.32, 0.385, 0.45, 0.515, 0.58], y: 0.795, z: -0.19 },
   // A pull handle under the dash, left of the column.
   handbrake: {
     kind: 'pull',
-    base: { x: 0.17, y: 0.7, z: -0.36 },
-    tip: { x: 0.17, y: 0.69, z: -0.22 },
+    base: { x: 0.17, y: 0.7, z: -0.22 },
+    tip: { x: 0.17, y: 0.69, z: -0.08 },
     travel: 0.1,
   },
   steeringWheel: {
-    centre: { x: 0.38, y: 0.93, z: -0.08 },
-    columnBase: { x: 0.38, y: 0.68, z: -0.46 },
+    centre: { x: 0.38, y: 0.93, z: 0.06 },
+    columnBase: { x: 0.38, y: 0.68, z: -0.32 },
     radius: 0.19,
     // Full lock is about 1¼ turns.
     ratio: 13,

@@ -3,7 +3,10 @@ import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import { pal } from './colors';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
-import { BONNET_TOP, HW, NOSE, TAIL } from './vehicleBody';
+import { BONNET_TOP, HW, NOSE, ROOF, TAIL } from './vehicleBody';
+
+/** The rack was laid out on a roof at 1.64 m; it rides on the lower hardtop by this much. */
+const rackDrop = () => ROOF - 1.64;
 
 const trim = new THREE.Color('#343D37'),
   steel = new THREE.Color('#959B94'),
@@ -61,12 +64,12 @@ function shackle(b: VehicleBuilder, x: number, y: number, z: number, facing: num
 }
 
 /**
- * A period steel bull bar fitted to the new nose: a deep pan carrying the winch, a centre
- * hoop over the grille and side loops that wrap above the headlamps to the guards.
+ * A period steel bull bar ahead of the grille panel: a deep pan carrying the winch, a centre
+ * hoop framing the grille and side loops that run above the headlamps out to the guards.
  */
 function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   const face = tuning.winchMount.z; // the pan's front face carries the fairlead
-  const back = NOSE - 0.03;
+  const back = NOSE - 0.12;
   const zc = (face + back) / 2;
   // A single folded pan with swept ends. Brackets reach the narrowed frame rails.
   const outline = new THREE.Shape();
@@ -90,29 +93,27 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   b.push().translate(0, 0.17, 0);
   b.geometry(pan, bar);
   b.pop();
-  for (const x of [-0.31, 0.31]) b.block(x, 0.17, back + 0.12, 0.08, 0.22, 0.3, bar, M.Metal, Z.Trim, 0.008);
-  const zt = NOSE - 0.1;
-  tubePath(b, [v(-0.36, 0.39, zc), v(-0.36, 0.86, zt), v(0.36, 0.86, zt), v(0.36, 0.39, zc)], 0.03, bar);
-  const joinY = 0.73,
-    joinZ = zc + ((zt - zc) * (joinY - 0.39)) / (0.86 - 0.39);
+  for (const x of [-0.31, 0.31]) b.block(x, 0.17, NOSE - 0.06, 0.08, 0.22, 0.14, bar, M.Metal, Z.Trim, 0.008);
+  const zt = NOSE - 0.075;
+  const topY = 0.8,
+    sideY = 0.69;
+  tubePath(b, [v(-0.25, 0.39, zc), v(-0.25, topY, zt), v(0.25, topY, zt), v(0.25, 0.39, zc)], 0.03, bar);
+  const joinZ = zc + ((zt - zc) * (sideY - 0.39)) / (topY - 0.39);
   for (const side of [-1, 1]) {
     tubePath(
       b,
       [
         v(side * 0.85, 0.39, zc + 0.025),
-        v(side * 0.85, 0.73, zt + 0.035),
-        v(side * 0.74, 0.76, joinZ),
-        v(side * 0.36, joinY, joinZ),
+        v(side * 0.82, sideY - 0.02, zt - 0.01),
+        v(side * 0.7, sideY, joinZ),
+        v(side * 0.25, sideY, joinZ),
       ],
       0.026,
       bar,
     );
     b.block(side * 0.85, 0.39, zc + 0.025, 0.075, 0.045, 0.11, bar, M.Metal, Z.Front, 0.005);
-    b.block(side * 0.36, 0.39, zc, 0.075, 0.045, 0.11, bar, M.Metal, Z.Front, 0.005);
+    b.block(side * 0.25, 0.39, zc, 0.075, 0.045, 0.11, bar, M.Metal, Z.Front, 0.005);
   }
-  const midY = 0.59,
-    midZ = zc + ((zt - zc) * (midY - 0.39)) / (0.86 - 0.39);
-  b.rod(v(-0.36, midY, midZ), v(0.36, midY, midZ), 0.022, bar, M.Metal, Z.Front);
   // Winch on a cradle behind the pan; only its top and the roller fairlead show.
   b.rod(v(-0.2, 0.44, back - 0.05), v(0.2, 0.44, back - 0.05), 0.075, trim);
   for (let i = 0; i < 13; i++)
@@ -172,6 +173,7 @@ function chassis(b: VehicleBuilder): void {
 }
 
 function roofGear(b: VehicleBuilder): void {
+  b.push().translate(0, rackDrop(), 0);
   // Feet, basket deck, perimeter rails, uprights and tie-down rings.
   for (const x of [-0.68, 0.68]) {
     for (const z of [-0.29, 0.66, 1.52]) {
@@ -225,6 +227,7 @@ function roofGear(b: VehicleBuilder): void {
   for (const z of [-0.05, 0.29]) b.block(0.6, 1.9, z, 0.012, 0.07, 0.04, steel, M.Metal, Z.Roof);
   b.rod({ x: 0.35, y: 1.995, z: 0.12 }, { x: 0.45, y: 1.995, z: 0.12 }, 0.008, steel, M.Metal, Z.Roof);
   for (const x of [0.35, 0.45]) b.block(x, 1.981, 0.12, 0.018, 0.028, 0.024, steel, M.Metal, Z.Roof, 0.003);
+  b.pop();
 }
 
 /** The first spare on the right-hand rear door and a jerry can on the left, clear of the lamps. */
@@ -305,13 +308,14 @@ export function addVehicleEquipment(
   rearDoorGear(b, wheel);
   bonnetSpare(b, tuning, wheel);
   // Flexible whip aerial on the guard.
-  const ax = aerialSide * (HW - 0.06);
-  b.block(ax, 0.8, -0.77, 0.06, 0.04, 0.06, black, M.Rubber, Z.Front);
-  b.rod({ x: ax, y: 0.82, z: -0.77 }, { x: ax + aerialSide * 0.02, y: 1.62, z: -0.73 }, 0.005, trim);
+  const ax = aerialSide * (HW - 0.08);
+  b.block(ax, 0.655, -0.95, 0.06, 0.04, 0.06, black, M.Rubber, Z.Front);
+  b.rod({ x: ax, y: 0.67, z: -0.95 }, { x: ax + aerialSide * 0.02, y: 1.5, z: -0.91 }, 0.005, trim);
 }
 
 export function buildRackPlank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
+  b.push().translate(0, rackDrop(), 0);
   const wood = pal('barkOchre');
   const x = index === 0 ? -0.46 : -0.1;
   b.block(x, 1.81, 0.59, 0.3, 0.055, 2.4, wood, M.Fabric, Z.Roof);
@@ -333,5 +337,6 @@ export function buildRackPlank(index: number): THREE.BufferGeometry {
     b.block(x, 1.752, z, 0.325, 0.012, 0.045, black, M.Rubber, Z.Roof);
     b.block(x + 0.13, 1.855, z, 0.035, 0.012, 0.055, steel, M.Metal, Z.Roof);
   }
+  b.pop();
   return cleanGeometry(b.build());
 }
