@@ -901,6 +901,23 @@ body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
   font-size: 13px;
 }
 
+/* Prompts by the thumbs keep the base layout's small size (styles.css), clear of the stick. */
+.touch-mode #ui[data-hud] .prompt {
+  font-size: 13px;
+}
+
+@media (orientation: portrait) {
+  /* A long prompt wraps rather than reach over the stick on the left. */
+  .touch-mode #ui[data-hud] .prompts {
+    max-width: calc(100vw - 170px);
+  }
+
+  .touch-mode #ui[data-hud] .prompt {
+    padding: 3px 10px 4px 4px;
+    font-size: 12px;
+  }
+}
+
 .touch-mode #ui[data-hud] .alert {
   padding: 2px 8px 3px 3px;
   font-size: 12px;
@@ -2183,11 +2200,6 @@ body:not(.touch-mode) #ui[data-hud='kit'] .hud.cockpit .inst-compass {
 .touch-mode #ui[data-hud='kit'] .lamp {
   font-size: 11px;
   padding: 3px 6px;
-}
-
-/* Typewriter letters run wide: prompts by the thumbs stay short. */
-.touch-mode #ui[data-hud='kit'] .prompt {
-  font-size: 13px;
 }
 
 @media (orientation: portrait) {
