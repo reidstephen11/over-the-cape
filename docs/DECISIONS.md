@@ -1682,3 +1682,14 @@ A remaining strip of 2.85 m fits every vehicle (the Unimog is 2.18 m over the ty
 **How you play it.** A sign “Missing boards” stands on the south approach. Reaching the timber shows a note: crawl, keep the wheels on the boards you can see, right hole then left then straddle the middle; off the boards is the river; restart from the camp if you go in. The camp is 50 m behind, already saved. Low range and precision crawl are enough; lockers and the winch are not needed. Phone crawl (4WD → CRAWL) holds a walking pace while you steer.
 
 **Tests.** `tests/creb.test.ts`: along the weaving line a ray finds wood at deck height; in each hole it falls more than 2 m to the riverbed; a car put down in a hole lands in the river. The short-wheelbase 4WD crawls the weaving line without taking water. The old high-range centreline drive is gone, because that line now drops through the first hole.
+
+## v0.98: 40 Series panel gaps closed
+
+Steef saw panel gaps on the 40 Series, mostly round the rear of the roof. Close-ups from every side found these, all now closed:
+
+- **Roof cap.** The crowned top was raised after the cap was subdivided unevenly, which opened a crack along its front and rear top edges. Every roof face is now subdivided the same way before the crown is applied, and the crown fades to nothing at the cap's lower edge, so the cap no longer lifts off the sides.
+- **Under the cap.** The hardtop sides, the rear corner bands, the strips beside the barn doors and the tops of the doors ended 1 cm short of the cap. They now reach 2 cm up inside it.
+- **Rear corners.** The tub's rear corners used a 0.12 m radius under a 0.22 m hardtop corner, leaving a ledge and a gap at the belt line; both now use 0.22 m and the ledge piece is gone. The drip rails stopped sticking out past the cap's rounded rear corners.
+- **Under the doors.** A dark gap showed between the doors' bottom edge and the step. A painted sill now runs from the front guard to the rear wheel opening, as on the real car.
+
+The body stays at about 71,000 triangles.
