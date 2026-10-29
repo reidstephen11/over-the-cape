@@ -1735,3 +1735,26 @@ Steef picked three ideas from Over The Hill: packing before you leave, a map tha
 **Score.** "Fuel and kit" now counts what is left out of what was packed: fuel as before against the packed fuel and cans (it used the episode's 70 L, whatever the vehicle), kit as spares plus a third of the plugs against the same of the pack (it was against a fixed two). A standard-load run that uses a plug now loses a few points it didn't before; packing more no longer makes the kit score easier to keep.
 
 **Changed for every run.** Even on the standard load, the car gets lighter as it burns fuel (about 25 kg over a CREB run), which it didn't before.
+
+## v1.02: history and lesson notes in the top right corner
+
+Steef found the lesson card ("Lesson 1 of 4, Low range") at the bottom of the screen covered the track, and the bottom right is where the low-range crawl gauges go. History and lesson notes, and messages, now sit small in the top right corner in every HUD style, on a computer and on a phone. This replaces the v0.90 choice of putting history notes along the bottom.
+
+**Where.** The note card moved into the HUD's top-right stack (`.notices`), under the Discovered card and the messages, so they stack in one column instead of overlapping. On a computer it is 320 px wide; on a phone about half the screen width (260 px at most) with smaller type, and it scrolls if a note is longer than about a third of the screen upright (40% sideways), so it stays clear of the thumb buttons and the prompt above them. The prompts no longer move up for a note.
+
+**Phones keep driving.** A note used to stop the game on a phone and come up as a sheet from the bottom, because there was no room for it beside the buttons. In the corner there is room, so the game no longer stops: the note shows while you drive and closes on a tap or after its reading time, as on a computer. The stop-and-read mode is still in `HistoryCard` (`reading`) but nothing uses it now.
+
+## v1.03: smoother under the trees
+
+Steef: "It's really choppy on mobile among the trees on Bloomfield track also".
+
+**What was measured.** Same set-up as v0.99 (local build, phone-sized window, Low graphics), 250 m before the Bloomfield creeks. Trees were 55% of the frame. Drawing the forest into the 1024 shadow map took about a quarter of the frame on its own: from the sun the canopy is many layers of cut-out leaves. A 512 map cost a third as much. Separately, every 0.2 s the game checked all 45,000 trees' distance to pick their detail level in one go, a regular hitch on a phone's slower processor.
+
+**Fix.**
+
+- Low graphics, the default on a phone, draws the shadow map at 512 instead of 1024. The sun's shadows have a soft edge (radius 3), so side-by-side screenshots at 1024, 768 and 512 look the same. Medium and High keep their sizes.
+- Trees are checked a slice each frame, a full pass still every 0.2 s, so there is no single heavy frame. A jump (teleport, restart) still does them all at once.
+
+The whole frame there is 17% faster (944 to 785 ms on the software renderer).
+
+**Not done.** Up close, the cut-out leaves still cost the most: the 250 nearest trees are about 30% of the frame. Making them cheaper without changing how the forest looks needs a different approach (for example a lower draw resolution only while the phone is struggling), left for a later update if this isn't enough.

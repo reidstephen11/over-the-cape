@@ -200,6 +200,10 @@ export class Hud {
   get units(): SpeedUnits {
     return this.gauges.units;
   }
+  /** The top right stack of discovery cards and messages; the history card joins it. */
+  get notices(): HTMLElement {
+    return this.noticesEl;
+  }
   /** Set by the game: the driver's-seat camera is in use. */
   cockpitView = false;
   private lastPromptKey = '';
