@@ -119,7 +119,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'paddock-creeks': {
       title: 'Paddock creeks',
-      text: 'Creeks come down off the range across the paddocks and cut their beds below the flats. The road drops into the water and climbs out up a wet bank. Slow down before the water, keep moving through it, and let the engine pull you up the far side.',
+      text: 'Creeks come down off the range across the paddocks and cut their beds below the flats. The road drops into the water and climbs out up a wet bank. The north creek’s entry and exit are deep sticky mud right across the track: low range, both lockers, and keep moving. A marked rock stands on the far bank if you bog.',
     },
     'ridge-washout': {
       title: 'Washout',

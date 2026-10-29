@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { camelTuning } from '../src/data/camel';
 import { environmentAt } from '../src/data/environment';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
@@ -6,7 +7,9 @@ import { crebWashout } from '../src/data/episodes/crebStretches';
 import { perentieTuning } from '../src/data/perentie';
 import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
-import { trailProgress } from '../src/sim/world/crawlTrail';
+import { SurfaceId } from '../src/data/surfaces';
+import { winchTuning } from '../src/data/tools';
+import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import type { TrackInfo } from '../src/sim/world/features';
 import { buildWorld } from '../src/sim/world/world';
 import { driver } from './helpers/drive';
@@ -217,6 +220,69 @@ describe('the CREB, stretch by stretch', () => {
       expect(graniteOpen.done, `${tuning.name} granite open diffs`).toBe(false);
     }
   }, 600_000);
+
+  it('ramps the road into every ford: no hidden wall at the water on the centre line or the wheel tracks', () => {
+    // Paddock-creek-north used to jump 0.5–1.5 m at the water (50–67°) because track
+    // grading skipped a weir the banks had raised; the water hid the step, and only a
+    // hard-left line around it got through. A ford may be steep, but not a cliff.
+    const t = world.terrain;
+    const lips: string[] = [];
+    for (const id of ['paddock-road', 'bloomfield-track', 'donovans-creek']) {
+      const track = trackOf(id);
+      const lats = [0, -track.def.width * 0.35, track.def.width * 0.35];
+      for (const lat of lats) {
+        let wasWet = false;
+        for (let s = 0; s <= track.poly.length; s += 0.5) {
+          const p = trailPoint(track, s, lat);
+          const wet = t.waterDepthAt(p.x, p.z) > 0.05;
+          if (wet !== wasWet && s > 0) {
+            const a = trailPoint(track, s - 0.5, lat);
+            const dh = Math.abs(t.heightAt(p.x, p.z) - t.heightAt(a.x, a.z));
+            const slope = Math.max(t.slopeDegAt(p.x, p.z), t.slopeDegAt(a.x, a.z));
+            if (dh > 0.4 || slope > 40)
+              lips.push(
+                `${id} lat=${lat.toFixed(1)} at ${s.toFixed(1)}m Δh=${dh.toFixed(2)} slope=${slope.toFixed(1)}°`,
+              );
+          }
+          wasWet = wet;
+        }
+      }
+    }
+    expect(lips, lips.join('\n')).toEqual([]);
+  });
+
+  it('crosses the paddock-road creeks on the centre line without the winch', async () => {
+    const track = trackOf('paddock-road');
+    const north = trailProgress(track, -232.5, 1634.35);
+    expect(north.distance).toBeLessThan(2);
+    const bed = trailPoint(track, north.along);
+    expect(world.terrain.waterDepthAt(bed.x, bed.z)).toBeGreaterThan(0.2);
+    const entry = world.map.bogs.find((b) => b.id === 'paddock-road-creek-entry')!;
+    const exit = world.map.bogs.find((b) => b.id === 'paddock-road-creek-exit')!;
+    expect(world.terrain.surfaceAt(entry.x, entry.z)).toBe(SurfaceId.BlackSoil);
+    expect(world.terrain.surfaceAt(exit.x, exit.z)).toBe(SurfaceId.BlackSoil);
+    expect(trailProgress(track, entry.x, entry.z).along).toBeLessThan(north.along);
+    expect(trailProgress(track, exit.x, exit.z).along).toBeGreaterThan(north.along);
+    const farBank = world.scatter.rocks.find(
+      (r) =>
+        r.anchor &&
+        r.solid &&
+        Math.hypot(r.x - exit.x, r.z - exit.z) < 12 &&
+        Math.hypot(r.x - entry.x, r.z - entry.z) < winchTuning.cableLength,
+    );
+    expect(farBank, 'far-bank winch rock').toBeDefined();
+    for (const [tuning, from, to] of [
+      [vehicleTuning, 471, 522],
+      [vehicleTuning, 872, 928],
+      [camelTuning, 872, 928],
+    ] as const) {
+      const r = await stretch('paddock-road', from, to, 'crawl', tuning, { limit: 90 });
+      expect(r.done, `${tuning.id} ${from} remaining=${r.remaining.toFixed(1)}`).toBe(true);
+    }
+    const high = await stretch('paddock-road', 872, 928, 'high', vehicleTuning, { speed: 6, limit: 50 });
+    expect(high.done, `high remaining=${high.remaining.toFixed(1)}`).toBe(false);
+    expect(high.remaining, 'high range should bog in the bank mud').toBeGreaterThan(5);
+  }, 300_000);
 
   it('crosses the Bloomfield Track’s fast creek driven steadily, but stopped in it the current carries the car into the hole below', async () => {
     for (const tuning of both) {
