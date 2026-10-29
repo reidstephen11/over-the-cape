@@ -146,7 +146,8 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'big-red': {
     ruts: 0.04,
     rough: bigRedCrown,
-    routeHint: 'Low range, both lockers, crawl the crown. Keep off the left bank',
+    routeHint:
+      'Low range, both lockers, crawl the crown. Keep off the left bank. Marked rocks ahead to winch from',
     // Metres along, metres right of the centreline. A rut sits under the crown's left
     // wheel down each pinch: an open diff spins that wheel, a locker lets the right one pull.
     // A line drifted left drops onto the cut bank and grounds.

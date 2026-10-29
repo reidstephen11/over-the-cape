@@ -828,6 +828,12 @@ export const crebMap: MapDef = {
     { x: 150.75, z: -916.7, radius: 0.85, anchor: true, sink: 0.4 },
     { x: -32.51, z: -1683.41, radius: 0.85, anchor: true, sink: 0.4 },
     { x: -12.1, z: -2213.53, radius: 0.85, anchor: true, sink: 0.4 },
+    // Big Red: marked rocks 4 m right of the crown, ahead of each pinch (not
+    // beside the stall), so USE hooks one up the climb within the 30 m cable.
+    { x: 19.93, z: 1241.1, radius: 0.9, sink: 0.4, anchor: true },
+    { x: 28.19, z: 1214.94, radius: 0.9, sink: 0.4, anchor: true },
+    { x: 15.39, z: 1176.63, radius: 0.9, sink: 0.4, anchor: true },
+    { x: 2.54, z: 1154.63, radius: 0.9, sink: 0.4, anchor: true },
   ],
   tors: [],
   fallenTrees: [{ id: 'fallen-tree', x: -5, z: 1048, headingDeg: 50, length: 11, radius: 0.4, mass: 700 }],
