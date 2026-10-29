@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1500" viewBox="0 0 2000 1500">
+<title>FJ40 SWB dimensioned orthographic guide</title>
+<desc>Original research diagram. Specs: WB 2285 mm (Toyota Global + Chassis Manual); length 3870 mm Chassis Manual / 3840 mm Toyota Global; width 1665; height soft 1950 / hard 1930 (Chassis Manual). Front/rear overhangs approximated for layout only (not factory-verified). Ground clearance 220 mm (Motrs.au). Scale 1 px = 2.5 mm.</desc>
+<style>
+.outline{fill:#e8e8e8;stroke:#222;stroke-width:2}
+.line{fill:none;stroke:#222;stroke-width:2}
+.dim{fill:none;stroke:#b00000;stroke-width:1.25}
+.guide{fill:none;stroke:#999;stroke-width:1;stroke-dasharray:4 3}
+.t{font-family:DejaVu Sans,Arial,sans-serif;font-size:13px;fill:#111}
+.title{font-family:DejaVu Sans,Arial,sans-serif;font-size:20px;font-weight:700;fill:#111}
+.note{font-family:DejaVu Sans,Arial,sans-serif;font-size:11px;fill:#444}
+.box{fill:#fafafa;stroke:#ccc}
+</style>
+<rect class="box" x="10" y="10" width="1980" height="1480" rx="6"/>
+<text class="title" x="30" y="42">Toyota Land Cruiser FJ40 SWB — orthographic proportion guide</text>
+<text class="note" x="30" y="62">Original diagram for 3D modelling. Scale 1 px = 2.5 mm. Length conflict: Chassis Manual 3870 mm vs Toyota Global 3840 mm — both shown. Overhangs are approximate (not factory-verified).</text>
+
+<!-- ===== SIDE ===== -->
+<text class="t" x="30" y="100" style="font-weight:700">SIDE</text>
+<g transform="translate(60,120)">
+  <line class="guide" x1="0" y1="268" x2="1588" y2="268"/>
+  <!-- wheels -->
+  <circle class="line" cx="280" cy="128" r="140"/>
+  <circle class="line" cx="280" cy="128" r="56"/>
+  <circle class="line" cx="1194" cy="128" r="140"/>
+  <circle class="line" cx="1194" cy="128" r="56"/>
+  <!-- simplified body silhouette -->
+  <!-- bumper -->
+  <rect class="outline" x="0" y="98" width="18" height="36"/>
+  <!-- grille/hood -->
+  <path class="outline" d="M18,98 L18,-392 L260,-412 L320,-422 L320,108 Z"/>
+  <!-- windscreen (raked fold-down) -->
+  <path class="outline" d="M320,-422 L400,-492 L400,108 L320,108 Z"/>
+  <!-- tub + soft top -->
+  <path class="outline" d="M400,-492 L1174,-492 L1194,-472 L1528,-472 L1528,118 L400,108 Z"/>
+  <!-- rear spare hint -->
+  <circle class="line" cx="1538" cy="48" r="55"/>
+  <!-- dims -->
+  <line class="dim" x1="280" y1="298" x2="1194" y2="298"/>
+  <line class="dim" x1="280" y1="290" x2="280" y2="306"/>
+  <line class="dim" x1="1194" y1="290" x2="1194" y2="306"/>
+  <text class="t" x="657" y="318">wheelbase 2285 mm</text>
+  <line class="dim" x1="0" y1="338" x2="1548" y2="338"/>
+  <line class="dim" x1="0" y1="330" x2="0" y2="346"/>
+  <line class="dim" x1="1548" y1="330" x2="1548" y2="346"/>
+  <text class="t" x="614" y="358">overall length 3870 mm (Chassis Manual) / 3840 mm (Toyota Global)</text>
+  <line class="dim" x1="1578" y1="-492" x2="1578" y2="268"/>
+  <text class="t" x="1588" y="-122">H soft 1950 / hard 1930 mm</text>
+  <line class="dim" x1="1578" y1="180" x2="1578" y2="268"/>
+  <text class="t" x="1588" y="224">GC ~220 mm</text>
+</g>
+
+<!-- ===== FRONT ===== -->
+<text class="t" x="30" y="780" style="font-weight:700">FRONT</text>
+<g transform="translate(80,800)">
+  <line class="guide" x1="0" y1="780" x2="706" y2="780"/>
+  <!-- body -->
+  <rect class="outline" x="20" y="40" width="626" height="700"/>
+  <!-- round headlights -->
+  <circle class="line" cx="186" cy="160" r="35"/>
+  <circle class="line" cx="479" cy="160" r="35"/>
+  <!-- grille bars -->
+  <rect class="line" x="233" y="130" width="199" height="70"/>
+  <line class="line" x1="233" y1="147" x2="432" y2="147"/>
+  <line class="line" x1="233" y1="165" x2="432" y2="165"/>
+  <line class="line" x1="233" y1="183" x2="432" y2="183"/>
+  <!-- windscreen -->
+  <rect class="line" x="50" y="40" width="566" height="70"/>
+  <!-- track dim -->
+  <line class="dim" x1="40" y1="800" x2="626" y2="800"/>
+  <text class="t" x="233" y="818">width 1665 mm; front track ~1404 mm</text>
+  <line class="dim" x1="686" y1="40" x2="686" y2="780"/>
+  <text class="t" x="696" y="390">1950 mm soft top</text>
+</g>
+
+<!-- ===== TOP ===== -->
+<text class="t" x="900" y="780" style="font-weight:700">TOP</text>
+<g transform="translate(920,800)">
+  <rect class="outline" x="0" y="0" width="1548" height="666"/>
+  <!-- windscreen line -->
+  <line class="line" x1="320" y1="20" x2="320" y2="646"/>
+  <line class="line" x1="400" y1="20" x2="400" y2="646"/>
+  <!-- wheel positions -->
+  <circle class="line" cx="280" cy="40" r="18"/>
+  <circle class="line" cx="280" cy="626" r="18"/>
+  <circle class="line" cx="1194" cy="40" r="18"/>
+  <circle class="line" cx="1194" cy="626" r="18"/>
+  <line class="dim" x1="0" y1="691" x2="1548" y2="691"/>
+  <text class="t" x="734" y="708">length</text>
+  <line class="dim" x1="1568" y1="0" x2="1568" y2="666"/>
+  <text class="t" x="1578" y="333">1665 mm</text>
+  <line class="dim" x1="280" y1="721" x2="1194" y2="721"/>
+  <text class="t" x="697" y="738">WB 2285</text>
+</g>
+
+<text class="note" x="30" y="1460">Sources: Toyota Global Vehicle Lineage id60012611; Toyota Chassis &amp; Body Repair Manual (1962–1970) via jdmfsm.info; Motrs.au Land Cruiser 40 Series specs. Front overhang ~700 mm used only for silhouette layout — verify against photos.</text>
+</svg>
