@@ -784,7 +784,7 @@ export function lampsFor(s: HudState): Lamp[] {
           id: `tyre-${c}`,
           text: pct >= 97 ? `TYRE ${c}` : `TYRE ${c} ${pct}%`,
           tone: 'amber',
-          title: `${where}: ${pct}% air${t.fault === 'sidewall' ? ', torn sidewall' : t.fault !== 'none' ? ', puncture' : ''}`,
+          title: `${where}: ${pct}% air${t.fault === 'sidewall' ? ', torn sidewall' : t.fault === 'rim' ? ', off the rim' : t.fault !== 'none' ? ', puncture' : ''}`,
         });
         tyreLamp.add(c);
       }

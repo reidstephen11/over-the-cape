@@ -21,34 +21,56 @@ export const damageTuning = {
   tyre: {
     /**
      * A tyre landing on rock with its corner of the body falling faster than this (m/s)
-     * is cut and starts to go down: a drop of about a metre. Crawling up, over and down
-     * the trails' rocks stays below it (at most 3.6 m/s, measured with both vehicles).
+     * is cut and starts to go down: a drop of about 1.3 m. Crawling up, over and down
+     * the trails' rocks stays well below it (at most 3.6 m/s, measured with both vehicles).
      */
-    punctureSpeed: 4.4,
-    /** Tyres let down: grip times this, and rock landings and hole strikes cut them at this share of the usual speed. */
+    punctureSpeed: 5,
+    /**
+     * Tyres let down: grip times this, and a soft tyre gives over a rock or a hole edge
+     * instead of being cut, so landings and hole strikes need this much more to cut it.
+     */
     lowPressureGrip: 1.15,
-    lowPressureCut: 0.75,
-    /** Landing harder than this (m/s), about a 1.5 m drop, tears the sidewall instead. */
-    sidewallSpeed: 5.4,
+    lowPressureCut: 1.2,
+    /** Landing harder than this (m/s), about a 1.9 m drop, tears the sidewall instead. */
+    sidewallSpeed: 6,
     /**
      * Seconds from a cut to fully down: mild damage's soft tyre, a realistic puncture's
-     * slow leak, or a torn sidewall.
+     * slow leak, a torn sidewall, or a tyre rolled off its rim (all at once).
      */
-    deflateSeconds: { mild: 14, puncture: 40, sidewall: 5 },
+    deflateSeconds: { mild: 14, puncture: 40, sidewall: 5, rim: 1 },
     /**
      * Spinning a wheel hard on rock wears through the tread: this many seconds of full
      * spin (less spin counts for less) punctures the tyre. Crawling in low range barely spins.
      */
-    abrasionSeconds: 6,
+    abrasionSeconds: 8,
     /** Spin (0..1) below this on rock does no harm. */
     abrasionSpin: 0.45,
     /**
      * A wheel dropping into a pothole or washout pinches the tyre (a puncture) when the
      * strike (the vehicle's speed in m/s times the hole's depth in m, give or take a
-     * quarter) is over this. Hit squarely, a 25 cm pothole pinches from 42 km/h and a 30 cm
-     * washout from 35; glancing, from 70 and 58.
+     * quarter) is over this. Hit squarely, a 25 cm pothole pinches from 51 km/h and a 30 cm
+     * washout from 42; glancing, from 84 and 70.
      */
-    strike: 3.6,
+    strike: 4.4,
+    /**
+     * A sharp stone can puncture a tyre at any pace, by chance: about this many punctures
+     * per kilometre one tyre rolls at 20 km/h on each surface (none on soft ground or the
+     * concrete strips). Slower is a little safer (half the chance at a walk), faster a lot
+     * worse (twice at 45 km/h). With four tyres, a run up the CREB at normal pressure
+     * picks one up about one time in three.
+     */
+    sharpRockPerKm: { rock: 0.25, gravel: 0.05, firm: 0.015 },
+    /** Let down, a tyre wraps round a sharp rock instead of being pierced: chance times this. */
+    sharpRockLowPressure: 0.35,
+    /**
+     * Let down, a tyre can roll off its rim in a hard corner. Past this sideways
+     * acceleration (m/s², about 0.43 g; the tyres let go near 4.7 on flat dirt, and a
+     * moderate corner stays under 4) the heavier-loaded tyre of each axle (the outside
+     * one) may come off...
+     */
+    rimRollAccel: 4.2,
+    /** ...with this chance per second for each m/s² over it. */
+    rimRollPerSecond: 0.5,
     /** How far down a cut tyre goes. */
     floor: { mild: 0.5, realistic: 0 },
     /** A flat tyre (health 0): its rolling radius drops this much (m), leaving the rim a few centimetres off the ground. */

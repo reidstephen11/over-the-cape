@@ -953,8 +953,8 @@ export class Simulation {
 
   /**
    * What a roadside repair could do now. Mild damage: a field repair puts everything right.
-   * Realistic: a puncture takes a plug from the kit, a torn sidewall (or a puncture with
-   * no plugs left) a spare wheel; nothing else can be mended at the roadside.
+   * Realistic: a puncture takes a plug from the kit, a torn sidewall or a tyre off its rim
+   * (or a puncture with no plugs left) a spare wheel; nothing else can be mended at the roadside.
    */
   repairOption(id: string): { kind: RepairKind; possible: boolean; reason?: string } | null {
     const v = this.vehicleOf(id);

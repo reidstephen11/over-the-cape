@@ -276,6 +276,10 @@ export class Terrain {
     return this.holes.size > 0 ? (this.holes.get(this.index(x, z)) ?? 0) : 0;
   }
 
+  smoothAt(x: number, z: number): boolean {
+    return this.tintAt(x, z) === GroundTint.Concrete;
+  }
+
   tintAt(x: number, z: number): GroundTint {
     return this.tint[this.index(x, z)] as GroundTint;
   }
