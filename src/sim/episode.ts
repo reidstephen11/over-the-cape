@@ -41,6 +41,8 @@ export interface Checkpoint {
   delivery?: DeliveryState;
   /** What the run set out with (absent in saves from before packing: the standard load). */
   packed?: EpisodeLoadout;
+  /** Ground seen by the camp, for the paper map (src/sim/seenGround.ts; absent before v1.02). */
+  seen?: string;
 }
 
 export type EpisodeStatus = 'driving' | 'complete' | 'failed';

@@ -34,6 +34,7 @@ import { vehicleLoadout, vehicles } from '../data/vehicles';
 import { packWeights } from '../data/packing';
 import { cameraTuning } from '../data/camera';
 import { buildWorldSteps, type World } from '../sim/world/world';
+import { SeenGround } from '../sim/seenGround';
 import { addPuddles } from '../sim/world/puddles';
 import { prepareFlood } from '../sim/world/flood';
 import { loadRapier } from '../sim/physics';
@@ -156,6 +157,8 @@ export class Game {
   /** Progress on every episode, kept in the save. */
   private readonly progress: Partial<Record<EpisodeId, EpisodeProgress>>;
   private readonly packs: Partial<Record<VehicleId, EpisodeLoadout>>;
+  /** Ground the car has been near this run: all the paper map shows. */
+  private seen: SeenGround;
   readonly history: HistoryCard;
   readonly result: ResultCard;
   /** The clock time the light was last set for, and whether it was dark enough for the lamps. */
@@ -246,6 +249,7 @@ export class Game {
     this.strandedFreed = new Set(setup.checkpoint.stranded);
     this.progress = { ...setup.progress };
     this.packs = setup.packs;
+    this.seen = this.seenFrom(setup.checkpoint, world);
     this.run = new EpisodeRun(setup.def, setup.checkpoint, !setup.replay);
     // Test mode: no deadline, and a replay's clock starts at the hour its light shows.
     if (this.dev) {
@@ -775,14 +779,29 @@ export class Game {
     return this.freeCamOn;
   }
 
+  /**
+   * The ground seen by a checkpoint's camp. A save from before v1.02 kept none: the
+   * ground round each place found by then stands in for it.
+   */
+  private seenFrom(c: Checkpoint, world: World): SeenGround {
+    const [hx, hz] = world.map.wall;
+    const seen = new SeenGround(hx + 20, hz + 20, c.seen);
+    if (c.seen === undefined)
+      for (const p of world.pois) if (c.discovered.includes(p.id)) seen.mark(p.x, p.z);
+    return seen;
+  }
+
   openMap(): void {
     if (this.map.isOpen) return;
     const p = this.vehicle.body.translation();
+    this.seen.mark(p.x, p.z);
     this.map.open(
       this.exploration.discovered,
       { x: p.x, z: p.z, heading: this.cameraHeading() },
       this.input.activeDevice,
       this.settings.controller,
+      // Test mode shows the whole map.
+      this.dev ? null : this.seen,
     );
     this.loop.paused = true;
     this.audio.mapOpened();
@@ -874,6 +893,7 @@ export class Game {
       this.finds.reset(this.checkpoint.taken);
       this.findMarkers.show(this.finds.defs, this.finds.taken);
       this.exploration.lastCampsite = this.checkpoint.camp;
+      this.seen = this.seenFrom(this.checkpoint, this.world);
       this.run.restart(this.checkpoint);
       this.ghostRecorder.rewind(this.checkpoint.elapsed);
       this.ghostGap?.reset();
@@ -1411,6 +1431,7 @@ export class Game {
       this.world.pois.some((q) => q.kind === 'campsite' && Math.hypot(q.x - p.x, q.z - p.z) < q.radius)
     )
       this.sim.repairAtCamp(LOCAL_VEHICLE);
+    this.seen.mark(p.x, p.z);
     const found = this.exploration.check(p.x, p.z);
     for (const poi of found.discovered) {
       this.run.reach(poi.id);
@@ -1438,6 +1459,7 @@ export class Game {
         this.checkpoint.packed,
       );
       if (this.episode.stranded) this.checkpoint.stranded = [...this.strandedFreed];
+      this.checkpoint.seen = this.seen.encode();
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();

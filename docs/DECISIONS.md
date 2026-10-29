@@ -1758,3 +1758,13 @@ Steef: "It's really choppy on mobile among the trees on Bloomfield track also".
 The whole frame there is 17% faster (944 to 785 ms on the software renderer).
 
 **Not done.** Up close, the cut-out leaves still cost the most: the 250 nearest trees are about 30% of the frame. Making them cheaper without changing how the forest looks needs a different approach (for example a lower draw resolution only while the phone is struggling), left for a later update if this isn't enough.
+
+## v1.04: the map fills in as you drive
+
+The second of Steef's three picks from Over The Hill, where the map starts blank, fills in as you travel and shows question marks near places not yet found.
+
+**Seen ground** (`src/sim/seenGround.ts`). A 25 m grid over the map; every cell within 150 m of the car is marked as it moves (only after it has gone 5 m, so it costs nothing standing still). 150 m shows the track with some country either side but leaves most of the 1.3 km-wide map blank until you take a side track. The grid is kept as bits, base64 in the checkpoint (`seen`, about 2 KB for the CREB), so a restart from camp gets the map as it was there, and a new run starts blank, the same as places found. A save from before v1.04 has no `seen`: the ground round each place found by then stands in for it.
+
+**Drawing** (`src/ui/paperMap.ts`). The base map is drawn as before; over it, blank paper with the seen cells cut out as circles, blurred 3 px so the edge looks pencilled rather than square. The frame (border, title, north arrow and scale) moved to its own layer drawn on top, so the blank paper doesn't cover it. Places found keep their icon and name. A place not found yet, within 250 m of seen ground, shows a pencilled question mark. The orientation lessons count as places, so a few question marks crowd the start of a new run; they clear as you drive the lessons. Test mode shows the whole map.
+
+**Also.** The unit test for the welcome screen's starting choice now expects the packed load added in v1.01.
