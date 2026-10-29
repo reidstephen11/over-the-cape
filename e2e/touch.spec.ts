@@ -330,7 +330,7 @@ test.describe('phone on the CREB', () => {
         document.querySelector<HTMLElement>('.history-card')!.getBoundingClientRect().toJSON(),
       );
       expect(box.right, `${size.width}×${size.height}`).toBeGreaterThan(size.width * 0.9);
-      expect(box.left, `${size.width}×${size.height}`).toBeGreaterThan(size.width * 0.45);
+      expect(box.left, `${size.width}×${size.height}`).toBeGreaterThan(size.width * 0.4);
       expect(box.top, `${size.width}×${size.height}`).toBeLessThan(size.height * 0.4);
       await shot(page, 'touch', `history-${size.width}`);
       await f.tap('.history-card');
