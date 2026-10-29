@@ -1721,3 +1721,17 @@ Steef picked the ghost car from the remaining ideas, to race your best run on th
 **How far ahead.** The pause menu has a Ghost cell: how far behind or ahead you are, comparing your time with the ghost's time at the nearest point of its path, and the ghost's total time. The finish card says by how much you beat it, or how far ahead it finished.
 
 **Not done.** No live gap on the driving HUD (the pause menu only), and no setting to hide the ghost. Both are small follow-ups if wanted.
+
+## v1.01: packing before you leave
+
+Steef picked three ideas from Over The Hill: packing before you leave, a map that fills in as you drive, and more hidden finds. This update is the first. Over The Hill buys upgrades with points; for a game meant to be hard, the closer fit is choosing what to carry under a weight limit, so every extra jerry can or spare costs something on the track.
+
+**Packing list.** New Journey has a **Packing** section under Vehicle & difficulty: fuel in the tank (10 L steps from 10 L to a full tank), jerry cans 0–4, spare wheels 0–3 and tyre plugs 0–6, and **Standard load** (the episode's load plus the vehicle's own extras, as before). Planks stay at two: the washout needs them. The list is kept per vehicle in the save (`packs`), and a new run's checkpoint records what it set out with (`packed`), so a restart from camp and the finish score both use it. Continue resumes the saved camp and ignores the list.
+
+**Weights and limit** (`src/data/packing.ts`). Fuel 0.8 kg/L, a full jerry can with its steel can 22 kg, a spare wheel and tyre 30–60 kg by vehicle (100 kg for the Unimog's 1.1 m wheel), plugs next to nothing. Each vehicle may carry its standard load plus a fixed allowance (90 kg on the Camel Trophy car up to 400 kg on the Unimog), chosen so a short car can't take everything but a big tourer can take a lot more. These are game numbers rounded from published wheel and payload figures, not measured.
+
+**Physics.** The tuned masses already carry the standard load, so the vehicle adds only the difference (`Vehicle.payload`, negative when packed light), worked out every step from what is on board, so burning fuel and pouring in cans lighten it again. The body's mass and inertia follow the payload once it changes by a kilogram. Rapier scales spring force with the body's mass, so the springs are held at the tuned mass's rate and a heavy load squats the car. Mud sink is multiplied by (mass ratio)³, between 0.7 and 1.6: about 15% deeper with 100 kg extra on a 1.6 t car. Fuel use and engine heat already follow engine work, so a heavier car burns more and runs hotter on the climbs without a separate rule. The winch's pull stays rated on the tuned mass.
+
+**Score.** "Fuel and kit" now counts what is left out of what was packed: fuel as before against the packed fuel and cans (it used the episode's 70 L, whatever the vehicle), kit as spares plus a third of the plugs against the same of the pack (it was against a fixed two). A standard-load run that uses a plug now loses a few points it didn't before; packing more no longer makes the kit score easier to keep.
+
+**Changed for every run.** Even on the standard load, the car gets lighter as it burns fuel (about 25 kg over a CREB run), which it didn't before.
