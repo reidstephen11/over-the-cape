@@ -1275,6 +1275,23 @@ table.controls td {
   color: var(--ink-soft);
 }
 
+/* Locked vehicles and the challenge that opens each (src/data/unlocks.ts). */
+.welcome-unlocks {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.welcome-unlocks li {
+  margin: 2px 0;
+}
+
+.vehicle-choice.locked,
+.welcome-option[data-group='vehicle']:disabled {
+  opacity: 0.55;
+}
+
 .welcome-drive {
   margin: 18px auto 4px;
   display: block;

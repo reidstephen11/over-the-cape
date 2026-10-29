@@ -1780,3 +1780,24 @@ The last of Steef's three picks from Over The Hill, where crates sit at scenic s
 With the packing list (v1.01), these give a light-packed run a way to make up a spare or fuel on the way, at the cost of the time spent on the side trips.
 
 **Prompt.** The roadside prompt said a find was "by the hut"; it now says "on a crate", which fits the huts and the new finds.
+
+## v1.06: vehicles to unlock
+
+Steef asked for the 40 Series and the Camel Trophy Land Rover to be the only vehicles open at the start, with every other vehicle opened by a challenge that suits it (`src/data/unlocks.ts`).
+
+| Vehicle       | Challenge                                                                          | Why this one                                          |
+| ------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Hilux         | Reach the Lions Den for the first time                                             | The everyday ute: the first reward                    |
+| GQ Patrol     | Winch the bogged Patrol out on the ridge                                           | The stranded Patrol is already on the map             |
+| LC79 V8       | Winch the bogged LandCruiser out at Donovan's Creek                                | The stranded 79 is already on the map                 |
+| Troop Carrier | Load all five finds (two huts, three hidden) in one run                            | The long-range tourer: going everywhere               |
+| Unimog        | Reach the Lions Den without attaching the winch                                    | The truck that goes almost anywhere                   |
+| 80 Series     | Section bests under 2:00 up Big Red, 2:00 up Bob's Hill and 3:00 down the concrete | Built for hard tracks                                 |
+| Perentie      | Army supply run: tow two fuel drums to the camp at Wujal Wujal                     | An Army task, reusing the Episode 4 trailer and drums |
+
+- **Saved in the save file** as `unlocked`. A save from before v1.06 has nothing unlocked; if its last vehicle is now locked, the title screen falls back to the 40 Series. Continue then carries on from the saved camp in the 40 Series.
+- **Locked vehicles** are greyed out under New Journey → Vehicle & difficulty with a "To unlock" list below, and greyed out with their challenge on the pause menu's Vehicle page. Test mode (`?dev`) opens all of them, as it opens every episode.
+- **The winch counts from the start of the run.** It is kept in camp checkpoints (`winched`), so restarting from a camp after winching still counts it. Winching out a stranded driver uses the winch, so the Unimog and the rescue challenges need separate runs.
+- **Section targets** use the section bests, so they can be met over several runs. The times (173 m of Big Red, 169 m of Bob's Hill, 380 m of the concrete) are first guesses: about 1.4 m/s on the climbs and 2.1 m/s on the descent.
+- **The supply run** is a third Start option beside Start and Continue. It is a normal CREB run with the delivery trailer (the Army No. 5 behind a vehicle with a pintle hook, otherwise the box trailer) and two drums. Parking the upright trailer, both drums aboard, in the Wujal Wujal camp and stopping delivers them. After that you can unhitch and drive on. The run, its checkpoints and its finish count as usual. Restarting from a camp keeps the trailer as it was there (`supply` in the checkpoint).
+- **Unlocks come as a card** on the HUD while driving. Those earned at the finish (Hilux, Unimog) are listed on the finish screen instead.

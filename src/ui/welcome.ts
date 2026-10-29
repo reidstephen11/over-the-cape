@@ -9,6 +9,7 @@ import { clockTime, episodeOrder, episodes, type EpisodeId } from '../data/episo
 import { maps } from '../data/maps';
 import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
 import { vehicleLoadout, vehicleOrder, vehicles } from '../data/vehicles';
+import { isLockedVehicle, supplyRun, vehicleChallenges, vehicleOpen } from '../data/unlocks';
 import type { EpisodeLoadout } from '../data/episodes';
 import { fitPack, loadKg, packLimitKg, stepPack } from '../data/packing';
 import {
@@ -291,17 +292,18 @@ export class WelcomeScreen {
             <h2>${def.title}</h2>
             <p class="welcome-route">${def.route}</p>
             <p class="welcome-mission">${def.mission}</p>
-            <div class="welcome-options seg welcome-start" ${camp ? '' : 'hidden'}>${
+            <div class="welcome-options seg welcome-start">${
               camp ? option('start', 'resume', 'Continue', `From ${camp.name}`) : ''
-            }${option('start', 'new', camp ? 'Start again' : 'Start')}</div>
+            }${option('start', 'new', camp ? 'Start again' : 'Start')}${option('start', 'supply', 'Army supply run', `Tow ${supplyRun.drums} fuel drums to Wujal Wujal`)}</div>
             <button type="button" class="welcome-drive" data-group="drive" data-welcome-drive>${camp && this.choice.resume ? 'Continue' : 'Drive'}</button>
           </section>
         </div>
         <button type="button" class="welcome-setup-toggle" data-group="setup" aria-expanded="${this.setupOpen}" aria-controls="welcome-setup"><span>Vehicle & difficulty</span><span>${vehicles[this.choice.vehicle].tuning.name} · ${damageLabels[this.choice.damage]} <b aria-hidden="true">${this.setupOpen ? '−' : '+'}</b></span></button>
         <section id="welcome-setup" class="welcome-section welcome-setup" ${this.setupOpen ? '' : 'hidden'}>
             <h2>Vehicle</h2>
-            <div class="welcome-options seg">${vehicleOrder.map((id) => option('vehicle', id, vehicles[id].tuning.name)).join('')}</div>
+            <div class="welcome-options seg">${vehicleOrder.map((id) => (this.open(id) ? option('vehicle', id, vehicles[id].tuning.name) : option('vehicle', id, `${vehicles[id].tuning.name}`, 'Locked', true))).join('')}</div>
             <p class="welcome-note">${vehicles[this.choice.vehicle].blurb}</p>
+            ${this.lockedHtml()}
             <h2>Difficulty</h2>
             <div class="welcome-options seg">${damageModes.map((m) => option('damage', m, damageLabels[m])).join('')}</div>
             <details class="welcome-rules"><summary>About difficulty</summary><p class="welcome-note damage-note"></p></details>
@@ -329,6 +331,24 @@ export class WelcomeScreen {
       'drive',
     ];
     this.setRows(groups, keep ?? 'drive');
+  }
+
+  /** Can this vehicle be picked? Test mode opens them all. */
+  private open(id: WelcomeChoice['vehicle']): boolean {
+    return vehicleOpen(id, this.save?.unlocked ?? [], this.dev);
+  }
+
+  /** What opens each vehicle still locked. */
+  private lockedHtml(): string {
+    const locked = vehicleOrder.filter((id) => !this.open(id));
+    if (!locked.length) return '';
+    return `<h2>To unlock</h2><ul class="welcome-unlocks">${locked
+      .map((id) =>
+        isLockedVehicle(id)
+          ? `<li><b>${vehicles[id].tuning.name}</b>: ${vehicleChallenges[id].task}</li>`
+          : '',
+      )
+      .join('')}</ul>`;
   }
 
   /** The load for a new run: last packed for this vehicle, or the standard one. */
@@ -388,7 +408,7 @@ export class WelcomeScreen {
       case 'episode':
         return v === this.choice.episode;
       case 'start':
-        return v === (this.choice.resume ? 'resume' : 'new');
+        return v === (this.choice.resume ? 'resume' : this.choice.supply ? 'supply' : 'new');
       case 'vehicle':
         return v === this.choice.vehicle;
       case 'damage':
@@ -474,8 +494,11 @@ export class WelcomeScreen {
     if (group === 'episode') {
       this.choice.episode = value as EpisodeId;
       this.choice.resume = false;
-    } else if (group === 'start') this.choice.resume = value === 'resume';
-    else if (group === 'vehicle') {
+      this.choice.supply = false;
+    } else if (group === 'start') {
+      this.choice.resume = value === 'resume';
+      this.choice.supply = value === 'supply';
+    } else if (group === 'vehicle') {
       this.choice.vehicle = value as WelcomeChoice['vehicle'];
       // Each vehicle keeps its own packing.
       this.choice.load = undefined;
