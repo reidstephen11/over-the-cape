@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 
 /**
- * The 60 Series wagon's colours: a solid mid blue of the period over black steel bars and
- * bumpers, white split-rim wheels as on the Standard, and grey vinyl inside.
+ * The 60 Series wagon's colours: sandy taupe (the owner's choice, v1.12) over black steel bars
+ * and bumpers, white split-rim wheels as on the Standard, and grey vinyl inside. The side
+ * stripe kit's brown and orange are in hj60Body.ts.
  */
 export const hj60Colors = {
-  paint: new THREE.Color('#35557F'),
+  paint: new THREE.Color('#A8987F'),
   chrome: new THREE.Color('#C9CCC6'),
   bar: new THREE.Color('#232628'),
   rubber: new THREE.Color('#1D2021'),

@@ -6,6 +6,8 @@ Game id: `hj60`. Body: `src/render/hj60Body.ts`, with `hj60Gear.ts` (bull bar, r
 
 The body shell did not change between 1980 and 1990, so photographs of FJ60s, BJ60s and Japanese N-HJ60Vs are the same panels. Leave out what the photographs say is aftermarket (roof tents, lifts, big tyres, black wheels, stripes) and the four rectangular lamps of the 1987 facelift. `research-notes.md` has every published figure with its source and how far to trust it.
 
+Since v1.12 the game's 60 is sandy taupe with the mid-1980s factory stripe kit, the owner's choice. The kit's shape and placement come from `side-right-34-60-1984-mod.jpg` (the red 1984 car); its colours on taupe are a choice, not a source. `side-right-j60-mod-roof-rack.jpg` shows the later grey two-tone kit on a white car, not used.
+
 ## Dimensions
 
 |           | Published                                                                      | In the current model                                                                                                  |
