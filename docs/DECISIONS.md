@@ -1883,3 +1883,13 @@ Steef, after v1.13: "Still quite choppy", on a Pixel 10a. The software renderer 
 **The automatic resolution now steps down sooner.** Steef's `?debug` on the Pixel 10a, in the trees on the Bloomfield bridge approach: 39 fps, 25.8 ms a frame, with the game code at 10.6 ms (sim 1.7). So the graphics chip is the limit, but v1.13 only stepped down below about 36 fps (28 ms), so it never did. It now steps down below about 50 fps (20 ms), still only while the code is under 60% of the frame. It steps back up above about 56 fps. If a step up is slow again within 15 s, it waits twice as long (up to 2 minutes) before the next step up, so it doesn't keep switching back and forth.
 
 The next fix is chosen from the phone's numbers: whatever setting makes the biggest jump is where the time goes.
+
+## v1.15: the phone test at the slow spot, and lower resolution on High
+
+Steef's v1.14 `?bench` result on the Pixel 10a: 411×784 points at a pixel ratio of 2.625, on **High** graphics. Every setting ran at 60 fps (17 ms a frame) with the game code at 11 to 19 ms. The stretch the autopilot drove, 520 m out from the creeks, was not where he sees 19 to 39 fps.
+
+- **The test now parks at the slow spot.** It stops on the track at (111, −773) in the forest south of the Bloomfield bridge, facing along it, where his `?debug` showed 39 fps standing still, and times the settings there. Standing still also keeps every pass on the same view.
+- **It also times Medium and Low graphics** (eight passes, about a minute). The setting is changed for the test only, not saved.
+- **High can now step its resolution down to 60%** (it never could). On a phone, High draws up to twice the points (pixel ratio 2) with a 4096 shadow map; the shadow map doesn't change with the resolution.
+
+Steef was told to try Medium in the meantime.

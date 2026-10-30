@@ -72,7 +72,8 @@ export const qualityPresets: Record<QualityLevel, QualityPreset> = {
     grassDistance: 140,
     particles: 1.35,
     pixelRatio: 2,
-    minRenderScale: 1,
+    // A phone on High (a Pixel 10a draws 2.6 pixels per point) needs room to come down.
+    minRenderScale: 0.6,
     antialias: true,
   },
 };

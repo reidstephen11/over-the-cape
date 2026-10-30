@@ -1,4 +1,6 @@
 import type { Game } from '../core/game';
+import { qualityPresets, type QualityLevel } from '../data/quality';
+import { headingOf } from '../sim/vehicle/math';
 
 /** How long each setting is timed, and how much of the start is skipped while it settles. */
 const SECONDS = 6;
@@ -8,6 +10,14 @@ interface Mode {
   name: string;
   apply(g: Game, on: boolean): void;
 }
+
+/** Where the test parks: on the Bloomfield Track in thick forest south of the bridge, where a Pixel 10a ran at 39 fps. */
+const SPOT = { x: 111, z: -773 };
+
+const graphics = (level: QualityLevel): Mode => ({
+  name: `${level[0].toUpperCase()}${level.slice(1)} graphics`,
+  apply: (g, on) => g.view.setQuality(qualityPresets[on ? level : g.settings.quality]),
+});
 
 const MODES: Mode[] = [
   { name: 'As normal', apply: () => {} },
@@ -41,12 +51,15 @@ const MODES: Mode[] = [
       }
     },
   },
+  graphics('medium'),
+  graphics('low'),
   { name: 'As normal again', apply: () => {} },
 ];
 
 /**
- * `?bench`: drives the Bloomfield Track on the autopilot and times the frames with one thing
- * turned off at a time, so a phone can show what slows it down. The results stay on screen.
+ * `?bench`: stops in thick forest on the Bloomfield Track and times the frames with one thing
+ * turned off at a time, and on each graphics setting, so a phone can show what slows it down.
+ * The results stay on screen.
  */
 export class Bench {
   private mode = -1;
@@ -63,7 +76,7 @@ export class Bench {
       'position:fixed;left:8px;top:8px;z-index:99999;max-width:92vw;padding:10px 12px;border-radius:8px;' +
       'background:rgba(0,0,0,0.82);color:#fff;font:13px/1.45 monospace;white-space:pre-wrap;pointer-events:none';
     document.body.appendChild(this.el);
-    this.show('Phone test: starting on the Bloomfield Track…');
+    this.show('Phone test: starting in the trees on the Bloomfield Track…');
   }
 
   private show(text: string): void {
@@ -80,8 +93,7 @@ export class Bench {
       return;
     }
     if (this.mode < 0) {
-      if (window.__game?.vehicle().engineOff) window.__game.startEngine();
-      window.__game?.autopilot('bloomfield-creeks', 520, 9);
+      this.park();
       this.start(0);
       return;
     }
@@ -110,11 +122,24 @@ export class Bench {
       return;
     }
     this.done = true;
-    window.__game?.autopilot(null);
     this.show(
       `Phone test done (${innerWidth}×${innerHeight}, pixel ratio ${devicePixelRatio}, ${this.g.settings.quality})\n` +
         `${this.results.join('\n')}\n\nPlease send a screenshot of this.`,
     );
+  }
+
+  /** Stop on the track at SPOT, facing along it, with the follow camera behind. */
+  private park(): void {
+    let best = { d: Infinity, x: SPOT.x, z: SPOT.z, heading: 0 };
+    for (const t of this.g.world.features.tracks) {
+      const { xs, zs, count } = t.poly;
+      for (let k = 0; k + 1 < count; k++) {
+        const d = Math.hypot(xs[k] - SPOT.x, zs[k] - SPOT.z);
+        if (d < best.d)
+          best = { d, x: xs[k], z: zs[k], heading: headingOf(xs[k + 1] - xs[k], zs[k + 1] - zs[k]) };
+      }
+    }
+    window.__game?.teleport(best.x, best.z, best.heading);
   }
 
   private start(mode: number): void {
