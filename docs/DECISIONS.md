@@ -1873,3 +1873,13 @@ Steef, after v1.03: "Still really choppy in trees on Bloomfield".
 - **Lower resolution only while the graphics struggle** (`src/render/renderScale.ts`). When frames have been slower than about 36 a second for a second and the game's own code takes under 60% of the frame (so the graphics chip is what's slow), the picture is drawn 10% smaller, down to 70% on Low and 80% on Medium. High never changes. Once frames run faster than about 52 a second for 4 s, and at least 10 s after the last step down, it steps back up. It is off while tests drive a fixed number of steps a frame. `?debug` shows the current resolution.
 
 I asked Steef for the `?debug` numbers on his phone, to tell whether the processor or the graphics chip is the limit. Until then, both are covered.
+
+## v1.14: a phone test (`?bench`)
+
+Steef, after v1.13: "Still quite choppy", on a Pixel 10a. The software renderer here can't tell whether the phone's processor or its graphics chip is what's slow, and each fix so far was aimed from desktop measurements. So the phone now measures itself.
+
+`?bench` (`src/debug/bench.ts`) starts once Drive is pressed. The autopilot drives the Bloomfield Track 520 m out from the creeks at 9 m/s, and the frames are timed for 6 s at a time (the first 1.5 s skipped while things settle): as normal, at half resolution, without shadows, without trees, without ground cover and the meadow, then as normal again as a check. Each line gives the median frame rate, the median and 95th-percentile frame time and the game code's time per frame. The box also shows the screen size, pixel ratio and graphics setting. History notes are put away as they come up, and the automatic resolution is off for the test.
+
+**The automatic resolution now steps down sooner.** Steef's `?debug` on the Pixel 10a, in the trees on the Bloomfield bridge approach: 39 fps, 25.8 ms a frame, with the game code at 10.6 ms (sim 1.7). So the graphics chip is the limit, but v1.13 only stepped down below about 36 fps (28 ms), so it never did. It now steps down below about 50 fps (20 ms), still only while the code is under 60% of the frame. It steps back up above about 56 fps. If a step up is slow again within 15 s, it waits twice as long (up to 2 minutes) before the next step up, so it doesn't keep switching back and forth.
+
+The next fix is chosen from the phone's numbers: whatever setting makes the biggest jump is where the time goes.

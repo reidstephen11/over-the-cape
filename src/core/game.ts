@@ -94,6 +94,7 @@ import { buildHudState } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
 import { damageMessage } from './damageMessages';
 import { installHook } from './testHook';
+import { Bench } from '../debug/bench';
 import { sectionTargetsMet, supplyRun, vehicleChallenges, type LockedVehicleId } from '../data/unlocks';
 
 const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
@@ -219,6 +220,8 @@ export class Game {
   scriptedInput: Partial<VehicleInput> | null = null;
   /** Drives the car along a path (scripted test drives). */
   autopilot: Autopilot | null = null;
+  /** The phone test (`?bench`), once it starts. */
+  private bench: Bench | null = null;
   /** Main-thread time spent in three.js rendering per frame (ms, smoothed). */
   sceneMs = 0;
   /** Called when settings change (audio hooks in here). */
@@ -1837,8 +1840,9 @@ export class Game {
     this.view.render();
     this.sceneMs += (performance.now() - t0 - this.sceneMs) * 0.1;
     // Not while tests drive a fixed number of steps a frame on the slow software renderer.
-    if (this.loop.fixedSteps === 0)
-      this.view.adaptResolution(frameDt, this.loop.timings.sim + this.loop.timings.render);
+    const cpuMs = this.loop.timings.sim + this.loop.timings.render;
+    if (this.bench) this.bench.update(frameDt, cpuMs);
+    else if (this.loop.fixedSteps === 0) this.view.adaptResolution(frameDt, cpuMs);
     this.audio.update(
       buildAudioFrame(
         v,
@@ -1932,6 +1936,8 @@ export class Game {
     this.input.consumeUi();
     this.frameCount++;
     if (this.frameCount === 3 && window.__game) window.__game.ready = true;
+    if (this.frameCount === 30 && new URLSearchParams(location.search).has('bench'))
+      this.bench = new Bench(this);
   }
 }
 

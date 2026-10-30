@@ -23,10 +23,31 @@ describe('render scale', () => {
   it('puts the resolution back once frames are quick again, after a pause', () => {
     const r = new RenderScale(0.7);
     run(r, 3, 45, 8);
+    run(r, 1, 16.7, 8); // the average catches up
     const low = r.scale;
-    run(r, 5, 16.7, 8);
+    run(r, 4, 16.7, 8);
     expect(r.scale).toBe(low);
     run(r, 40, 16.7, 8);
+    expect(r.scale).toBe(1);
+  });
+
+  it('steps down at 39 frames a second when the graphics are the limit (a Pixel 10a in the trees)', () => {
+    const r = new RenderScale(0.7);
+    run(r, 3, 25.8, 10.6);
+    expect(r.scale).toBeLessThan(1);
+  });
+
+  it('waits longer each time going back up made it slow again', () => {
+    const r = new RenderScale(0.7);
+    run(r, 1.5, 30, 8); // down to 0.9, held 10 s
+    expect(r.scale).toBeCloseTo(0.9);
+    run(r, 15, 16.7, 8); // back up to 1
+    expect(r.scale).toBe(1);
+    run(r, 1.5, 30, 8); // slow again straight away: down, held 20 s
+    expect(r.scale).toBeCloseTo(0.9);
+    run(r, 15, 16.7, 8);
+    expect(r.scale).toBeCloseTo(0.9);
+    run(r, 10, 16.7, 8);
     expect(r.scale).toBe(1);
   });
 
