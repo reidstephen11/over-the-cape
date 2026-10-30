@@ -23,6 +23,7 @@ const kit: Record<VehicleId, { spareKg: number; roomKg: number }> = {
   hilux: { spareKg: 30, roomKg: 120 },
   unimog: { spareKg: 100, roomKg: 400 },
   troopy: { spareKg: 40, roomKg: 160 },
+  hj60: { spareKg: 40, roomKg: 150 },
   patrol: { spareKg: 40, roomKg: 140 },
   lc79: { spareKg: 60, roomKg: 140 },
   sooty80: { spareKg: 55, roomKg: 120 },

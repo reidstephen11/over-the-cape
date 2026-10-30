@@ -1,5 +1,6 @@
 import { camelTuning } from './camel';
 import { hiluxTuning } from './hilux';
+import { hj60Cabin, hj60Tuning } from './hj60';
 import { LC79_CAB_LIFT, lc79Tuning } from './lc79';
 import { patrolTuning } from './patrol';
 import { sooty80Cabin, sooty80Tuning } from './sooty80';
@@ -297,6 +298,12 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     extraLoad: { fuel: TROOPY_START_FUEL },
     cabin: seventyCabin,
   },
+  hj60: {
+    tuning: hj60Tuning,
+    blurb: '1986 LandCruiser HJ60 wagon, 4.0 L 2H diesel six, five-speed, leaf springs, barn doors, bull bar and gutter rack.',
+    cameraScale: 1.08,
+    cabin: hj60Cabin,
+  },
   patrol: {
     tuning: patrolTuning,
     blurb: 'GQ Patrol wagon, 4.2 L TD42 diesel, five-speed, coil springs, bull bar, snorkel and roof rack.',
@@ -356,6 +363,7 @@ export const vehicleOrder: readonly VehicleId[] = [
   'hilux',
   'unimog',
   'troopy',
+  'hj60',
   'patrol',
   'lc79',
   'sooty80',

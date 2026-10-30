@@ -161,7 +161,7 @@ export interface VehicleTuning {
 }
 
 export type VehicleId =
-  'shortie' | 'perentie' | 'camel' | 'hilux' | 'unimog' | 'troopy' | 'patrol' | 'lc79' | 'sooty80';
+  'shortie' | 'perentie' | 'camel' | 'hilux' | 'unimog' | 'troopy' | 'hj60' | 'patrol' | 'lc79' | 'sooty80';
 
 const R = 0.38;
 const HALF_TRACK = 0.725;
