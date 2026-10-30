@@ -127,9 +127,11 @@ describe('the CREB, stretch by stretch', () => {
       [530, 675],
       [940, 1100],
     ];
+    // Since v1.07 the tyres are tougher: one vehicle can get through fast without a cut,
+    // so the fast cuts are counted over both.
+    let fastCuts = 0;
     for (const tuning of both) {
       let steadyCuts = 0;
-      let fastCuts = 0;
       for (const [from, to] of clear) {
         const steady = await stretch('paddock-road', from, to, 'high', tuning, { speed: 8, limit: 80 });
         expect(steady.done, `${tuning.name} ${from}`).toBe(true);
@@ -139,8 +141,8 @@ describe('the CREB, stretch by stretch', () => {
         fastCuts += fast.cuts;
       }
       expect(steadyCuts, tuning.name).toBe(0);
-      expect(fastCuts, tuning.name).toBeGreaterThan(0);
     }
+    expect(fastCuts).toBeGreaterThan(0);
   }, 600_000);
 
   it('cuts a washout across the ridge that stops a vehicle without the planks and not with them, but not the Unimog', async () => {
