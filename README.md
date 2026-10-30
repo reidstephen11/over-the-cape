@@ -223,7 +223,7 @@ Nothing is saved in test mode, so your real progress is safe. Puddles on the tra
 
 ## Debug mode
 
-Add `?bench` to the address for the phone test: the autopilot drives the Bloomfield Track and the frame rate is timed with one thing turned off at a time (half resolution, no shadows, no trees, no ground cover), and the results stay on screen.
+Add `?bench` to the address for the phone test: the car stops in thick forest on the Bloomfield Track and the frame rate is timed with one thing turned off at a time (half resolution, no shadows, no trees, no ground cover) and on Medium and Low graphics, and the results stay on screen.
 
 Add `?debug` to the address. You get an overlay (frame rate, draw calls, vehicle state, flooding, sound levels) and a panel with a free-fly camera (also the **backtick** key), collider wireframes, a button that moves the clock on 30 minutes (to try the storm and the dusk), a teleport button for every place on the map and live vehicle tuning sliders.
 
@@ -231,6 +231,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v1.15 phone test at the slow spot:** the loading screen shows v1.15. On your phone, open https://reidstephen11.github.io/over-the-cape/?bench, press Drive and leave it about a minute. It now stops in the thick forest south of the Bloomfield bridge (where you saw 39 fps) and times eight settings there, including Medium and Low graphics. Send a screenshot of the result. In normal play on High, does the picture now soften under the trees instead of stuttering?
 - [ ] **v1.14 phone test:** the loading screen shows v1.14. On your phone, open https://reidstephen11.github.io/over-the-cape/?bench, press Drive and leave it about 40 seconds. It drives the Bloomfield Track by itself and times the frames six times: as normal, at half resolution, without shadows, without trees, without ground cover, then as normal again. When the box says "Phone test done", send a screenshot of it. Also, in normal play under the trees, does the picture now soften a little and run smoother (the cpu line in `?debug` ends with the resolution)?
 - [ ] **v1.13 smoother under the trees, round 2:** the loading screen shows v1.13. On your phone, drive the Bloomfield Track through the trees: is it smoother than v1.12? If the phone still struggles, the picture may turn a little softer for a while and sharpen again on open ground; is that better than the stutter? The trees and their shadows should look the same as before, with no trees missing or popping at the edges of the screen. With `?debug`, the cpu line now ends with **resolution** and a percentage.
 - [ ] **v1.12 sandy taupe 60 Series:** the loading screen shows v1.12. Pick the 60 Series (with `?dev` if it is still locked): is it the sandy taupe you wanted, in sun and in shade? Walk round both sides: does the stripe kit look like the factory one, with the band under the handles, the three slashes on the front doors and TOYOTA LAND CRUISER readable on both sides? Do the lower lines stop either side of the rear wheels, and does nothing flicker when you stand back? Are brown and orange the right stripe colours, or would you like another pair? Dent a side: do the stripes follow the panel?
