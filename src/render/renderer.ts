@@ -192,6 +192,13 @@ export class GameRenderer {
     this.resize();
   }
 
+  /** The phone test (src/debug/bench.ts): draw at this share of the preset's resolution. */
+  benchResolution(scale: number): void {
+    const base = Math.min(window.devicePixelRatio || 1, this.quality.pixelRatio);
+    this.renderer.setPixelRatio(base * scale);
+    this.resize();
+  }
+
   resize(): void {
     const w = this.container.clientWidth || window.innerWidth;
     const h = this.container.clientHeight || window.innerHeight;

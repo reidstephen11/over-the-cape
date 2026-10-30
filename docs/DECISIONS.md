@@ -1873,3 +1873,11 @@ Steef, after v1.03: "Still really choppy in trees on Bloomfield".
 - **Lower resolution only while the graphics struggle** (`src/render/renderScale.ts`). When frames have been slower than about 36 a second for a second and the game's own code takes under 60% of the frame (so the graphics chip is what's slow), the picture is drawn 10% smaller, down to 70% on Low and 80% on Medium. High never changes. Once frames run faster than about 52 a second for 4 s, and at least 10 s after the last step down, it steps back up. It is off while tests drive a fixed number of steps a frame. `?debug` shows the current resolution.
 
 I asked Steef for the `?debug` numbers on his phone, to tell whether the processor or the graphics chip is the limit. Until then, both are covered.
+
+## v1.14: a phone test (`?bench`)
+
+Steef, after v1.13: "Still quite choppy", on a Pixel 10a. The software renderer here can't tell whether the phone's processor or its graphics chip is what's slow, and each fix so far was aimed from desktop measurements. So the phone now measures itself.
+
+`?bench` (`src/debug/bench.ts`) starts once Drive is pressed. The autopilot drives the Bloomfield Track 520 m out from the creeks at 9 m/s, and the frames are timed for 6 s at a time (the first 1.5 s skipped while things settle): as normal, at half resolution, without shadows, without trees, without ground cover and the meadow, then as normal again as a check. Each line gives the median frame rate, the median and 95th-percentile frame time and the game code's time per frame. The box also shows the screen size, pixel ratio and graphics setting. History notes are put away as they come up, and the automatic resolution is off for the test.
+
+The next fix is chosen from the phone's numbers: whatever setting makes the biggest jump is where the time goes.
