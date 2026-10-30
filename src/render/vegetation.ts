@@ -10,6 +10,7 @@ import { patchFog } from './fog';
 import { MeshBuilder } from './lowpoly';
 import { createFoliageMaterials, leafQuadrant } from './foliage';
 import { Meadow } from './meadow';
+import { cullTreesBySphere } from './treeCulling';
 
 const SPECIES: TreeSpecies[] = ['ash', 'candlebark', 'snowgum', 'dead', 'rainforest', 'fanpalm', 'treefern'];
 /** Nominal model heights; instances scale to their own height. */
@@ -467,6 +468,7 @@ export class Vegetation {
   private readonly tmpV = new THREE.Vector3();
   private readonly tmpS = new THREE.Vector3();
   private readonly tmpC = new THREE.Color();
+  private readonly tmpSphere = new THREE.Sphere();
 
   constructor(
     private readonly world: World,
@@ -527,6 +529,24 @@ export class Vegetation {
         batch.setColorAt(id, this.tmpC.setRGB(tint, tint, tint * (0.97 + t.seed * 0.06)));
         this.treeIds[i] = id;
       }
+      // Each tree's bounds, worked out once: its sphere at middle detail with room for the
+      // other two.
+      const spheres = new Float32Array(tileTrees.length * 4);
+      for (const i of tileTrees) {
+        const id = this.treeIds[i];
+        batch.getMatrixAt(id, this.tmpM);
+        batch.getBoundingSphereAt(batch.getGeometryIdAt(id), this.tmpSphere)!.applyMatrix4(this.tmpM);
+        spheres.set(
+          [
+            this.tmpSphere.center.x,
+            this.tmpSphere.center.y,
+            this.tmpSphere.center.z,
+            this.tmpSphere.radius * 1.2,
+          ],
+          id * 4,
+        );
+      }
+      cullTreesBySphere(batch, spheres);
       // The sphere is taken from the middle detail; the others are near enough its size.
       batch.computeBoundingSphere();
       batch.boundingSphere!.radius += 5;

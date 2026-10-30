@@ -9,6 +9,7 @@ import { Horizon } from './horizon';
 import { Sky } from './sky';
 import { TerrainMesh } from './terrainMesh';
 import { WaterMesh } from './water';
+import { RenderScale } from './renderScale';
 import { WaterCurrent } from '../sim/world/current';
 import { Vegetation } from './vegetation';
 import { WorldProps } from './worldProps';
@@ -39,6 +40,7 @@ export class GameRenderer {
   /** The vehicle's world matrix: it shelters the rain. */
   readonly shelter = new THREE.Matrix4();
   private quality: QualityPreset;
+  private renderScale = new RenderScale(1);
   private lastFrame = performance.now();
   private firstFrame = true;
   private reflectionMap: THREE.WebGLRenderTarget | null = null;
@@ -114,6 +116,7 @@ export class GameRenderer {
 
   setQuality(q: QualityPreset): void {
     this.quality = q;
+    this.renderScale = new RenderScale(q.minRenderScale);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
     this.renderer.shadowMap.enabled = q.shadows;
     this.lighting.setQuality(q);
@@ -171,6 +174,22 @@ export class GameRenderer {
   setCreeks(rise: number, flowScale: number): void {
     this.water.setCreeks(rise, flowScale);
     this.particles.creekRise = rise;
+  }
+
+  /** Share of the quality preset's resolution being drawn now (see adaptResolution). */
+  get resolutionScale(): number {
+    return this.renderScale.scale;
+  }
+
+  /**
+   * Lower the resolution while frames are slow and the graphics are the cause, and raise it
+   * again when they keep up (frameDt in s, cpuMs the game's own code per frame).
+   */
+  adaptResolution(frameDt: number, cpuMs: number): void {
+    if (!this.renderScale.update(frameDt, cpuMs)) return;
+    const base = Math.min(window.devicePixelRatio || 1, this.quality.pixelRatio);
+    this.renderer.setPixelRatio(base * this.renderScale.scale);
+    this.resize();
   }
 
   resize(): void {

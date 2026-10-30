@@ -1860,3 +1860,16 @@ Steef asked for the 60 to be sandy taupe, with the decals.
 - **Colours.** No source was found for the factory stripe colours on a beige or taupe 60 (the forum pages that might say are blocked here). The kit on the red car is yellow and black; on taupe it is drawn in burnt orange and dark brown, the period's colours for light-brown paint. Each colour is one constant in `hj60Body.ts` if Steef wants it changed.
 - **How it's drawn.** Flat shapes 2 mm proud of the upright band of the side, which is flat between the creases, in the paint material so they shine and get dirty with the body. Long pieces are cut into 15 cm lengths so they follow the panel into a dent. The handles, shut lines and the LAND CRUISER script sit over them, as on the car. The letters are boxes on a 10 × 10 grid. The kit adds under 2,000 triangles.
 - **Compared** from both sides and with close-ups of the front door, the rear arch and the rear corner, beside the photograph.
+
+## v1.13: smoother under the trees, round 2
+
+Steef, after v1.03: "Still really choppy in trees on Bloomfield".
+
+**What was measured.** A processor profile while the autopilot drove the Bloomfield Track (Low graphics, phone-sized window). Picking which trees to draw took about 4 ms a frame on a desktop, several times that on a phone. three.js rebuilt each tree's bounding sphere from its matrix on every draw, for every tile in view and again for the shadow map. The physics step and the rest of the frame were small beside it.
+
+**Fix.**
+
+- **Faster tree picking** (`src/render/treeCulling.ts`). Trees don't move, so each tree's bounding sphere is worked out once when the map loads (its middle-detail sphere, 20% larger to cover the other two). Each draw only tests those spheres against the view. It fills three's draw list the way `BatchedMesh.onBeforeRender` does in r186; if three is upgraded, check that its private fields still match. 4.3 ms falls to about 0.5 ms a frame. Screenshots before and after are the same, shadows included.
+- **Lower resolution only while the graphics struggle** (`src/render/renderScale.ts`). When frames have been slower than about 36 a second for a second and the game's own code takes under 60% of the frame (so the graphics chip is what's slow), the picture is drawn 10% smaller, down to 70% on Low and 80% on Medium. High never changes. Once frames run faster than about 52 a second for 4 s, and at least 10 s after the last step down, it steps back up. It is off while tests drive a fixed number of steps a frame. `?debug` shows the current resolution.
+
+I asked Steef for the `?debug` numbers on his phone, to tell whether the processor or the graphics chip is the limit. Until then, both are covered.
