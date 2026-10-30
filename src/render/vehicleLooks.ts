@@ -45,10 +45,10 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'coil',
     suspension: { coilInboard: 0.42, radiusArmAxleX: 0.36, radiusArmChassisX: 0.4, rearDamperOffset: -0.1 },
     lamps: {
-      head: [-0.662, 0.662].map((x) => ({ x, y: 0.518, z: -2.282 })),
+      head: [-0.6, 0.6].map((x) => ({ x, y: 0.455, z: -2.09 })),
       roof: [
-        ...[-0.23, 0.23].map((x) => ({ x, y: 0.545, z: -2.511 })),
-        ...[-0.5, 0, 0.5].map((x) => ({ x, y: 1.535, z: -0.816 })),
+        ...[-0.225, 0.225].map((x) => ({ x, y: 0.545, z: -2.33 })),
+        ...[-0.5, 0, 0.5].map((x) => ({ x, y: 1.535, z: -0.27 })),
       ],
     },
   },

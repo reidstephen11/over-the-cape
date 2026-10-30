@@ -3,7 +3,9 @@
  * model without loading a map. Open http://localhost:5173/scripts/studio/?vehicle=hilux
  * with the dev server running; scripts/studio-shots.ts photographs it from all round.
  * `?trailer=no5` (or `box6x4`) shows a trailer on its own at the origin; with `vehicle` as
- * well, the trailer stands hitched behind the vehicle.
+ * well, the trailer stands hitched behind the vehicle. `?stock` draws the 80 Series without its
+ * touring gear, and `?plain` puts the vehicle on a flat white backdrop, for laying its outline
+ * over a reference photograph.
  */
 import * as THREE from 'three';
 import { lateAfternoon } from '../../src/data/environment';
@@ -15,6 +17,8 @@ import { applyFogEnvironment } from '../../src/render/fog';
 import { Lighting } from '../../src/render/lighting';
 import { Sky } from '../../src/render/sky';
 import { VehicleModel } from '../../src/render/vehicleModel';
+import { vehicleLooks } from '../../src/render/vehicleLooks';
+import { buildBodyCore } from '../../src/render/sooty80Body';
 
 const params = new URLSearchParams(location.search);
 const trailerId = params.get('trailer') as TrailerTuning['id'] | null;
@@ -58,8 +62,16 @@ const rest = tuning.suspensionRestLength - 0.12;
 ground.position.y = tuning.wheels[0].y - rest - tuning.wheelRadius;
 ground.receiveShadow = true;
 scene.add(ground);
+if (params.has('plain')) {
+  sky.mesh.visible = ground.visible = false;
+  scene.background = new THREE.Color('#ffffff');
+}
+if (params.has('stock') && id === 'sooty80')
+  vehicleLooks.sooty80.body = (t, wheel) => buildBodyCore(t, wheel, false);
 
 const model = new VehicleModel(tuning);
+// The stock body has no rack, so its recovery boards stay off.
+if (params.has('stock')) model.rackPlanks.visible = false;
 for (let i = 0; i < 4; i++) model.wheels[i].pivot.position.y = tuning.wheels[i].y - rest;
 model.suspension.update(model.wheels.map((w) => w.pivot.position.y));
 if (!alone) scene.add(model.root);
