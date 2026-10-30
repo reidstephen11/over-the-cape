@@ -300,7 +300,8 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
   },
   hj60: {
     tuning: hj60Tuning,
-    blurb: '1986 LandCruiser HJ60 wagon, 4.0 L 2H diesel six, five-speed, leaf springs, barn doors, bull bar and gutter rack.',
+    blurb:
+      '1986 LandCruiser HJ60 wagon, 4.0 L 2H diesel six, five-speed, leaf springs, barn doors, bull bar and gutter rack.',
     cameraScale: 1.08,
     cabin: hj60Cabin,
   },

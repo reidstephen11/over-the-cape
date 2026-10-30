@@ -13,42 +13,42 @@ No Toyota brochure, workshop manual or owner's manual was read directly for thes
 
 ## Source key
 
-| Key | URL | What it is |
-|---|---|---|
-| OULU | https://cc.oulu.fi/~thu/LC/HJ61/J6.html | Enthusiast table, last updated 2005. Cites a 1987 Toyota owner's manual, Finnish registration papers and a 1987 Off Road test |
-| CS85 | https://www.carsales.com.au/research/toyota/landcruiser/1985/no-badge/8d3d04c2-07a4-41ce-b752-8db639e2c4bc/ | Australian spec listing: 1985 HJ60RV |
-| CS85D | https://www.carsales.com.au/research/toyota/landcruiser/1985/deluxe/ | Australian spec listings: 1985 Deluxe variants. Read through a search summary only |
-| WP-EN | https://en.wikipedia.org/wiki/Toyota_Land_Cruiser#J60 | English Wikipedia. There is no separate J60 article; it redirects here |
-| WP-JA | https://ja.wikipedia.org/wiki/トヨタ・ランドクルーザー | Japanese Wikipedia, 60系 section |
-| FLEX | https://flexmotor.com/?p=171 | Year-by-year changes, Japanese-market focus |
-| CG | https://www.carsguide.com.au/car-advice/60-series-land-cruiser-your-guide-to-the-classic-toyota-4wd-80077 | Australian buyer's guide |
-| GOAUTO | https://web1.goauto.com.au/toyota/landcruiser-60.html | Australian model history |
-| IH-GEAR | https://forum.ih8mud.com/threads/help-determine-my-hj61-gearing-and-advise-on-re-gear-options.901944/ | Forum thread |
-| IH-AU | https://forum.ih8mud.com/threads/australian-cruiser-specs.46842/page-2 | Forum thread |
-| IH-GX | https://forum.ih8mud.com/threads/g-vs-gx-vs-gxl.805685/page-2 | Forum thread |
-| AD | https://www.auto-data.net/en/toyota-land-cruiser-j60-wagon-4.0-diesel-101hp-4wd-3744 | Third-party spec catalogue |
-| CA | https://carsart.net/ar/cars/toyota/land-cruiser/j60-wagon/4000cc-156hp-4wd-automatic | Third-party spec catalogue |
+| Key     | URL                                                                                                         | What it is                                                                                                                    |
+| ------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| OULU    | https://cc.oulu.fi/~thu/LC/HJ61/J6.html                                                                     | Enthusiast table, last updated 2005. Cites a 1987 Toyota owner's manual, Finnish registration papers and a 1987 Off Road test |
+| CS85    | https://www.carsales.com.au/research/toyota/landcruiser/1985/no-badge/8d3d04c2-07a4-41ce-b752-8db639e2c4bc/ | Australian spec listing: 1985 HJ60RV                                                                                          |
+| CS85D   | https://www.carsales.com.au/research/toyota/landcruiser/1985/deluxe/                                        | Australian spec listings: 1985 Deluxe variants. Read through a search summary only                                            |
+| WP-EN   | https://en.wikipedia.org/wiki/Toyota_Land_Cruiser#J60                                                       | English Wikipedia. There is no separate J60 article; it redirects here                                                        |
+| WP-JA   | https://ja.wikipedia.org/wiki/トヨタ・ランドクルーザー                                                      | Japanese Wikipedia, 60系 section                                                                                              |
+| FLEX    | https://flexmotor.com/?p=171                                                                                | Year-by-year changes, Japanese-market focus                                                                                   |
+| CG      | https://www.carsguide.com.au/car-advice/60-series-land-cruiser-your-guide-to-the-classic-toyota-4wd-80077   | Australian buyer's guide                                                                                                      |
+| GOAUTO  | https://web1.goauto.com.au/toyota/landcruiser-60.html                                                       | Australian model history                                                                                                      |
+| IH-GEAR | https://forum.ih8mud.com/threads/help-determine-my-hj61-gearing-and-advise-on-re-gear-options.901944/       | Forum thread                                                                                                                  |
+| IH-AU   | https://forum.ih8mud.com/threads/australian-cruiser-specs.46842/page-2                                      | Forum thread                                                                                                                  |
+| IH-GX   | https://forum.ih8mud.com/threads/g-vs-gx-vs-gxl.805685/page-2                                               | Forum thread                                                                                                                  |
+| AD      | https://www.auto-data.net/en/toyota-land-cruiser-j60-wagon-4.0-diesel-101hp-4wd-3744                        | Third-party spec catalogue                                                                                                    |
+| CA      | https://carsart.net/ar/cars/toyota/land-cruiser/j60-wagon/4000cc-156hp-4wd-automatic                        | Third-party spec catalogue                                                                                                    |
 
 ## Dimensions (mm)
 
-| Item | Value | Conf. | Source |
-|---|---|---|---|
-| Wheelbase | 2730 | A | OULU, CS85, WP-EN, WP-JA |
-| Length, base bumper | 4675 | B | OULU |
-| Length, rear step bumper | 4750 | A | OULU; CS85 and WP-EN both give 4750 |
-| Length, with winch | 4920 | B | OULU |
-| Length, with winch and rear step bumper | 4995 | A | OULU; WP-JA gives a 4750-4995 range |
-| Width | 1800 | A | OULU, CS85, WP-EN, WP-JA |
-| Width with over-fenders | 1880 | A | OULU; WP-JA gives a 1800-1880 range |
-| Height, standard roof, Australia | 1825-1910 | B | OULU (range by tyre and spec) |
-| Height, standard roof, HJ60RV 1985 | 1830 | B | CS85 |
-| Height, standard roof, Europe | 1785-1875 | B | OULU |
-| Height, high roof, Australia | 1935 | B | OULU |
-| Height, high roof, 1985 Deluxe listing | 1950 | C | CS85D (petrol Deluxe) |
-| Height, WP-EN figures | 1750 low, 1950 high | C | WP-EN; 1750 is below every other source |
-| Front track | 1475 or 1515 | A | OULU gives both by market; CS85 gives 1475 |
-| Rear track | 1460 or 1500 | A | OULU gives both by market; CS85 gives 1460 |
-| Rim on HJ60RV 1985 | 16 x 5.5F steel | B | CS85 |
+| Item                                    | Value               | Conf. | Source                                     |
+| --------------------------------------- | ------------------- | ----- | ------------------------------------------ |
+| Wheelbase                               | 2730                | A     | OULU, CS85, WP-EN, WP-JA                   |
+| Length, base bumper                     | 4675                | B     | OULU                                       |
+| Length, rear step bumper                | 4750                | A     | OULU; CS85 and WP-EN both give 4750        |
+| Length, with winch                      | 4920                | B     | OULU                                       |
+| Length, with winch and rear step bumper | 4995                | A     | OULU; WP-JA gives a 4750-4995 range        |
+| Width                                   | 1800                | A     | OULU, CS85, WP-EN, WP-JA                   |
+| Width with over-fenders                 | 1880                | A     | OULU; WP-JA gives a 1800-1880 range        |
+| Height, standard roof, Australia        | 1825-1910           | B     | OULU (range by tyre and spec)              |
+| Height, standard roof, HJ60RV 1985      | 1830                | B     | CS85                                       |
+| Height, standard roof, Europe           | 1785-1875           | B     | OULU                                       |
+| Height, high roof, Australia            | 1935                | B     | OULU                                       |
+| Height, high roof, 1985 Deluxe listing  | 1950                | C     | CS85D (petrol Deluxe)                      |
+| Height, WP-EN figures                   | 1750 low, 1950 high | C     | WP-EN; 1750 is below every other source    |
+| Front track                             | 1475 or 1515        | A     | OULU gives both by market; CS85 gives 1475 |
+| Rear track                              | 1460 or 1500        | A     | OULU gives both by market; CS85 gives 1460 |
+| Rim on HJ60RV 1985                      | 16 x 5.5F steel     | B     | CS85                                       |
 
 The 1515/1500 tracks are listed by OULU in a separate market column. Which vehicles carry them
 is not stated in what I read. **CS85 places the Australian 1985 HJ60RV at 1475/1460.**
@@ -67,37 +67,37 @@ same catalogues (AD, confidence C).
 
 ## Weights (kg)
 
-| Item | Value | Conf. | Source |
-|---|---|---|---|
-| Kerb, 1985 HJ60RV | 2065 | B | CS85 |
-| Kerb, 1985 diesel manual Deluxe variant | 2110, GVM 2760 | C | CS85D |
-| Kerb, 1982 Deluxe | 1985 | C | carsales 1982 listing, https://www.carsales.com.au/research/toyota/landcruiser/1982/deluxe/53115e5e-ce81-4a61-ab79-c1993307bba7/ |
-| Kerb, whole range | 1910-2545 | B | WP-JA |
-| Empty, Finnish HJ61 | 2200 | B | OULU (registration papers) |
-| Gross, Finnish HJ61 | 2810 (1200 front axle, 1610 rear axle) | B | OULU |
+| Item                                    | Value                                  | Conf. | Source                                                                                                                           |
+| --------------------------------------- | -------------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Kerb, 1985 HJ60RV                       | 2065                                   | B     | CS85                                                                                                                             |
+| Kerb, 1985 diesel manual Deluxe variant | 2110, GVM 2760                         | C     | CS85D                                                                                                                            |
+| Kerb, 1982 Deluxe                       | 1985                                   | C     | carsales 1982 listing, https://www.carsales.com.au/research/toyota/landcruiser/1982/deluxe/53115e5e-ce81-4a61-ab79-c1993307bba7/ |
+| Kerb, whole range                       | 1910-2545                              | B     | WP-JA                                                                                                                            |
+| Empty, Finnish HJ61                     | 2200                                   | B     | OULU (registration papers)                                                                                                       |
+| Gross, Finnish HJ61                     | 2810 (1200 front axle, 1610 rear axle) | B     | OULU                                                                                                                             |
 
 ## Tyres
 
-| Item | Value | Source |
-|---|---|---|
-| Standard roof options, by market | 205R16, 10R15-6PRLT, 7.50R16-6PRLT, 7.00-15-6PRLT, 7.00-16-6PRLT, 7.50-16-6PRLT | OULU |
-| High roof options, by market | 205R16, 10R15-6PRLT, 7.50R16-6PRLT, 7.50-16-6PRLT | OULU |
-| Alternatives | 9.00-15-6PRLT, 9.00-16-6PRLT, 7.50R16C8PR, 7.50R16-8PRLT | OULU |
-| Diameters | 205R16 734 mm, 10R15 773 mm, 7.50R16 806 mm | OULU |
-| Japan, VX from Aug 1987 | 31X10.50R15 LT | FLEX, WP-JA |
+| Item                             | Value                                                                           | Source      |
+| -------------------------------- | ------------------------------------------------------------------------------- | ----------- |
+| Standard roof options, by market | 205R16, 10R15-6PRLT, 7.50R16-6PRLT, 7.00-15-6PRLT, 7.00-16-6PRLT, 7.50-16-6PRLT | OULU        |
+| High roof options, by market     | 205R16, 10R15-6PRLT, 7.50R16-6PRLT, 7.50-16-6PRLT                               | OULU        |
+| Alternatives                     | 9.00-15-6PRLT, 9.00-16-6PRLT, 7.50R16C8PR, 7.50R16-8PRLT                        | OULU        |
+| Diameters                        | 205R16 734 mm, 10R15 773 mm, 7.50R16 806 mm                                     | OULU        |
+| Japan, VX from Aug 1987          | 31X10.50R15 LT                                                                  | FLEX, WP-JA |
 
 The OULU page's table layout mixes market columns, so the tyre rows above are not split by market.
 **I did not confirm the factory tyre on an Australian HJ60RV.** CS85 confirms only a 16-inch rim.
 
 ## Engines
 
-| Code | Layout | Capacity | Bore x stroke | Power | Torque | Source |
-|---|---|---|---|---|---|---|
-| 2F | petrol I6 | 4230 cc | 94 x 102 | 99 kW (Aus 96-99) | 294 Nm @ 1800 | OULU, GOAUTO, CG |
-| 3F | petrol I6 | 3955 cc | 94 x 95 | 101-114 kW by tune; Aus 110 kW | 275 Nm @ 3000 | OULU, GOAUTO |
-| 3B | diesel I4 | 3431 cc | 102 x 105 | 66 kW | 216 Nm @ 2200 | OULU |
-| 2H | diesel I6 | 3980 cc | 91 x 102 | 76 kW @ 3500 | 241 Nm @ 1800 | OULU, CS85 |
-| 12H-T | turbo diesel I6 | 3980 cc | 91 x 102 | 100 kW | 315 Nm @ 1800 | OULU, CG |
+| Code  | Layout          | Capacity | Bore x stroke | Power                          | Torque        | Source           |
+| ----- | --------------- | -------- | ------------- | ------------------------------ | ------------- | ---------------- |
+| 2F    | petrol I6       | 4230 cc  | 94 x 102      | 99 kW (Aus 96-99)              | 294 Nm @ 1800 | OULU, GOAUTO, CG |
+| 3F    | petrol I6       | 3955 cc  | 94 x 95       | 101-114 kW by tune; Aus 110 kW | 275 Nm @ 3000 | OULU, GOAUTO     |
+| 3B    | diesel I4       | 3431 cc  | 102 x 105     | 66 kW                          | 216 Nm @ 2200 | OULU             |
+| 2H    | diesel I6       | 3980 cc  | 91 x 102      | 76 kW @ 3500                   | 241 Nm @ 1800 | OULU, CS85       |
+| 12H-T | turbo diesel I6 | 3980 cc  | 91 x 102      | 100 kW                         | 315 Nm @ 1800 | OULU, CG         |
 
 **For the target car: 2H, 76 kW at 3500 rpm, 241 Nm at 1800 rpm (confidence A).** WP-JA gives
 higher Japanese gross-style figures (115 PS, 26.0 kg-m for 2H), a different rating basis. CG
@@ -105,16 +105,16 @@ wrongly calls the FJ62 engine "3H"; every other source says 3F.
 
 ## Gearboxes and driveline
 
-| Item | H55F 5-speed (HJ60/HJ61) | H42 4-speed | Source |
-|---|---|---|---|
-| 1st | 4.843 | 4.84 | OULU; IH-GEAR agrees on H55F |
-| 2nd | 2.618 | 2.62 | OULU (IH-GEAR 2.619) |
-| 3rd | 1.516 | 1.52 | OULU, IH-GEAR |
-| 4th | 1.000 | 1.00 | OULU, IH-GEAR |
-| 5th | 0.845 | none | OULU, IH-GEAR |
-| Transfer high | 1.000 | 1.000 | OULU |
-| Transfer low | 1.963 | 1.96 | OULU |
-| Axle | 3.70 (see below) | not stated | OULU, IH-GEAR |
+| Item          | H55F 5-speed (HJ60/HJ61) | H42 4-speed | Source                       |
+| ------------- | ------------------------ | ----------- | ---------------------------- |
+| 1st           | 4.843                    | 4.84        | OULU; IH-GEAR agrees on H55F |
+| 2nd           | 2.618                    | 2.62        | OULU (IH-GEAR 2.619)         |
+| 3rd           | 1.516                    | 1.52        | OULU, IH-GEAR                |
+| 4th           | 1.000                    | 1.00        | OULU, IH-GEAR                |
+| 5th           | 0.845                    | none        | OULU, IH-GEAR                |
+| Transfer high | 1.000                    | 1.000       | OULU                         |
+| Transfer low  | 1.963                    | 1.96        | OULU                         |
+| Axle          | 3.70 (see below)         | not stated  | OULU, IH-GEAR                |
 
 - FJ62 with H151F, per OULU: 4.081, 2.294, 1.490, 1.00, 0.881; transfer low 2.488.
 - OULU gives maximum reduction for HJ60 of 35.1, calculated.

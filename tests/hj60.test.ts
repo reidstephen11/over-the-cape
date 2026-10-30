@@ -59,7 +59,12 @@ describe('60 Series wagon', () => {
       }
       const cabin = vehicles.hj60.cabin;
       for (const dial of Object.values(cabin.dials)) {
-        const ray = new Raycaster(new Vector3(dial.x, cabin.dialY, cabin.dialZ + 0.25), new Vector3(0, 0, -1), 0, 0.3);
+        const ray = new Raycaster(
+          new Vector3(dial.x, cabin.dialY, cabin.dialZ + 0.25),
+          new Vector3(0, 0, -1),
+          0,
+          0.3,
+        );
         const hit = ray.intersectObject(shell)[0];
         expect(hit).toBeDefined();
         expect(hit.point.z).toBeLessThan(cabin.dialZ + 0.015);
