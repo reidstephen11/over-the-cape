@@ -1,0 +1,183 @@
+{
+  "vehicle": "Toyota Land Cruiser 60 Series (J60)",
+  "target": "Australian 1985-86 HJ60 standard-roof wagon, pre-facelift",
+  "side_convention": "left/right are the vehicle's own, seen from the driver's seat. Australian RHD: driver sits on the right.",
+  "photos": [
+    {
+      "file": "front-34-left-customwagon-1985.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:1985_Toyota_Land_Cruiser_Customwagon_(8881607000).jpg",
+      "author": "Niels de Wit from Lunteren, The Netherlands",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "width": 2786,
+      "height": 1756,
+      "bytes": 917344,
+      "description": "1985 Customwagon, nearly straight front, slight left side visible. Round lamps. Cream, appears stock."
+    },
+    {
+      "file": "front-34-left-n-hj60v-std-1987-standard-roof.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_N-HJ60V_Land_Cruiser_STANDARD_ROOF_STD_(No.80)_(23101509303).jpg",
+      "author": "先従隗始",
+      "licence": "CC0",
+      "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "width": 4608,
+      "height": 3072,
+      "bytes": 4172269,
+      "description": "Japanese N-HJ60V STANDARD ROOF, caption 1987. Closest to target body: HJ60, standard roof, round lamps, base trim. Winch bumper fitted."
+    },
+    {
+      "file": "front-34-right-j60-1981.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_J60_4.2_1981_(52625758924).jpg",
+      "author": "RL GNZLZ from Chile",
+      "licence": "CC BY-SA 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "width": 4000,
+      "height": 2151,
+      "bytes": 2619464,
+      "description": "1981 J60 4.2 in red, right front three-quarter, round lamps. Appears stock apart from wheels."
+    },
+    {
+      "file": "front-fj60lg-usa-1981-87.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser.jpg",
+      "author": "IFCAR",
+      "licence": "Public domain",
+      "licence_url": null,
+      "width": 1203,
+      "height": 727,
+      "bytes": 198121,
+      "description": "FJ60LG USA, 1981-87, near-straight front, round lamps, 1203 px. Public domain."
+    },
+    {
+      "file": "rear-34-left-n-hj60v-std-1987-barn-doors.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_N-HJ60V_Land_Cruiser_STANDARD_ROOF_STD_(No.80)_(23101509305).jpg",
+      "author": "先従隗始",
+      "licence": "CC0",
+      "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "width": 4608,
+      "height": 3072,
+      "bytes": 5267133,
+      "description": "Rear of the same N-HJ60V standard-roof car as front-34-left. Two rear glasses with a centre split: barn doors. Steel rear bumper with step."
+    },
+    {
+      "file": "rear-34-right-fj60-1986.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:1981-1987_Toyota_Land_Cruiser_(FJ60)_wagon_(2011-03-10).jpg",
+      "author": "OSX",
+      "licence": "Public domain",
+      "licence_url": null,
+      "width": 3672,
+      "height": 1974,
+      "bytes": 5011661,
+      "description": "1986 FJ60 per caption, Australian plates, right rear three-quarter, side nearly in profile. White. Rear door type not confirmed from preview."
+    },
+    {
+      "file": "rear-j60-spare-carrier.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:DSCN0683_(1673187808).jpg",
+      "author": "Tom Reynolds from Melbourne, Australia",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "width": 2048,
+      "height": 1536,
+      "bytes": 715836,
+      "description": "J60 straight rear with swing-away spare, Australian plates, 2048 px, partly obstructed by a second vehicle."
+    },
+    {
+      "file": "side-left-34-customwagon-4d-1983.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:1983_Toyota_Land_Cruiser_Customwagon_4.0D_G_(52991100712).jpg",
+      "author": "Rutger van der Maar",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "width": 2048,
+      "height": 1361,
+      "bytes": 1608822,
+      "description": "1983 Customwagon 4.0D (Dutch-registered), left side with slight front angle. Standard-looking body, non-standard dark wheels."
+    },
+    {
+      "file": "side-left-34-j60-snow.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Old_School_vs_Modern_-_Toyota_Land_Cruiser_and_Mitsubishi_RVR_-_Flickr_-_dave_7.jpg",
+      "author": "dave_7 from Canada",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "width": 3734,
+      "height": 2308,
+      "bytes": 8388098,
+      "description": "J60 in brown, left side from slightly ahead, shares frame with a modern car. Appears stock."
+    },
+    {
+      "file": "side-left-j60-1984-mod.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_J60_1984_(52281043481).jpg",
+      "author": "RL GNZLZ from Chile",
+      "licence": "CC BY-SA 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/2.0",
+      "width": 5000,
+      "height": 2700,
+      "bytes": 2990511,
+      "description": "1984 J60, near-square left profile. Modified: roof rack, big tyres, likely lift."
+    },
+    {
+      "file": "side-left-j60-lifted.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:LAnd_Cruiser_Lifted.jpg",
+      "author": "Accord14",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "width": 1549,
+      "height": 632,
+      "bytes": 231758,
+      "description": "J60, square left profile, 1549 px. Modified: lift, big black wheels. Low resolution; useful for door and window lines."
+    },
+    {
+      "file": "side-left-j60-mod-roof-tent.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Side_view_of_Toyota_Land_Cruiser_J60_with_roof_tent.jpg",
+      "author": "Pittigrilli",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "width": 4032,
+      "height": 3024,
+      "bytes": 6650028,
+      "description": "J60 wagon, near-square left profile. Round or rectangular lamps not checked. Modified: roof tent, rear spare carrier, lift, black wheels. Good for proportions only."
+    },
+    {
+      "file": "side-right-34-60-1984-mod.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:1984_Toyota_Land_Cruiser_60_4.2_(53034251390).jpg",
+      "author": "Rutger van der Maar",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "width": 2048,
+      "height": 1448,
+      "bytes": 1973760,
+      "description": "1984 60 4.2 in red with decals, right side. Modified: roof rack, bull bar or similar."
+    },
+    {
+      "file": "side-right-34-j60-1985-4d.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_(43006970030).jpg",
+      "author": "Guillaume Vachey from Chalon sur Saone, France",
+      "licence": "CC0",
+      "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "width": 2217,
+      "height": 1582,
+      "bytes": 676393,
+      "description": "1985 4.0 diesel in The Hague, right side from slightly behind. White, lamps round per sibling photo. Non-standard wheels."
+    },
+    {
+      "file": "side-right-34-j60-ireland.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_(J6%3F)_in_Ireland.jpg",
+      "author": "JoachimKohler-HB",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "width": 4200,
+      "height": 2800,
+      "bytes": 8310234,
+      "description": "J60 in Ireland, right side from slightly ahead. Cream, appears stock."
+    },
+    {
+      "file": "side-right-j60-mod-roof-rack.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Land_Cruiser_arriving_Schaffen-Diest_2016.jpg",
+      "author": "Charles01",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "width": 2682,
+      "height": 1788,
+      "bytes": 1030570,
+      "description": "J60, near-square right profile, stripe decals. Modified: roof rack, bull bar. Best right-side profile available."
+    }
+  ]
+}

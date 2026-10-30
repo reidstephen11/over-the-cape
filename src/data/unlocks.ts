@@ -37,6 +37,10 @@ export const vehicleChallenges: Record<LockedVehicleId, VehicleChallenge> = {
     task: 'Reach the Lions Den without using the winch',
     unlocked: 'Through the whole CREB without the winch. The Army lends you its Unimog.',
   },
+  hj60: {
+    task: 'Finish the CREB in the 40 Series',
+    unlocked: 'The old 40 got you through. Its big brother, a 1986 HJ60 wagon, is yours.',
+  },
   sooty80: {
     task: 'Beat 2:00 up Big Red, 2:00 up Bob’s Hill and 3:00 down the concrete',
     unlocked: 'All three sections on time. The modified 80 Series is yours.',

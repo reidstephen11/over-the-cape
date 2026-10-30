@@ -591,6 +591,35 @@ export const troopyDieselSynthTuning: EngineSynthTuning = {
 };
 
 /**
+ * The 60 Series' 4.0 L 2H: an older indirect-injection diesel six than the Troop Carrier's
+ * 1HZ, so the same smooth six-cylinder firing with a lower, looser idle, a little more
+ * clatter, and a slow, labouring starter on its glow plugs. Its exhaust runs back under the
+ * wagon to a tailpipe behind the right rear wheel.
+ */
+export const twoHSynthTuning: EngineSynthTuning = {
+  ...troopyDieselSynthTuning,
+  idleRpm: 650,
+  limiterRpm: 4000,
+  jitter: { idle: 0.12, load: 0.04, timingDeg: 3, lopeRpm: 10 },
+  exhaust: {
+    ...troopyDieselSynthTuning.exhaust,
+    tailPipe: { length: 2.4, reflection: -0.3, dampingHz: 3000 },
+  },
+  valves: { hz: [1500, 2600], q: 4, gain: 0.8 },
+  starter: {
+    seconds: 1.5,
+    rpm: 155,
+    compressionDip: 0.5,
+    meshPerCrankTurn: 120,
+    toneHz: 760,
+    brushHz: 2200,
+    gain: 0.28,
+  },
+  catch: { seconds: 2, flareRpm: 1000, flareSeconds: 0.4, settleSeconds: 0.7 },
+  knock: { hz: [950, 1750], q: 2.5, idle: 0.85, load: 0.28, gain: 3.4 },
+};
+
+/**
  * The GQ Patrol's TD42: a 4.2 L six-cylinder diesel with no turbo. Six cylinders fire
  * three times a crank turn, so it idles smoother and deeper than the Perentie's four,
  * with the same hard combustion knock, a gruff valve clatter and a long exhaust run
@@ -820,6 +849,7 @@ export const engineSynthTunings = {
   hilux: petrolFourSynthTuning,
   unimog: dieselSixSynthTuning,
   troopy: troopyDieselSynthTuning,
+  hj60: twoHSynthTuning,
   patrol: td42SynthTuning,
   sooty80: {
     ...td42SynthTuning,

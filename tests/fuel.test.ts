@@ -32,6 +32,7 @@ describe('vehicle fuel', () => {
     ['hilux', 9, 16],
     ['unimog', 20, 30],
     ['troopy', 11, 19],
+    ['hj60', 10, 18],
     ['patrol', 10, 18],
     ['lc79', 13, 24],
     ['sooty80', 12, 24],
