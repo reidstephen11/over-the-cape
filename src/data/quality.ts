@@ -22,6 +22,8 @@ export interface QualityPreset {
   particles: number;
   /** Max device pixel ratio. */
   pixelRatio: number;
+  /** Lowest share of that resolution drawn while the graphics can't keep up (1: never lower). */
+  minRenderScale: number;
   antialias: boolean;
 }
 
@@ -40,6 +42,7 @@ export const qualityPresets: Record<QualityLevel, QualityPreset> = {
     grassDistance: 70,
     particles: 0.45,
     pixelRatio: 1,
+    minRenderScale: 0.7,
     antialias: false,
   },
   medium: {
@@ -54,6 +57,7 @@ export const qualityPresets: Record<QualityLevel, QualityPreset> = {
     grassDistance: 100,
     particles: 1,
     pixelRatio: 1.5,
+    minRenderScale: 0.8,
     antialias: true,
   },
   high: {
@@ -68,6 +72,7 @@ export const qualityPresets: Record<QualityLevel, QualityPreset> = {
     grassDistance: 140,
     particles: 1.35,
     pixelRatio: 2,
+    minRenderScale: 1,
     antialias: true,
   },
 };

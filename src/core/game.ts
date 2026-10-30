@@ -1836,6 +1836,9 @@ export class Game {
     const t0 = performance.now();
     this.view.render();
     this.sceneMs += (performance.now() - t0 - this.sceneMs) * 0.1;
+    // Not while tests drive a fixed number of steps a frame on the slow software renderer.
+    if (this.loop.fixedSteps === 0)
+      this.view.adaptResolution(frameDt, this.loop.timings.sim + this.loop.timings.render);
     this.audio.update(
       buildAudioFrame(
         v,
@@ -1920,7 +1923,7 @@ export class Game {
         ...(this.debugTools?.update(v) ?? []),
         `winch ${w.anchor ? `${w.anchor.label} ${w.length.toFixed(1)} m ${(w.tension / 1000).toFixed(1)} kN` : 'off'}  planks ${tools.planks.carried}/2  jack ${tools.jack.state}`,
         `flood ${fl.timer.toFixed(1)} s${fl.stalled ? ' STALLED' : ''}  dirt ${v.condition.dirt.sides.toFixed(2)}  dents ${v.condition.dents.length}  mode ${this.tool.mode}`,
-        `cpu ${(this.loop.timings.sim + this.loop.timings.render).toFixed(1)} ms: sim ${this.loop.timings.sim.toFixed(1)} ms (${this.loop.timings.steps.toFixed(1)} steps)  frame ${this.loop.timings.render.toFixed(1)} ms (three.js ${this.sceneMs.toFixed(1)} ms)`,
+        `cpu ${(this.loop.timings.sim + this.loop.timings.render).toFixed(1)} ms: sim ${this.loop.timings.sim.toFixed(1)} ms (${this.loop.timings.steps.toFixed(1)} steps)  frame ${this.loop.timings.render.toFixed(1)} ms (three.js ${this.sceneMs.toFixed(1)} ms)  resolution ${Math.round(this.view.resolutionScale * 100)}%`,
         audioLine(this.audio),
         `particles: ${this.view.particles.counts()}`,
       ]);

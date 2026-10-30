@@ -1850,3 +1850,16 @@ The game runs on a Batocera PC as a Ports tile. `batocera/` holds a small Electr
 - **Speed:** on a Ryzen 5 3500U the first drive of the track ran at 11 fps at the default 15 W on Medium, 40–45 fps at 30 W on Low, and about 60 fps at 30 W on Low drawn at 1280×720. So `deploy.sh` sets 30 W for this game, new saves start on Low, and the wrapper sets `devicePixelRatio` to 2/3 from a script added to `index.html`. Storm scenes were not measured.
 - **Exit:** Batocera's exit hotkey sends Alt+F4. The wrapper quits on the key's release, because quitting on the press let EmulationStation catch the same key and restart. Holding Select + Start for 1.5 seconds is a backup.
 - **Not tested with a physical controller.**
+
+## v1.12: smoother under the trees, round 2
+
+Steef, after v1.03: "Still really choppy in trees on Bloomfield".
+
+**What was measured.** A processor profile while the autopilot drove the Bloomfield Track (Low graphics, phone-sized window). Picking which trees to draw took about 4 ms a frame on a desktop, several times that on a phone. three.js rebuilt each tree's bounding sphere from its matrix on every draw, for every tile in view and again for the shadow map. The physics step and the rest of the frame were small beside it.
+
+**Fix.**
+
+- **Faster tree picking** (`src/render/treeCulling.ts`). Trees don't move, so each tree's bounding sphere is worked out once when the map loads (its middle-detail sphere, 20% larger to cover the other two). Each draw only tests those spheres against the view. It fills three's draw list the way `BatchedMesh.onBeforeRender` does in r186; if three is upgraded, check that its private fields still match. 4.3 ms falls to about 0.5 ms a frame. Screenshots before and after are the same, shadows included.
+- **Lower resolution only while the graphics struggle** (`src/render/renderScale.ts`). When frames have been slower than about 36 a second for a second and the game's own code takes under 60% of the frame (so the graphics chip is what's slow), the picture is drawn 10% smaller, down to 70% on Low and 80% on Medium. High never changes. Once frames run faster than about 52 a second for 4 s, and at least 10 s after the last step down, it steps back up. It is off while tests drive a fixed number of steps a frame. `?debug` shows the current resolution.
+
+I asked Steef for the `?debug` numbers on his phone, to tell whether the processor or the graphics chip is the limit. Until then, both are covered.
