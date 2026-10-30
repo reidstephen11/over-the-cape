@@ -251,7 +251,7 @@ describe('tyres', () => {
       s.physics.world.free();
       return result;
     };
-    const small = await landing(1.25);
+    const small = await landing(1.5);
     expect(small.faults).toContain('puncture');
     expect(small.faults).not.toContain('sidewall');
     // A puncture leaks slowly: still well up after 3 s.

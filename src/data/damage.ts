@@ -42,16 +42,16 @@ export const damageTuning = {
      * Spinning a wheel hard on rock wears through the tread: this many seconds of full
      * spin (less spin counts for less) punctures the tyre. Crawling in low range barely spins.
      */
-    abrasionSeconds: 8,
+    abrasionSeconds: 6,
     /** Spin (0..1) below this on rock does no harm. */
     abrasionSpin: 0.45,
     /**
      * A wheel dropping into a pothole or washout pinches the tyre (a puncture) when the
      * strike (the vehicle's speed in m/s times the hole's depth in m, give or take a
-     * quarter) is over this. Hit squarely, a 25 cm pothole pinches from 51 km/h and a 30 cm
-     * washout from 42; glancing, from 84 and 70.
+     * quarter) is over this. Hit squarely, a 25 cm pothole pinches from 46 km/h and a 30 cm
+     * washout from 38; glancing, from 77 and 64.
      */
-    strike: 4.4,
+    strike: 4,
     /**
      * A sharp stone can puncture a tyre at any pace, by chance: about this many punctures
      * per kilometre one tyre rolls at 20 km/h on each surface (none on soft ground or the

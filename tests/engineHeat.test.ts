@@ -36,7 +36,9 @@ function fake(opts: HeatOpts) {
     lastImpact: 0,
     lastImpactDir: { x: 0, y: 0, z: 0 },
     bodyContact: { knock: 0 },
-    body: { rotation: () => ({ x: 0, y: 0, z: 0, w: 1 }) },
+    body: { rotation: () => ({ x: 0, y: 0, z: 0, w: 1 }), angvel: () => ({ x: 0, y: 0, z: 0 }) },
+    rand: () => 1,
+    physics: { ground: {} },
     tiltDeg: () => 0,
     floodEvent: null,
   } as unknown as Vehicle;
