@@ -1841,3 +1841,12 @@ Steef asked for a 60 Series, built to a higher standard than the 40, with as muc
 - **Underneath.** Ladder rails, crossmembers, gearbox, sump and tank; the exhaust runs inside the right frame rail so it stays out of the right rear wheel opening (`tests/hj60.test.ts` checks all four wheel openings are open). The first spare is slung under the back.
 - **Triangles.** About 110,000 for the whole vehicle (the body 86,000), against about 91,000 for the 40 and 163,000 for the 80.
 - **What still disagrees.** The bull bar hides the lower grille and the front bumper line, which were taken from the stock fronts. The split between the barn doors and the grille's height are judged from three-quarter views: no square-on rear of a stock barn-door car was found. A second batch of photographs (an Australian Standard on split rims, a dashboard, an engine bay) could not be downloaded in this update.
+
+## v1.11: a Batocera build
+
+The game runs on a Batocera PC as a Ports tile. `batocera/` holds a small Electron wrapper and `deploy.sh`, which builds the site and installs it over SSH. Nothing in `src/` changes except the version number.
+
+- **Electron rather than a browser:** Batocera ships no browser, and a Ports entry needs one program that opens full screen and quits cleanly. Electron brings its own Chromium. It needs `libcups.so.2`, which Batocera lacks, so `deploy.sh` takes it from Debian 12.
+- **Speed:** on a Ryzen 5 3500U the first drive of the track ran at 11 fps at the default 15 W on Medium, 40–45 fps at 30 W on Low, and about 60 fps at 30 W on Low drawn at 1280×720. So `deploy.sh` sets 30 W for this game, new saves start on Low, and the wrapper sets `devicePixelRatio` to 2/3 from a script added to `index.html`. Storm scenes were not measured.
+- **Exit:** Batocera's exit hotkey sends Alt+F4. The wrapper quits on the key's release, because quitting on the press let EmulationStation catch the same key and restart. Holding Select + Start for 1.5 seconds is a backup.
+- **Not tested with a physical controller.**

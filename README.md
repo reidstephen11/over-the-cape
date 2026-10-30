@@ -17,6 +17,8 @@ npm install
 npm run dev        # then open http://localhost:5173
 ```
 
+**On Batocera** (x86-64): `bash batocera/deploy.sh [host]` builds the game and installs it as a Ports entry over SSH (default host `batocera-nuc.local`). Run it again after an update; saves are kept. Use the Batocera exit hotkey to quit.
+
 | Script             | What it does                                        |
 | ------------------ | --------------------------------------------------- |
 | `npm run build`    | Type-checks and builds the static site into `dist/` |
@@ -227,6 +229,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v1.11 Batocera build:** the game launches from Ports, a controller drives it, and the exit hotkey returns to the menu.
 - [ ] **v1.10 the 60 Series wagon:** the loading screen shows v1.10. Finish a CREB run in the 40 Series: does the finish screen say the 60 Series is unlocked, and is it open under Vehicle & difficulty next time? (Or use `?dev`, where all ten are open.) Walk round it close up: does it look like a 60, with the leaning sides and two creases, the flares, round lamps in square bezels, the barn doors and the white split rims? Look along the roof edges, at the rear corners, under the doors and round the wheel arches: any gaps, sky showing through, or panels cutting through each other? Do the bull bar, rack, mirrors and mud flaps sit on the body? Steer to full lock over rough ground: do the tyres stay inside the arches? From the driver's seat, are the dials readable through the wheel and the road visible over the bonnet? Does the diesel sound right, and does it pull steadily up Big Red in low range? At night, do the beams start at the headlamps?
 - [ ] **v1.09 new 80 Series body:** the loading screen shows v1.09. Pick the 80 Series (with `?dev` if it is still locked) and walk round it close up: does it look like an 80 now, with the sloping windscreen, the roof dipping to the screen, the tail leaning back above the tail lamps and the rounded corners? Look along the roof edges, at the rear corners and the liftgate, and under the doors: any gaps, sky showing through, or panels cutting through each other? Do the snorkel, mirrors, roof rack feet, side rails and bull bar sit on the body without floating or cutting in? Steer to full lock over rough ground: do the 35s stay clear of the flares? From the driver's seat, are the dials readable through the wheel and the road visible over the bonnet? At night, do the beams start at the headlamps and the bar lamps?
 - [ ] **v1.07–v1.08 tougher tyres:** the loading screen shows v1.08. Hit a dark washout on the paddock road at about 40 km/h: does the tyre survive now (it pinched before)? Drive a run at normal pressure: do you sometimes get a "picked up a sharp stone" puncture on rock or gravel, without a hard hit? Let the tyres down and throw the car hard into a tight bend at about 30 km/h: does a tyre roll off its rim (flat at once, needs a spare)? Is a gentle bend at the same speed safe?
