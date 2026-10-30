@@ -16,6 +16,7 @@ Each modelled vehicle has a folder. `SOURCES.md` in that folder names the real v
 | `troopy`   | Troop Carrier              | Toyota Land Cruiser 75 Series Troop Carrier, HZJ75, 1990–99, 4.2 L 1HZ                                           | `landcruiser-hzj75-troopy/`                                 |
 | `patrol`   | GQ Patrol                  | Nissan Patrol Y60 (GQ) long-wheelbase wagon, 1987–97, 4.2 L TD42                                                 | `nissan-gq-patrol/`                                         |
 | `lc79`     | LC79 V8                    | Toyota Land Cruiser 79 single cab with the 2024 front clip, then the game's lift, 37 inch tyres, tray and canopy | `landcruiser-79-2024/`                                      |
+| `sooty80`  | 80 Series — Sooty MkII     | Toyota Land Cruiser 80 Series wide-body wagon, 1990–97, split tailgate, built up like Shaun Whale's Sooty MkII   | `landcruiser-80-sooty/`                                     |
 
 The trailers (`src/data/trailers.ts`, drawn in `src/render/trailerView.ts`) have folders too. The studio shows one with `?trailer=no5` (or `box6x4`), on its own or hitched behind `vehicle`; `npx vite-node scripts/studio-shots.ts /tmp/shots trailer:no5` photographs it.
 
@@ -28,7 +29,7 @@ Not modelled yet, so there is no folder. Collect photographs the same way before
 
 - A Suzuki Sierra, and a 1950s vehicle, were offered for later episodes and not chosen. Do not start either until the owner picks it.
 
-The `sooty80` addition uses the recovered MkII-inspired 80 Series review draft; see [`landcruiser-80-sooty/SOURCES.md`](landcruiser-80-sooty/SOURCES.md) for sources, dimensions and the outstanding photo comparison.
+Since v1.09 the `sooty80` body is rebuilt from the photographs in `landcruiser-80-sooty/`. Its `SOURCES.md` also gives the studio camera that matches `side-left.jpg`, so the model's outline can be laid over the photo again after any change.
 
 ## Before changing a body
 
