@@ -1064,12 +1064,170 @@ function roof(b: VehicleBuilder): void {
   }
 }
 
+// The factory stripe kit of the mid-1980s 60s, measured off the red 1984 car in
+// side-right-34-60-1984-mod.jpg. Along both sides a band under the handles, a pinstripe and a
+// stripe at its top and bottom, from the rear corner to the front guard, broken round the rear
+// wheel and closed at the back. Ahead of the B-pillar three slashes lean forward at the top,
+// with TOYOTA LAND CRUISER between them, and a narrow slash and pinstripe close the front.
+/** How far each slash moves back for every metre down. */
+const SLANT = 0.75;
+/** Heights of the pinstripes and stripes at the top and bottom of the band. */
+const TOP_PIN: Vtx = [0.54, 0.552];
+const TOP_STRIPE: Vtx = [0.497, 0.521];
+const LOW_STRIPE: Vtx = [0.306, 0.322];
+const LOW_PIN: Vtx = [0.292, 0.3];
+/** The band's back end, and where its lower lines stop either side of the rear wheel. */
+const STRIPE_END = 2.445;
+const ARCH_GAP: Vtx = [0.99, 1.84];
+/** Each slash's front and back edges, at the middle of the top stripe. */
+const SLASHES = {
+  rear: [-0.115, -0.032],
+  dark: [-0.37, -0.252],
+  front: [-0.569, -0.487],
+  end: [-0.815, -0.798],
+  endPin: [-0.85, -0.836],
+} as const;
+const STRIPE_COLOURS = {
+  pin: new THREE.Color('#3F2A1D'),
+  stripe: new THREE.Color('#CF732C'),
+  text: new THREE.Color('#EFE9DA'),
+};
+
+/** The z of a slash's edge at height y. */
+const slashAt = (edge: number) => (y: number) => edge + SLANT * (TOP_STRIPE[0] + 0.012 - y);
+
+/**
+ * Stroke letters for the side lettering: boxes on a 10 × 10 grid as "u0 v0 u1 v1", with u
+ * along the reading direction and v up. A letter is as wide as its widest box.
+ */
+const STROKES: Record<string, string> = {
+  T: '0 8 10 10, 4 0 6 8',
+  O: '0 0 10 2, 0 8 10 10, 0 2 2 8, 8 2 10 8',
+  Y: '0 5 2 10, 8 5 10 10, 0 4 10 6, 4 0 6 4',
+  A: '0 0 2 8, 8 0 10 8, 0 8 10 10, 2 4 8 6',
+  L: '0 0 2 10, 2 0 10 2',
+  N: '0 0 2 10, 8 0 10 10, 2 8 8 10',
+  D: '0 0 2 10, 2 8 8 10, 2 0 8 2, 8 2 10 8',
+  C: '0 0 2 10, 2 8 10 10, 2 0 10 2',
+  R: '0 0 2 10, 2 8 10 10, 8 5 10 8, 2 4 10 6, 7 0 9 4',
+  U: '0 2 2 10, 8 2 10 10, 0 0 10 2',
+  I: '0 0 2 10',
+  S: '0 8 10 10, 0 5 2 8, 0 4 10 6, 8 2 10 5, 0 0 10 2',
+  E: '0 0 2 10, 2 8 10 10, 2 4 8 6, 2 0 10 2',
+};
+const strokes = (c: string) => STROKES[c].split(', ').map((box) => box.split(' ').map((n) => +n / 10));
+const strokeWidth = (c: string) => Math.max(...strokes(c).map((box) => box[2]));
+
+function stripes(b: VehicleBuilder): void {
+  const { rear, dark, front, end, endPin } = SLASHES;
+  // A piece of the band between two heights, from a front edge back to a rear edge; each edge
+  // is a fixed z or a slash. Long pieces are cut into lengths of 15 cm or less so they follow
+  // the panel into a dent.
+  type Edge = number | ((y: number) => number);
+  const at = (e: Edge, y: number) => (typeof e === 'number' ? e : e(y));
+  const piece = ([y0, y1]: Vtx, fore: Edge, aft: Edge): Vtx[][] => {
+    const f0 = at(fore, y0),
+      f1 = at(fore, y1),
+      a0 = at(aft, y0),
+      a1 = at(aft, y1);
+    const n = Math.max(1, Math.ceil(Math.max(a0 - f0, a1 - f1) / 0.15));
+    const z = (f: number, a: number, k: number) => f + ((a - f) * k) / n;
+    return Array.from({ length: n }, (_, k): Vtx[] => [
+      [z(f1, a1, k), y1],
+      [z(f1, a1, k + 1), y1],
+      [z(f0, a0, k + 1), y0],
+      [z(f0, a0, k), y0],
+    ]);
+  };
+  const slash = (edges: readonly [number, number], heights: Vtx) =>
+    piece(heights, slashAt(edges[0]), slashAt(edges[1]));
+  const tall: Vtx = [LOW_STRIPE[0], TOP_STRIPE[1]],
+    taller: Vtx = [LOW_PIN[0], TOP_PIN[1]];
+  const stripe = [
+    piece(TOP_STRIPE, slashAt(rear[1]), STRIPE_END),
+    piece(LOW_STRIPE, slashAt(rear[1]), ARCH_GAP[0]),
+    piece(LOW_STRIPE, ARCH_GAP[1], STRIPE_END),
+    piece([LOW_STRIPE[1], TOP_STRIPE[0]], STRIPE_END - 0.02, STRIPE_END),
+    slash(rear, tall),
+    slash(front, tall),
+    piece(TOP_STRIPE, slashAt(end[1]), slashAt(front[0])),
+    piece(LOW_STRIPE, slashAt(end[1]), slashAt(front[0])),
+    slash(end, tall),
+  ].flat();
+  const pin = [
+    piece(TOP_PIN, slashAt(dark[1]), STRIPE_END),
+    piece(TOP_PIN, slashAt(endPin[1]), slashAt(dark[0])),
+    piece(LOW_PIN, slashAt(dark[1]), ARCH_GAP[0]),
+    piece(LOW_PIN, ARCH_GAP[1], STRIPE_END),
+    piece(LOW_PIN, slashAt(endPin[1]), slashAt(dark[0])),
+    slash(dark, taller),
+    slash(endPin, taller),
+  ].flat();
+  for (const side of [-1, 1]) {
+    // Flat shapes laid on the upright band of the side, 2 mm proud of the paint, with the
+    // shape's x running forward on the right and back on the left so each faces outwards.
+    const m = new THREE.Matrix4()
+      .makeBasis(new THREE.Vector3(0, 0, -side), new THREE.Vector3(0, 1, 0), new THREE.Vector3(side, 0, 0))
+      .setPosition(side * (WS + 0.002), 0, 0);
+    b.push(m);
+    b.slot = M.Paint;
+    b.tag = Z.Sides;
+    for (const [shapes, color] of [
+      [stripe, STRIPE_COLOURS.stripe],
+      [pin, STRIPE_COLOURS.pin],
+    ] as const)
+      for (const pts of shapes)
+        b.geometry(
+          new THREE.ShapeGeometry(new THREE.Shape(pts.map(([z, y]) => new THREE.Vector2(-side * z, y)))),
+          color,
+        );
+    b.pop();
+    // TOYOTA LAND CRUISER in white stroke capitals reading towards the front on the right side
+    // and towards the back on the left, as the kit was printed for each side.
+    const words = 'TOYOTA LAND CRUISER',
+      gap = 0.35,
+      space = 1.2;
+    let length = 0;
+    for (const [i, c] of [...words].entries())
+      length += (c === ' ' ? space : strokeWidth(c)) + (i > 0 && c !== ' ' && words[i - 1] !== ' ' ? gap : 0);
+    const z0 = -0.001,
+      z1 = -0.449,
+      h = 0.031,
+      y0 = 0.4 - h / 2,
+      unit = (z0 - z1) / length;
+    let u = 0;
+    for (const [i, c] of [...words].entries()) {
+      if (c === ' ') {
+        u += space;
+        continue;
+      }
+      if (i > 0 && words[i - 1] !== ' ') u += gap;
+      for (const [a0, v0, a1, v1] of strokes(c)) {
+        const zs = [a0, a1].map((a) => (side > 0 ? z0 - (u + a) * unit : z1 + (u + a) * unit));
+        b.block(
+          side * (WS + 0.003),
+          y0 + ((v0 + v1) / 2) * h,
+          (zs[0] + zs[1]) / 2,
+          0.002,
+          (v1 - v0) * h,
+          Math.abs(zs[1] - zs[0]),
+          STRIPE_COLOURS.text,
+          M.Paint,
+          Z.Sides,
+        );
+      }
+      u += strokeWidth(c);
+    }
+  }
+}
+
 /** The 60 Series wagon with its bull bar, gutter rack, second spare and cabin. */
 export function buildHj60Body(tuning: VehicleTuning, wheel: THREE.BufferGeometry): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   frontClip(b);
   windscreen(b);
   sides(b);
+  stripes(b);
   rear(b);
   roof(b);
   addHj60Interior(b, tuning.engine.redlineRpm);
