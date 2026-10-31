@@ -26,7 +26,7 @@ module.exports = {
   bog:      { hot: 'ridge-bog', veh: 'hilux', speed: 6, start: 16, secs: 4.5, wx: 3, hour: 14, cam: { rig: { fwd: 5.5, side: -3.2, up: 0.6, lookFwd: 0, lookUp: 0.7 }, smooth: 0.3 } },
   bogrear:  { hot: 'ridge-bog', veh: 'perentie', speed: 6, start: 12, secs: 4, wx: 3, hour: 14.5, cam: { rig: { fwd: -4.8, side: 1.3, up: 0.5, lookFwd: 4, lookUp: 0.7 }, smooth: 0.3 } },
   // Full send.
-  send1:    { hot: 'paddock-creeks', veh: 'lc79', speed: 15, start: 26, secs: 3.5, hour: 10, cam: { fixed: { along: 4, side: 3.0, h: 0.5 }, lookUp: 0.6 } },
+  send1:    { hot: 'paddock-creeks', veh: 'lc79', speed: 15, start: 26, secs: 4.8, hour: 10, cam: { fixed: { along: 4, side: 3.0, h: 0.5 }, lookUp: 0.6 } },
   send2:    { hot: 'paddock-creeks', veh: 'shortie', speed: 14, start: 4, secs: 3, slow: 0.5, hour: 10.5, cam: { rig: { fwd: 1.5, side: 4.5, up: 0.7, lookFwd: 1.0, lookUp: 0.6 }, smooth: 0.5 } },
   send3:    { hot: 'big-red', veh: 'hilux', speed: 16, back: 260, start: 140, secs: 3, hour: 9, cam: { rig: { fwd: -6, side: 2.5, up: 1.0, lookFwd: 6, lookUp: 0.8 }, smooth: 0.3 } },
   send4:    { hot: 'creb-lookout', veh: 'lc79', speed: 13, back: 120, start: 50, secs: 3, hour: 16.5, cam: { preset: 'frontRight' } },

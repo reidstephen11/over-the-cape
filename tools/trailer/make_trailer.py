@@ -26,20 +26,21 @@ TL = [
     dict(clip='bog', **{'from': 0.8}, dur=1.5 * B, text=T('GET BOGGED'), tin=1.4, eng=1.3),
     dict(clip='bogrear', **{'from': 1.5}, dur=B, eng=1.3),
     # full send
-    dict(clip='send1', dur=B, text=T('OR SEND IT'), tin=0.1, splash=[(1.2, 1.0)]),
-    dict(clip='send2', dur=B, splash=[(0.3, 1.0)]),
-    dict(clip='send4', dur=B),
+    dict(clip='send4', dur=B, text=T('OR SEND IT'), tin=0.1),
+    dict(clip='send1', **{'from': 1.8}, dur=B, splash=[(0.6, 1.0)]),
+    dict(clip='send4', **{'from': 1.0}, dur=B / 2),
+    dict(clip='shortcut', **{'from': 0.4}, dur=B / 2),
     dict(clip='send5', dur=B / 2),
     dict(clip='send3', dur=B / 2),
     # night
     dict(clip='dusk', dur=B, text=T('BEAT THE DARK'), tin=0.3),
     dict(clip='nightrig', dur=B),
     dict(clip='nightcab', **{'from': 0.8}, dur=B, text=T('OR DRIVE INTO THE NIGHT'), tin=0.3),
-    dict(clip='nightlow', **{'from': 1.0}, dur=B),
-    dict(clip='nightsend', **{'from': 0.8}, dur=B / 2),
-    dict(clip='nightcab2', **{'from': 1.5}, dur=B / 2),
+    dict(clip='nightcab2', **{'from': 0.4}, dur=B, gamma=1.3),
+    dict(clip='nightsend', **{'from': 0.8}, dur=B / 2, gamma=1.45),
+    dict(clip='night', **{'from': 0.5}, dur=B / 2, gamma=1.3),
     # finale
-    dict(clip='send1', **{'from': 1.2}, dur=B / 2),
+    dict(clip='send1', **{'from': 2.4}, dur=B / 2),
     dict(clip='shortcut', **{'from': 1.2}, dur=B / 2),
     dict(clip='bigred', **{'from': 1.6}, dur=B / 2),
     dict(clip='send4', **{'from': 1.5}, dur=B / 2, fout=0.25),
@@ -58,7 +59,7 @@ for it in TL:
     it['t0'] = acc; acc += it['dur']
 idx = lambda clip: next(i for i, it in enumerate(TL) if it.get('clip') == clip)
 cues = dict(hit1=TL[1]['t0'], drums=TL[idx('splash2')]['t0'], part2=TL[idx('concrete')]['t0'], brk=TL[idx('bog')]['t0'],
-            final=TL[idx('send1')]['t0'], logo=TL[-1]['t0'])
+            final=TL[idx('send4')]['t0'], logo=TL[-1]['t0'])
 print('total', round(total, 2), cues)
 audio(TL, total, cues)
 finish(total, 'over-the-cape-trailer.mp4')

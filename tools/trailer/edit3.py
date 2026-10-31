@@ -18,14 +18,14 @@ SANS = font(SUP + 'Arial.ttf', '/usr/share/fonts/opentype/inter/Inter-Medium.otf
 CREAM = (246, 239, 224, 255); OCHRE = (222, 166, 96, 255)
 BEAT = 60 / 100; BAR = 4 * BEAT
 
-def png_text(path, lines, spacing=0):
+def png_text(path, lines, pos='centre', band=False):
     img = Image.new('RGBA', (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(img)
     fonts = [ImageFont.truetype(f, s) for _, f, s, _, _ in lines]
     def width(t, f, ls): return sum(d.textlength(c, font=f) for c in t) + ls * (len(t) - 1)
     hs = [f.getbbox('HgÅ')[3] - f.getbbox('HgÅ')[1] for f in fonts]
     gaps = [l[4] for l in lines]
     total = sum(hs) + sum(gaps[1:])
-    y = (H - total) / 2
+    y = (H - total) / 2 if pos == 'centre' else H * 0.80 - total / 2
     sh = Image.new('RGBA', (W, H), (0, 0, 0, 0)); sd = ImageDraw.Draw(sh)
     draws = []
     for (t, _, _, col, gap), f, h in zip(lines, fonts, hs):
@@ -36,13 +36,16 @@ def png_text(path, lines, spacing=0):
         for c in t:
             sd.text((xx + 2, top + 4), c, font=f, fill=(0, 0, 0, 210)); draws.append((xx, top, c, f, col)); xx += d.textlength(c, font=f) + ls
         y += h
-    sh = sh.filter(ImageFilter.GaussianBlur(6))
+    if band:
+        top0 = (H - total) / 2 if pos == 'centre' else H * 0.80 - total / 2
+        ImageDraw.Draw(sh).rectangle((0, top0 - 40, W, top0 + total + 40), fill=(0, 0, 0, 120))
+    sh = sh.filter(ImageFilter.GaussianBlur(14 if band else 6))
     img = Image.alpha_composite(sh, img); d = ImageDraw.Draw(img)
     for xx, top, c, f, col in draws: d.text((xx, top), c, font=f, fill=col)
     img.save(path)
 
-def beat_text(t): return [(t, BLACK, 92, CREAM, 0)]
-def small_text(t): return [(t, SERIF_I, 56, CREAM, 0)]
+def beat_text(t): return [(t, BLACK, 92, CREAM, 0)]  # shown in the lower third
+def small_text(t): return [(t, SERIF_I, 64, CREAM, 0)]
 LOGO = [('OVER THE CAPE', SERIF_B, 150, CREAM, 0), ('THE CREB TRACK  ·  CAPE YORK  ·  1986', BLACK, 32, OCHRE, 40),
         ('Play free in your browser', SANS, 38, (226, 220, 206, 255), 64), ('reidstephen11.github.io/over-the-cape', SANS, 32, (190, 184, 170, 255), 16)]
 TITLE = [('OVER THE CAPE', SERIF_B, 150, CREAM, 0)]
@@ -58,7 +61,7 @@ def build(TL, out='trailer.mp4'):
         if 'clip' in it:
             start = int(round(it.get('from', 0) * FPS))
             src = ['-framerate', str(FPS), '-start_number', str(start), '-i', f"{CLIPS}/{it['clip']}/%05d.jpg"]
-            vf = f'scale={W}:{H},eq=contrast=1.08:saturation=1.15:gamma=0.97,vignette=PI/4.5'
+            vf = f"scale={W}:{H},eq=contrast=1.08:saturation=1.15:gamma={it.get('gamma', 0.97)},vignette=PI/4.5"
         else:
             src = ['-f', 'lavfi', '-i', f'color=c=0x0a0908:s={W}x{H}:r={FPS}:d={dur}']
             vf = 'null'
@@ -68,7 +71,7 @@ def build(TL, out='trailer.mp4'):
         vf = ','.join([vf, 'setsar=1', *fades])
         args = ['ffmpeg', '-loglevel', 'error', '-y', *src]
         if it.get('text'):
-            png = f'seg/{i:02d}.png'; png_text(png, it['text'])
+            png = f'seg/{i:02d}.png'; png_text(png, it['text'], 'centre' if 'card' in it else 'low', band='card' not in it)
             ts, te = it.get('tin', 0.15), it.get('tout', dur - 0.1)
             args += ['-loop', '1', '-framerate', str(FPS), '-t', str(dur), '-i', png, '-filter_complex',
                      f"[0:v]{vf}[b];[1:v]format=rgba,fade=in:st={ts}:d=0.18:alpha=1,fade=out:st={te - 0.22:.3f}:d=0.22:alpha=1[x];[b][x]overlay=0:0,format=yuv420p[v]", '-map', '[v]']
