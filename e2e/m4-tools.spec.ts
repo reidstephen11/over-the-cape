@@ -26,6 +26,11 @@ test('M4: winch, planks, jack, flooding, dirt and dents', async ({ page }) => {
   await waitSim(page, 2);
   await page.keyboard.press('KeyE');
   await waitSim(page, 0.5);
+  // With more than one anchor in reach, E opens the chooser and a second E hooks on (v1.18).
+  if ((await vstate(page)).winch.anchor === null) {
+    await page.keyboard.press('KeyE');
+    await waitSim(page, 0.5);
+  }
   const attached = await vstate(page);
   expect(attached.winch.anchor).not.toBeNull();
   const p0 = await page.evaluate(() => window.__game!.vehicle());

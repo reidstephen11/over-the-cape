@@ -9,7 +9,8 @@ import type { Trailer } from '../sim/trailer';
 import type { CrawlCourseDef, CrawlTrailDef, PoiDef } from '../sim/world/mapTypes';
 import type { TrackInfo } from '../sim/world/features';
 import { trailProgress } from '../sim/world/crawlTrail';
-import { headingOf } from '../sim/vehicle/math';
+import { headingOf, v3 } from '../sim/vehicle/math';
+import { anchorPoint } from '../sim/tools/anchors';
 import type { CompassPoi, EpisodeHud, GateState, HudState, Prompt, TrailerHud } from '../ui/hud';
 import type { RepairKind } from '../sim/tools/tools';
 import type { GaugeState } from '../ui/crawlGauges';
@@ -33,6 +34,8 @@ export interface HudInputs {
   tracks?: readonly TrackInfo[];
   /** Is there a winch anchor in reach (checked a few times a second)? */
   anchorInReach: boolean;
+  /** How many anchors are in reach: with two or more, USE opens the chooser. */
+  anchorCount?: number;
   /** Scored crawl run in progress, if any. */
   run?: CrawlRun | null;
   /** Gate count on a map with a gate trail. */
@@ -113,8 +116,20 @@ export function buildHudState(i: HudInputs): HudState {
       { keys: g.back ?? 'Esc', text: 'Cancel' },
     );
   } else if (i.mode === 'winchTarget') {
+    const list = t.targeting ?? [];
+    const a = list[Math.min(list.length - 1, t.targetIndex)];
+    if (a) {
+      const m = v.tuning.winchMount;
+      const w = v.localToWorld(m.x, m.y, m.z);
+      const ap = anchorPoint(a, v3());
+      const d = Math.round(Math.hypot(ap.x - w.x, ap.y - w.y, ap.z - w.z));
+      prompts.push({ keys: `${t.targetIndex + 1}/${list.length}`, text: `${a.label}, ${d} m` });
+    }
     prompts.push(
-      { keys: kb ? 'A / D' : touch ? 'Stick ↔' : 'D-pad ↔', text: 'Choose anchor' },
+      {
+        keys: kb ? 'A / D' : touch ? 'Stick ↔' : 'D-pad ↔',
+        text: touch ? 'Choose anchor, or tap one' : kb ? 'Choose anchor, or click one' : 'Choose anchor',
+      },
       { keys: g.confirm ?? 'E', text: 'Attach winch' },
       { keys: g.back ?? 'Esc', text: 'Cancel' },
     );
@@ -177,7 +192,10 @@ export function buildHudState(i: HudInputs): HudState {
       prompts.push({ keys: `${g.winchIn} / ${g.winchOut}`, text: 'Winch in / out' });
       prompts.push({ keys: g.winch ?? 'E', text: 'Detach winch' });
     } else if (i.anchorInReach && Math.abs(v.speed) < 1.5)
-      prompts.push({ keys: g.winch ?? 'E', text: 'Attach winch' });
+      prompts.push({
+        keys: g.winch ?? 'E',
+        text: (i.anchorCount ?? 1) > 1 ? `Choose a winch anchor (${i.anchorCount} in reach)` : 'Attach winch',
+      });
   }
 
   const pois: CompassPoi[] = [];

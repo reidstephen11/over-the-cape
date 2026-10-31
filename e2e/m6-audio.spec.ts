@@ -80,6 +80,15 @@ test('M6: audio starts with the Drive button, follows the car, and the volume se
   await page.evaluate(() => window.__game!.setParkBrake(true));
   await waitSim(page, 1);
   await page.keyboard.press('KeyE');
+  await waitSim(page, 0.5);
+  // E opens the anchor chooser when there's a choice (v1.18); E again hooks the one picked.
+  const hooked = () =>
+    page.evaluate(
+      () =>
+        (window.__game!.state() as { vehicles: { winch: { anchor: string | null } }[] }).vehicles[0].winch
+          .anchor,
+    );
+  if ((await hooked()) === null) await page.keyboard.press('KeyE');
   await page.keyboard.down('KeyR');
   await expect.poll(async () => (await audio(page)).winchHz, { timeout: 30_000 }).toBeGreaterThan(200);
   await shot(page, 'M6', 'winch-audio');

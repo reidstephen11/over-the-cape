@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { plankTuning } from '../data/tools';
 import type { VehicleTools } from '../sim/tools/tools';
+import { anchorPoint } from '../sim/tools/anchors';
 import type { PlankPose, GroundProbe } from '../sim/tools/planks';
 import type { Vehicle } from '../sim/vehicle/vehicle';
 import { pal } from './colors';
@@ -26,6 +27,13 @@ export class ToolsView {
   private readonly planks = new Map<number, THREE.Mesh>();
   private readonly ghosts: THREE.Mesh[] = [];
   private readonly highlight: THREE.Mesh;
+  /** Fainter rings on the other anchors in reach while choosing one. */
+  private readonly others: THREE.Mesh[] = [];
+  private readonly othersMat: THREE.MeshBasicMaterial;
+  /** Dashed line from the winch to the anchor being chosen. */
+  private readonly preview: THREE.Line;
+  private readonly previewPos = new Float32Array(6);
+  private readonly tmpP = { x: 0, y: 0, z: 0 };
   private readonly tmpA = new THREE.Vector3();
   private readonly tmpB = new THREE.Vector3();
 
@@ -102,13 +110,36 @@ export class ToolsView {
     this.highlight.renderOrder = 30;
     this.highlight.visible = false;
     this.group.add(this.highlight);
+    this.othersMat = new THREE.MeshBasicMaterial({
+      color: pal('vehicleRoof'),
+      transparent: true,
+      opacity: 0.35,
+      depthTest: false,
+    });
+    const pg = new THREE.BufferGeometry();
+    pg.setAttribute('position', new THREE.BufferAttribute(this.previewPos, 3));
+    this.preview = new THREE.Line(
+      pg,
+      new THREE.LineDashedMaterial({
+        color: pal('vehicleRoof'),
+        dashSize: 0.6,
+        gapSize: 0.4,
+        transparent: true,
+        opacity: 0.8,
+        depthTest: false,
+      }),
+    );
+    this.preview.frustumCulled = false;
+    this.preview.renderOrder = 30;
+    this.preview.visible = false;
+    this.group.add(this.preview);
   }
 
   update(v: Vehicle, tools: VehicleTools, probe: GroundProbe, time: number): void {
     this.updateCable(v, tools);
     this.updatePlanks(tools);
     this.updatePreview(v, tools, probe);
-    this.updateHighlight(tools, time);
+    this.updateHighlight(v, tools, time);
   }
 
   private updateCable(v: Vehicle, tools: VehicleTools): void {
@@ -197,16 +228,43 @@ export class ToolsView {
     });
   }
 
-  private updateHighlight(tools: VehicleTools, time: number): void {
+  private updateHighlight(v: Vehicle, tools: VehicleTools, time: number): void {
     const list = tools.targeting;
     if (!list || list.length === 0) {
       this.highlight.visible = false;
+      this.preview.visible = false;
+      for (const o of this.others) o.visible = false;
       return;
     }
-    const a = list[Math.min(list.length - 1, tools.targetIndex)];
+    const sel = Math.min(list.length - 1, tools.targetIndex);
+    while (this.others.length < list.length) {
+      const o = new THREE.Mesh(this.highlight.geometry, this.othersMat);
+      o.rotation.x = Math.PI / 2;
+      o.renderOrder = 29;
+      this.others.push(o);
+      this.group.add(o);
+    }
+    this.others.forEach((o, i) => {
+      const a = list[i];
+      o.visible = !!a && i !== sel;
+      if (!o.visible) return;
+      const p = anchorPoint(a, this.tmpP);
+      o.position.set(p.x, p.y + 0.3, p.z);
+      const r = Math.max(0.5, a.radius + 0.4);
+      o.scale.set(r, r, 1);
+    });
+    const a = list[sel];
+    const p = anchorPoint(a, this.tmpP);
     this.highlight.visible = true;
-    this.highlight.position.set(a.point.x, a.point.y + 0.3 + Math.sin(time * 4) * 0.1, a.point.z);
+    this.highlight.position.set(p.x, p.y + 0.3 + Math.sin(time * 4) * 0.1, p.z);
     const r = Math.max(0.5, a.radius + 0.4);
     this.highlight.scale.set(r, r, 1);
+    // Where the cable would run.
+    const m = v.tuning.winchMount;
+    const w = v.localToWorld(m.x, m.y, m.z);
+    this.previewPos.set([w.x, w.y, w.z, p.x, p.y + 0.3, p.z]);
+    this.preview.geometry.attributes.position.needsUpdate = true;
+    this.preview.computeLineDistances();
+    this.preview.visible = true;
   }
 }

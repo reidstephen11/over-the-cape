@@ -1909,3 +1909,12 @@ Steef found the cards at the Bloomfield River bridge annoying on a phone: a larg
 Steef's Pixel 10a stayed choppy under the Bloomfield forest on High (20–39 fps, with the game's code taking only 10–14 ms of each frame, so the graphics chip was the limit), and was smooth on Medium. He doesn't need High on a phone.
 
 **On a touch screen, Settings → Graphics offers Low and Medium only, and a phone saved on High draws Medium** (and the menu shows Medium as chosen). The saved setting is left as it is, so the same save on a computer still gets High. `qualityFor(level, touch)` in `src/data/quality.ts` gives the preset as drawn; the game and `?bench` use it. Computers are unchanged.
+
+## v1.18: choosing the winch anchor
+
+Steef wanted a way to pick which anchor the winch hooks. A chooser was already there (tool menu → Winch, A/D or the stick to step through the anchors, E to hook), but it was easy to miss and didn't say which anchor was picked.
+
+- **USE / E opens the chooser when two or more anchors are in reach.** It starts on the one the quick hook would have taken, so a second press hooks that one; with a single anchor in reach, USE still hooks it at once. Planks to pick up and a trailer to hitch still come first. The press that opens the chooser is held back for one frame, so it can't also confirm. (Steef was asked whether USE should stay a quick hook instead; this is the recommended choice, built while he decides.)
+- **Every anchor in reach gets a faint ring**, the picked one a bright bobbing ring, and a dashed line runs from the winch to it, so you can see where the cable would go.
+- **The prompt names the pick**: "2/5 · Tree, 14 m". The driving prompt says "Choose a winch anchor (5 in reach)" when there is a choice.
+- **Tap or click an anchor** in the view to pick it, and tap it again to hook it. A tap is a press that moves less than 12 px in under half a second, so dragging the camera still works; it takes the nearest anchor within 64 px of a finger (40 px of the mouse).
