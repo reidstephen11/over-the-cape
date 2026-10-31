@@ -108,6 +108,11 @@
   animation: note-in 0.35s ease-out;
 }
 
+/* The note names the place, so a Discovered card gives way to it (a timed run's card stays). */
+#ui[data-hud] .notices:has(.history-card:not(.hidden)) .discovery-card.found {
+  display: none;
+}
+
 /* Phones: narrower and shorter, clear of the thumb buttons; it scrolls if the note is long. */
 .touch-mode #ui[data-hud] .notices:has(.history-card:not(.hidden)) {
   max-width: min(260px, 52vw);
@@ -137,6 +142,35 @@
 .touch-mode #ui[data-hud] .history-card p,
 .touch-mode #ui[data-hud] .history-card.lesson .history-text {
   font-size: 11.5px;
+}
+
+.touch-mode #ui[data-hud] .discovery-card {
+  padding: 5px 10px 6px 8px;
+  gap: 6px;
+}
+
+.touch-mode #ui[data-hud] .discovery-name {
+  font-size: 15px;
+}
+
+.touch-mode #ui[data-hud] .discovery-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* A short note on a phone: the place, a lesson's keys and two lines; a tap opens the rest. */
+.touch-mode #ui[data-hud] .history-card.brief .history-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.touch-mode #ui[data-hud] .history-card.brief .history-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: 10.5px;
 }
 
 @keyframes note-in {
