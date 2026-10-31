@@ -27,7 +27,7 @@ TL = [
     dict(clip='bogrear', **{'from': 1.5}, dur=B, eng=1.3),
     # full send
     dict(clip='send4', dur=B, text=T('OR SEND IT'), tin=0.1),
-    dict(clip='send1', **{'from': 1.8}, dur=B, splash=[(0.6, 1.0)]),
+    dict(clip='send1', **{'from': 1.8}, dur=B, splash=[(0.9, 1.0)]),
     dict(clip='send4', **{'from': 1.0}, dur=B / 2),
     dict(clip='shortcut', **{'from': 0.4}, dur=B / 2),
     dict(clip='send5', dur=B / 2),
@@ -37,8 +37,6 @@ TL = [
     dict(clip='nightrig', dur=B),
     dict(clip='nightcab', **{'from': 0.8}, dur=B, text=T('OR DRIVE INTO THE NIGHT'), tin=0.3),
     dict(clip='nightcab2', **{'from': 0.4}, dur=B, gamma=1.3),
-    dict(clip='nightsend', **{'from': 0.8}, dur=B / 2, gamma=1.45),
-    dict(clip='night', **{'from': 0.5}, dur=B / 2, gamma=1.3),
     # finale
     dict(clip='send1', **{'from': 2.4}, dur=B / 2),
     dict(clip='shortcut', **{'from': 1.2}, dur=B / 2),
