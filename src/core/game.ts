@@ -45,7 +45,8 @@ import type { Autopilot } from '../sim/input/autopilot';
 import type { VehicleInput } from '../sim/input/vehicleInput';
 import type { PoiDef } from '../sim/world/mapTypes';
 import { poiApproach } from '../sim/world/poiApproach';
-import { headingOf } from '../sim/vehicle/math';
+import { headingOf, v3 } from '../sim/vehicle/math';
+import { anchorPoint } from '../sim/tools/anchors';
 import { Exploration } from '../sim/exploration';
 import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
@@ -141,6 +142,9 @@ export class Game {
   readonly freeCam: FreeCamera;
   readonly chase: ChaseCamera;
   private readonly cameraDrag: CameraDrag;
+  private tapStart: { id: number; x: number; y: number; t: number } | null = null;
+  private readonly tapVec = new THREE.Vector3();
+  private readonly anchorTmp = v3();
   readonly overlay: DebugOverlay | null;
   private readonly debugTools: DebugTools | null;
   /** Test mode (`?dev`): weather, clock, place and vehicle set by hand; nothing is saved. */
@@ -231,6 +235,7 @@ export class Game {
   private clock = 0;
   private anchorCheck = 0;
   private anchorInReach = false;
+  private anchorCount = 0;
   /** Layout checks: keep the swept and flooded warnings up, then put the car back. */
   private pinnedHazards: { swept?: boolean; flooded?: boolean } | null = null;
   private hazardSnapshot: {
@@ -572,6 +577,15 @@ export class Game {
     // Touching the view brings the touch controls back after a key or gamepad hid them.
     view.renderer.domElement.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'touch') this.input.usePointer('touch');
+      this.tapStart = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() };
+    });
+    // A short tap that didn't drag the camera picks a winch anchor while choosing one.
+    view.renderer.domElement.addEventListener('pointerup', (e) => {
+      const s = this.tapStart;
+      this.tapStart = null;
+      if (!s || s.id !== e.pointerId || performance.now() - s.t > 500) return;
+      if (Math.hypot(e.clientX - s.x, e.clientY - s.y) > 12) return;
+      this.tapAnchor(e.clientX, e.clientY, e.pointerType === 'touch');
     });
     installHook(this);
     // Draw the paper map in the background so the first open is instant.
@@ -1455,6 +1469,38 @@ export class Game {
     );
   }
 
+  /** Open the anchor chooser for a USE press, when there is a choice to make. */
+  private offerAnchorChoice(): boolean {
+    const t = this.sim.toolsOf(LOCAL_VEHICLE);
+    if (t.winch.attached || t.planks.inReach(this.vehicle).length > 0) return false;
+    if (this.sim.hitchOption(LOCAL_VEHICLE)?.kind === 'hitch') return false;
+    if (this.sim.findAnchors(LOCAL_VEHICLE).length < 2) return false;
+    return this.tool.startWinchTarget();
+  }
+
+  /** A tap or click on the view while choosing an anchor: pick the one under it. */
+  private tapAnchor(clientX: number, clientY: number, touch: boolean): void {
+    const list = this.sim.toolsOf(LOCAL_VEHICLE).targeting;
+    if (this.tool.mode !== 'winchTarget' || !list) return;
+    const rect = this.view.renderer.domElement.getBoundingClientRect();
+    const reach = touch ? 64 : 40;
+    let best = -1;
+    let bestD = reach;
+    list.forEach((a, i) => {
+      const p = anchorPoint(a, this.anchorTmp);
+      this.tapVec.set(p.x, p.y + 0.3, p.z).project(this.view.camera);
+      if (this.tapVec.z > 1) return;
+      const x = rect.left + ((this.tapVec.x + 1) / 2) * rect.width;
+      const y = rect.top + ((1 - this.tapVec.y) / 2) * rect.height;
+      const d = Math.hypot(x - clientX, y - clientY);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    if (best >= 0) this.tool.pick(best);
+  }
+
   cameraHeading(): number {
     this.view.camera.getWorldDirection(this.camDir);
     return headingOf(this.camDir.x, this.camDir.z);
@@ -1464,6 +1510,12 @@ export class Game {
 
   private step(dt: number): void {
     const inp = this.input.vehicleInput(dt);
+    // USE / E with two or more anchors in reach opens the chooser instead of hooking the
+    // best one straight away (v1.18). Planks and a trailer to hitch still come first.
+    if (inp.winchAttach && this.tool.mode === 'drive' && !this.toolMenu.isOpen && this.offerAnchorChoice()) {
+      inp.winchAttach = false;
+      inp.interact = false;
+    }
     if (this.scriptedInput) Object.assign(inp, this.scriptedInput);
     if (this.autopilot) Object.assign(inp, this.autopilot.input(this.vehicle, dt));
     // Park on the handbrake while placing planks, choosing an anchor or in the tool menu.
@@ -1811,7 +1863,8 @@ export class Game {
     this.anchorCheck -= frameDt;
     if (this.anchorCheck <= 0) {
       this.anchorCheck = 0.4;
-      this.anchorInReach = this.sim.findAnchors(LOCAL_VEHICLE).length > 0;
+      this.anchorCount = this.sim.findAnchors(LOCAL_VEHICLE).length;
+      this.anchorInReach = this.anchorCount > 0;
     }
     this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
     this.syncDeliveryViews();
@@ -1899,6 +1952,7 @@ export class Game {
         crawlTrails: this.world.map.crawlTrails,
         tracks: this.world.features.tracks,
         anchorInReach: this.anchorInReach,
+        anchorCount: this.anchorCount,
         run: this.crawlRuns.run,
         gates: this.gateCount.total ? this.gateCount : null,
         repair: this.sim.repairOption(LOCAL_VEHICLE),
