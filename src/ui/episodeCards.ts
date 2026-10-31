@@ -5,6 +5,9 @@ import { glyphsFor } from '../data/controls';
 /** The CREB's four lessons, in the order the signs come on the road out of the village. */
 const LESSONS: readonly ControlInstruction[] = ['range', 'precision', 'locks', 'winch'];
 
+/** How long a short note stays up on a touch screen if it isn't tapped open. */
+const BRIEF_MS = 7000;
+
 /** On-screen button names that a touch lesson tells you to tap. */
 const TOUCH_KEYS = ['F LOCK', 'R LOCK', 'CRAWL', '4WD', 'LOW', 'USE', 'OUT', 'IN'];
 
@@ -36,7 +39,8 @@ interface HistoryNote {
  * Episode cards: the history note shown on reaching a place, and the result card when the
  * mission is done or the episode ends early (centred, with buttons, the game paused behind
  * it). The note is a small card in the top right corner, under any discovery card, and you
- * keep driving while it's up; a click or tap closes it. A note can instead be read with the
+ * keep driving while it's up; a click or tap closes it. On a touch screen it opens short, the
+ * place and the first lines only, and a tap opens the rest. A note can instead be read with the
  * game stopped (`reading`). A lesson card leads with what to press, drawn as keys, then says why.
  */
 export class HistoryCard {
@@ -66,7 +70,14 @@ export class HistoryCard {
     this.el = document.createElement('div');
     this.el.className = 'history-card paper hidden';
     this.el.innerHTML = `<small class="history-kind">History</small><strong></strong><p><span class="history-do"></span><span class="history-text"></span></p><span class="history-close" aria-hidden="true">×</span><span class="history-hint">Tap to carry on</span>`;
-    this.el.addEventListener('click', () => this.next());
+    this.el.addEventListener('click', () => {
+      if (this.el.classList.contains('brief')) this.expand();
+      else this.next();
+    });
+    this.el.querySelector('.history-close')!.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.next();
+    });
     host.appendChild(this.el);
   }
 
@@ -100,12 +111,26 @@ export class HistoryCard {
     }
     this.el.querySelector('strong')!.textContent = n.title;
     this.shown.push(n.title);
-    const text = this.noteText(n);
+    this.el.classList.toggle('brief', !n.reading && this.device === 'touch');
     this.fill(n);
     this.updateHint();
     if (n.reading) return;
+    if (this.el.classList.contains('brief')) this.timer = window.setTimeout(() => this.next(), BRIEF_MS);
+    else this.startReadingTimer(n);
+  }
+
+  /** Open a short note to its full text, with the time to read it. */
+  private expand(): void {
+    if (!this.current) return;
+    this.el.classList.remove('brief');
+    this.updateHint();
+    clearTimeout(this.timer);
+    this.startReadingTimer(this.current);
+  }
+
+  private startReadingTimer(note: HistoryNote): void {
     // About 200 words a minute, and at least 12 s.
-    const words = text.split(/\s+/).length;
+    const words = this.noteText(note).split(/\s+/).length;
     this.timer = window.setTimeout(() => this.next(), Math.max(12_000, (words / 200) * 60_000 + 4_000));
   }
 
@@ -151,8 +176,9 @@ export class HistoryCard {
   }
 
   private updateHint(): void {
-    this.el.querySelector('.history-hint')!.textContent =
-      this.device === 'touch'
+    this.el.querySelector('.history-hint')!.textContent = this.el.classList.contains('brief')
+      ? 'Tap to read more'
+      : this.device === 'touch'
         ? 'Tap to carry on'
         : `${this.device === 'gamepad' ? controllers[this.controller].confirm : 'Enter'} to carry on`;
   }

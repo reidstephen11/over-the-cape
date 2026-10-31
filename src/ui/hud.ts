@@ -626,7 +626,7 @@ export class Hud {
   /** "Discovered: …" paper card that unfolds in the top right corner. */
   discovered(name: string, kind: PoiIcon): void {
     const el = document.createElement('div');
-    el.className = 'discovery-card paper';
+    el.className = 'discovery-card found paper';
     el.innerHTML = `<div class="discovery-icon">${icons[kind]}</div><div><div class="discovery-label">Discovered</div><div class="discovery-name"></div></div>`;
     (el.querySelector('.discovery-name') as HTMLElement).textContent = name;
     this.discovery.innerHTML = '';

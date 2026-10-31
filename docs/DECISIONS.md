@@ -1893,3 +1893,13 @@ Steef's v1.14 `?bench` result on the Pixel 10a: 411×784 points at a pixel ratio
 - **High can now step its resolution down to 60%** (it never could). On a phone, High draws up to twice the points (pixel ratio 2) with a 4096 shadow map; the shadow map doesn't change with the resolution.
 
 Steef was told to try Medium in the meantime.
+
+## v1.16: quieter place cards on a phone
+
+Steef found the cards at the Bloomfield River bridge annoying on a phone: a large Discovered card and the full history note stacked down most of the right side of the view.
+
+**One card per place.** While a history or lesson note is up, the Discovered card gives way to it (CSS hides `.discovery-card.found` while the note shows), on every screen, because the note already names the place. A timed run's result card still shows.
+
+**Short notes on a phone.** On a touch screen a note opens short: the kind, the place, a lesson's keys, and two lines of text with "Tap to read more". It goes after 7 s if left alone. A tap opens the whole note with the usual reading time (about 200 words a minute, at least 12 s); the × closes it at once. A computer still shows the whole note, because it sits clear of the controls and a click closes it.
+
+**Smaller Discovered card on a phone** (15 px name, 20 px icon), for places without a note.
