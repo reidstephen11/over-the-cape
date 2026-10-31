@@ -1,6 +1,7 @@
 import { controllers, controllerTypes, type ControllerType } from '../data/controllers';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import { controlsTable, touchControlsTable } from '../data/controls';
+import { isTouchDevice } from './touchControls';
 import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
 import type { Settings } from '../sim/save/save';
 import type { VehicleId } from '../data/vehicle';
@@ -182,12 +183,14 @@ export class PauseMenu {
         <button data-focus data-act="back">Back</button>`;
     } else if (page === 'settings') {
       const s = this.settings;
+      // Phones have no High (see qualityFor): one saved on High shows Medium.
+      const quality = isTouchDevice() && s.quality === 'high' ? 'medium' : s.quality;
       const q = (v: string) =>
-        `<button data-focus data-quality="${v}" class="${s.quality === v ? 'on' : ''}">${v[0].toUpperCase()}${v.slice(1)}</button>`;
+        `<button data-focus data-quality="${v}" class="${quality === v ? 'on' : ''}">${v[0].toUpperCase()}${v.slice(1)}</button>`;
       const slider = (key: keyof Settings, label: string) =>
         `<label class="setting-row">${label}<input data-focus type="range" min="0" max="1" step="0.05" data-key="${key}" value="${s[key]}"></label>`;
       card.innerHTML = `<h2>Settings</h2>
-        <div class="setting-row">Graphics<div class="seg">${q('low')}${q('medium')}${q('high')}</div></div>
+        <div class="setting-row">Graphics<div class="seg">${q('low')}${q('medium')}${isTouchDevice() ? '' : q('high')}</div></div>
         <div class="setting-row controller-setting phone-driving-setting">Phone driving<div class="seg">${touchDriveSchemes.map((c) => `<button data-focus data-touch-drive="${c}" class="${s.touchDrive === c ? 'on' : ''}" aria-pressed="${s.touchDrive === c}">${touchDriveLabels[c]}</button>`).join('')}</div></div>
         ${slider('masterVolume', 'Master volume')}
         ${slider('engineVolume', 'Engine volume')}

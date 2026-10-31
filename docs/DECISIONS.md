@@ -1903,3 +1903,9 @@ Steef found the cards at the Bloomfield River bridge annoying on a phone: a larg
 **Short notes on a phone.** On a touch screen a note opens short: the kind, the place, a lesson's keys, and two lines of text with "Tap to read more". It goes after 7 s if left alone. A tap opens the whole note with the usual reading time (about 200 words a minute, at least 12 s); the × closes it at once. A computer still shows the whole note, because it sits clear of the controls and a click closes it.
 
 **Smaller Discovered card on a phone** (15 px name, 20 px icon), for places without a note.
+
+## v1.17: no High graphics on a phone
+
+Steef's Pixel 10a stayed choppy under the Bloomfield forest on High (20–39 fps, with the game's code taking only 10–14 ms of each frame, so the graphics chip was the limit), and was smooth on Medium. He doesn't need High on a phone.
+
+**On a touch screen, Settings → Graphics offers Low and Medium only, and a phone saved on High draws Medium** (and the menu shows Medium as chosen). The saved setting is left as it is, so the same save on a computer still gets High. `qualityFor(level, touch)` in `src/data/quality.ts` gives the preset as drawn; the game and `?bench` use it. Computers are unchanged.

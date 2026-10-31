@@ -79,3 +79,12 @@ export const qualityPresets: Record<QualityLevel, QualityPreset> = {
 };
 
 export const defaultQuality: QualityLevel = 'medium';
+
+/**
+ * The preset as drawn on this device. Phones have no High: a Pixel 10a on High fell to 20–39 fps
+ * under the Bloomfield forest with the game's code taking only 10–14 ms (the graphics chip was the
+ * limit) and was smooth on Medium, so a phone saved on High draws Medium.
+ */
+export function qualityFor(level: QualityLevel, touch: boolean): QualityPreset {
+  return qualityPresets[touch && level === 'high' ? 'medium' : level];
+}
