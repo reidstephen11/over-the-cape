@@ -1,5 +1,6 @@
 import type { Game } from '../core/game';
-import { qualityPresets, type QualityLevel } from '../data/quality';
+import { qualityFor, type QualityLevel } from '../data/quality';
+import { isTouchDevice } from '../ui/touchControls';
 import { headingOf } from '../sim/vehicle/math';
 
 /** How long each setting is timed, and how much of the start is skipped while it settles. */
@@ -16,7 +17,7 @@ const SPOT = { x: 111, z: -773 };
 
 const graphics = (level: QualityLevel): Mode => ({
   name: `${level[0].toUpperCase()}${level.slice(1)} graphics`,
-  apply: (g, on) => g.view.setQuality(qualityPresets[on ? level : g.settings.quality]),
+  apply: (g, on) => g.view.setQuality(qualityFor(on ? level : g.settings.quality, isTouchDevice())),
 });
 
 const MODES: Mode[] = [

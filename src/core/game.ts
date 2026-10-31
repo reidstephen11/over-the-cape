@@ -27,7 +27,7 @@ import {
   type StrandedDriverDef,
 } from '../data/episodes';
 import { usePalette } from '../render/colors';
-import { qualityPresets } from '../data/quality';
+import { qualityFor } from '../data/quality';
 import type { DamageMode } from '../data/damage';
 import type { VehicleId } from '../data/vehicle';
 import { vehicleLoadout, vehicles } from '../data/vehicles';
@@ -662,7 +662,13 @@ export class Game {
     await nextFrame();
     // Sign lettering uses the web font; wait for it (but never block on a slow network).
     await Promise.race([document.fonts?.ready, new Promise((res) => setTimeout(res, 1500))]);
-    const view = new GameRenderer(appEl, world, env, qualityPresets[settings.quality], sim.dynamics.values());
+    const view = new GameRenderer(
+      appEl,
+      world,
+      env,
+      qualityFor(settings.quality, isTouchDevice()),
+      sim.dynamics.values(),
+    );
     view.setCreeks(weather.creekRise, weather.flowScale);
     return new Game(
       world,
@@ -791,7 +797,8 @@ export class Game {
   changeSettings(s: Partial<Settings>): void {
     const prevQuality = this.settings.quality;
     this.settings = { ...this.settings, ...s };
-    if (this.settings.quality !== prevQuality) this.view.setQuality(qualityPresets[this.settings.quality]);
+    if (this.settings.quality !== prevQuality)
+      this.view.setQuality(qualityFor(this.settings.quality, isTouchDevice()));
     if (this.settings.damage !== this.sim.damage) this.sim.setDamage(this.settings.damage);
     this.pause.setSettings(this.settings);
     this.hud.units = this.settings.units;
