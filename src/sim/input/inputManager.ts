@@ -2,6 +2,7 @@ import { keyBindings, padBindings, padTuning, Pad, type Action } from '../../dat
 import { defaultTouchDrive, throttleBrakeFromStick, type TouchDriveScheme } from '../../data/touch';
 import { vehicleTuning, type VehicleTuning } from '../../data/vehicle';
 import { emptyInput, SteeringSmoother, type VehicleInput } from './vehicleInput';
+import { MenuStick } from './touchStick';
 
 export type Device = 'keyboard' | 'gamepad' | 'touch';
 
@@ -21,6 +22,7 @@ export class InputManager {
   private readonly padPrev: boolean[] = [];
   /** The first poll records what is held without counting it as pressed (the Drive press). */
   private polled = false;
+  private readonly padMenuStick = new MenuStick();
   private padButtons: boolean[] = [];
   private padAxes: number[] = [0, 0, 0, 0];
   private padTriggers = { lt: 0, rt: 0 };
@@ -180,6 +182,9 @@ export class InputManager {
       }
       this.padPrev[i] = this.padButtons[i];
     }
+    // Stepped even on the first poll, so a stick already held latches without counting.
+    const menuPress = this.padMenuStick.step(this.padAxes[0], this.padAxes[1]);
+    if (menuPress && !first) this.press(menuPress);
     if (any) this.setDevice('gamepad');
   }
 

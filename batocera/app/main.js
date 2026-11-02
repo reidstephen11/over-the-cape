@@ -14,7 +14,6 @@ const DRAW_SCALE = `<script>Object.defineProperty(window, 'devicePixelRatio', { 
 app.setPath('userData', process.env.CAPE_SAVE_DIR || '/userdata/saves/ports/OverTheCape');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
-app.commandLine.appendSwitch('disable-frame-rate-limit');
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
