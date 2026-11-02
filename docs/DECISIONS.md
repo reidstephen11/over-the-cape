@@ -1918,3 +1918,11 @@ Steef wanted a way to pick which anchor the winch hooks. A chooser was already t
 - **Every anchor in reach gets a faint ring**, the picked one a bright bobbing ring, and a dashed line runs from the winch to it, so you can see where the cable would go.
 - **The prompt names the pick**: "2/5 · Tree, 14 m". The driving prompt says "Choose a winch anchor (5 in reach)" when there is a choice.
 - **Tap or click an anchor** in the view to pick it, and tap it again to hook it. A tap is a press that moves less than 12 px in under half a second, so dragging the camera still works; it takes the nearest anchor within 64 px of a finger (40 px of the mouse).
+
+## v1.19: controller fixes for menus
+
+Pointing at a tool chose it, but nothing on screen showed which one. The in-game display's glass panel style (`#ui[data-hud] .paper`) outranked `.tool-option.selected`, so the orange highlight never appeared on the glass display styles. The selected rule now also matches under `#ui[data-hud]`.
+
+- **Frame rate on Batocera:** the wrapper no longer sets `disable-frame-rate-limit`. The owner reported the game felt better after the change, but this was not a controlled comparison.
+- **Menus and the left stick:** every menu now takes the left stick as well as the D-pad, one step per push (`MenuStick`, the same rule as the touch joystick). During driving these presses only reach the winch anchor choice.
+- **Up and down order on New Journey:** rows followed the order the groups were listed in code, not the screen, so Down jumped from Back past Start and Drive. Rows now sort by screen position, and Up/Down steps through an option group that wraps over several lines. Entering such a group from outside still lands on the chosen option.

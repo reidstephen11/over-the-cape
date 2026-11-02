@@ -20,6 +20,7 @@ import {
   type SaveData,
   type Settings,
 } from '../sim/save/save';
+import { MenuStick } from '../sim/input/touchStick';
 import { isTouchDevice } from './touchControls';
 import { applyHudStyle, hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
 import { damageNotes } from './menus';
@@ -85,6 +86,7 @@ export class WelcomeScreen {
   private row = 0;
   private col = 0;
   private padPrev: boolean[] = [];
+  private readonly padStick = new MenuStick();
   private raf = 0;
   private done = false;
   private setupOpen = false;
@@ -241,7 +243,9 @@ export class WelcomeScreen {
           ),
         ].filter((b) => !b.closest('[hidden]')),
       )
-      .filter((r) => r.length > 0);
+      .filter((r) => r.length > 0)
+      // Up and down follow the screen, whatever order the groups were listed in.
+      .sort((a, b) => a[0].getBoundingClientRect().top - b[0].getBoundingClientRect().top);
     this.row = Math.max(
       0,
       this.rows.findIndex((r) => r[0].dataset.group === focusGroup),
@@ -539,7 +543,9 @@ export class WelcomeScreen {
       dCol = dRow || dCol;
       dRow = 0;
     }
-    if (dRow) {
+    const line = dRow ? this.lineStep(dRow) : -1;
+    if (line >= 0) this.col = line;
+    else if (dRow) {
       this.row = Math.max(0, Math.min(this.rows.length - 1, this.row + dRow));
       // Land on the chosen option of the new row.
       const on = this.rows[this.row].findIndex((b) => this.chosen(b));
@@ -551,6 +557,30 @@ export class WelcomeScreen {
     } else this.col = Math.max(0, Math.min(this.rows[this.row].length - 1, this.col + dCol));
     this.rows[this.row][this.col]?.focus();
     this.refresh();
+  }
+
+  /** The option straight above or below in the same group, when it wraps over lines; else -1. */
+  private lineStep(dRow: number): number {
+    const row = this.rows[this.row];
+    const cur = row[this.col]?.getBoundingClientRect();
+    if (!cur) return -1;
+    const beyond = (r: DOMRect) => (dRow > 0 ? r.top >= cur.bottom - 1 : r.bottom <= cur.top + 1);
+    const centre = (r: DOMRect) => r.left + r.width / 2;
+    let best = -1;
+    let bestGap = Infinity;
+    let bestDx = Infinity;
+    row.forEach((b, i) => {
+      const r = b.getBoundingClientRect();
+      if (!beyond(r)) return;
+      const gap = dRow > 0 ? r.top - cur.top : cur.top - r.top;
+      const dx = Math.abs(centre(r) - centre(cur));
+      if (gap < bestGap - 1 || (gap <= bestGap + 1 && dx < bestDx)) {
+        best = i;
+        bestGap = gap;
+        bestDx = dx;
+      }
+    });
+    return best;
   }
 
   private readonly onKey = (e: KeyboardEvent): void => {
@@ -602,6 +632,14 @@ export class WelcomeScreen {
       if (edge(13)) this.move(1, 0);
       if (edge(14)) this.move(0, -1);
       if (edge(15)) this.move(0, 1);
+      const stick = this.padStick.step(pad.axes[0] ?? 0, pad.axes[1] ?? 0);
+      if (stick) {
+        this.setInputMode('gamepad');
+        if (stick === 'menuUp') this.move(-1, 0);
+        else if (stick === 'menuDown') this.move(1, 0);
+        else if (stick === 'menuLeft') this.move(0, -1);
+        else this.move(0, 1);
+      }
       if (edge(1)) {
         this.page = this.page === 'menu' ? 'title' : 'menu';
         this.render();

@@ -819,7 +819,8 @@ body:not(.touch-mode) .supplies:not(.hidden) ~ .course-hint {
   cursor: pointer;
 }
 
-.tool-option.selected {
+.tool-option.selected,
+#ui[data-hud] .tool-option.selected {
   background: var(--accent);
   color: var(--paper);
 }
