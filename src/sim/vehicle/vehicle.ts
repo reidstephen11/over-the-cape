@@ -867,7 +867,12 @@ export class Vehicle {
       const cp = c.wheelContactPoint(i);
       const n = c.wheelContactNormal(i);
       if (!cp || !n) continue;
-      const axle = steeredAxle(q, c.wheelSteering(i) ?? 0);
+      // Not `steeredAxle`: the roll tuning (rollTorqueScale, the trailer tests) was calibrated
+      // with this mirrored direction for the steered wheels, which gives them about half the
+      // roll torque at full lock. With the true axle a full-lock turn while towing rolls the
+      // car. Retuning the roll with the true axle is on the roadmap.
+      const s = c.wheelSteering(i) ?? 0;
+      const axle = rotate(q, Math.cos(s), 0, Math.sin(s));
       const proj = axle.x * n.x + axle.y * n.y + axle.z * n.z;
       let ax = axle.x - n.x * proj;
       let ay = axle.y - n.y * proj;
