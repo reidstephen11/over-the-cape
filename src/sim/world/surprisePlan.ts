@@ -257,7 +257,7 @@ function nearObstacle(world: World, track: TrackInfo, at: number): boolean {
   const p = pointAt(track.poly, at);
   for (const g of world.map.gullies) if (Math.hypot(g.x - p.x, g.z - p.z) < 50 + g.length / 2) return true;
   if (track.def.rockySteps?.some((r) => Math.abs(r.at - at) < 50)) return true;
-  if (track.def.steps?.some((st) => at > st.from - 50 && at < st.to + 50)) return true;
+  if (track.def.stones?.some((st) => st.shape === 'ridge' && Math.abs(st.at - at) < 50)) return true;
   const cant = track.def.cant;
   if (cant && cant.length > 0 && at > cant[0][0] - 40 && at < cant[cant.length - 1][0] + 40) return true;
   // On a steep pinch (Big Red, Bob's Hill, the ridge's clay pinch) the climb is the

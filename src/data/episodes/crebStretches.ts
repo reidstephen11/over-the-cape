@@ -1,4 +1,4 @@
-import { boulder } from '../courseKit';
+import { boulder, rockStep, tread } from '../courseKit';
 import type {
   BogDef,
   CreekDef,
@@ -8,6 +8,7 @@ import type {
   PropDef,
   TrackDef,
   TrackRoughDef,
+  TrailStoneDef,
 } from '../../sim/world/mapTypes';
 
 /**
@@ -78,14 +79,29 @@ export const stretchHills: HillDef[] = [
  */
 const bigRedCrown = { bumps: 0.07, swells: 0.05, washouts: 2, washoutDepth: 0.16 } as const;
 
+/**
+ * The crawl lesson: a band of bedrock breaking out across the bench, in ledges rather than
+ * one clean step. Each pair is split down the middle, so one front wheel climbs before the
+ * other and the car twists on it, and the low half changes from left to right along the
+ * band, so the easy line crosses on a diagonal and has to be steered while articulated.
+ * Nothing stands over 0.38 m: a vehicle's lowest point is about 0.40 m up, so a picked line
+ * clears and a bad one grounds. Boulders sit either side, off the road.
+ */
+const crawlBand: TrailStoneDef[] = [
+  rockStep(172.4, -1.15, 0.22, 2.4, tread(0.22), -7),
+  rockStep(173.2, 1.15, 0.38, 2.4, tread(0.38), 6),
+  rockStep(176.2, 1.1, 0.24, 2.4, tread(0.24), 5),
+  rockStep(177.0, -1.1, 0.36, 2.4, tread(0.36), -6),
+  rockStep(179.4, 0, 0.26, 4.8, tread(0.26), 3),
+  boulder(173, -3.6, 0.8, 1.5),
+  boulder(178, 3.7, 0.7, 1.3),
+];
+
 export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'upper-daintree-road': {
     rough: { ...roadRough, bogs: 0, washouts: 1, washoutDepth: 0.16 },
     pinSmooth: 10,
-    // A band of rock across the bench, standing out of it as a ledge the wheels step up,
-    // with boulders either side. A rocky step here only smoothed out into a ramp.
-    steps: [{ from: 175, to: 175, spacing: 1, rise: 0.35 }],
-    stones: [boulder(173, -3.6, 0.8, 1.5), boulder(178, 3.7, 0.7, 1.3)],
+    stones: crawlBand,
     routeHint: 'One control at a time: low range L, locks Z and X, crawl P, then the winch',
   },
   // Potholes still pinch a tyre taken fast. The bogs lie across the road in the hollows,
