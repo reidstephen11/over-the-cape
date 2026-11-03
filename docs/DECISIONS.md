@@ -2234,3 +2234,19 @@ The owner tried **Manual with clutch** (v1.35) and found a controller button a p
 **What stays.** The clutch maths in the drivetrain (Manual's auto-clutch is built on it), the sim-level `GearboxMode` `'clutch'`, `VehicleInput.clutch` (no device sets it for now) and `tests/manualGearbox.test.ts`. The option returns with steering-wheel and pedal support, which gives it a real clutch pedal.
 
 **Tests.** `tests/save.test.ts` covers the two settings and the `'clutch'` → Manual load; `tests/engineStart.test.ts` adds that Manual starts in 1st without neutral (the `'clutch'` sim test is unchanged); `tests/driveControls.test.ts` checks no controls row mentions a clutch, no button is bound to one, and holding ○/B in Manual leaves `clutch` at 0.
+
+## v1.38: the crawl lesson gets a step to crawl
+
+The third orientation sign says "walk the wheels up the step", and there was no step. The rock band on the bench was a `rockySteps` entry — a rise added to the track's own height profile — of 0.42 m at 175 m along Upper Daintree Road. The profile is written into a heightfield sampled every metre and blended in over ±0.6 m either side, so 0.42 m came out as a 9° ramp on a climb already running 5–7°. There was nothing to climb, only rock-coloured ground.
+
+**A `steps` ledge instead of a `rockySteps` rise.** `TrackStepsDef` was already in the engine, and nothing used it: it builds a solid box across the track with a vertical face, leaning with the graded road and reaching below the ground under its whole footprint. That is the shape the sign describes, and it cannot be smoothed away, because it is a collider rather than terrain. The band is now `steps: [{ from: 175, to: 175, spacing: 1, rise: 0.35 }]` — one ledge, not a staircase — and the two boulders either side are unchanged.
+
+**0.35 m.** The lowest part of every vehicle in the game sits about 0.40 m up (the Perentie's transfer case is 0.41 m, the Hilux's 0.40 m), so a 0.35 m face is one the belly clears and the tyres have to be walked up. The ledge's top runs 2.4 m along the track, which the engine works out from the local grade; on this bench the road only climbs about 0.1 m in that distance, so there is a drop off the back as well. That is what a rock band across a bench does, and taking the far side at a crawl is the same lesson as the near one.
+
+**It shows as rock.** `rockySteps` painted the ground round them rock, and `steps` did not, which would have left granite standing out of red clay. The painting now covers both, at each ledge and 2 m past it, so the landing is rock too. The ledge boxes are bevelled 0.12 m like the crawl-trail granite, so the band reads as rock rather than a kerb.
+
+**Surprises keep off it.** `nearObstacle` in `surprisePlan.ts` already kept rockfalls and fallen trees 50 m clear of a `rockySteps` rise; it now does the same for a `steps` ledge, so a surprise cannot land on the lesson.
+
+Driven headless over 150–200 m, the Perentie, the short-wheelbase Land Rover, the Hilux, the Camel Trophy car and the Unimog all walk up it, slowing from 1.6 m/s to about 1.1 m/s at the face.
+
+**Still open.** Roaring Meg's rock ledge has the same problem: its note calls it "a step of rock about a metre high" and its `rockySteps` rise of 1 m comes out as a 24° ramp. The granite pinch on the Helenvale knoll is five more of them. Both are left for a later version.
