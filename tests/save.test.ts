@@ -45,6 +45,15 @@ describe('exploration and saving', () => {
     expect(ex.lastCampsite).toBe('mountain-hut');
   });
 
+  it("resets discoveries to a camp's, so places found after it are new again", () => {
+    const ex = new Exploration(highCountryMap.pois, { discovered: [], lastCampsite: 'river-flat-camp' });
+    const hut = highCountryMap.pois.find((p) => p.id === 'mountain-hut')!;
+    ex.check(hut.x, hut.z);
+    ex.reset(['river-flat-camp', 'not-a-place']);
+    expect([...ex.discovered]).toEqual(['river-flat-camp']);
+    expect(ex.check(hut.x, hut.z).discovered.map((p) => p.id)).toEqual(['mountain-hut']);
+  });
+
   it('keeps crawl run bests, drops malformed ones, and loads saves without them', () => {
     const s = new MemoryStore();
     writeSave(saveData({ crawlBests: { 'creek-bed': { points: 1, seconds: 31.5 } } }), s);

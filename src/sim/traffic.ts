@@ -2,6 +2,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 import { SurfaceId } from '../data/surfaces';
 import { Groups, groups, type Physics, type Rapier } from './physics';
 import { STUCK_RIDE_HEIGHT } from './stuckVehicle';
+import type { DensePolyline } from './world/polyline';
 
 /**
  * Other people's 4WDs coming the other way on narrow track. The first time you reach either
@@ -14,6 +15,26 @@ export interface TrafficPlan {
   name: string;
   /** The track's centre line, (x, z) in order. */
   points: readonly (readonly [number, number])[];
+}
+
+/**
+ * The plans for an episode's traffic, one per entry that names a generated track. The
+ * car drives the track's dense centreline (the spline the ground was graded along), not
+ * the authored control points: their chords stray up to 4.5 m from the track on the ridge.
+ */
+export function trafficPlans(
+  defs: readonly { track: string; name: string }[],
+  tracks: readonly { def: { id: string }; poly: DensePolyline }[],
+): TrafficPlan[] {
+  return defs.flatMap((t) => {
+    const track = tracks.find((tr) => tr.def.id === t.track);
+    if (!track || track.poly.count < 2) return [];
+    const points = Array.from(
+      { length: track.poly.count },
+      (_, k) => [track.poly.xs[k], track.poly.zs[k]] as const,
+    );
+    return [{ name: t.name, points }];
+  });
 }
 
 export type TrafficEvent =
@@ -89,6 +110,12 @@ export class Traffic {
 
   constructor(private readonly plans: readonly TrafficPlan[]) {}
 
+  /** Back to the start of the episode: no cars out, and every track ready to send one again. */
+  reset(): void {
+    this.cars.length = 0;
+    this.sent.clear();
+  }
+
   /** Call every step with where you are; returns what changed. */
   update(dt: number, player: { x: number; z: number }): TrafficEvent[] {
     const events: TrafficEvent[] = [];
@@ -118,10 +145,15 @@ export class Traffic {
   }
 }
 
-const SOLID = groups(Groups.DYNAMIC, 0xffff);
+/**
+ * It's solid to the player's car only. A kinematic body moves whatever it meets, so it
+ * must not touch the movable things on its track (fallen rocks and trees, planks): it
+ * would push them along in front of it.
+ */
+const SOLID = groups(Groups.DYNAMIC, Groups.VEHICLE);
 const HALF_BASE = 1.15;
 
-/** A solid, kinematic body for an oncoming car, the same size as a bogged one. */
+/** A kinematic body for an oncoming car, the same size as a bogged one. */
 export function createTrafficBody(R: Rapier, physics: Physics): RAPIER.RigidBody {
   const body = physics.world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased());
   const c = physics.world.createCollider(
