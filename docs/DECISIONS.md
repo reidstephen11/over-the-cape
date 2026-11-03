@@ -2260,3 +2260,19 @@ Driven headless over 150–200 m, the Perentie, the short-wheelbase Land Rover, 
 **The e2e suite had not run in a cloud session for some time.** v1.33's `CHROMIUM_PATH` made it possible again, and the first full run was 33 passed, 9 failed. Eight of the nine fail identically on v1.32, so they are not regressions, and they are on the roadmap with their names. The clearest is `devMode:4`: at half throttle the car covers 1.9885 m where the test wants more than 8 m, the same figure to four decimals on both versions, so something in that test or in test mode has been wrong for a while rather than drifting. `episode:103` fails on v1.32 and passes here after a 20-minute run, so it is flaky, not fixed.
 
 CI runs lint, the unit tests and the build, not e2e. That is why none of this showed up in a deploy.
+
+## v1.40: the crawl band is broken bedrock, not one clean slab
+
+v1.38 gave the crawl lesson a step, and it was still easy in the dry. The reasons were in the numbers. Rock is the grippiest surface in the game (1.1, above dirt's 1.0), so the band held better than the road either side. The ledge was one flat-topped box square across the track, so both front wheels stepped up together and all four stayed loaded. And 0.35 m against 0.8 m tyres is a bump. Height was the only thing resisting, and height alone is weak.
+
+**Built from `rockStep` stones instead.** `courseKit.ts` already had the piece: a band of bedrock as a `ridge` stone, a riser at its downhill edge and a tread flatter than the hill running back into the slope, which Granite Spur and the park course use for exactly this. The `steps` ledge box is gone and `upper-daintree-road` now carries `crawlBand`, five of them with the two boulders.
+
+**Split pairs, with the low half changing sides.** Each pair is two ledges of about 2.4 m, one either side of the centreline, at different heights and leaning different ways, so one front wheel climbs before the other and the car twists on it. The first pair is low on the left (0.22 m) and high on the right (0.38 m); the second, 3 m further on, is low on the right (0.24 m) and high on the left (0.36 m). The easy way across is therefore a diagonal that has to be steered while the car is already articulated, which is the point. A full-width 0.26 m lip at 179.4 m finishes the band onto the bench.
+
+**Nothing stands over 0.38 m**, because a vehicle's lowest point is about 0.40 m up (the Perentie's transfer case 0.41 m, the Hilux's 0.40 m). A picked line clears; a bad one grounds.
+
+**It is a line now, not a bump.** Crawling the band in low range with open diffs, full throttle: down the centre the Perentie tilts 14.5°, pitches 10.7° and never drops below 1.35 m/s; hugging the right it tilts 16.2°, pitches 15.9° and stops for two seconds before it gets through. The short-wheelbase Land Rover tilts 20°. With both lockers every vehicle in the game crosses it.
+
+**The engine changes from v1.38 go with the ledge.** The ledge box's bevel and the rock painting for `steps` are reverted, since nothing uses `steps` again. In their place, the ground is painted rock under a `ridge` stone — bedrock coming up through the track, unlike a boulder sitting loose beside it — and `nearObstacle` in `surprisePlan.ts` keeps rockfalls and fallen trees 50 m clear of a ridge stone rather than of a `steps` ledge.
+
+**Still open**, as in v1.38: Roaring Meg's rock ledge is a 1 m `rockySteps` rise that comes out as a 24° ramp, and the granite pinch on the Helenvale knoll is five more of them. Both would suit the same treatment.
