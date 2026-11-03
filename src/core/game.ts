@@ -1876,7 +1876,7 @@ export class Game {
     for (const d of this.drumViews.values()) d.update();
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
-    this.toolsView.update(v, tools, this.sim.probeGround, this.clock);
+    this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock);
     this.view.particles.update(v, this.loop.paused ? 0 : frameDt);
     if (this.freeCamOn) this.freeCam.update(frameDt);
     else if (!this.loop.paused) {

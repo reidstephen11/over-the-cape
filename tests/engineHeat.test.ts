@@ -172,3 +172,20 @@ describe('tyre pressure', () => {
     expect(tyreGripMultiplier(c, 0)).toBeGreaterThan(normal);
   });
 });
+
+describe('overheat damage with the engine off (v1.19)', () => {
+  it('does not charge a boiling engine that has been switched off', () => {
+    const v = fake({ throttle: 0, rpm: 0, range: 'high', speed: 0, running: false });
+    v.condition.engineHeat = 1.2;
+    run(v, 90);
+    expect(v.condition.engine).toBe(1);
+    expect(v.condition.engineHeat).toBeLessThan(1.2);
+  });
+
+  it('still charges one that is running', () => {
+    const v = fake({ throttle: 0, rpm: 800, range: 'high', speed: 0 });
+    v.condition.engineHeat = 1.2;
+    run(v, 10);
+    expect(v.condition.engine).toBeLessThan(1);
+  });
+});

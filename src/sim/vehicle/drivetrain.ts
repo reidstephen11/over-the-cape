@@ -197,9 +197,13 @@ export function updateDrivetrain(
   return s.gear < 0 ? -force : force;
 }
 
-/** Drag on the wheels from a stalled engine (N, always >= 0). Running engines brake through the converter. */
+/**
+ * Drag on the wheels from a stalled engine (N, always >= 0): `engineBrake` per unit of the
+ * total gear ratio, halved, so a dead car holds better in low range and a low gear. Running
+ * engines brake through the converter.
+ */
 export function engineBrakeForce(t: VehicleTuning, s: DrivetrainState): number {
-  return s.engineRunning ? 0 : t.engine.engineBrake * 2;
+  return s.engineRunning ? 0 : (t.engine.engineBrake * totalRatio(t, s.gear, s.range)) / 2;
 }
 
 function smooth01(x: number): number {
