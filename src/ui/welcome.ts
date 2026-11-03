@@ -24,7 +24,8 @@ import {
 import { MenuStick } from '../sim/input/touchStick';
 import { isTouchDevice } from './touchControls';
 import { applyHudStyle, hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
-import { damageNotes } from './menus';
+import { damageNotes, gearboxLabels, gearboxNote, showGearboxSetting } from './menus';
+import { GEARBOX_MODES, type GearboxMode } from '../sim/vehicle/drivetrain';
 
 type Group =
   | 'menu'
@@ -35,6 +36,7 @@ type Group =
   | 'volume'
   | 'units'
   | 'hudStyle'
+  | 'gearbox'
   | 'episode'
   | 'start'
   | 'setup'
@@ -84,6 +86,7 @@ export class WelcomeScreen {
   private settings: Settings;
   private ambience: TitleAmbience | null = null;
   private inputMode: 'keyboard' | 'touch' | 'gamepad' = isTouchDevice() ? 'touch' : 'keyboard';
+  private padConnected = false;
   private row = 0;
   private col = 0;
   private padPrev: boolean[] = [];
@@ -225,10 +228,15 @@ export class WelcomeScreen {
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
         <section class="title-setting"><h3>HUD style</h3><div class="welcome-options seg">${pickableHudStyles.map((h) => setting('hudStyle', h, hudStyleLabels[h], this.settings.hudStyle === h)).join('')}</div></section>
+        ${
+          showGearboxSetting(this.padConnected)
+            ? `<section class="title-setting gearbox-setting"><h3>Gearbox</h3><div class="welcome-options seg">${GEARBOX_MODES.map((m) => setting('gearbox', m, gearboxLabels[m], this.settings.gearbox === m)).join('')}</div><p class="welcome-note gearbox-note">${gearboxNote(this.settings.gearbox, controllers[this.settings.controller].back)}</p></section>`
+            : ''
+        }
         <p class="title-settings-version" title="Build ${BUILD_LABEL}">${GAME_VERSION}</p>
       </div><p class="title-input-hint">${hint}</p>`;
       this.setRows(
-        ['back', 'quality', 'touchDrive', 'volume', 'controller', 'units', 'hudStyle'],
+        ['back', 'quality', 'touchDrive', 'volume', 'controller', 'units', 'hudStyle', 'gearbox'],
         focusGroup ?? 'back',
       );
       return;
@@ -421,6 +429,8 @@ export class WelcomeScreen {
         return v === this.settings.units;
       case 'hudStyle':
         return v === this.settings.hudStyle;
+      case 'gearbox':
+        return v === this.settings.gearbox;
       case 'episode':
         return v === this.choice.episode;
       case 'start':
@@ -464,11 +474,13 @@ export class WelcomeScreen {
       group === 'units' ||
       group === 'controller' ||
       group === 'touchDrive' ||
-      group === 'hudStyle'
+      group === 'hudStyle' ||
+      group === 'gearbox'
     ) {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
       else if (group === 'controller') this.settings.controller = value as ControllerType;
       else if (group === 'touchDrive') this.settings.touchDrive = value as TouchDriveScheme;
+      else if (group === 'gearbox') this.settings.gearbox = value as GearboxMode;
       else if (group === 'hudStyle') {
         this.settings.hudStyle = value as HudStyle;
         applyHudStyle(this.settings.hudStyle);
@@ -629,6 +641,11 @@ export class WelcomeScreen {
     if (this.done) return;
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     const pad = [...pads].find((p) => p && p.connected);
+    // The Gearbox setting appears while a controller is connected.
+    if (!!pad !== this.padConnected) {
+      this.padConnected = !!pad;
+      if (this.page === 'settings') this.render(this.rows[this.row]?.[0]?.dataset.group as Group | undefined);
+    }
     if (pad) {
       const pressed = pad.buttons.map((b) => b.pressed);
       const edge = (i: number) => pressed[i] && !this.padPrev[i];

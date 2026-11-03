@@ -3,6 +3,7 @@ import { glyphsFor } from '../data/controls';
 import { defaultTouchDrive, type TouchDriveScheme } from '../data/touch';
 import { floodTuning } from '../data/tools';
 import type { Device } from '../sim/input/inputManager';
+import { gearLabel } from '../sim/vehicle/drivetrain';
 import type { VehicleTools } from '../sim/tools/tools';
 import type { Vehicle } from '../sim/vehicle/vehicle';
 import type { Trailer } from '../sim/trailer';
@@ -166,7 +167,15 @@ export function buildHudState(i: HudInputs): HudState {
         keys: '!',
         text: v.bowWave > 0.05 ? 'Bow wave at the air intake! Slow down' : 'Water at the air intake!',
       });
-    else if (v.engineOff) prompts.push({ keys: g.accelerate ?? 'W', text: 'Start the engine' });
+    else if (v.engineOff)
+      prompts.push({
+        keys: g.accelerate ?? 'W',
+        // With a clutch it starts only in neutral or with the clutch held.
+        text:
+          v.clutchGearbox && !v.drivetrain.neutral
+            ? `Start the engine (${g.clutch ?? 'clutch'} held, or neutral)`
+            : 'Start the engine',
+      });
     if (i.find && !t.repair)
       prompts.push({
         keys: i.find.inReach ? 'Stop' : '!',
@@ -322,7 +331,7 @@ export function buildHudState(i: HudInputs): HudState {
     planksCarried: t.planks.carried,
     planksTotal: 2,
     winchAttached: t.winch.attached,
-    engine: flood.stalled || wrecked ? 2 : flood.timer > 0 ? 1 : 0,
+    engine: flood.stalled || wrecked || v.clutchStalled ? 2 : flood.timer > 0 ? 1 : 0,
     damage: isDamaged(cond)
       ? {
           engine: cond.engine,
@@ -349,7 +358,7 @@ export function gaugeState(v: Vehicle): GaugeState {
     pitch: Math.asin(Math.max(-1, Math.min(1, f.y))) * deg,
     roll: -Math.asin(Math.max(-1, Math.min(1, r.y))) * deg,
     speedKmh: Math.abs(v.speed) * 3.6,
-    gear: d.gear < 0 ? 'R' : String(d.gear + 1),
+    gear: gearLabel(d),
     range: d.range,
     rpm: d.rpm,
     redline: v.tuning.engine.redlineRpm,

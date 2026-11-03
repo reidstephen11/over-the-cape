@@ -70,6 +70,7 @@ export const camelTuning: VehicleTuning = {
     fuel: { tankLitres: 54.5, idleLitresPerHour: 0.6, efficiency: 0.37, energyMJPerLitre: 38.6 },
   },
   gearbox: {
+    kind: 'manual',
     // LT77 five-speed.
     ratios: [3.585, 2.301, 1.507, 1.0, 0.831],
     reverse: 3.701,

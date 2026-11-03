@@ -98,9 +98,10 @@ export const lc79Tuning: VehicleTuning = {
     // Toyota's VDJ79 single cab has 130 L as standard. Sources: docs/FUEL.md.
     fuel: { tankLitres: 130, idleLitresPerHour: 1.2, efficiency: 0.4, energyMJPerLitre: 38.6 },
   },
-  // The game changes gear itself; this coupling stands in for the clutch.
+  // Automatic mode's coupling: the game changes gear itself and this stands in for the clutch.
   converter: { capacity: 82, stallRatio: 1.15, couplingPoint: 0.8 },
   gearbox: {
+    kind: 'manual',
     ratios: [4.313, 2.33, 1.436, 1.0, 0.838],
     reverse: 4.22,
     finalDrive: 4.3,

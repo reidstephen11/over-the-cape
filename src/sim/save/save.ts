@@ -11,6 +11,7 @@ import { episodeOrder, isEpisodeId, type EpisodeId, type EpisodeLoadout } from '
 import { isTimeOfDay, isWeather, type Conditions } from '../../data/environment';
 import { isDamageMode, type DamageMode } from '../../data/damage';
 import { readDeliveryState } from '../trailerState';
+import { isGearboxMode, type GearboxMode } from '../vehicle/drivetrain';
 
 export interface Settings {
   quality: 'low' | 'medium' | 'high';
@@ -25,6 +26,11 @@ export interface Settings {
   touchDrive: TouchDriveScheme;
   /** How the HUD and the menus look. Missing on older saves: the dash cluster. */
   hudStyle: HudStyle;
+  /**
+   * Automatic, Manual (the clutch is worked for you) or Manual with clutch. Controller
+   * only: without a gamepad the car drives automatic. Missing on older saves: automatic.
+   */
+  gearbox: GearboxMode;
 }
 
 /** How far you've got in one episode. */
@@ -68,6 +74,7 @@ export const defaultSettings: Settings = {
   damage: 'mild',
   touchDrive: defaultTouchDrive,
   hudStyle: defaultHudStyle,
+  gearbox: 'automatic',
 };
 
 /** Minimal storage interface so tests can pass a fake. */
@@ -117,6 +124,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
         damage: isDamageMode(st.damage) ? st.damage : defaultSettings.damage,
         touchDrive: isTouchDriveScheme(st.touchDrive) ? st.touchDrive : defaultTouchDrive,
         hudStyle: isHudStyle(st.hudStyle) ? st.hudStyle : defaultHudStyle,
+        gearbox: isGearboxMode(st.gearbox) ? st.gearbox : defaultSettings.gearbox,
       },
       vehicle: isVehicleId(data.vehicle) ? data.vehicle : 'shortie',
       episode: isEpisodeId(data.episode) ? data.episode : episodeOrder[0],

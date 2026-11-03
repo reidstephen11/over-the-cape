@@ -1,6 +1,7 @@
 import { keyBindings, padBindings, padTuning, Pad, type Action } from '../../data/controls';
 import { defaultTouchDrive, throttleBrakeFromStick, type TouchDriveScheme } from '../../data/touch';
 import { vehicleTuning, type VehicleTuning } from '../../data/vehicle';
+import type { GearboxMode } from '../vehicle/drivetrain';
 import { emptyInput, SteeringSmoother, type VehicleInput } from './vehicleInput';
 import { MenuStick } from './touchStick';
 
@@ -15,6 +16,13 @@ export class InputManager {
   activeDevice: Device = 'keyboard';
   /** When false, vehicleInput() returns a neutral command (menus open, tool modes). */
   vehicleEnabled = true;
+  /**
+   * The gearbox the game is running (set by the game). In the manual settings D-pad
+   * left/right shift gears instead of zooming the camera, and ○/B is the clutch.
+   */
+  gearboxMode: GearboxMode = 'automatic';
+  /** A gamepad was connected at the last poll(). */
+  gamepadConnected = false;
   private readonly keys = new Set<string>();
   private readonly vehicleEdges = new Set<Action>();
   /** UI presses since the last frame, counted so quick taps in one slow frame aren't lost. */
@@ -26,6 +34,7 @@ export class InputManager {
   private padButtons: boolean[] = [];
   private padAxes: number[] = [0, 0, 0, 0];
   private padTriggers = { lt: 0, rt: 0 };
+  private padClutch = 0;
   private wheelDelta = 0;
   private steeringRates: VehicleTuning['steering'] = vehicleTuning.steering;
   private readonly steering = new SteeringSmoother(
@@ -153,7 +162,9 @@ export class InputManager {
     this.polled = true;
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
     const pad = [...pads].find((p) => p && p.connected) ?? null;
+    this.gamepadConnected = !!pad;
     if (!pad) {
+      this.padClutch = 0;
       this.padButtons = [];
       this.padAxes = [0, 0, 0, 0];
       this.padTriggers = { lt: 0, rt: 0 };
@@ -166,6 +177,8 @@ export class InputManager {
     };
     this.padAxes = [axis(0), axis(1), axis(2), axis(3)];
     this.padButtons = pad.buttons.map((b) => b.pressed);
+    const clutchButton = pad.buttons[Pad.B];
+    this.padClutch = clutchButton?.pressed ? 1 : (clutchButton?.value ?? 0);
     const lt = pad.buttons[Pad.LT]?.value ?? 0;
     const rt = pad.buttons[Pad.RT]?.value ?? 0;
     this.padTriggers = {
@@ -227,6 +240,12 @@ export class InputManager {
     inp.cycleLights = edges.has('lights');
     inp.winchAttach = edges.has('winch');
     inp.interact = edges.has('interact');
+    // The manual gearbox is gamepad only; the keyboard and touch never shift.
+    if (this.gearboxMode !== 'automatic' && this.gamepadConnected) {
+      inp.shiftUp = edges.has('shiftUp');
+      inp.shiftDown = edges.has('shiftDown');
+      inp.clutch = Math.min(1, Math.max(0, this.padClutch));
+    }
     edges.clear();
     return inp;
   }
@@ -251,7 +270,9 @@ export class InputManager {
   takeZoom(dt: number, allowPad = true): number {
     const d = this.wheelDelta;
     this.wheelDelta = 0;
-    const pad = allowPad ? (this.padButtons[Pad.Right] ? 1 : 0) - (this.padButtons[Pad.Left] ? 1 : 0) : 0;
+    // In the manual gearbox settings D-pad left/right shift gears instead.
+    const padZoom = allowPad && this.gearboxMode === 'automatic';
+    const pad = padZoom ? (this.padButtons[Pad.Right] ? 1 : 0) - (this.padButtons[Pad.Left] ? 1 : 0) : 0;
     return d + pad * padTuning.cameraZoomRate * dt;
   }
 

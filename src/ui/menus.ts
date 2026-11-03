@@ -12,6 +12,7 @@ import type { EpisodeDef } from '../data/episodes';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
 import { hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
 import { offeredQualities, shownQuality } from '../data/quality';
+import { GEARBOX_MODES, type GearboxMode } from '../sim/vehicle/drivetrain';
 
 /** What each damage setting does, and which ways an episode can end with it. */
 export const damageNotes: Record<DamageMode, string> = {
@@ -20,6 +21,28 @@ export const damageNotes: Record<DamageMode, string> = {
   realistic:
     'Tyres puncture or tear and the engine can be wrecked. Plug punctures, fit spares for torn sidewalls; camps fix the engine and suspension. A flat with nothing left to fix it, a wrecked engine, an empty tank or the clock ends an episode.',
 };
+
+export const gearboxLabels: Record<GearboxMode, string> = {
+  automatic: 'Automatic',
+  manual: 'Manual',
+  clutch: 'Manual with clutch',
+};
+
+/** What each gearbox setting does (controller only; the keyboard and touch drive automatic). */
+export function gearboxNote(mode: GearboxMode, back: string): string {
+  return {
+    automatic:
+      'The gearbox changes gear itself. Controller only: the keyboard and touch always drive automatic.',
+    manual:
+      'D-pad right / left change up and down (N, then reverse below 1st); the clutch is worked for you. The 40 Series holds the gear of its automatic.',
+    clutch: `As Manual, with ${back} held as the clutch. Let it out gently: at idle with the wheels held the engine stalls. Start in neutral or with ${back} held.`,
+  }[mode];
+}
+
+/** The Gearbox row appears only while a controller is connected, and never on a phone or tablet. */
+export function showGearboxSetting(gamepadConnected: boolean): boolean {
+  return gamepadConnected && !isTouchDevice();
+}
 
 type Page = 'main' | 'vehicle' | 'settings' | 'controls';
 
@@ -61,6 +84,7 @@ export class PauseMenu {
   /** Opened from the touch controls: the Controls page lists those instead of the keyboard. */
   private touch = false;
   private device: 'keyboard' | 'gamepad' | 'touch' = 'keyboard';
+  private gamepadConnected = false;
   /** A new build is downloaded and waiting: the main page offers to restart into it. */
   private updateReady = false;
   private status: readonly PauseStatusCell[] = [];
@@ -112,6 +136,13 @@ export class PauseMenu {
     if (touch === this.touch) return;
     this.touch = touch;
     if (this.isOpen && this.page === 'controls') this.show('controls');
+  }
+
+  /** A controller was plugged in or out: the Settings page shows or hides the Gearbox row. */
+  setGamepadConnected(on: boolean): void {
+    if (this.gamepadConnected === on) return;
+    this.gamepadConnected = on;
+    if (this.isOpen && this.page === 'settings') this.show('settings');
   }
 
   private updateInputHint(): void {
@@ -218,6 +249,15 @@ export class PauseMenu {
           )
           .join('')}</div></div>
         <p class="menu-note damage-note">${damageNotes[s.damage]}</p>
+        ${
+          showGearboxSetting(this.gamepadConnected)
+            ? `<div class="setting-row gearbox-setting">Gearbox<div class="seg">${GEARBOX_MODES.map(
+                (m) =>
+                  `<button data-focus data-gearbox="${m}" class="${s.gearbox === m ? 'on' : ''}" aria-pressed="${s.gearbox === m}">${gearboxLabels[m]}</button>`,
+              ).join('')}</div></div>
+        <p class="menu-note gearbox-note">${gearboxNote(s.gearbox, controllers[s.controller].back)}</p>`
+            : ''
+        }
         <button data-focus data-act="back">Back</button>`;
     } else {
       const table = this.touch
@@ -290,6 +330,10 @@ export class PauseMenu {
     } else if (t.dataset.hudStyle) {
       this.settings.hudStyle = t.dataset.hudStyle as HudStyle;
       this.actions.changeSettings({ hudStyle: this.settings.hudStyle });
+      this.show('settings');
+    } else if (t.dataset.gearbox) {
+      this.settings.gearbox = t.dataset.gearbox as GearboxMode;
+      this.actions.changeSettings({ gearbox: this.settings.gearbox });
       this.show('settings');
     } else if (t.dataset.damage) {
       this.settings.damage = t.dataset.damage as DamageMode;

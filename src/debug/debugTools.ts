@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SurfaceId, surfaces } from '../data/surfaces';
 import type { VehicleTuning } from '../data/vehicle';
+import { gearLabel } from '../sim/vehicle/drivetrain';
 import type { Simulation } from '../sim/sim';
 import type { Vehicle } from '../sim/vehicle/vehicle';
 import type { PoiDef } from '../sim/world/mapTypes';
@@ -278,7 +279,7 @@ export class DebugTools {
     const p = v.body.translation();
     const d = v.drivetrain;
     return [
-      `speed ${(v.speed * 3.6).toFixed(1)} km/h  ${d.range === 'high' ? 'H' : 'L'} gear ${d.gear < 0 ? 'R' : d.gear + 1}  ${d.rpm.toFixed(0)} rpm`,
+      `speed ${(v.speed * 3.6).toFixed(1)} km/h  ${d.range === 'high' ? 'H' : 'L'} gear ${gearLabel(d)}  ${d.rpm.toFixed(0)} rpm`,
       `throttle ${v.throttle.toFixed(2)} brake ${v.brake.toFixed(2)}  tilt ${v.tiltDeg().toFixed(0)}°`,
       `wheels ${v.wheels.map((w) => (w.contact ? surfaces[w.surface].name.split(' ')[0] : '—')).join(' | ')}`,
       `load ${v.wheels.map((w) => (w.load / 1000).toFixed(1)).join(' ')} kN  spin ${v.wheels.map((w) => w.spin.toFixed(1)).join(' ')}`,

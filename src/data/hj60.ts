@@ -97,9 +97,10 @@ export const hj60Tuning: VehicleTuning = {
     // The 90 L main tank under the floor. Sources: reference/vehicles/landcruiser-60/SOURCES.md.
     fuel: { tankLitres: 90, idleLitresPerHour: 1.1, efficiency: 0.35, energyMJPerLitre: 38.6 },
   },
-  // The game changes gear itself; this coupling stands in for the clutch.
+  // Automatic mode's coupling: the game changes gear itself and this stands in for the clutch.
   converter: { capacity: 82, stallRatio: 1.25, couplingPoint: 0.8 },
   gearbox: {
+    kind: 'manual',
     // H55F five-speed.
     ratios: [4.843, 2.619, 1.516, 1.0, 0.845],
     reverse: 4.843,

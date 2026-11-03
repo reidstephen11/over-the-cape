@@ -83,7 +83,8 @@ import { ToolMenu, type ToolOption } from '../ui/toolMenu';
 import { TouchControls, isTouchDevice } from '../ui/touchControls';
 import { touchTuning } from '../data/touch';
 import { PaperMap } from '../ui/paperMap';
-import { Fade, PauseMenu, type PauseStatusCell } from '../ui/menus';
+import { Fade, PauseMenu, showGearboxSetting, type PauseStatusCell } from '../ui/menus';
+import { controllers } from '../data/controllers';
 import { HistoryCard, ResultCard, type ResultButton } from '../ui/episodeCards';
 import { FreeCamera } from '../debug/freeCamera';
 import { DebugOverlay } from '../debug/overlay';
@@ -513,6 +514,18 @@ export class Game {
         this.audio.engineEvent('stalled');
         return;
       }
+      if (event === 'clutchToStart') {
+        this.hud.toast(`Clutch in (${controllers[this.settings.controller].back}) or neutral to start`, 2400);
+        return;
+      }
+      if (event === 'stalledLugged') {
+        this.hud.toast(
+          `Stalled: clutch in or neutral, then press ${controllers[this.settings.controller].accelerate}`,
+          3200,
+        );
+        this.audio.engineEvent('stalled');
+        return;
+      }
       if (event !== 'starting')
         this.hud.toast(event === 'stalled' ? 'Engine stalled — flooded' : 'Engine restarted');
       this.audio.engineEvent(event);
@@ -830,6 +843,7 @@ export class Game {
     if (this.settings.quality !== prevQuality)
       this.view.setQuality(qualityFor(this.settings.quality, isTouchDevice()));
     if (this.settings.damage !== this.sim.damage) this.sim.setDamage(this.settings.damage);
+    this.syncGearbox();
     this.pause.setSettings(this.settings);
     this.hud.units = this.settings.units;
     this.hud.style = this.settings.hudStyle;
@@ -1846,8 +1860,20 @@ export class Game {
     else if (inp.pressed('toolMenu')) this.toolMenu.open(this.toolOptions(), inp.activeDevice === 'touch');
   }
 
+  /**
+   * The gearbox the car drives with: the saved setting while a controller is connected
+   * (not on a phone or tablet), otherwise automatic, so the keyboard and touch never need gears.
+   */
+  private syncGearbox(): void {
+    const mode = showGearboxSetting(this.input.gamepadConnected) ? this.settings.gearbox : 'automatic';
+    this.input.gearboxMode = mode;
+    if (this.sim.gearboxMode !== mode) this.sim.setGearboxMode(mode);
+    this.pause.setGamepadConnected(this.input.gamepadConnected);
+  }
+
   private renderFrame(alpha: number, frameDt: number): void {
     this.input.poll();
+    this.syncGearbox();
     this.map.updateInput(this.input.activeDevice, this.settings.controller);
     this.pause.setInputDevice(this.input.activeDevice);
     this.history.setInput(this.input.activeDevice, this.settings.controller);
