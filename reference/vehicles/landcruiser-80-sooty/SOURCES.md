@@ -2,7 +2,18 @@
 
 Game id: `sooty80`. Body: `src/render/sooty80Body.ts`; cab, collision boxes and snorkel: `src/data/sooty80.ts`.
 
-**What to match.** A wide-body 80 Series wagon (1990–97) with the split tailgate (an upper liftgate with the rear glass, a lower drop gate), quad rectangular headlamps, a clear corner lamp, amber indicators under the lamps, a raked windscreen, a roof that dips to the screen header, and a tail that leans back from the tail lamps up to the roof. Every photograph of the black Japanese VX below is one car, and every measurement comes from those photos. The 1996 Australian GXL (`gxl-australian-*.jpg`) has the same body and the same split tailgate, with the later emblem grille. The game's car is the modified "Sooty MkII" build ([Repco's rundown](https://www.repco.com.au/know-how/ex31-sooty-mkii-4wd-rig-rundown)): a 3 inch lift, 35 inch tyres on a 1.67 m track, a bull bar, side rails and sliders, a snorkel up the right pillar, a roof platform with a light bar and awning, and a rear bar with a swing-away spare. None of the stock photos show that gear. `touring-*.jpg` show similar gear on other 80s.
+**What to match.** A wide-body 80 Series wagon (1990–97) with the split tailgate (an upper liftgate with the rear glass, a lower drop gate), quad rectangular headlamps, a clear corner lamp, amber indicators under the lamps, a raked windscreen, a roof that dips to the screen header, and a tail that leans back from the tail lamps up to the roof. Every photograph of the black Japanese VX below is one car, and every measurement comes from those photos. The 1996 Australian GXL (`gxl-australian-*.jpg`) has the same body and the same split tailgate, with the later emblem grille. The game's car is the modified "Sooty MkII" build ([Repco's rundown](https://www.repco.com.au/know-how/ex31-sooty-mkii-4wd-rig-rundown), [MY4X4's build page](https://www.my4x4.info/sooty)): a 3 inch lift, 35 inch tyres on a 1.67 m track, a bull bar, side rails and sliders, a snorkel up the right pillar, a roof platform with a light bar and awning, and a rear bar with a swing-away spare. None of the stock photos show that gear. `touring-*.jpg` show similar gear on other 80s.
+
+### What the real Sooty MkII is (specifications only, no usable photograph)
+
+From MY4X4's build page, which is text and not a picture, so it can be cited here. A 1993 80 Series with the **1HD-FTE factory turbo diesel** (plus an aftermarket CT 26 turbocharger by MTQ). Suspension is **King Springs with Superior drop arms and an adjustable panhard**; no lift height is stated there, so the 3 inch figure stays Repco's. **General Grabber X3 tyres on bead-lock wheels**, with no size given, so the 35 inch figure also stays Repco's. An **ARB air locker on the rear only — the front has no locker**. A **Dominator winch** (Full Drive Service Centre), a **custom bull bar by Custom RV, Brisbane**, Raptor-coated, carrying two 6 inch Livid lights, a **22 inch light bar**, a **reinforced roof rack**, and **scrub rails with custom sliders**. Inside: two Century 4x4 Overland batteries, a Redarc Manager 30, a 1,000 W pure sine inverter, a Dometic CFX 65 L fridge on a slide, Titan drawers and aftermarket seats.
+
+**Where the game's car differs, and why.**
+
+- **Both diff locks.** Every vehicle in the game has a front and a rear locker on Z and X; the real Sooty has the rear only. This is the game's shared control scheme, not a modelling choice about this car, so it is left alone.
+- **The snorkel.** Repco's rundown has one and the model draws one up the right pillar. MY4X4's list does not mention it. Neither source is a photograph of the car, so this is unresolved.
+- **The rear bar and swing-away spare.** Repco describes them; MY4X4 does not list them. The model has them. Also unresolved.
+- **Tyre and spring brands** are not drawn: SPEC.md §5a asks for shapes, not badges.
 
 ## Dimensions
 
@@ -44,7 +55,7 @@ From `front.jpg` and the GXL: the grille is about 0.85 m wide and runs from the 
 
 ## Gaps
 
-No top view. No straight-on photo of the late emblem grille close up: `grille-late.jpg` is a whole car. No photograph of Sooty MkII itself under a free licence, so the touring gear follows Repco's description and the touring photos, not the real build.
+No top view. No straight-on photo of the late emblem grille close up: `grille-late.jpg` is a whole car. No photograph of Sooty MkII itself under a free licence, so the touring gear follows the written descriptions (Repco, MY4X4) and the touring photos, not the real build. Searched again in November 2026 across Wikimedia Commons and the open web: the car appears only in 4WD 24/7 videos, magazine features and retailer pages, none of which may be redistributed here. **Until such a photograph exists the body cannot be corrected against the real car**, and the roadmap item asking for that is blocked on licensing, not on effort. What can be checked is the factory body, which the black VX photographs cover; the v1.41 pass re-rendered the calibrated side camera against `side-left.jpg` and found nothing beyond the deliberate deviations listed under "Check these first".
 
 ## Photographs
 
