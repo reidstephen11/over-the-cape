@@ -21,6 +21,11 @@ export interface WeatherTimeline {
     dryHours: number;
   };
   creeks: {
+    /**
+     * Metres every creek stands above its authored level before the rain, for a track found
+     * wetter than it was drawn (src/data/trackConditions.ts). 0 where absent.
+     */
+    standing?: number;
     /** Metres an hour the creeks rise at first in steady rain. */
     risePerHour: number;
     /** Highest they get (m above their own level): the rise slows towards it. */
@@ -85,11 +90,12 @@ export function weatherAt(t: WeatherTimeline, hour: number): WeatherNow {
     rise += (c.risePerHour * r * (1 - rise / c.maxRise) - c.fallPerHour * rise * (1 - r)) * dt;
     rise = Math.max(0, rise);
   }
+  const standing = c.standing ?? 0;
   return {
     rain: rainAt(t, hour),
     wetness: g.before + (1 - g.before) * soak,
-    creekRise: rise,
-    flowScale: 1 + c.flowPerMetre * rise,
+    creekRise: standing + rise,
+    flowScale: 1 + c.flowPerMetre * (standing + rise),
   };
 }
 

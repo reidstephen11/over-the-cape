@@ -14,7 +14,8 @@ export const crebEpisode: EpisodeDef = {
   mapId: 'creb',
   mission: 'Reach the Lions Den Hotel before dark',
   goal: 'lions-den',
-  // June: the track has just reopened after the wet, and it rained overnight.
+  // June, soon after the track reopens. How wet it is found is rolled per run from the run's
+  // seed (src/data/trackConditions.ts); `weather` and `storm` here are the just-reopened day.
   startHour: 12.5,
   weather: 'wet',
   // A storm comes through in the afternoon (src/data/episodes/crebWeather.ts).
@@ -79,7 +80,7 @@ export const crebEpisode: EpisodeDef = {
   ],
   briefing: [
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
-    'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. It rained overnight: the red clay on the climbs will be slippery.',
+    'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. How you find it depends on the day: dried out hard, just reopened and greasy, or still letting go of the wet.',
     'The road out of the village is an orientation over a spur of the range. The signs take the controls one at a time: low range on the ramp up onto a bench, precision crawl over the band of rock on it, the diff locks on the pinch to the top, then the winch in the bog in the hollow before the river. After that the track stops being a lesson.',
     'Storms are forecast from about 3 pm. Once the rain sets in the clay gets greasier and the creeks rise and run faster the longer it rains. There is time to winch out of a bog. What ends the day is getting stuck for good, or stopping in a crossing and being swept. A clean run finishes on the fuel in the tank.',
     'Cross the Daintree River, climb the range on the old powerline track, come down to the Bloomfield River at Wujal Wujal and follow the Bloomfield Track north to the Lions Den Hotel. Get there before dark.',

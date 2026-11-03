@@ -23,7 +23,8 @@ export const CREEK_MARGIN = 4;
 export function prepareFlood(world: World, storm: WeatherTimeline): number {
   const t = world.terrain;
   const near = world.features.creekDistance;
-  const maxRise = storm.creeks.maxRise;
+  // The standing rise of a wet track is already in the water before the first drop falls.
+  const maxRise = (storm.creeks.standing ?? 0) + storm.creeks.maxRise;
   let added = 0;
   // A ring of cells at a time, out to the margin, each taking its highest wet neighbour's level.
   for (let ring = 0; ring < CREEK_MARGIN; ring++) {

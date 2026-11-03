@@ -6,6 +6,7 @@ import type { DamageMode } from '../data/damage';
 import { timeLabels, weatherLabels, type Conditions } from '../data/environment';
 import { clockTime, type EpisodeDef, type EpisodeLoadout } from '../data/episodes';
 import { isTouchDevice } from './touchControls';
+import type { TrackCondition } from '../data/trackConditions';
 
 /** The ways an episode can end with each damage setting. */
 const endings: Record<DamageMode, string> = {
@@ -20,6 +21,23 @@ const endings: Record<DamageMode, string> = {
  * button; a progress bar and a short controls reminder.
  */
 export class LoadingScreen {
+  /**
+   * How the track was found today. The roll comes from the run's seed, which is only
+   * settled once the world is built, so the briefing is written first and told after.
+   */
+  trackCondition(condition: TrackCondition): void {
+    const line = this.el.querySelector('.briefing-conditions');
+    if (line && !line.textContent?.includes(condition.label))
+      line.textContent = `${condition.label} track · ${line.textContent ?? ''}`;
+    const text = this.el.querySelector('.briefing-text');
+    if (text && !text.querySelector('.briefing-track')) {
+      const p = document.createElement('p');
+      p.className = 'briefing-track';
+      p.textContent = condition.briefing;
+      text.prepend(p);
+    }
+  }
+
   readonly el: HTMLElement;
   private readonly bar: HTMLElement;
   private readonly label: HTMLElement;
