@@ -2208,3 +2208,17 @@ The owner asked how to make the game better for players who like 4WD challenges 
 **Sound.** In the manual modes every change of gear, into or out of neutral included, clunks; in Automatic it still clunks only on changing direction, so the auto's own shifts stay quiet as before.
 
 **Not done.** Shifting in "Manual with clutch" does not require the clutch (no grinding or missed gears); a rev-matching model was more than this step needed. Phones and the keyboard have no way to shift (a roadmap item).
+
+**The Little Annan ford is now closed late.** At 5:45 pm a steady 16 km/h through the main ford stalls the engine, where before it was the way across. (v1.36: it is right on the edge; with the rough banks it can just get out as the engine dies, so the test now checks it floods to sputtering rather than which way it falls.) Crawling is still swept away, so late in the storm the shallow crossing downstream is the way over (its test still passes for both vehicles). `tests/storm.test.ts` now expects that, and checks the steady drive still crosses at 3 pm.
+
+## v1.36: rough creek banks
+
+The owner found the way into and out of the crossings too smooth.
+
+**Why they were smooth.** `fordRamp` clamps the track at a ford to the bank's plane (`water + out × bankSlope`). That removes the step at the water's edge that v1.31 fixed, but because the clamp runs after the track's roughness is added, it also wiped out every bump, pothole and washout on the bank. Every ford was a perfectly even ramp.
+
+**Rough banks on top of the ramp.** `bankRoughness` adds back, after the clamp, a rut scoured under one wheel line and then the other (it swaps about every three metres, starting on a side set by the crossing) and rocks from noise at about 1.4 m. Both are `CreekDef.bankRough` metres, 0.22 by default, so the wheel lines differ by up to about 0.4 m. It fades in over the first two metres from the water, so the water's edge stays a slope with no hidden step (the v1.31 lip test still holds), and out at the top of the ramp.
+
+**Steeper small creeks.** The creeks laid by `creekAcross` (the paddock creeks and the three Bloomfield Track creeks) have banks at 0.45 instead of 0.35 (24° instead of 19°).
+
+**Mud on the exits was tried and dropped.** Short black-soil bogs at the top of six more exit banks stopped the locked crawl at paddock-creek-south and the Bloomfield middle creek outright, even at 0.28 m, and the bog rules want creek-bank bogs deeper than 0.3 m with a marked rock in cable reach. The rough banks and steeper slopes alone keep the crawl tests passing, so this version ships those; exit mud would need its own tuning pass.

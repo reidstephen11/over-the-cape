@@ -253,7 +253,7 @@ function creekAcross(
       halfWidth,
       depth,
       bed: 'gravel' as const,
-      bankSlope: 0.35,
+      bankSlope: 0.45,
     })),
   };
 }

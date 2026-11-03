@@ -741,6 +741,13 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       const c = creekLines[creekOwner[i]];
       const u = atParam(c.poly.u, creekParam[i]);
       target = fordRamp(attrAt(c.water, u), creekHw, creekDist[i], attrAt(c.bankSlope, u), target);
+      target += bankRoughness(
+        c.def.bankRough ?? BANK_ROUGH,
+        creekDist[i] - creekHw,
+        trackSide[i],
+        creekOwner[i],
+        roughNoise.fbm(((i % resX) - halfX) / 1.4, (Math.floor(i / resX) - halfZ) / 1.4, 2),
+      );
     }
     const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + shoulderAt(t, p), d);
     heights[i] = h + (target - h) * w;
@@ -1223,6 +1230,27 @@ function fordRamp(water: number, halfWidth: number, d: number, bankSlope: number
   const bank = water + Math.min(CREEK_BANK_FILL, rise * 0.9);
   const fill = road + (bank - road) * (1 - smoothstep(CREEK_BANK_RAMP * 0.25, CREEK_BANK_RAMP, out));
   return Math.min(Math.max(road, fill), water + rise);
+}
+
+/** How rough a road's banks are at a ford, by default (m); see `CreekDef.bankRough`. */
+const BANK_ROUGH = 0.22;
+
+/**
+ * Roughness on a ford's bank, `out` metres from the water's edge and `lat` metres from the
+ * track's centreline (+ left): the water running off the road scours a rut under one wheel
+ * line, then the other, so a vehicle lurches from side to side on the way in and out, and
+ * rocks (`rock`, noise in −1..1) stand out of the bank. It fades in over the first two
+ * metres from the water, so the water's edge itself stays a slope with no hidden step, and
+ * out again at the top of the ramp.
+ */
+function bankRoughness(amp: number, out: number, lat: number, crossing: number, rock: number): number {
+  if (amp <= 0 || out <= 0) return 0;
+  const fade = smoothstep(0.3, 2.2, out) * (1 - smoothstep(CREEK_BANK_RAMP - 2.5, CREEK_BANK_RAMP, out));
+  if (fade <= 0) return 0;
+  // The rut swaps wheel lines every three metres or so, starting on a side set by the crossing.
+  const side = Math.sin(out * 1.1 + crossing * 2.3) >= 0 ? 1 : -1;
+  const rut = Math.max(0, 1 - Math.abs(lat - side * 0.8) / 0.75);
+  return amp * fade * (0.7 * rock - rut);
 }
 
 /** Linear interpolation through [distance, value] pairs, holding the end values. */
