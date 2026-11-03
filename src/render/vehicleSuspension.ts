@@ -65,7 +65,8 @@ export class VehicleSuspension {
   ) {
     const steel = new THREE.Color('#6D756D'),
       dark = new THREE.Color('#343C36');
-    const hub = Math.max(...tuning.wheels.map((w) => Math.abs(w.x))) + 0.005;
+    const hub =
+      (tuning.drawnWheels?.halfTrack ?? Math.max(...tuning.wheels.map((w) => Math.abs(w.x)))) + 0.005;
     const axle = new VehicleBuilder();
     axle.rod({ x: -hub, y: 0, z: 0 }, { x: hub, y: 0, z: 0 }, 0.052, dark);
     axle.slot = M.Metal;
@@ -95,10 +96,11 @@ export class VehicleSuspension {
           );
         }
       }
+      // Hanger rods just inboard of each spring, mirrored side to side.
       for (const dz of [-0.075, 0.075])
         axle.rod(
-          { x: side * 0.48 - 0.045, y: 0.09, z: dz },
-          { x: side * 0.48 - 0.045, y: -0.065, z: dz },
+          { x: side * (0.48 - 0.045), y: 0.09, z: dz },
+          { x: side * (0.48 - 0.045), y: -0.065, z: dz },
           0.007,
           steel,
         );

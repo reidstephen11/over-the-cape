@@ -148,7 +148,8 @@ function rearBumper(b: VehicleBuilder, tuning: VehicleTuning): void {
   b.geometry(new THREE.SphereGeometry(0.03, 12, 8), steel);
   b.pop();
   b.rod(v(t.x, t.y + 0.05, t.z + 0.13), v(t.x, t.y + 0.08, t.z + 0.13), 0.012, steel);
-  plate(b, 0.3, 0.215, z + 0.08, 1);
+  // The plate sits on the left of the bumper, under the spare, as the photographs have it.
+  plate(b, -0.3, 0.215, z + 0.08, 1);
 }
 
 function chassis(b: VehicleBuilder): void {
@@ -230,9 +231,13 @@ function roofGear(b: VehicleBuilder): void {
   b.pop();
 }
 
-/** The first spare on the right-hand rear door and a jerry can on the left, clear of the lamps. */
+/**
+ * The first spare on the left-hand rear door, where the factory carrier is in
+ * rear-34-left.jpg and rear-34-orange-1977.jpg, and a jerry can on the right door, clear of
+ * the lamps.
+ */
 function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
-  const sx = 0.27,
+  const sx = -0.27,
     sy = 0.86,
     sz = TAIL + 0.23;
   // Wheel carrier: a plate on the door with three studs.
@@ -244,9 +249,9 @@ function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
     .rotate(0, -Math.PI / 2, 0);
   b.geometry(wheel.clone(), black);
   b.pop();
-  // Jerry can in a cradle on the left door, below the window.
+  // Jerry can in a cradle on the right door, below the window.
   const olive = new THREE.Color('#667258');
-  const cx = -0.27,
+  const cx = 0.27,
     cy = 0.5,
     cz = TAIL + 0.13;
   b.block(cx, cy - 0.235, cz - 0.02, 0.3, 0.035, 0.24, bar, M.Metal, Z.Rear);
@@ -279,13 +284,14 @@ function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
 
 /** The second spare lying flat on a plate on the bonnet, held down by a centre clamp. */
 function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
+  const width = tuning.drawnWheels?.width ?? tuning.wheelWidth;
   const z = -1.2,
     base = BONNET_TOP + 0.08,
-    top = base + tuning.wheelWidth + 0.044;
+    top = base + width + 0.044;
   b.block(0, BONNET_TOP + 0.04, z, 0.34, 0.08, 0.34, bar, M.Metal, Z.Front, 0.01);
   b.tag = Z.Front;
   b.push()
-    .translate(0, base + tuning.wheelWidth / 2, z)
+    .translate(0, base + width / 2, z)
     .rotate(0, 0, Math.PI / 2);
   b.geometry(wheel.clone(), black);
   b.pop();

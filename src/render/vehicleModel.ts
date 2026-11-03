@@ -149,7 +149,8 @@ export class VehicleModel {
     this.wheelBaseCol = Float32Array.from(this.wheelGeo.getAttribute('color').array);
     for (const wheel of tuning.wheels) {
       const pivot = new THREE.Group();
-      pivot.position.set(wheel.x, 0, wheel.z);
+      const x = tuning.drawnWheels ? Math.sign(wheel.x) * tuning.drawnWheels.halfTrack : wheel.x;
+      pivot.position.set(x, 0, wheel.z);
       const spin = new THREE.Group();
       const mesh = new THREE.Mesh(this.wheelGeo, materials);
       mesh.castShadow = true;
@@ -263,7 +264,7 @@ export class VehicleModel {
     const pos = geo.getAttribute('position') as THREE.BufferAttribute;
     const out = pos.array as Float32Array;
     const ground = -(this.tuning.wheelRadius - drop);
-    const halfWidth = this.tuning.wheelWidth / 2;
+    const halfWidth = (this.tuning.drawnWheels?.width ?? this.tuning.wheelWidth) / 2;
     const [c, s] = [Math.cos(angle), Math.sin(angle)];
     for (let k = 0; k < out.length; k += 3) {
       const [x, y, z] = [base[k], base[k + 1], base[k + 2]];

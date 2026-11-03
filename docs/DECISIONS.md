@@ -2081,3 +2081,34 @@ Again no vehicle changes shape. The renders of every vehicle at the studio's eig
 | lc79     | 93.4k  | 63.5k | 71.2k → 43.2k        | 5.5k → 5.0k |
 
 Against the reviewer's v1.18 counts (83,000 to 154,000), every vehicle is now 40 to 55 percent lighter.
+
+## v1.30: vehicle-model defects in the 40 Series, the Hilux and the 60 Series
+
+A reviewer listed defects in the three leaf-sprung bodies, each confirmed in the code and in studio renders. Each was re-checked against the photographs in `reference/vehicles/` before and after the change (studio renders from `scripts/studio-shots.ts` with v1.22's `STUDIO_CHROMIUM` pointing at the container's Chromium, plus near-orthographic front, top and rear views and a low rear view under the tail).
+
+**Shared.** The leaf-spring hanger rods (`src/render/vehicleSuspension.ts`) were at `side * 0.48 - 0.045`, so the left pair stood outboard of its spring and the right pair inboard. Both pairs now sit 45 mm inboard of their spring.
+
+**40 Series** (`src/data/vehicle.ts`, `src/render/vehicleBody.ts`, `vehicleEquipment.ts`).
+
+- **Wheels drawn on the 1.40 m track.** The tyres stood 33 mm outside the guard lips (track 1.45 m with 0.26 m tyres against guards 1.665 m over the lips). The wheels are now drawn on the published 1,400 mm track as 7.50-16 tyres 0.21 m wide (`drawnWheels` in `src/data/vehicle.ts`, read by the wheel builder, the model's wheel pivots, the axle length and the bonnet spare's clamp): the outer faces sit at 0.805 m, inside the lips, as in `front.jpg`, `front-white.jpg` and `rear-34-hardtop.jpg` (which is in fact a front view). Compared in the near-orthographic front and top renders before and after. **The physics wheels stay on 1.45 m with 0.26 m tyres.** Moving them was tried first: with the track at 1.40 m, 21 tests failed in 11 files, because the paddock road's potholes no longer pinched a tyre on the wheel line they were dug for, the Daintree's deep line no longer stopped the car, the Troop Carrier no longer tipped on a gentler slope than the 40, the loaded trailer no longer tipped before the car in its test turn, and the 40 leaned past the Granite Spur limit on The Chute; with the tyres 0.21 m wide the Little Annan at 5:45 pm no longer swept the crawling car away (the tyres' buoyancy is their drawn volume). Re-balancing the world to a new wheel line is a bigger job than this update, so the drawn wheels sit 25 mm inboard of the physics wheels, which nothing in play shows. Steef can ask for the physics to follow if he wants the real track's handling.
+- **Spare on the left rear door.** `rear-34-left.jpg` (1982 hardtop) and `rear-34-orange-1977.jpg` show the carrier on the left door; `rear.jpg` is a 1970 tailgate car with a swing-out carrier and does not settle it. No owner's choice was recorded, so the spare carrier moved to the left door, the jerry can and the stamped lower panel to the right door, the door handle to the right door beside the split, and the number plate to the left of the rear bumper under the spare, where the two photographs have it.
+- **Length row.** `SOURCES.md` compared the 3.58 m skin with the 3,840.5 mm over-bumper figure; the row now says the stock bumpers account for the difference. The rear overhang could not be checked: both `side.jpg` and `side-1977.jpg` are front three-quarter views, now said so in the file. `TAIL` is unchanged.
+
+**Hilux** (`src/data/hilux.ts`, `src/render/hiluxBody.ts`).
+
+- **Tyres 0.80 m.** `R` 0.375 to 0.40, the size of a 7.00-16 (the SOURCES row said so). The ground is now 0.52 m below the origin; the intake height was already derived from `R`. Compared in the side and wheel renders with `side-1980-4wd.jpg` and `front-34-right.jpg`.
+- **Bar lamps and plate.** They floated 12–20 mm ahead of the bull bar; `face` is now −2.328, the beam's bevelled front face.
+- **Under-tub spare.** It passed through the frame rails and two crossmembers at frame height. It now hangs below the rails on its two cradle bars (centre y −0.205, bottom 0.22 m off the ground), as a slung spare does; the collision box follows.
+- **Tub length: checked, not moved.** The length row compared the skin with the over-bumper figure; the model is 4.70 m to its rear step bumper against 4,690–4,730 mm published, so the row now says that. Scaling `side-1980-4wd.jpg` on its wheels (the tyre diameters give the perspective), the cab back reads 1.75–1.9 m behind the front axle and the tailgate 3.7–4.0 m, against 1.76 and 3.83 in the model, so the 2.0 m tub is inside what the photograph supports and `TUB_FRONT`, `CAB_BACK` and `FRONT_FACE` stay. `rear-34-right.jpg` is too close and too far round to scale. A true profile of a 4WD long bed would settle it.
+- **Arch lips.** The rolled bead round each wheel opening (torus tube 0.03) is now a 12 mm lip, a few millimetres proud of the skin, as the pressed edge in `front-34-right.jpg` and `rear-34-right.jpg`.
+
+**60 Series** (`src/render/hj60Gear.ts`, `src/data/hj60.ts`).
+
+- **Under-body spare.** It sat at frame height through the rails and the two rear crossmembers. It now hangs below the rails on its cradle (centre y −0.22, bottom 0.2 m off the ground), the carrier bolt through its centre; the collision box follows. Checked in the low rear render against `rear-34-left-n-hj60v-std-1987-barn-doors.jpg`, where the spare shows under the bumper.
+- **Front collision box.** The winch's roller fairlead stood 56 mm ahead of the box. The bull-bar box now runs to z −2.46, just past the fairlead ring.
+
+**Hilux centre of mass.** The bigger tyres lift the truck 25 mm, and with it the centre of mass, which put it on its side in its 50 km/h full-lock test turn. `com.y` came down 25 mm (0.28 to 0.255) to keep it about 0.78 m off the ground, as tuned; the Hilux test now expects 0.80 m tyres.
+
+**Tests.** With the 40's physics unchanged, the driving tests are as on main. Two fail there already and are not touched here: the Surprises test (the 40 Series through the Roaring Meg rockfall) and the Bloomfield Track creek test (the Land Rover stopped in the current).
+
+**What still disagrees.** The 40 Series' rear overhang and door position (no true side photograph); the Hilux tub length within about 0.1 m (no square-on side of a 4WD long bed); the 40 Series' 1,400 mm track is taken from the defect list and is not yet backed by a catalogue scan in `SOURCES.md`; and the 40's physics wheels stay 25 mm outboard of the drawn ones.

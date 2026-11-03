@@ -56,9 +56,9 @@ export const hj60Tuning: VehicleTuning = {
     { cx: 0, cy: 0.85, cz: 0.97, hx: 0.86, hy: 0.38, hz: 1.53 },
     { cx: 0, cy: 0.3, cz: 2.25, hx: 0.86, hy: 0.2, hz: 0.3 },
     // The first spare slung under the back.
-    { cx: 0, cy: -0.07, cz: 2.06, hx: 0.4, hy: 0.11, hz: 0.4 },
+    { cx: 0, cy: -0.22, cz: 2.06, hx: 0.4, hy: 0.11, hz: 0.4 },
     // Bull bar, the rear bar with its tow hitch, and the roof rack with its load.
-    { cx: 0, cy: 0.3, cz: -2.225, hx: 0.94, hy: 0.3, hz: 0.175 },
+    { cx: 0, cy: 0.3, cz: -2.25, hx: 0.94, hy: 0.3, hz: 0.21 },
     { cx: 0, cy: 0.075, cz: 2.63, hx: 0.92, hy: 0.075, hz: 0.07 },
     { cx: 0, cy: 1.43, cz: 1.17, hx: 0.76, hy: 0.17, hz: 1.25 },
   ],
