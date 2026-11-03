@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CameraDrag } from '../src/render/cameraDrag';
 import { InputManager } from '../src/sim/input/inputManager';
-import { TouchStick } from '../src/sim/input/touchStick';
+import { MenuStick, TouchStick } from '../src/sim/input/touchStick';
 import { glyphsFor, touchControlsTable } from '../src/data/controls';
 import { throttleBrakeFromStick, touchTuning } from '../src/data/touch';
 import { cameraTuning } from '../src/data/camera';
@@ -221,5 +221,17 @@ describe('touch camera', () => {
     v.finger('pointermove', 1, 110, 0, 'mouse');
     expect(v.orbits).toEqual([-10 * cameraTuning.dragSensitivity]);
     expect(v.zoom()).toBe(0);
+  });
+});
+
+describe('MenuStick', () => {
+  it('gives one press per push and needs the stick back towards the centre', () => {
+    const m = new MenuStick();
+    expect(m.step(0, 0.2)).toBeNull();
+    expect(m.step(0, 0.9)).toBe('menuDown');
+    expect(m.step(0, 1)).toBeNull();
+    expect(m.step(0.1, 0.5)).toBeNull();
+    expect(m.step(0, 0.1)).toBeNull();
+    expect(m.step(-0.9, 0)).toBe('menuLeft');
   });
 });

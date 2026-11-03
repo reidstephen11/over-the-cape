@@ -2136,3 +2136,11 @@ Driving at the winch's pace (pedal 0.6) and holding the cable until the anchor w
 **A fifteenth, from main.** v1.25 left "pinches tyres on the paddock road taken fast" red on purpose: since the footprint rays sample along the wheel's true rolling direction (v1.19) neither vehicle cuts a tyre at 47 km/h on those clear stretches, and whether the potholes should pinch more often is a tuning choice for the play test, not a threshold to move. The test now keeps to what the game does (a steady 30 km/h cuts nothing, fast runs get through, at most a couple of cuts between them) and the tuning question stays open on the README's v1.07–v1.08 item.
 
 **Probes.** `scripts/ford-probe.ts` prints ground, water and depth along a track; `scripts/climb-lab.ts` drives a track with the test driver and logs where it stalls; `scripts/fork-lab.ts` and `scripts/stretch-lab.ts` do the same for the fork and stretch drives.
+
+## v1.32: controller fixes for menus
+
+Pointing at a tool chose it, but nothing on screen showed which one. The in-game display's glass panel style (`#ui[data-hud] .paper`) outranked `.tool-option.selected`, so the orange highlight never appeared on the glass display styles. The selected rule now also matches under `#ui[data-hud]`.
+
+- **Frame rate on Batocera:** the wrapper no longer sets `disable-frame-rate-limit`. The owner reported the game felt better after the change, but this was not a controlled comparison.
+- **Menus and the left stick:** every menu now takes the left stick as well as the D-pad, one step per push (`MenuStick`, the same rule as the touch joystick). During driving these presses only reach the winch anchor choice. The stick is stepped on the first poll but not counted, under v1.23's rule: a stick already held when the pad is first seen latches without sending a press, so it cannot confirm the briefing by itself.
+- **Up and down order on New Journey:** rows followed the order the groups were listed in code, not the screen, so Down jumped from Back past Start and Drive. Rows now sort by screen position, and Up/Down steps through an option group that wraps over several lines. Entering such a group from outside still lands on the chosen option.
