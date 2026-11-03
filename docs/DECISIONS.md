@@ -1245,17 +1245,17 @@ The completed towing handover (`docs/NEXT.md`) and its instruction pointer were 
 
 `npx vite-node scripts/frenchmans-drive.ts all`, default story weather, Mild damage, two full drums. The script uses at most 4.5 m/s on road legs with the No. 5 and 5–6 m/s with the box trailer, slowing further at the crossings. These are careful scripted runs, without detours or roadside jobs; they are a balance check rather than a promised player time. All nine runs complete with the real starting load and both drums intact.
 
-| Vehicle  | Driving minutes | Arrival |  Fuel used (L) | Drums delivered |
-| -------- | --------------: | ------- | -------------: | --------------: |
-| shortie  |           90.6k | 75.5k   |  70.9k → 56.8k |     4.8k → 4.6k | 0.4k → 0.4k  |
-| camel    |          154.1k | 92.5k   | 100.3k → 71.6k |     5.2k → 4.8k | 33.1k → 1.6k |
-| perentie |          111.6k | 88.4k   |  89.5k → 72.3k |     5.5k → 4.0k | 0.3k → 0.3k  |
-| hilux    |           83.2k | 71.4k   |  63.2k → 53.1k |     4.9k → 4.5k | 0.3k → 0.3k  |
-| unimog   |          124.7k | 102.0k  | 101.2k → 79.2k |     5.8k → 5.6k | 0.3k → 0.3k  |
-| troopy   |           94.9k | 80.6k   |  75.2k → 61.9k |     4.8k → 4.6k | 0.3k → 0.3k  |
-| patrol   |          107.1k | 87.8k   |  84.3k → 67.6k |     5.6k → 5.0k | 0.3k → 0.3k  |
-| lc79     |          117.2k | 93.4k   |  90.5k → 71.2k |     6.6k → 5.5k | 0.3k → 0.3k  |
-| sooty80  |            26.7 | 3:19 pm |           18.2 |               2 |
+| Vehicle  | Driving minutes | Arrival | Fuel used (L) | Drums delivered |
+| -------- | --------------: | ------- | ------------: | --------------: |
+| shortie  |            26.6 | 3:19 pm |          17.9 |               2 |
+| camel    |            26.6 | 3:19 pm |          17.9 |               2 |
+| perentie |            31.1 | 4:13 pm |          11.8 |               2 |
+| hilux    |            26.8 | 3:22 pm |          12.8 |               2 |
+| unimog   |            30.8 | 4:09 pm |          24.1 |               2 |
+| troopy   |            26.5 | 3:18 pm |          13.7 |               2 |
+| patrol   |            26.8 | 3:22 pm |          13.9 |               2 |
+| lc79     |            26.6 | 3:19 pm |          20.9 |               2 |
+| sooty80  |            26.7 | 3:19 pm |          18.2 |               2 |
 
 ## v0.51: Make Frenchmans a technical towing route
 
@@ -1982,14 +1982,14 @@ Where the triangles went, and what changed:
 | vehicle  | v1.22  | v1.23  | body (v1.22 → v1.23) | per wheel   | planks (two) |
 | -------- | ------ | ------ | -------------------- | ----------- | ------------ |
 | sooty80  | 152.9k | 90.0k  | 97.4k → 66.2k        | 6.7k → 5.2k | 28.6k → 2.9k |
-| shortie  | 90.9k  | 75.5k  | 70.9k → 56.8k        | 4.8k → 4.6k | 0.7k → 0.4k  |
-| camel    | 154.2k | 92.5k  | 100.3k → 71.6k       | 5.2k → 4.8k | 33.1k → 1.6k |
-| perentie | 112.0k | 88.4k  | 89.5k → 72.3k        | 5.5k → 4.0k | 0.6k → 0.3k  |
-| hilux    | 83.5k  | 71.4k  | 63.2k → 53.1k        | 4.9k → 4.5k | 0.6k → 0.3k  |
-| unimog   | 125.0k | 102.0k | 101.2k → 79.2k       | 5.8k → 5.6k | 0.6k → 0.3k  |
+| shortie  | 90.6k  | 75.5k  | 70.9k → 56.8k        | 4.8k → 4.6k | 0.4k → 0.4k  |
+| camel    | 154.1k | 92.5k  | 100.3k → 71.6k       | 5.2k → 4.8k | 33.1k → 1.6k |
+| perentie | 111.6k | 88.4k  | 89.5k → 72.3k        | 5.5k → 4.0k | 0.3k → 0.3k  |
+| hilux    | 83.2k  | 71.4k  | 63.2k → 53.1k        | 4.9k → 4.5k | 0.3k → 0.3k  |
+| unimog   | 124.7k | 102.0k | 101.2k → 79.2k       | 5.8k → 5.6k | 0.3k → 0.3k  |
 | hj60     | 111.6k | 94.0k  | 87.5k → 71.3k        | 5.9k → 5.6k | 0.3k → 0.3k  |
-| troopy   | 98.4k  | 83.8k  | 78.5k → 65.1k        | 4.8k → 4.6k | 0.6k → 0.3k  |
-| patrol   | 107.4k | 87.8k  | 84.3k → 67.6k        | 5.6k → 5.0k | 0.6k → 0.3k  |
-| lc79     | 117.5k | 93.4k  | 90.5k → 71.2k        | 6.6k → 5.5k | 0.6k → 0.3k  |
+| troopy   | 94.9k  | 80.6k  | 75.2k → 61.9k        | 4.8k → 4.6k | 0.3k → 0.3k  |
+| patrol   | 107.1k | 87.8k  | 84.3k → 67.6k        | 5.6k → 5.0k | 0.3k → 0.3k  |
+| lc79     | 117.2k | 93.4k  | 90.5k → 71.2k        | 6.6k → 5.5k | 0.3k → 0.3k  |
 
 The next rounds, planned in `docs/ROADMAP.md`: the LC79's hexagon grille mesh and roof-rib rod chains, the HJ60's stripe pieces and script, rod and ring sides where the part is small, and the block lettering on grilles and tailgates. The aim is every vehicle under about 80,000.
