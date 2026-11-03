@@ -43,6 +43,18 @@ export class Autopilot {
         best = i;
       }
     }
+    // Carried well off the line (slid off a greasy climb, dragged sideways on the cable), the
+    // forward-only window cannot see the track any more, so the driver would steer away from
+    // it for good. A player can see where the track went: search back for the nearest point.
+    if (bestD > 6) {
+      for (let i = 0; i < this.index; i++) {
+        const d = Math.hypot(path[i][0] - p.x, path[i][1] - p.z);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+    }
     this.index = best;
     const look = this.lookAhead > 0 ? this.lookAhead : Math.min(12, Math.max(5, 4 + Math.abs(v.speed) * 0.8));
     let target = path[path.length - 1];
