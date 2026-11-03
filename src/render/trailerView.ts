@@ -351,14 +351,27 @@ function buildNo5(t: TrailerTuning): THREE.BufferGeometry {
       b.block(x, midY, z + out * 0.015, 0.08, h - 0.08, 0.025, rib, M.Paint, zone);
     b.block(0, bottom + 0.16, z + out * 0.02, half * 2 - 0.04, 0.05, 0.03, rib, M.Paint, zone);
   }
-  // The rolled lip round the top.
+  // The rolled lip round the top: it stands out past the ribs to the published 1.55 m
+  // overall width (SOURCES.md), 85 mm beyond the box's sides.
+  const lip = 0.085;
   for (const side of [-1, 1]) {
-    b.block(side * (half + 0.015), top, bed.cz, 0.06, 0.03, len + 0.06, army, M.Paint, Z.Sides, 0.01);
+    b.block(
+      side * (half + lip / 2),
+      top,
+      bed.cz,
+      lip + 0.005,
+      0.03,
+      len + 0.06,
+      army,
+      M.Paint,
+      Z.Sides,
+      0.01,
+    );
     b.block(
       0,
       top,
       side < 0 ? front - 0.015 : back + 0.015,
-      half * 2 + 0.06,
+      half * 2 + lip * 2,
       0.03,
       0.06,
       army,

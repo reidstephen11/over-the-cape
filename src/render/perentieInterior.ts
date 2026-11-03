@@ -18,9 +18,9 @@ export function addPerentieInterior(b: VehicleBuilder, redlineRpm: number): void
     metal = new THREE.Color('#8A8E86'),
     inner = paint.clone().multiplyScalar(0.8);
   // Floor mats, the footwell bulkhead, the dash rail and the binnacle.
-  b.block(0, 0.15, -0.28, 1.6, 0.03, 0.98, dark, M.Rubber, Z.Trim);
-  b.block(0, 0.4, -0.77, 1.62, 0.48, 0.03, inner, M.Paint, Z.Trim);
-  b.block(0, 0.735, -0.7, 1.62, 0.07, 0.16, dark, M.Rubber, Z.Trim, 0.012);
+  b.block(0, 0.15, -0.28, 1.7, 0.03, 0.98, dark, M.Rubber, Z.Trim);
+  b.block(0, 0.4, -0.77, 1.72, 0.48, 0.03, inner, M.Paint, Z.Trim);
+  b.block(0, 0.735, -0.7, 1.72, 0.07, 0.16, dark, M.Rubber, Z.Trim, 0.012);
   b.block(0.42, 0.86, -0.56, 0.44, 0.2, 0.18, dark, M.Rubber, Z.Trim, 0.025);
   addDialFaces(b, cabin, redlineRpm);
   // Switch panel and heater slides in the middle, a parcel shelf on the passenger side.
