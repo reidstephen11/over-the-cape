@@ -516,10 +516,21 @@ export class Vehicle {
     const F = floodTuning;
     this.bowWave =
       wading > F.bowFromDepth
-        ? Math.min(wading, Math.max(0, Math.abs(this.speed) - F.bowFromSpeed) * F.bowPerSpeed)
+        ? Math.min(
+            wading * F.bowMaxOfDepth,
+            Math.max(0, Math.abs(this.speed) - F.bowFromSpeed) * F.bowPerSpeed,
+          )
         : 0;
-    const submerged = ws !== null && this.intakePos.y < ws + this.env.waterLevelOffset + this.bowWave;
-    this.floodEvent = updateFlood(this.condition.flood, submerged, f, dt);
+    const still = ws !== null && this.intakePos.y < ws + this.env.waterLevelOffset;
+    const submerged =
+      still || (ws !== null && this.intakePos.y < ws + this.env.waterLevelOffset + this.bowWave);
+    this.floodEvent = updateFlood(
+      this.condition.flood,
+      submerged,
+      f,
+      dt,
+      still ? 1 : 1 + F.bowFloodPerSpeed2 * Math.max(0, Math.abs(this.speed) - F.bowFromSpeed) ** 2,
+    );
     // A flooded engine that's dried out restarts on the starter like any other.
     if (this.floodEvent === 'restarted') this.crank = t.engine.crankSeconds;
     const cranking = this.crank > 0;

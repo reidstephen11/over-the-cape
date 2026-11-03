@@ -156,14 +156,17 @@ describe('the CREB storm', () => {
     }, 240_000);
   }
 
-  it('makes the Little Annan harder late: at 5:45 pm the short-wheelbase 4WD crawling is swept away, but driven steadily it crosses', async () => {
+  it('shuts the Little Annan ford late: at 5:45 pm the short-wheelbase 4WD crawling is swept away, and driven steadily its bow wave floods the engine', async () => {
     const early = await cross('bloomfield-track', 40, -2458, 15, vehicleTuning, 'crawl');
     const late = await cross('bloomfield-track', 40, -2458, 17.75, vehicleTuning, 'crawl');
     expect(late.water).toBeGreaterThan(early.water + 0.15);
     expect(late.across).toBe(false);
     expect(late.swept).toBeGreaterThanOrEqual(4);
     const steady = await cross('bloomfield-track', 40, -2458, 17.75, vehicleTuning, 'steady');
-    expect(steady.across, JSON.stringify(steady)).toBe(true);
+    expect(steady.across, JSON.stringify(steady)).toBe(false);
+    // At 3 pm the same steady drive gets across.
+    const steadyEarly = await cross('bloomfield-track', 40, -2458, 15, vehicleTuning, 'steady');
+    expect(steadyEarly.across, JSON.stringify(steadyEarly)).toBe(true);
   }, 240_000);
 
   for (const tuning of [vehicleTuning, perentieTuning])

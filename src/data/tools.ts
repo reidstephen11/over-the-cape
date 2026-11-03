@@ -60,12 +60,19 @@ export const floodTuning = {
   /**
    * Bow wave: driven faster than `bowFromSpeed` (m/s) through water deeper than
    * `bowFromDepth` (m), the water piles up in front of the car `bowPerSpeed` m higher for
-   * every m/s over, up to the water's depth again. That's what reaches the intake on a
-   * crossing taken too fast.
+   * every m/s over, up to `bowMaxOfDepth` times the water's depth. That's what reaches the
+   * intake on a crossing taken too fast.
    */
   bowFromSpeed: 2.5,
-  bowPerSpeed: 0.2,
+  bowPerSpeed: 0.25,
   bowFromDepth: 0.3,
+  bowMaxOfDepth: 1.5,
+  /**
+   * Water thrown into the intake by a bow wave is gulped in far faster than still water
+   * seeping in: while only the bow wave reaches it the timer runs 1 + this × (m/s over
+   * `bowFromSpeed`)² times as fast, so a steady wade sputters and a fast one stalls.
+   */
+  bowFloodPerSpeed2: 0.7,
 };
 
 export const wearTuning = {

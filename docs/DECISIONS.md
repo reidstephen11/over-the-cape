@@ -2166,3 +2166,18 @@ Roadmap item 4, the last of the original eight. The CREB closes in the wet and r
 **The briefing is told after the fact.** It is written before the world is built, but a new run's seed is only settled inside `Game.create` (`startCheckpoint`), so the condition cannot be known in time. `main.ts` calls `loading.trackCondition` once the Game exists, which prepends the label to the conditions line and the sentence to the story, both still on screen behind the Drive button. The welcome screen's one-line story stays the episode's general description, because at that point no run exists yet.
 
 **Also in this version.** The e2e suite could not launch a browser in a cloud container: the project pins Playwright 1.56.1 for the Chromium build 1194 that used to be preinstalled, and the image now ships 1243, so every test failed before running any game code. CI does not run e2e, so nothing noticed. `playwright.config.ts` now takes `executablePath` from `CHROMIUM_PATH`, as `scripts/studio-shots.ts` already does, and falls back to Playwright's own browser.
+
+## v1.34: harder crossings
+
+The owner found the crossings too easy: you could drive straight across them, and taking them fast cost nothing.
+
+**The Daintree is deeper and faster off the bar.** The straight line across the middle went from 1.05 m to 1.2 m deep, and the river from 2.6 to 2.9 m/s. The bar line is unchanged (still about 0.6–0.8 m), so weaving over it in low range still gets across, and going straight lifts the car sooner and carries it off.
+
+**Speed through water now floods the engine.** Before, the bow wave could at most double the water's depth at the intake, and water thrown in by it filled the flood timer at the same rate as still water. A crossing takes one to three seconds, so even a fast run never reached the 10 s stall. Now:
+
+- The bow wave can reach 1.5 times the water's depth (`bowMaxOfDepth`), so it reaches a 0.9 m intake from a 0.45 m creek.
+- While only the bow wave reaches the intake, the flood timer runs `1 + 0.7 × (m/s over 2.5)²` times as fast (`bowFloodPerSpeed2`). Water still over the intake without a bow wave counts at the normal rate, so stopping or crawling in deep water floods as before.
+
+Measured headless with the short-wheelbase 4WD on the track lines: through the small creeks (Bloomfield middle, Donovan's) at about 19 km/h the timer reaches about 3 s (nothing happens), at about 25 km/h about 7 s (the engine sputters), and at about 31 km/h it passes 10 s and stalls. The Little Annan at 3 pm at 16 km/h reaches about 8 s and gets across; at 22 km/h it stalls.
+
+**The Little Annan ford is now closed late.** At 5:45 pm a steady 16 km/h through the main ford stalls the engine, where before it was the way across. Crawling is still swept away, so late in the storm the shallow crossing downstream is the way over (its test still passes for both vehicles). `tests/storm.test.ts` now expects that, and checks the steady drive still crosses at 3 pm.
