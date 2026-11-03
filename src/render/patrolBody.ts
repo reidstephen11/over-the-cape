@@ -463,7 +463,7 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.push()
       .translate(lx, ly, lz - 0.047)
       .scale(1, 1, 0.3);
-    b.geometry(new THREE.SphereGeometry(0.074, 20, 10), lens);
+    b.geometry(new THREE.SphereGeometry(0.074, 20, 8), lens);
     b.pop();
   }
 }
@@ -1021,14 +1021,14 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       .translate(side * (w * 0.5 - 0.035), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
     b.geometry(
-      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 40),
+      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 24),
       rimColor.clone().multiplyScalar(0.92),
     );
     b.pop();
     b.push()
       .translate(side * (w * 0.5 - 0.015), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.11, 0.125, 0.03, 32), rimColor);
+    b.geometry(new THREE.CylinderGeometry(0.11, 0.125, 0.03, 16), rimColor);
     b.pop();
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * Math.PI * 2;
@@ -1052,7 +1052,7 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.015), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.042, 0.05, 0.045, 20), chrome);
+    b.geometry(new THREE.CylinderGeometry(0.042, 0.05, 0.045, 12), chrome);
     b.pop();
   }
   return cleanGeometry(b.build());

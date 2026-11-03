@@ -294,13 +294,13 @@ export function roundHeadlamp(
   b.push()
     .translate(x, y, z - 0.004)
     .rotate(Math.PI / 2, 0, 0);
-  b.geometry(new THREE.CylinderGeometry(r + 0.01, r + 0.01, 0.012, 28), dark);
+  b.geometry(new THREE.CylinderGeometry(r + 0.01, r + 0.01, 0.012, 20), dark);
   b.pop();
   b.slot = M.Headlamp;
   b.push()
     .translate(x, y, z - 0.012)
     .scale(1, 1, 0.28);
-  b.geometry(new THREE.SphereGeometry(r, 28, 12), lens);
+  b.geometry(new THREE.SphereGeometry(r, 20, 8), lens);
   b.pop();
   const flute = lens.clone().multiplyScalar(0.86);
   const zf = z - 0.012 - r * 0.28 - 0.001;

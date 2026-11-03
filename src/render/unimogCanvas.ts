@@ -31,8 +31,8 @@ export function tiltY(x: number, z: number): number {
 export function addCargoCanvas(b: VehicleBuilder): void {
   surface(
     b,
-    32,
-    40,
+    16,
+    30,
     (u, t) => {
       const x = (2 * u - 1) * HALF,
         z = FRONT + t * (BACK - FRONT);
@@ -47,8 +47,8 @@ export function addCargoCanvas(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
     surface(
       b,
-      40,
-      12,
+      24,
+      6,
       (u, t) => {
         const z = FRONT + u * (BACK - FRONT),
           fold = 0.006 * Math.sin(u * Math.PI * 12) * Math.sin(Math.PI * t);
@@ -95,8 +95,8 @@ export function addCargoCanvas(b: VehicleBuilder): void {
   ] as const) {
     surface(
       b,
-      32,
-      12,
+      16,
+      6,
       (u, t) => {
         const x = (u * 2 - 1) * HALF;
         return v(x, HEM + t * (tiltY(x, z) - HEM), z);
@@ -109,11 +109,16 @@ export function addCargoCanvas(b: VehicleBuilder): void {
     );
   }
   for (const z of TILT_BOWS) {
-    for (let i = 0; i < 32; i++) {
-      const x0 = -HALF + (i * HALF) / 16,
-        x1 = x0 + HALF / 16;
-      b.rod(v(x0, tiltY(x0, z) + 0.002, z), v(x1, tiltY(x1, z) + 0.002, z), 0.0025, edge, M.Fabric, Z.Roof);
-    }
+    b.chain(
+      Array.from({ length: 33 }, (_, i) => {
+        const x = -HALF + (i * HALF) / 16;
+        return v(x, tiltY(x, z) + 0.002, z);
+      }),
+      0.0025,
+      edge,
+      M.Fabric,
+      Z.Roof,
+    );
     for (const side of [-1, 1])
       b.rod(
         v(side * (HALF + 0.008), HEM + 0.01, z),

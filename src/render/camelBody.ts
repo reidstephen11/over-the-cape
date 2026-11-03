@@ -76,7 +76,7 @@ function disk(
   b.push()
     .translate(x, y, z)
     .rotate(Math.PI / 2, 0, 0);
-  b.geometry(new THREE.CylinderGeometry(r, r, depth, 24), c);
+  b.geometry(new THREE.CylinderGeometry(r, r, depth, 20), c);
   b.pop();
 }
 function roundLamp(
@@ -96,7 +96,7 @@ function roundLamp(
   b.push()
     .translate(x, y, z - 0.018)
     .scale(1, 1, 0.22);
-  b.geometry(new THREE.SphereGeometry(r - 0.007, 24, 10), c);
+  b.geometry(new THREE.SphereGeometry(r - 0.007, 20, 8), c);
   b.pop();
   for (const dx of [-0.55, -0.25, 0.05, 0.35, 0.65]) {
     const px = dx * r,
@@ -139,9 +139,9 @@ function archPanel(
     [[axle, ARCH_Y]],
   );
   const arc = (r: number) =>
-    Array.from({ length: 41 }, (_, i) => {
+    Array.from({ length: 21 }, (_, i) => {
       const aa = Math.asin((SILL - ARCH_Y) / r),
-        t = aa + ((Math.PI - 2 * aa) * i) / 40;
+        t = aa + ((Math.PI - 2 * aa) * i) / 20;
       return [axle + r * Math.cos(t), ARCH_Y + r * Math.sin(t)] as Vtx;
     });
   extrudeX(

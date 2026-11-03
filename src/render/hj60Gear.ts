@@ -327,7 +327,7 @@ export function buildHj60Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
     );
     b.block(side * (w * 0.5 - 0.003), rimR - 0.022, 0, 0.012, 0.014, 0.008, tyre, M.Rubber, Z.Trim);
     // The dished disc with six radial slots, set in from the tyre's face.
-    const disc = new THREE.Shape(circle(0, 0, rimR - 0.025, 48));
+    const disc = new THREE.Shape(circle(0, 0, rimR - 0.025, 32));
     for (let i = 0; i < 6; i++) {
       const a = (i * Math.PI) / 3 + Math.PI / 6;
       const c = Math.cos(a),
@@ -343,7 +343,7 @@ export function buildHj60Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
       }
       disc.holes.push(new THREE.Path(pts.reverse()));
     }
-    disc.holes.push(new THREE.Path(circle(0, 0, 0.05, 24).reverse()));
+    disc.holes.push(new THREE.Path(circle(0, 0, 0.05, 12).reverse()));
     b.push()
       .translate(side * (w * 0.5 - 0.035), 0, 0)
       .rotate(0, Math.PI / 2, 0);
@@ -353,7 +353,7 @@ export function buildHj60Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 - 0.02), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.082, 0.096, 0.03, 32), C.wheel);
+    b.geometry(new THREE.CylinderGeometry(0.082, 0.096, 0.03, 16), C.wheel);
     b.pop();
     for (let i = 0; i < 6; i++) {
       const a = (i / 6) * Math.PI * 2;
@@ -369,7 +369,7 @@ export function buildHj60Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.02), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.048, 0.056, 0.05, 20), C.steel.clone().multiplyScalar(0.92));
+    b.geometry(new THREE.CylinderGeometry(0.048, 0.056, 0.05, 12), C.steel.clone().multiplyScalar(0.92));
     b.pop();
     b.block(
       side * (w * 0.5 + 0.046),

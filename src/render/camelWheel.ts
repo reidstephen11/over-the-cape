@@ -70,7 +70,7 @@ export function buildCamelWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 - 0.012), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 32), paint);
+    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 16), paint);
     b.pop();
     for (let i = 0; i < 5; i++) {
       const a = (i / 5) * Math.PI * 2;
@@ -85,7 +85,7 @@ export function buildCamelWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.02), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.048, 0.055, 0.05, 20), galv.clone().multiplyScalar(0.8));
+    b.geometry(new THREE.CylinderGeometry(0.048, 0.055, 0.05, 12), galv.clone().multiplyScalar(0.8));
     b.pop();
   }
   return cleanGeometry(b.build());

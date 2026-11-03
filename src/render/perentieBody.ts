@@ -235,13 +235,13 @@ function frontEnd(b: VehicleBuilder): void {
     b.push()
       .translate(side * 0.625, 0.39, F - 0.025)
       .scale(1, 1, 0.22);
-    b.geometry(new THREE.SphereGeometry(0.088, 32, 12), steel);
+    b.geometry(new THREE.SphereGeometry(0.088, 20, 8), steel);
     b.pop();
     b.slot = M.Headlamp;
     b.push()
       .translate(side * 0.625, 0.39, F - 0.036)
       .scale(1, 1, 0.12);
-    b.geometry(new THREE.SphereGeometry(0.079, 32, 12), lens.clone().multiplyScalar(0.78));
+    b.geometry(new THREE.SphereGeometry(0.079, 20, 8), lens.clone().multiplyScalar(0.78));
     b.pop();
     // Fine vertical flute ribs on the convex sealed-beam cover.
     for (const dx of [-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06]) {
@@ -275,7 +275,7 @@ function frontEnd(b: VehicleBuilder): void {
       b.push()
         .translate(side * offset, 0.18, F - 0.031)
         .scale(1, 1, 0.32);
-      b.geometry(new THREE.SphereGeometry(0.032, 24, 10), col);
+      b.geometry(new THREE.SphereGeometry(0.032, 12, 6), col);
       b.pop();
     }
     // Air intake grille on the left wing; the right wing is plain.
@@ -882,14 +882,14 @@ export function buildPerentieWheel(tuning: VehicleTuning): THREE.BufferGeometry 
       .translate(side * (w * 0.5 - 0.03), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
     b.geometry(
-      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 40),
+      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 24),
       paint.clone().multiplyScalar(0.9),
     );
     b.pop();
     b.push()
       .translate(side * (w * 0.5 - 0.012), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 32), paint);
+    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 16), paint);
     b.pop();
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
@@ -919,7 +919,7 @@ export function buildPerentieWheel(tuning: VehicleTuning): THREE.BufferGeometry 
     b.push()
       .translate(side * (w * 0.5 + 0.02), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.048, 0.055, 0.05, 20), galv.clone().multiplyScalar(0.8));
+    b.geometry(new THREE.CylinderGeometry(0.048, 0.055, 0.05, 12), galv.clone().multiplyScalar(0.8));
     b.pop();
   }
   return cleanGeometry(b.build());
