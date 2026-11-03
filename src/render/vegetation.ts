@@ -573,6 +573,8 @@ export class Vegetation {
     );
     rockMesh.castShadow = true;
     rockMesh.receiveShadow = true;
+    // Opaque, so three's depth sort of the instances every draw was wasted.
+    rockMesh.sortObjects = false;
     const rockIds = rockGeos.map((g) => rockMesh.addGeometry(g));
     const moundIds = moundGeos.map((g) => rockMesh.addGeometry(g));
     const markId = rockMesh.addGeometry(mark);
@@ -607,6 +609,19 @@ export class Vegetation {
       rockMesh.setMatrixAt(id, this.tmpM);
       rockMesh.setColorAt(id, this.tmpC.setRGB(1, 1, 1));
     }
+    // Rocks and logs don't move either: their spheres are worked out once, as the trees' are,
+    // instead of three rebuilding every one from its matrix on each draw and the shadow pass.
+    const rockSpheres = new Float32Array(rockMesh.instanceCount * 4);
+    for (let id = 0; id < rockMesh.instanceCount; id++) {
+      rockMesh.getMatrixAt(id, this.tmpM);
+      rockMesh.getBoundingSphereAt(rockMesh.getGeometryIdAt(id), this.tmpSphere)!.applyMatrix4(this.tmpM);
+      rockSpheres.set(
+        [this.tmpSphere.center.x, this.tmpSphere.center.y, this.tmpSphere.center.z, this.tmpSphere.radius],
+        id * 4,
+      );
+    }
+    cullTreesBySphere(rockMesh, rockSpheres);
+    rockMesh.computeBoundingSphere();
     this.group.add(rockMesh);
 
     // --- Ground cover (filled in around the camera) ---
@@ -615,6 +630,9 @@ export class Vegetation {
     this.cover.name = 'ground-cover';
     this.cover.castShadow = false;
     this.cover.receiveShadow = true;
+    // Rebuilt around the camera, so three's per-instance culling stays; the depth sort of
+    // up to 23,000 opaque instances every draw doesn't.
+    this.cover.sortObjects = false;
     for (const g of coverGeos) this.coverGeo.push(this.cover.addGeometry(g));
     this.group.add(this.cover);
   }

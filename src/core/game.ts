@@ -17,7 +17,7 @@ import {
   trafficPlans,
   type TrafficEvent,
 } from '../sim/traffic';
-import type RAPIER from '@dimforge/rapier3d-compat';
+import { poseOf, snapshotPose, type PosedBody } from '../sim/bodyPose';
 import {
   clockTime,
   episodeOrder,
@@ -201,7 +201,7 @@ export class Game {
   /** Seconds behind the ghost (negative: ahead). */
   private ghostBehind = 0;
   readonly traffic: Traffic;
-  private readonly trafficCars = new Map<OncomingCar, { body: RAPIER.RigidBody; view: StuckVehicleView }>();
+  private readonly trafficCars = new Map<OncomingCar, { car: PosedBody; view: StuckVehicleView }>();
   private readonly trafficLooks = new Map<string, VehicleId>();
   private churnNoted = false;
   private readonly ruts: RutsView;
@@ -1531,6 +1531,7 @@ export class Game {
       inp.togglePrecision = false;
     }
     this.inputs.set(LOCAL_VEHICLE, inp);
+    for (const { car } of this.trafficCars.values()) snapshotPose(car);
     this.sim.step(this.inputs, dt);
     this.run.tick(dt);
     if (this.run.status === 'driving') this.recordGhost();
@@ -1623,8 +1624,8 @@ export class Game {
       this.churnNoted = true;
       this.hud.toast('The ground is cutting up under the wheels: spinning here makes it slipperier', 3200);
     }
-    for (const [car, { body }] of this.trafficCars)
-      placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), false);
+    for (const [plan, { car }] of this.trafficCars)
+      placeTrafficBody(car.body, plan, (x, z) => this.world.terrain.heightAt(x, z), false);
     if (this.gateCount.total) {
       const f = v.forward();
       const flat = Math.hypot(f.x, f.z) || 1;
@@ -1691,13 +1692,11 @@ export class Game {
     if (e.type === 'spawned') {
       const body = createTrafficBody(this.sim.R, this.sim.physics);
       placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), true);
-      const view = new StuckVehicleView(
-        { body },
-        vehicles[this.trafficLooks.get(car.name) ?? 'troopy'].tuning,
-      );
+      const posed: PosedBody = { body, ...poseOf(body) };
+      const view = new StuckVehicleView(posed, vehicles[this.trafficLooks.get(car.name) ?? 'troopy'].tuning);
       view.model.root.name = 'traffic';
       this.view.scene.add(view.model.root);
-      this.trafficCars.set(car, { body, view });
+      this.trafficCars.set(car, { car: posed, view });
       this.hud.toast(`${car.name} is coming the other way on this narrow track`, 3000);
     } else if (e.type === 'waiting') {
       this.hud.toast(`${car.name} has stopped for you: pull off to one side to let it past`, 3000);
@@ -1709,7 +1708,7 @@ export class Game {
   private removeTrafficCar(car: OncomingCar): void {
     const drawn = this.trafficCars.get(car);
     if (!drawn) return;
-    this.sim.physics.world.removeRigidBody(drawn.body);
+    this.sim.physics.world.removeRigidBody(drawn.car.body);
     this.view.scene.remove(drawn.view.model.root);
     this.trafficCars.delete(car);
   }
@@ -1874,17 +1873,20 @@ export class Game {
       this.anchorCount = this.sim.findAnchors(LOCAL_VEHICLE).length;
       this.anchorInReach = this.anchorCount > 0;
     }
-    this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
+    // Everything with a physics body is drawn part way between the last two steps, so it
+    // all glides with the car and the camera (paused, it stands where it is).
+    const between = this.loop.paused ? 1 : alpha;
+    this.model.update(v, between, frameDt);
     this.syncDeliveryViews();
-    for (const s of this.stuckViews) s.update();
-    for (const { view } of this.trafficCars.values()) view.update();
+    for (const s of this.stuckViews) s.update(between);
+    for (const { view } of this.trafficCars.values()) view.update(between);
     this.ghost?.update(this.run.elapsed);
     this.ruts.update(frameDt);
-    for (const t of this.trailerViews.values()) t.update(this.loop.paused ? 1 : alpha);
-    for (const d of this.drumViews.values()) d.update();
+    for (const t of this.trailerViews.values()) t.update(between);
+    for (const d of this.drumViews.values()) d.update(between);
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
-    this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock);
+    this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock, between);
     this.view.particles.update(v, this.loop.paused ? 0 : frameDt);
     if (this.freeCamOn) this.freeCam.update(frameDt);
     else if (!this.loop.paused) {
@@ -1905,7 +1907,7 @@ export class Game {
     this.view.focus.copy(this.model.root.position);
     this.view.shelter.copy(this.model.root.matrixWorld);
     const t0 = performance.now();
-    this.view.render();
+    this.view.render(between);
     this.sceneMs += (performance.now() - t0 - this.sceneMs) * 0.1;
     // Not while tests drive a fixed number of steps a frame on the slow software renderer.
     const cpuMs = this.loop.timings.sim + this.loop.timings.render;

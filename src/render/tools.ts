@@ -7,6 +7,7 @@ import type { Vehicle } from '../sim/vehicle/vehicle';
 import { pal } from './colors';
 import { patchFog } from './fog';
 import { MeshBuilder } from './lowpoly';
+import { followBody } from './followBody';
 
 const SEGMENTS = 24;
 const RADIAL = 5;
@@ -135,9 +136,10 @@ export class ToolsView {
     this.group.add(this.preview);
   }
 
-  update(v: Vehicle, tools: VehicleTools, probe: GroundProbe, time: number): void {
+  /** `alpha`: where placed planks are drawn between physics steps (0 = before the last, 1 = after). */
+  update(v: Vehicle, tools: VehicleTools, probe: GroundProbe, time: number, alpha = 1): void {
     this.updateCable(v, tools);
-    this.updatePlanks(tools);
+    this.updatePlanks(tools, alpha);
     this.updatePreview(v, tools, probe);
     this.updateHighlight(v, tools, time);
   }
@@ -190,7 +192,7 @@ export class ToolsView {
     }
   }
 
-  private updatePlanks(tools: VehicleTools): void {
+  private updatePlanks(tools: VehicleTools, alpha: number): void {
     const live = new Set<number>();
     for (const pl of tools.planks.placed) {
       live.add(pl.id);
@@ -202,10 +204,7 @@ export class ToolsView {
         this.planks.set(pl.id, m);
         this.group.add(m);
       }
-      const p = pl.body.translation();
-      const q = pl.body.rotation();
-      m.position.set(p.x, p.y, p.z);
-      m.quaternion.set(q.x, q.y, q.z, q.w);
+      followBody(m, pl, alpha);
     }
     for (const [id, m] of this.planks)
       if (!live.has(id)) {

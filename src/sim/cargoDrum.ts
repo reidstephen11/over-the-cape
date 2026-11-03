@@ -1,12 +1,15 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { DRUM, DIESEL_DRUM_MASS } from '../data/trailers';
 import { Groups, groups, type Physics } from './physics';
-import { rotate, type Quat, type Vec3 } from './vehicle/math';
+import { rotate, v3, type Quat, type Vec3 } from './vehicle/math';
+import { snapshotPose, type PosedBody } from './bodyPose';
 import { waterForce } from './trailerWater';
 
 /** A sealed delivery drum dropped from a trailer. It rolls on land and floats in water. */
-export class CargoDrum {
+export class CargoDrum implements PosedBody {
   readonly body: RAPIER.RigidBody;
+  readonly prevPosition = v3();
+  readonly prevRotation: Quat = { x: 0, y: 0, z: 0, w: 1 };
   constructor(
     readonly id: string,
     readonly physics: Physics,
@@ -30,6 +33,7 @@ export class CargoDrum {
         .setCollisionGroups(groups(Groups.DYNAMIC, 0xffff)),
       this.body,
     );
+    snapshotPose(this);
   }
 
   step(dt: number, levelOffset: number): void {

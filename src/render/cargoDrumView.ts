@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { DRUM } from '../data/trailers';
 import type { CargoDrum } from '../sim/cargoDrum';
 import { patchFog } from './fog';
+import { followBody } from './followBody';
 
 /** A dropped delivery drum, in the same blue as the drums on the trailer. */
 export class CargoDrumView {
@@ -22,11 +23,11 @@ export class CargoDrumView {
       hoop.position.y = y;
       this.root.add(hoop);
     }
-    this.update();
+    this.update(1);
   }
-  update(): void {
-    this.root.position.copy(this.drum.body.translation());
-    this.root.quaternion.copy(this.drum.body.rotation());
+  /** `alpha` 0 = the pose before the last physics step, 1 = after it. */
+  update(alpha: number): void {
+    followBody(this.root, this.drum, alpha);
   }
   dispose(): void {
     this.root.traverse((o) => {
