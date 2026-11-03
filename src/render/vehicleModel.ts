@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import type { Vehicle } from '../sim/vehicle/vehicle';
-import { slerp } from '../sim/vehicle/math';
+import { followBody } from './followBody';
 import { tyreDrop, type VehicleCondition } from '../sim/vehicle/condition';
 import { hash2 } from '../sim/world/rng';
 import { pal } from './colors';
@@ -38,7 +38,6 @@ export class VehicleModel {
   /** The lamps' light on the ground, at dusk and night only. */
   readonly beams: HeadlightBeams | null;
   private readonly glass: THREE.MeshPhysicalMaterial;
-  private readonly tmpQ = { x: 0, y: 0, z: 0, w: 1 };
   private readonly wheelGeo: THREE.BufferGeometry;
   private readonly basePos: Float32Array;
   private readonly baseCol: Float32Array;
@@ -316,15 +315,7 @@ export class VehicleModel {
   }
 
   update(v: Vehicle, alpha: number, dt: number): void {
-    const p0 = v.prevPosition;
-    const p1 = v.body.translation();
-    this.root.position.set(
-      p0.x + (p1.x - p0.x) * alpha,
-      p0.y + (p1.y - p0.y) * alpha,
-      p0.z + (p1.z - p0.z) * alpha,
-    );
-    const q = slerp(v.prevRotation, v.body.rotation(), alpha, this.tmpQ);
-    this.root.quaternion.set(q.x, q.y, q.z, q.w);
+    followBody(this.root, v, alpha);
     const t = this.tuning;
     for (let i = 0; i < 4; i++) {
       const w = v.wheels[i];

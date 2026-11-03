@@ -20,6 +20,9 @@ export interface EngineInputs {
 
 type Mode = 'run' | 'crank' | 'catch';
 
+/** How long past the starter's time the engine may still report itself running before the start is given up (s). */
+const CATCH_GRACE = 0.25;
+
 const DECAY_SIZE = 1024;
 /** Pulses are cut off this many decay constants after their peak (e^-8 ≈ 0.03%). */
 const DECAY_SPAN = 8;
@@ -232,8 +235,14 @@ export class EngineSynth {
     for (let i = from; i < to; i++) {
       this.modeTime += dt;
       if (this.mode === 'crank' && this.modeTime > S.seconds) {
-        this.mode = 'catch';
-        this.modeTime = 0;
+        // The starter has turned it over for as long as the simulation cranks (each
+        // vehicle's starter and crank times match). It fires and flares only if the engine
+        // really is running; with an empty tank, or a wrecked engine, the starter runs on a
+        // moment longer for the sim's word and then the sound dies away.
+        if (inp.running) {
+          this.mode = 'catch';
+          this.modeTime = 0;
+        } else if (this.modeTime > S.seconds + CATCH_GRACE) this.mode = 'run';
       } else if (this.mode === 'catch' && this.modeTime > T.catch.seconds) this.mode = 'run';
 
       // Engine speed: from the simulation, or from the starter sequence.

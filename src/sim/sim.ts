@@ -32,6 +32,7 @@ import {
 import { emptyInput } from './input/vehicleInput';
 import { headingOf, rotate, v3 } from './vehicle/math';
 import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } from './surprises';
+import { poseOf, snapshotPose } from './bodyPose';
 import type { SurprisePlan } from './world/surprisePlan';
 import { StuckVehicle, type StuckVehicleDef } from './stuckVehicle';
 import { ChurnMap } from './world/churn';
@@ -261,7 +262,7 @@ export class Simulation {
         .setAngularDamping(1.2),
     );
     addTrunkColliders(R, this.physics, body, f.length, f.radius, f.mass);
-    this.dynamics.set(f.id, { id: f.id, kind: 'fallenTree', body, def: f });
+    this.dynamics.set(f.id, { id: f.id, kind: 'fallenTree', body, def: f, ...poseOf(body) });
   }
 
   /**
@@ -655,6 +656,12 @@ export class Simulation {
   }
 
   step(inputs: ReadonlyMap<string, VehicleInput>, dt: number): void {
+    // Where everything else stood before this step, so the renderer can draw it between
+    // steps as it does the car (which remembers its own pose in Vehicle.step).
+    for (const tools of this.tools.values()) for (const pl of tools.planks.placed) snapshotPose(pl);
+    for (const obj of this.dynamics.values()) snapshotPose(obj);
+    for (const s of this.stuck.values()) snapshotPose(s);
+    for (const d of this.looseDrums.values()) snapshotPose(d);
     for (const [id, v] of this.vehicles) {
       let input = inputs.get(id);
       if (!input) continue;
