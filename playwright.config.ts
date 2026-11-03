@@ -11,6 +11,9 @@ export default defineConfig({
     baseURL: 'http://localhost:4173',
     viewport: { width: 1280, height: 720 },
     launchOptions: {
+      // A container whose preinstalled Chromium is not the build this Playwright expects can
+      // point at it (CHROMIUM_PATH=/opt/pw-browsers/chromium), as scripts/studio-shots.ts does.
+      executablePath: process.env.CHROMIUM_PATH || undefined,
       args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
     },
   },

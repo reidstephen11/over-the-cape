@@ -56,6 +56,8 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
     // The title appears without downloading or initialising the driving engine first.
     const { Game } = await import('./core/game');
     const game = await Game.create(appEl, uiEl, choice, (p, label) => loading.set(p, label), audio);
+    // The track's state for today is rolled from the run's seed, which the world build settles.
+    if (!choice.replay) loading.trackCondition(game.condition);
     loading.set(1, 'Ready');
     if (!choice.quickStart) await loading.waitForDrive();
     loading.hide();

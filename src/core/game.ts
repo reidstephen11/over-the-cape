@@ -38,6 +38,7 @@ import { buildWorldSteps, type World } from '../sim/world/world';
 import { SeenGround } from '../sim/seenGround';
 import { addPuddles } from '../sim/world/puddles';
 import { prepareFlood } from '../sim/world/flood';
+import { mapForCondition, rollTrackCondition, stormFor, type TrackCondition } from '../data/trackConditions';
 import { loadRapier } from '../sim/physics';
 import { Simulation } from '../sim/sim';
 import type { Vehicle } from '../sim/vehicle/vehicle';
@@ -125,6 +126,8 @@ export interface LaunchChoice {
 /** The episode being played: its story, where this run starts, and progress on them all. */
 interface EpisodeSetup {
   def: EpisodeDef;
+  /** How the track was found today (src/data/trackConditions.ts). */
+  condition: TrackCondition;
   checkpoint: Checkpoint;
   replay: Conditions | null;
   progress: Partial<Record<EpisodeId, EpisodeProgress>>;
@@ -168,6 +171,8 @@ export class Game {
   vehicleId: VehicleId;
   /** The episode being played, and this run of it: clock, mission and how it ends. */
   readonly episode: EpisodeDef;
+  /** How the track was found today: rolled from the run's seed. */
+  readonly condition: TrackCondition;
   readonly run: EpisodeRun;
   /** Replaying in chosen conditions: the clock stands still and there's no deadline. */
   readonly replay: Conditions | null;
@@ -270,6 +275,7 @@ export class Game {
     this.exploration = exploration;
     this.vehicleId = vehicleId;
     this.episode = setup.def;
+    this.condition = setup.condition;
     this.replay = setup.replay;
     this.checkpoint = setup.checkpoint;
     this.strandedFreed = new Set(setup.checkpoint.stranded);
@@ -634,8 +640,11 @@ export class Game {
           );
     if (choice.supply && checkpoint !== saved) checkpoint.supply = true;
     const packs = { ...save?.packs, ...(choice.load ? { [choice.vehicle]: choice.load } : {}) };
+    // How the track is found today, rolled from the run's seed, so a restart from a camp
+    // (which keeps the seed) meets the same day. Replays pick their conditions by hand.
+    const condition = rollTrackCondition(checkpoint.seed);
     // Replays keep the conditions picked; the story's own run has its storm (if any).
-    const storm = choice.replay ? undefined : def.storm;
+    const storm = choice.replay ? undefined : stormFor(def.storm, condition);
     const weather = choice.replay
       ? { env: environmentFor(choice.replay), creekRise: 0, flowScale: 1 }
       : episodeWeatherAt(checkpoint.hour, def.weather, storm);
@@ -643,7 +652,8 @@ export class Game {
     // The map's own colours (red clay, greener grass) before any mesh is built.
     usePalette(mapDef.palette);
     const rapier = loadRapier();
-    const gen = buildWorldSteps(mapDef);
+    // A dry track's bogs have shrunk back; a wet one's are deeper. Same hollows either way.
+    const gen = buildWorldSteps(choice.replay ? mapDef : mapForCondition(mapDef, condition));
     let r = gen.next();
     while (!r.done) {
       progress(r.value.progress, r.value.label);
@@ -696,7 +706,9 @@ export class Game {
       save?.crawlBests ?? {},
       choice.vehicle,
       {
-        def,
+        // The storm as this condition meets it, so the run's weather follows the roll.
+        def: storm === def.storm ? def : { ...def, storm },
+        condition,
         checkpoint,
         replay: choice.replay,
         progress: episodeProgress,
