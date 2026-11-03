@@ -2,25 +2,35 @@ import { registerSW } from 'virtual:pwa-register';
 import './ui/styles.css';
 import './ui/title.css';
 import './ui/hudStyles.css';
-import { choiceFromSave } from './core/launch';
+import { briefingLoad, choiceFromSave } from './core/launch';
+import { pendingUpdate } from './core/update';
+
+/** Set once a drive is loading: from then on a new build waits for the pause menu. */
+let playing = false;
 
 if (import.meta.env.PROD && location.pathname.startsWith('/over-the-cape')) {
-  registerSW({
+  const updateSW = registerSW({
     immediate: true,
     onRegisteredSW(_url, registration) {
       void registration?.update();
+    },
+    // A new build has been downloaded and waits. On the title screen it takes over at once;
+    // during a drive it waits for "Restart for the new version" in the pause menu (v1.23).
+    onNeedRefresh() {
+      if (playing) pendingUpdate.arrive(() => void updateSW(true));
+      else void updateSW(true);
     },
   });
 }
 import { episodes } from './data/episodes';
 import { maps } from './data/maps';
-import { vehicleLoadout } from './data/vehicles';
 import { applyHudStyle, defaultHudStyle } from './data/hudStyles';
 import { loadSave } from './sim/save/save';
 import { LoadingScreen } from './ui/loading';
 import { WelcomeScreen, type WelcomeChoice } from './ui/welcome';
 
 async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> {
+  playing = true;
   const appEl = document.getElementById('app') as HTMLElement;
   const uiEl = document.getElementById('ui') as HTMLElement;
   const loading = new LoadingScreen(
@@ -36,7 +46,7 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
   loading.setSubtitle(map.name);
   loading.briefing(
     def,
-    (!checkpoint && choice.load) || vehicleLoadout(def.loadout, choice.vehicle),
+    briefingLoad(checkpoint, choice.load, def.id, choice.vehicle),
     choice.replay,
     checkpoint ? (map.pois.find((p) => p.id === checkpoint.camp)?.name ?? null) : null,
     choice.damage,

@@ -11,6 +11,7 @@ import { isDevMode } from '../data/devWeather';
 import type { EpisodeDef } from '../data/episodes';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
 import { hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
+import { offeredQualities, shownQuality } from '../data/quality';
 
 /** What each damage setting does, and which ways an episode can end with it. */
 export const damageNotes: Record<DamageMode, string> = {
@@ -30,6 +31,8 @@ export interface MenuActions {
   changeSettings(s: Partial<Settings>): void;
   changeVehicle(id: VehicleId): void;
   mainMenu(): void;
+  /** Install the new version that has been downloaded (saving first) and reload into it. */
+  restartForUpdate(): void;
 }
 
 /**
@@ -58,6 +61,8 @@ export class PauseMenu {
   /** Opened from the touch controls: the Controls page lists those instead of the keyboard. */
   private touch = false;
   private device: 'keyboard' | 'gamepad' | 'touch' = 'keyboard';
+  /** A new build is downloaded and waiting: the main page offers to restart into it. */
+  private updateReady = false;
   private status: readonly PauseStatusCell[] = [];
 
   constructor(
@@ -83,6 +88,13 @@ export class PauseMenu {
   close(): void {
     this.isOpen = false;
     this.el.classList.add('hidden');
+  }
+
+  /** A new build is downloaded and waiting: offer "Restart for the new version". */
+  setUpdateReady(on: boolean): void {
+    if (this.updateReady === on) return;
+    this.updateReady = on;
+    if (this.isOpen && this.page === 'main') this.show('main');
   }
 
   setSettings(s: Settings): void {
@@ -156,6 +168,7 @@ export class PauseMenu {
           <button data-focus data-act="settings">Settings</button>
           <button data-focus data-act="controls">Controls</button>
           <button data-focus data-act="menu">Main menu<small>Episodes and vehicle; progress is kept</small></button>
+          ${this.updateReady ? '<button data-focus data-act="update" class="update-ready">Restart for the new version<small>Carries on from the last camp</small></button>' : ''}
         </div>
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>`;
       (card.querySelector('.pause-episode') as HTMLElement).textContent = this.episodeName;
@@ -184,13 +197,13 @@ export class PauseMenu {
     } else if (page === 'settings') {
       const s = this.settings;
       // Phones have no High (see qualityFor): one saved on High shows Medium.
-      const quality = isTouchDevice() && s.quality === 'high' ? 'medium' : s.quality;
+      const quality = shownQuality(s.quality, isTouchDevice());
       const q = (v: string) =>
         `<button data-focus data-quality="${v}" class="${quality === v ? 'on' : ''}">${v[0].toUpperCase()}${v.slice(1)}</button>`;
       const slider = (key: keyof Settings, label: string) =>
         `<label class="setting-row">${label}<input data-focus type="range" min="0" max="1" step="0.05" data-key="${key}" value="${s[key]}"></label>`;
       card.innerHTML = `<h2>Settings</h2>
-        <div class="setting-row">Graphics<div class="seg">${q('low')}${q('medium')}${isTouchDevice() ? '' : q('high')}</div></div>
+        <div class="setting-row">Graphics<div class="seg">${offeredQualities(isTouchDevice()).map(q).join('')}</div></div>
         <div class="setting-row controller-setting phone-driving-setting">Phone driving<div class="seg">${touchDriveSchemes.map((c) => `<button data-focus data-touch-drive="${c}" class="${s.touchDrive === c ? 'on' : ''}" aria-pressed="${s.touchDrive === c}">${touchDriveLabels[c]}</button>`).join('')}</div></div>
         ${slider('masterVolume', 'Master volume')}
         ${slider('engineVolume', 'Engine volume')}
@@ -252,6 +265,7 @@ export class PauseMenu {
     else if (act === 'settings') this.show('settings');
     else if (act === 'controls') this.show('controls');
     else if (act === 'menu') this.actions.mainMenu();
+    else if (act === 'update') this.actions.restartForUpdate();
     else if (act === 'back') this.show('main');
     else if (t.dataset.vehicle) {
       const id = t.dataset.vehicle as VehicleId;
