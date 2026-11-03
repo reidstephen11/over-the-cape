@@ -2045,3 +2045,10 @@ The model's layout was checked against `reference/vehicles/unimog-ul1700l/side.j
 **Cost.** The body is 81,400 triangles after v1.24's cuts (79,200 on `main` before this change, `scripts/tri-count.ts`); the next rounds of cutting are on the roadmap.
 
 **Tests.** `tests/unimog.test.ts` passes (the length comment now says 6.6 m over the jaws and the pintle hook); the headlight, camera, current, trailer and CREB Unimog tests pass except one: "climbs Bob's Hill in the wet in the Unimog in low range with open diffs" stops 112.5 m from the end on `main` before this change as well (checked on a clean checkout), so it is left for a follow-up and not a result of the new layout. The same goes for `tests/current.test.ts`'s "stops the short-wheelbase 4WD on the deep line", which does not involve the Unimog and fails on `main` as well.
+
+## v1.28: notes count down in game time; the gamepad tests seed the first poll
+
+Follow-up to v1.23, from its test results.
+
+- **History notes count down in simulated time.** v1.23 ran the countdown from the render loop's frame time, which on the browser tests' software renderer (seconds a frame, capped at 0.25 s) ran far slower than the game, so a short card was still up when a test expected it gone. `HistoryCard.tick(dt)` now runs from the simulation step, so a note waits while the game is paused and counts the same seconds the game does, in play and in tests.
+- **The gamepad unit tests poll once before pressing.** Since v1.23 the first `poll()` only records what is held, so `tests/driveControls.test.ts` and `tests/camera.test.ts`, which pressed buttons on the very first poll, now poll an idle pad first. The physics failures in the same CI run (vehicle, trailer, CREB stretch and current tests) come from the vehicle-model work of v1.19 to v1.27 and are being fixed in those updates.

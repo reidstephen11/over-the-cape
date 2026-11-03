@@ -1554,6 +1554,9 @@ export class Game {
     for (const { car } of this.trafficCars.values()) snapshotPose(car);
     this.sim.step(this.inputs, dt);
     this.run.tick(dt);
+    // History notes count down in simulated time: not while paused, and the same in the
+    // browser tests, which run a fixed number of steps a frame on the slow software renderer.
+    this.history.tick(dt);
     if (this.run.status === 'driving') this.recordGhost();
     const p = this.vehicle.body.translation();
     if (this.ghostGap) this.ghostBehind = this.ghostGap.update(p.x, p.z, this.run.elapsed);
@@ -1833,7 +1836,6 @@ export class Game {
 
   private renderFrame(alpha: number, frameDt: number): void {
     this.input.poll();
-    if (!this.loop.paused) this.history.tick(frameDt);
     this.map.updateInput(this.input.activeDevice, this.settings.controller);
     this.pause.setInputDevice(this.input.activeDevice);
     this.history.setInput(this.input.activeDevice, this.settings.controller);
