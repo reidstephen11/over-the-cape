@@ -125,7 +125,7 @@ export class HistoryCard {
     this.timeLeft = this.el.classList.contains('brief') ? BRIEF_SECONDS : readingSeconds(this.noteText(n));
   }
 
-  /** A frame of play went by (not called while the game is paused or the map is open). */
+  /** A step of play went by (not called while the game is paused or the map is open). */
   tick(dt: number): void {
     if (this.timeLeft <= 0) return;
     this.timeLeft -= dt;

@@ -169,12 +169,12 @@ describe('crawl input bindings', () => {
 
   it('camera buttons leave crawling unchanged; menu selections queue single-step drive commands', () => {
     const { input } = keyboard();
-    const buttons = Array.from({ length: 17 }, (_, i) => ({
-      pressed: [11, 14, 15].includes(i),
-      value: [11, 14, 15].includes(i) ? 1 : 0,
-    }));
+    const buttons = Array.from({ length: 17 }, () => ({ pressed: false, value: 0 }));
     vi.stubGlobal('navigator', { getGamepads: () => [{ connected: true, axes: [0, 0, 0, 0], buttons }] });
     try {
+      // The first poll only records what is held (v1.23); presses count from the next.
+      input.poll();
+      for (const i of [11, 14, 15]) buttons[i] = { pressed: true, value: 1 };
       input.poll();
       const command = input.vehicleInput(DT);
       expect([command.toggleFrontDiff, command.toggleRearDiff, command.togglePrecision]).toEqual([
