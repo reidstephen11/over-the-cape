@@ -6,7 +6,7 @@ test('the best run drives along as a ghost', async ({ page }) => {
   test.setTimeout(600_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await waitReady(page);
   // A ghost that sets off straight ahead of where the car starts, at 5 m/s.
   const v = await page.evaluate(() => window.__game!.vehicle());

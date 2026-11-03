@@ -7,7 +7,7 @@ test('Surprises: a dead tree comes down across the track ahead, and the message 
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?seed=1');
+  await page.goto('/?seed=1&track=reopened');
   await openJourney(page);
   await waitReady(page);
   const plans = await page.evaluate(() => window.__game!.surprises(72));

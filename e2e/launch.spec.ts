@@ -10,7 +10,7 @@ test('the camp title opens to three main actions and fits desktop and phones', a
     if (/\/src\/core\/game\.ts|\/assets\/game-/.test(r.url())) engineRequests.push(r.url());
   });
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await expect(page.locator('[data-title-begin]')).toBeVisible();
   await expect(page.locator('[data-welcome-drive]')).toHaveCount(0);
   await expect(page.locator('#game-canvas')).toHaveCount(0);
@@ -50,7 +50,7 @@ test('New Journey opens episode setup and keeps vehicle, difficulty and replay c
       }),
     ),
   );
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await openJourney(page);
   await expect(page.locator('#welcome-setup')).toBeHidden();
   await page.locator('[data-group="setup"]').click();
@@ -82,7 +82,7 @@ test('title Settings persist sound and graphics without replacing a saved journe
         }),
       );
   }, checkpoint);
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-title-continue]')).toBeFocused();
   await page.keyboard.press('ArrowDown');
@@ -128,7 +128,7 @@ test('New Journey starts fresh without deleting the existing checkpoint while br
       ),
     checkpoint,
   );
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await page.keyboard.press('Enter');
   await page.locator('[data-title-journey]').click();
   await expect(page.locator('[data-group="start"].on')).toHaveAttribute('data-value', 'new');
@@ -149,7 +149,7 @@ test('a held controller button opens only the menu, with directions to select an
     Object.defineProperty(navigator, 'getGamepads', { value: () => [{ connected: true, buttons }] });
     (window as unknown as { titlePad: typeof buttons }).titlePad = buttons;
   });
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   const setButton = (index: number, pressed: boolean) =>
     page.evaluate(
       ({ index, pressed }) => {
@@ -185,7 +185,7 @@ test('touch titles use tap prompts and respect reduced motion', async ({ browser
     reducedMotion: 'reduce',
   });
   const page = await context.newPage();
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await expect(page.locator('[data-title-begin]')).toHaveText('Tap to begin');
   expect(
     await page.locator('.welcome').evaluate((el) => getComputedStyle(el, '::before').animationName),
@@ -198,7 +198,7 @@ test('touch titles use tap prompts and respect reduced motion', async ({ browser
 
 test('test mode keeps title settings and journey browsing out of the real save', async ({ page }) => {
   await lowGraphics(page);
-  await page.goto('/?dev');
+  await page.goto('/?dev&track=reopened');
   const saved = await page.evaluate(() => localStorage.getItem('overthecape.save.v1'));
   await page.keyboard.press('Enter');
   await page.locator('[data-value="settings"]').click();
@@ -214,7 +214,7 @@ test.describe('title Settings on a phone', () => {
   test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
 
   test('Phone driving sits on the Settings page in view', async ({ page }) => {
-    await page.goto('/?touch');
+    await page.goto('/?touch&track=reopened');
     await page.locator('[data-title-begin]').click();
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
     await expect(page.locator('.phone-driving-setting')).toBeVisible();

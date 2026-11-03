@@ -13,7 +13,7 @@ test('M6: audio starts with the Drive button, follows the car, and the volume se
     if (m.type() === 'warning' && /audio/i.test(m.text())) audioWarnings.push(m.text());
   });
   await lowGraphics(page);
-  await page.goto('/?debug&surprises=off');
+  await page.goto('/?debug&surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
 
@@ -106,7 +106,7 @@ test('M6: without Web Audio the game still runs, silently', async ({ page }) => 
     delete window.AudioContext;
   });
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
   await page.keyboard.press('KeyW');

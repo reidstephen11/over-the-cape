@@ -38,7 +38,14 @@ import { buildWorldSteps, type World } from '../sim/world/world';
 import { SeenGround } from '../sim/seenGround';
 import { addPuddles } from '../sim/world/puddles';
 import { prepareFlood } from '../sim/world/flood';
-import { mapForCondition, rollTrackCondition, stormFor, type TrackCondition } from '../data/trackConditions';
+import {
+  conditionById,
+  isTrackConditionId,
+  mapForCondition,
+  rollTrackCondition,
+  stormFor,
+  type TrackCondition,
+} from '../data/trackConditions';
 import { loadRapier } from '../sim/physics';
 import { Simulation } from '../sim/sim';
 import type { Vehicle } from '../sim/vehicle/vehicle';
@@ -652,7 +659,11 @@ export class Game {
     const packs = { ...save?.packs, ...(choice.load ? { [choice.vehicle]: choice.load } : {}) };
     // How the track is found today, rolled from the run's seed, so a restart from a camp
     // (which keeps the seed) meets the same day. Replays pick their conditions by hand.
-    const condition = rollTrackCondition(checkpoint.seed);
+    // ?track=dry|reopened|wet pins the day, for comparing one against another and so the
+    // browser tests meet a fixed track; otherwise it is rolled from the run's seed.
+    const pinned = params.get('track');
+    const condition =
+      pinned && isTrackConditionId(pinned) ? conditionById(pinned) : rollTrackCondition(checkpoint.seed);
     // Replays keep the conditions picked; the story's own run has its storm (if any).
     const storm = choice.replay ? undefined : stormFor(def.storm, condition);
     const weather = choice.replay

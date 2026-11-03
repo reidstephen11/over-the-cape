@@ -29,7 +29,7 @@ test('controller type changes title prompts, persists, and switches back to keyb
   const errors = collectErrors(page);
   await controller(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await button(page, 0, true);
   await expect(page.locator('.title-menu')).toBeVisible();
   await button(page, 0, false);
@@ -84,7 +84,7 @@ test('pause settings change live driving, camera, map and help prompts, while ke
   const errors = collectErrors(page);
   await controller(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await page.locator('[data-welcome-drive]').click();
   await page.locator('[data-briefing-drive]:not(.hidden)').click({ timeout: 300_000 });

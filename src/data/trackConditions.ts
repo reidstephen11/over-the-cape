@@ -71,6 +71,9 @@ export const trackConditions: readonly (TrackCondition & { weight: number })[] =
   },
 ];
 
+export const isTrackConditionId = (x: unknown): x is TrackConditionId =>
+  trackConditions.some((c) => c.id === x);
+
 export const conditionById = (id: TrackConditionId): TrackCondition =>
   trackConditions.find((c) => c.id === id) ?? trackConditions[1];
 

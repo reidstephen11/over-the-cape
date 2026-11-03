@@ -7,7 +7,7 @@ test('night: the storm comes in, dusk turns the headlights on, N cycles them, an
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
   expect((await page.evaluate(() => window.__game!.vehicle())).lights).toBe('off');

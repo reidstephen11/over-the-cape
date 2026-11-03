@@ -5,7 +5,7 @@ test('Sooty 80 Series can be selected, driven and restored after reload', async 
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await page.locator('[data-group="setup"]').click();
   const button = page.locator('[data-group="vehicle"][data-value="sooty80"]');
