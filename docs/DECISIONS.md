@@ -2046,7 +2046,14 @@ The model's layout was checked against `reference/vehicles/unimog-ul1700l/side.j
 
 **Tests.** `tests/unimog.test.ts` passes (the length comment now says 6.6 m over the jaws and the pintle hook); the headlight, camera, current, trailer and CREB Unimog tests pass except one: "climbs Bob's Hill in the wet in the Unimog in low range with open diffs" stops 112.5 m from the end on `main` before this change as well (checked on a clean checkout), so it is left for a follow-up and not a result of the new layout. The same goes for `tests/current.test.ts`'s "stops the short-wheelbase 4WD on the deep line", which does not involve the Unimog and fails on `main` as well.
 
-## v1.28: fewer triangles in every vehicle, round two
+## v1.28: notes count down in game time; the gamepad tests seed the first poll
+
+Follow-up to v1.23, from its test results.
+
+- **History notes count down in simulated time.** v1.23 ran the countdown from the render loop's frame time, which on the browser tests' software renderer (seconds a frame, capped at 0.25 s) ran far slower than the game, so a short card was still up when a test expected it gone. `HistoryCard.tick(dt)` now runs from the simulation step, so a note waits while the game is paused and counts the same seconds the game does, in play and in tests.
+- **The gamepad unit tests poll once before pressing.** Since v1.23 the first `poll()` only records what is held, so `tests/driveControls.test.ts` and `tests/camera.test.ts`, which pressed buttons on the very first poll, now poll an idle pad first. The physics failures in the same CI run (vehicle, trailer, CREB stretch and current tests) come from the vehicle-model work of v1.19 to v1.27 and are being fixed in those updates.
+
+## v1.29: fewer triangles in every vehicle, round two
 
 Again no vehicle changes shape. The renders of every vehicle at the studio's eight views were compared against v1.26 (and the Unimog against v1.27, which laid it out afresh) as in v1.24; the mean pixel difference is at most 0.12 of 255 on every view. Every vehicle is now under the 80,000 the v1.24 note aimed at, and most are near the 62,000 budget.
 
@@ -2060,7 +2067,7 @@ Again no vehicle changes shape. The renders of every vehicle at the studio's eig
 - **Wheels:** the dished centres' vents, hubs and caps have half the points round (a 48-point disc is 32, a 14-point vent 8, a 32-sided hub 16).
 - **Kept as they were:** the HJ60's stripe pieces and its script lettering (together 2,800 triangles now that each stroke is a plain block, and the README's v1.12 check wants TOYOTA LAND CRUISER readable), the block TOYOTA and NISSAN lettering on grilles and tailgates (1,200 to 2,400 a vehicle), and the bevelled panel extrusions, whose rounded edges are the silhouette. The third round planned in v1.24 (fewer, larger lettering blocks) is not needed for the budget and is left out.
 
-| vehicle  | v1.27  | v1.28 | body (v1.27 → v1.28) | per wheel   |
+| vehicle  | v1.27  | v1.29 | body (v1.27 → v1.29) | per wheel   |
 | -------- | ------ | ----- | -------------------- | ----------- |
 | sooty80  | 90.0k  | 73.0k | 66.2k → 52.2k        | 5.2k → 4.5k |
 | shortie  | 75.5k  | 60.4k | 56.8k → 45.5k        | 4.6k → 3.6k |

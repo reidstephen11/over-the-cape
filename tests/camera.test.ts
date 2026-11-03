@@ -251,6 +251,8 @@ function inputFixture() {
     buttons: Array.from({ length: 16 }, () => ({ pressed: false, value: 0 })),
   };
   vi.stubGlobal('navigator', { getGamepads: () => [pad] });
+  // The first poll only records what is held (v1.23); presses count from the next.
+  input.poll();
   return { input, send, pad };
 }
 
