@@ -89,6 +89,15 @@ export interface VehicleTuning {
    */
   converter: { capacity: number; stallRatio: number; couplingPoint: number };
   gearbox: {
+    /**
+     * What the real vehicle has. In the Automatic setting every vehicle shifts itself
+     * through the converter above. In the manual settings a 'manual' box drives through
+     * a dry clutch (and can stall in "Manual with clutch"); an 'automatic' keeps its
+     * converter and the player only holds its gear.
+     */
+    kind: 'automatic' | 'manual';
+    /** Torque the clutch passes fully engaged (Nm). Default: 1.8 × the torque curve's peak. */
+    clutchTorque?: number;
     ratios: readonly number[];
     reverse: number;
     finalDrive: number;
@@ -254,6 +263,7 @@ export const vehicleTuning: VehicleTuning = {
   // Stalls (full throttle, wheels held) at about 2000 rpm.
   converter: { capacity: 120, stallRatio: 1.15, couplingPoint: 0.8 },
   gearbox: {
+    kind: 'automatic',
     ratios: [2.48, 1.48, 1.0],
     reverse: 2.08,
     finalDrive: 3.7,

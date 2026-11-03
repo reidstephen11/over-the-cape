@@ -97,11 +97,12 @@ export const unimogTuning: VehicleTuning = {
     // Army user handbook: 160 L. Efficiency is independent of episode balancing.
     fuel: { tankLitres: 160, idleLitresPerHour: 1.8, efficiency: 0.38, energyMJPerLitre: 38.6 },
   },
-  // The game drives the gears itself; this coupling stands in for the clutch.
+  // Automatic mode's coupling: the game changes gear itself and this stands in for the clutch.
   converter: { capacity: 56, stallRatio: 1.2, couplingPoint: 0.8 },
   // The road gears; the low range is the field gears below them. The axle ratio includes
   // the portal hub gears, chosen so the top road gear gives 82 km/h at 2750 rpm.
   gearbox: {
+    kind: 'manual',
     ratios: [4.8, 2.9, 1.7, 1.0],
     reverse: 3.6,
     finalDrive: 6.83,

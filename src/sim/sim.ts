@@ -8,6 +8,7 @@ import { Emitter } from '../core/events';
 import { Groups, groups, Physics, type GroundQuery, type Rapier } from './physics';
 import type { VehicleInput } from './input/vehicleInput';
 import { Vehicle, type SpawnPose } from './vehicle/vehicle';
+import type { GearboxMode } from './vehicle/drivetrain';
 import type { World } from './world/world';
 import { placedPropShapes } from './world/props';
 import { deckAt } from './world/bridges';
@@ -63,7 +64,14 @@ export interface SimEvents extends Record<string, unknown> {
   lightsChanged: { id: string; mode: HeadlightMode };
   tool: { id: string; event: ToolEvent };
   /** Flooding stalled or restarted the engine, or it is being started (start-up, a vehicle swap). */
-  engine: { id: string; event: 'stalled' | 'restarted' | 'starting' | 'outOfFuel' };
+  engine: {
+    id: string;
+    /**
+     * 'stalledLugged': stalled against the clutch (manual gearbox); 'clutchToStart': the
+     * pedal was pressed in gear with the clutch out, so the engine didn't turn over.
+     */
+    event: 'stalled' | 'restarted' | 'starting' | 'outOfFuel' | 'stalledLugged' | 'clutchToStart';
+  };
   dent: { id: string; impact: number };
   /** Mechanical damage: a tyre cut, a suspension corner bent or the engine hurt. */
   damage: { id: string } & DamageEvent;
@@ -139,6 +147,8 @@ export class Simulation {
   time = 0;
   /** How harsh mechanical damage is (the settings choice; off unless the game sets it). */
   damage: DamageMode = 'off';
+  /** The gearbox setting every vehicle drives with (see Vehicle.setGearboxMode). */
+  gearboxMode: GearboxMode = 'automatic';
   /**
    * Fuel burnt per litre the engine really uses. An episode shortens the real distance,
    * so it burns faster to match; 0 burns nothing (the tank never empties).
@@ -586,6 +596,12 @@ export class Simulation {
       },
       churn: this.churn,
     });
+    // A vehicle arrives in neutral in the manual gearbox settings.
+    v.setGearboxMode(this.gearboxMode);
+    if (v.manualGearbox) {
+      v.drivetrain.gear = 0;
+      v.drivetrain.neutral = true;
+    }
     this.vehicles.set(id, v);
     this.tools.set(id, new VehicleTools());
     this.events.emit('vehicleSpawned', { id });
@@ -711,6 +727,8 @@ export class Simulation {
         this.events.emit('precisionChanged', { id, enabled: v.precisionCrawl });
       if (v.floodEvent) this.events.emit('engine', { id, event: v.floodEvent });
       if (v.startedByPedal) this.events.emit('engine', { id, event: 'starting' });
+      if (v.stalledLugged) this.events.emit('engine', { id, event: 'stalledLugged' });
+      if (v.startBlocked) this.events.emit('engine', { id, event: 'clutchToStart' });
       tools.winch.step(v, input.winchIn, input.winchOut, dt);
       v.externalLoad = tools.winch.tension;
       const pulled = tools.winch.anchor?.id.startsWith('stuck:')
@@ -963,6 +981,12 @@ export class Simulation {
   }
 
   // --- Damage and repairs -----------------------------------------------
+
+  /** Change the gearbox setting for every vehicle (and those added later). */
+  setGearboxMode(mode: GearboxMode): void {
+    this.gearboxMode = mode;
+    for (const v of this.vehicles.values()) v.setGearboxMode(mode);
+  }
 
   /** Change how harsh damage is; damage beyond what the new setting allows is put right. */
   setDamage(mode: DamageMode): void {

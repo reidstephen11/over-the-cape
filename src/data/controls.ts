@@ -30,7 +30,10 @@ export type Action =
   | 'menuUp'
   | 'menuDown'
   | 'menuLeft'
-  | 'menuRight';
+  | 'menuRight'
+  | 'shiftUp'
+  | 'shiftDown'
+  | 'clutch';
 
 export const keyBindings: Record<Action, readonly string[]> = {
   accelerate: ['KeyW', 'ArrowUp'],
@@ -61,6 +64,10 @@ export const keyBindings: Record<Action, readonly string[]> = {
   menuDown: ['ArrowDown', 'KeyS'],
   menuLeft: ['ArrowLeft', 'KeyA'],
   menuRight: ['ArrowRight', 'KeyD'],
+  // The manual gearbox is controller only: the keyboard always drives automatic.
+  shiftUp: [],
+  shiftDown: [],
+  clutch: [],
 };
 
 /** Standard gamepad buttons. */
@@ -102,6 +109,10 @@ export const padBindings: Partial<Record<Action, readonly number[]>> = {
   menuDown: [Pad.Down],
   menuLeft: [Pad.Left],
   menuRight: [Pad.Right],
+  // Manual gearbox settings only (D-pad left/right zoom the camera in Automatic).
+  shiftUp: [Pad.Right],
+  shiftDown: [Pad.Left],
+  clutch: [Pad.B],
 };
 
 export const padTuning = {
@@ -136,6 +147,9 @@ function padGlyphs(controller: ControllerType): Partial<Record<Action, string>> 
     confirm: p.confirm,
     back: p.back,
     cameraReset: p.cameraReset,
+    shiftUp: 'D-pad →',
+    shiftDown: 'D-pad ←',
+    clutch: p.back,
   };
 }
 
@@ -228,7 +242,9 @@ export function controlsTable(
     ['Interact (pick up planks)', 'E (when prompted)', p.confirm],
     ['Right vehicle', 'Hold J', `Hold ${p.back}`],
     ['Orbit camera', 'Mouse drag / Num 4 6 8 2', 'Right stick'],
-    ['Camera distance', 'Scroll', 'D-pad left/right (driving)'],
+    ['Camera distance', 'Scroll', 'D-pad left/right (driving, Automatic gearbox)'],
+    ['Shift up / down (manual gearbox, controller only)', '—', 'D-pad right / left'],
+    ['Clutch (manual gearbox, controller only)', '—', `Hold ${p.back} (Manual with clutch)`],
     ['Recenter camera', 'V / Num 5', p.cameraReset],
     ['Cycle crawler and driver views', 'C / View button', `Hold ${p.toolMenu} + ${p.cameraReset}`],
     ['Crawl gauges: auto (low range) / on / off', 'I', 'Shown in low range'],

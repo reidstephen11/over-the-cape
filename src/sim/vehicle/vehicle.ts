@@ -24,7 +24,14 @@ import {
   tyreGripMultiplier,
   tyreSideGripMultiplier,
 } from './condition';
-import { coupledRpm, createDrivetrainState, engineBrakeForce, updateDrivetrain } from './drivetrain';
+import {
+  coupledRpm,
+  createDrivetrainState,
+  engineBrakeForce,
+  shiftGear,
+  updateDrivetrain,
+  type GearboxMode,
+} from './drivetrain';
 import { floodPower, updateFlood, type FloodEvent } from './flooding';
 import { mulberry32 } from '../world/rng';
 import { type Quat, type Vec3, dot, headingToYaw, rotate, v3, yawQuat } from './math';
@@ -158,6 +165,21 @@ export class Vehicle {
   engineOff = false;
   /** Set when pressing the pedal turned the switched-off engine over this step. */
   startedByPedal = false;
+  /**
+   * The gearbox setting this vehicle drives with (Automatic unless the game sets a manual
+   * mode). See `setGearboxMode`.
+   */
+  gearboxMode: GearboxMode = 'automatic';
+  /**
+   * Set for the first step of a pedal press that couldn't start the engine: in a manual
+   * mode it starts only in neutral or with the clutch pressed.
+   */
+  startBlocked = false;
+  private startBlockHeld = false;
+  /** Set for the step in which the engine stalled against the clutch. */
+  stalledLugged = false;
+  /** The engine is off because it stalled against the clutch (the HUD lights STALLED). */
+  clutchStalled = false;
   /** Engine power multiplier applied this step (dips while flooding sputters). */
   enginePower = 1;
   /**
@@ -365,6 +387,7 @@ export class Vehicle {
   startEngine(): boolean {
     if (this.crank > 0) return false;
     this.engineOff = false;
+    this.clutchStalled = false;
     this.crank = this.tuning.engine.crankSeconds;
     this.drivetrain.engineRunning = false;
     this.drivetrain.rpm = this.tuning.engine.crankRpm;
@@ -379,11 +402,41 @@ export class Vehicle {
     this.drivetrain.rpm = 0;
   }
 
+  /** A manual gearbox setting: the player picks the gear (reverse is a gear). */
+  get manualGearbox(): boolean {
+    return this.gearboxMode !== 'automatic';
+  }
+
+  /** A manual gearbox setting on a vehicle with a real clutch (not the 40 Series' automatic). */
+  get clutchGearbox(): boolean {
+    return this.manualGearbox && this.tuning.gearbox.kind === 'manual';
+  }
+
+  /**
+   * Change the gearbox setting. Into a manual mode with the engine off, the box goes to
+   * neutral so the pedal can start it; back to Automatic, neutral is dropped.
+   */
+  setGearboxMode(mode: GearboxMode): void {
+    if (mode === this.gearboxMode) return;
+    this.gearboxMode = mode;
+    const d = this.drivetrain;
+    if (mode === 'automatic') {
+      if (d.neutral) d.gear = 0;
+      d.neutral = false;
+      d.clutch = 1;
+    } else if (!d.engineRunning || this.engineOff) {
+      d.gear = 0;
+      d.neutral = true;
+    }
+  }
+
   toggleRange(): boolean {
     if (Math.abs(this.speed) > 20 / 3.6) return false;
     const d = this.drivetrain;
     d.range = d.range === 'high' ? 'low' : 'high';
     d.shiftTimer = Math.max(d.shiftTimer, 0.5);
+    // In the manual settings the player keeps the gear they picked.
+    if (this.manualGearbox) return true;
     // Changing range on the move, pick the gear that suits the new range, so the engine
     // neither labours nor overruns (the Unimog's road and field gears are far apart).
     const g = this.tuning.gearbox;
@@ -469,6 +522,10 @@ export class Vehicle {
     if (input.toggleRearDiff) this.toggleDiff('rear');
     if (input.togglePrecision) this.precisionCrawl = !this.precisionCrawl;
     if (input.cycleLights) this.lights = nextHeadlightMode(this.lights);
+    if (this.manualGearbox) {
+      if (input.shiftUp) shiftGear(t, this.drivetrain, 1);
+      if (input.shiftDown) shiftGear(t, this.drivetrain, -1);
+    }
 
     // Throttle / brake / reverse, automatic-style. Accelerating against the way the
     // car is rolling brakes it, unless it is rolling back against the selected gear
@@ -479,7 +536,11 @@ export class Vehicle {
     let reverse = inReverse;
     const f = input.throttle;
     const b = input.brake;
-    if (f > 0.02 && b > 0.02) brake = Math.max(f, b);
+    if (this.manualGearbox) {
+      // Manual settings: the pedal is throttle in the selected gear, the brake only brakes.
+      if (f > 0.02) throttle = f;
+      if (b > 0.02) brake = b;
+    } else if (f > 0.02 && b > 0.02) brake = Math.max(f, b);
     else if (f > 0.02) {
       if (this.speed < -0.5 && (inReverse || this.speed < -SLIP_BACK)) brake = f;
       else {
@@ -494,7 +555,12 @@ export class Vehicle {
       }
     }
     // Pressing the pedal (either way) with the engine switched off turns it over first.
-    this.startedByPedal = this.engineOff && throttle > 0 && this.startEngine();
+    // With a clutch it only starts in neutral or with the clutch pressed.
+    const canStart = !this.clutchGearbox || this.drivetrain.neutral || input.clutch > 0.5;
+    const blocked = this.engineOff && throttle > 0 && !canStart;
+    this.startBlocked = blocked && !this.startBlockHeld;
+    this.startBlockHeld = blocked;
+    this.startedByPedal = this.engineOff && throttle > 0 && canStart && this.startEngine();
     if (this.precisionCrawl && throttle > 0) {
       const crawl = t.crawling;
       const target = (throttle * (reverse ? crawl.reverseKmh : crawl.forwardKmh)) / 3.6;
@@ -553,9 +619,23 @@ export class Vehicle {
     let drive = updateDrivetrain(
       t,
       this.drivetrain,
-      { throttle, reverse, speed: this.speed, enginePower: this.enginePower },
+      {
+        throttle,
+        reverse,
+        speed: this.speed,
+        enginePower: this.enginePower,
+        mode: this.gearboxMode,
+        clutchPedal: input.clutch,
+        autoClutch: this.precisionCrawl,
+      },
       dt,
     );
+    // Stalled against the clutch: the engine is off until the pedal cranks it again.
+    this.stalledLugged = this.drivetrain.stalled;
+    if (this.stalledLugged) {
+      this.switchOff();
+      this.clutchStalled = true;
+    }
     // Off the throttle while the winch pulls, the gearbox sits in neutral so the car
     // neither creeps on the cable nor drags against it.
     if (this.freeRoll && throttle === 0) drive = 0;

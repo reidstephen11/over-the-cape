@@ -98,9 +98,10 @@ export const hiluxTuning: VehicleTuning = {
     // Toyota's 1979 RN46 brochure: 61 L. Sources: docs/FUEL.md.
     fuel: { tankLitres: 61, idleLitresPerHour: 0.8, efficiency: 0.3, energyMJPerLitre: 34.2 },
   },
-  // The game changes gear itself; this coupling stands in for the clutch.
+  // Automatic mode's coupling: the game changes gear itself and this stands in for the clutch.
   converter: { capacity: 150, stallRatio: 1.2, couplingPoint: 0.8 },
   gearbox: {
+    kind: 'manual',
     ratios: [3.57, 2.06, 1.38, 1.0],
     reverse: 3.75,
     finalDrive: 4.375,

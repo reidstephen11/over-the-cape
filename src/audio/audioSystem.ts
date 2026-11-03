@@ -256,10 +256,14 @@ export class AudioSystem {
     g.horn.set(f.horn && !f.paused);
     g.tyres.update(f.wheels, f.speed);
     g.crawl.update(f.crawl);
-    // Selecting drive or reverse clunks through the driveline.
-    if (Math.sign(f.gear + 0.5) !== Math.sign(this.lastGear + 0.5) && !f.paused)
-      clunk(g.ctx, g.fxBus, g.noise, 'gear');
-    this.lastGear = f.gear;
+    // Selecting drive or reverse clunks through the driveline; with a manual gearbox
+    // every change of gear (and into or out of neutral) does.
+    const gearKey = f.neutral ? -0.25 : f.gear;
+    const changed = f.manualGearbox
+      ? gearKey !== this.lastGear
+      : Math.sign(f.gear + 0.5) !== Math.sign(this.lastGear + 0.5);
+    if (changed && !f.paused) clunk(g.ctx, g.fxBus, g.noise, 'gear');
+    this.lastGear = f.manualGearbox ? gearKey : f.gear;
     g.winch.update(f.winch);
     g.trailer.update(f.paused ? null : f.trailer);
     g.ambience.update(f.ambience);

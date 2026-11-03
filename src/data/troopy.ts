@@ -104,9 +104,10 @@ export const troopyTuning: VehicleTuning = {
       energyMJPerLitre: 38.6,
     },
   },
-  // The game changes gear itself; this coupling stands in for the clutch.
+  // Automatic mode's coupling: the game changes gear itself and this stands in for the clutch.
   converter: { capacity: 85, stallRatio: 1.25, couplingPoint: 0.8 },
   gearbox: {
+    kind: 'manual',
     ratios: [4.925, 2.643, 1.519, 1.0, 0.862],
     reverse: 4.925,
     finalDrive: 4.111,

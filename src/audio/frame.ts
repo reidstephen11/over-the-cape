@@ -25,6 +25,9 @@ export interface AudioFrame {
   wheels: readonly WheelSound[];
   /** Selected gear (-1 = reverse), for the clunk of selecting drive or reverse. */
   gear: number;
+  /** Manual gearbox settings: in neutral, and every change of gear clunks. */
+  neutral?: boolean;
+  manualGearbox?: boolean;
   crawl: CrawlFrame;
   horn: boolean;
   winch: WinchFrame;
@@ -80,6 +83,8 @@ export function buildAudioFrame(
     speed: v.speed,
     wheels: v.wheels,
     gear: d.gear,
+    neutral: d.neutral,
+    manualGearbox: v.manualGearbox,
     crawl: {
       dt,
       body: v.bodyContact,
