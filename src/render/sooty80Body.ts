@@ -81,14 +81,17 @@ const line = (
   b.tag = zone;
   b.geometry(new THREE.TubeGeometry(curve, Math.max(4, (p.length - 1) * 3), r, sides, false), c);
 };
-const rectangle = (x0: number, y0: number, x1: number, y1: number, r = 0.01) =>
+const rectangle = (x0: number, y0: number, x1: number, y1: number, r = 0.01, seg = 6) =>
   new THREE.Shape(
-    rounded([
-      [x0, y0, r],
-      [x1, y0, r],
-      [x1, y1, r],
-      [x0, y1, r],
-    ]),
+    rounded(
+      [
+        [x0, y0, r],
+        [x1, y0, r],
+        [x1, y1, r],
+        [x0, y1, r],
+      ],
+      seg,
+    ),
   );
 /** Wing tops and bonnet edges, rising from the lamps to the windscreen pillar's foot. */
 const edgeAt = (z: number) => 0.62 + 0.13 * clamp01((z - F) / (AFOOT - F));
@@ -1340,44 +1343,44 @@ export function buildRackPlank(index: number) {
   const b = new VehicleBuilder(),
     x = index === 0 ? -0.29 : 0.26;
   for (const y of [1.535, 1.59]) {
+    // A plain slab with the two hand holes: no bevel, and three corner steps, since the
+    // boards are 1.5 m up on the rack. The top board keeps its 51 teeth as plain blocks
+    // (the lower board's teeth sit under the top one, so it gets three ridges).
     const body = new THREE.Shape(
-      rounded([
-        [-0.155, -0.58, 0.05],
-        [0.155, -0.58, 0.05],
-        [0.166, -0.45, 0.03],
-        [0.166, 0.45, 0.03],
-        [0.155, 0.58, 0.05],
-        [-0.155, 0.58, 0.05],
-        [-0.166, 0.45, 0.03],
-        [-0.166, -0.45, 0.03],
-      ]),
+      rounded(
+        [
+          [-0.155, -0.58, 0.05],
+          [0.155, -0.58, 0.05],
+          [0.166, -0.45, 0.03],
+          [0.166, 0.45, 0.03],
+          [0.155, 0.58, 0.05],
+          [-0.155, 0.58, 0.05],
+          [-0.166, 0.45, 0.03],
+          [-0.166, -0.45, 0.03],
+        ],
+        3,
+      ),
     );
     for (const z of [-0.38, 0.38])
       body.holes.push(
         new THREE.Path(
-          rectangle(-0.095, z - 0.045, 0.095, z + 0.045, 0.018)
-            .getPoints(12)
+          rectangle(-0.095, z - 0.045, 0.095, z + 0.045, 0.018, 2)
+            .getPoints(1)
             .reverse(),
         ),
       );
-    const g = new THREE.ExtrudeGeometry(body, {
-      depth: 0.027,
-      bevelEnabled: true,
-      bevelSize: 0.005,
-      bevelThickness: 0.005,
-      bevelSegments: 2,
-    });
+    const g = new THREE.ExtrudeGeometry(body, { depth: 0.027, bevelEnabled: false });
     g.rotateX(-Math.PI / 2);
     b.slot = M.Fabric;
     b.tag = Z.Roof;
     b.push().translate(x, y, 0.9);
     b.geometry(g, orange);
     b.pop();
-    for (let j = 0; j < 17; j++)
-      for (const xx of [-0.11, 0, 0.11]) {
-        const z = 0.4 + j * 0.062;
-        b.block(x + xx, y + 0.0435, z, 0.026, 0.023, 0.026, steel, M.Metal, Z.Roof, 0.005);
-      }
+    for (const xx of [-0.11, 0, 0.11])
+      if (y > 1.55)
+        for (let j = 0; j < 17; j++)
+          b.block(x + xx, y + 0.0435, 0.4 + j * 0.062, 0.026, 0.023, 0.026, steel, M.Metal, Z.Roof);
+      else b.block(x + xx, y + 0.0435, 0.896, 0.026, 0.023, 1.018, steel, M.Metal, Z.Roof);
   }
   for (const z of [0.53, 1.27]) {
     b.block(x, 1.51, z, 0.34, 0.04, 0.06, black, M.Metal, Z.Roof, 0.006);

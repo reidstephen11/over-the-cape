@@ -31,7 +31,7 @@ export function buildVehicleWheel(
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Two rows of big staggered blocks that wrap onto the shoulders.
-  const blocks = 26;
+  const blocks = 16;
   for (let i = 0; i < blocks; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / blocks) * Math.PI * 2;
@@ -39,7 +39,7 @@ export function buildVehicleWheel(
       b.push()
         .translate(side * w * 0.25, Math.cos(angle) * r * 0.965, Math.sin(angle) * r * 0.965)
         .rotate(angle, side * 0.15, 0);
-      b.box(w * 0.44, 0.036, 0.058, tyre);
+      b.box(w * 0.44, 0.036, 0.075, tyre);
       b.pop();
     }
   }

@@ -988,7 +988,7 @@ export function buildHiluxWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Two staggered rows of shoulder blocks and a broken centre rib.
-  const blocks = 28;
+  const blocks = 16;
   for (let i = 0; i < blocks; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / blocks) * Math.PI * 2;
@@ -996,14 +996,14 @@ export function buildHiluxWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.27, Math.cos(angle) * r * 0.965, Math.sin(angle) * r * 0.965)
         .rotate(angle, side * 0.12, 0);
-      b.box(w * 0.38, 0.032, 0.048, tyre);
+      b.box(w * 0.38, 0.032, 0.065, tyre);
       b.pop();
     }
     const angle = ((i + 0.25) / blocks) * Math.PI * 2;
     b.push()
       .translate(0, Math.cos(angle) * r * 0.968, Math.sin(angle) * r * 0.968)
       .rotate(angle, 0, 0);
-    b.box(w * 0.16, 0.03, 0.04, tyre);
+    b.box(w * 0.16, 0.03, 0.055, tyre);
     b.pop();
   }
   for (const side of [-1, 1]) {

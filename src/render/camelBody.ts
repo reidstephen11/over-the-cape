@@ -982,7 +982,11 @@ export function buildCamelBody(t: VehicleTuning, w: THREE.BufferGeometry): THREE
   spares(b, t, w);
   return cleanGeometry(b.build());
 }
-/** Actual perforated metal sand ladders along the two sides of the rack. */
+/**
+ * Actual perforated metal sand ladders along the two sides of the rack: a plate with its 34
+ * square holes punched straight through (no bevel and square corners, since a bevel round
+ * every hole cost 16,000 triangles a ladder).
+ */
 export function buildCamelPlank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder(),
     side = index === 0 ? -1 : 1;
@@ -998,10 +1002,10 @@ export function buildCamelPlank(index: number): THREE.BufferGeometry {
       const z = -0.45 + i * 0.12,
         y = 1.745 + row * 0.1;
       holes.push([
-        [z - 0.037, y - 0.024, 0.015],
-        [z + 0.037, y - 0.024, 0.015],
-        [z + 0.037, y + 0.024, 0.015],
-        [z - 0.037, y + 0.024, 0.015],
+        [z - 0.037, y - 0.024],
+        [z + 0.037, y - 0.024],
+        [z + 0.037, y + 0.024],
+        [z - 0.037, y + 0.024],
       ]);
     }
   extrudeX(
@@ -1012,7 +1016,7 @@ export function buildCamelPlank(index: number): THREE.BufferGeometry {
     steel,
     M.Metal,
     Z.Roof,
-    0.002,
+    0,
   );
   for (const y of [1.707, 1.933])
     b.block(side * 0.807, y, 0.54, 0.015, 0.015, 2.08, steel, M.Metal, Z.Roof, 0.005);
