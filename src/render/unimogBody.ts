@@ -7,7 +7,16 @@ import { mirrorHead } from './mirrors';
 import { addUnimogInterior } from './unimogInterior';
 import { unimogColors } from './unimogPaint';
 import { cleanGeometry, continuousTube, ROUND_BEND } from './bodyRefinement';
-import { extrudeZ, rounded, frontPane, type Vtx } from './bodyShapes';
+import {
+  cornerWrap,
+  extrudeX,
+  extrudeZ,
+  frontPane,
+  rounded,
+  sidePane,
+  sideShape,
+  type Vtx,
+} from './bodyShapes';
 import { surface } from './unimogSurface';
 import {
   addCargoCanvas,
@@ -17,17 +26,32 @@ import {
   BOARD_Y,
   BOARD_STRAPS,
 } from './unimogCanvas';
+import {
+  ARCH,
+  AXLE_Z,
+  BONNET,
+  BUMPER,
+  CAB,
+  CHEEK,
+  NOSE,
+  TRAY,
+  UNDER_SPARE,
+  UNIMOG_SIDE_SPARE,
+  bonnetTop,
+} from './unimogLayout';
 
 /**
- * Unimog UL1700L cargo truck in Australian Army green, with an Army plate (41-108): a
- * short sloping bonnet with a black slotted grille, round headlamps low beside it under
- * guards, flat-topped front mudguards standing clear of the wheels, a square cab with a
- * big upright screen and a canvas roof, one spare standing behind the cab, the air
- * intake stack beside it, and a dropside steel tray under a canvas tilt. A winch sits
- * behind the front bumper, a pintle hook on the rear crossmember and the second spare on a
- * carrier on the left dropside. Ground is about
- * 0.68 m below the origin when parked.
- * Photographs and dimensions: reference/vehicles/unimog-ul1700l/SOURCES.md.
+ * Unimog UL1700L cargo truck in Australian Army green, with an Army plate (41-108), laid
+ * out from the photographs in reference/vehicles/unimog-ul1700l (stations in
+ * unimogLayout.ts): a steel cab standing over the front wheels, its windscreen pillars
+ * above the front axle and its lower front cheeks faired round the wheel arches and
+ * running forward beside a short sloping bonnet to a black slotted grille, round
+ * headlamps low in the bumper under guards, the air intake stack up the right screen
+ * pillar, a steel roof with a round hatch, a dropside steel tray right behind the cab
+ * under a canvas tilt, and the spare lying flat under the tray's front on the right. A
+ * winch sits behind the front bumper, a pintle hook on the rear crossmember and a second
+ * spare on a carrier on the left dropside. Ground is about 0.68 m below the origin when
+ * parked.
  */
 const { paint, bar } = unimogColors;
 const black = new THREE.Color('#1F2320'),
@@ -37,28 +61,12 @@ const red = new THREE.Color('#AE3029'),
   amber = new THREE.Color('#E39B37'),
   lens = new THREE.Color('#E3E4CD');
 const glass = new THREE.Color('#A9BDB6');
-
-/** Main heights and stations (vehicle frame). */
-const AXLE_Z = 1.925;
-const NOSE = -2.94;
-const BONNET = { front: 1.08, back: 1.3 };
-const CAB = {
-  front: -1.65,
-  back: -0.1,
-  side: 1.1,
-  floor: 0.72,
-  waist: 1.32,
-  roof: 1.98,
-};
-const TRAY = { front: 0.43, back: 3.45, side: 1.15, floor: 0.72, top: 1.14 };
-const SPARE_Z = 0.17;
-/** The second spare on its carrier on the left dropside (its centre). */
-export const UNIMOG_SIDE_SPARE = { x: -1.39, y: 0.95, z: 0.85 };
+const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
 function chassis(b: VehicleBuilder): void {
   // Ladder frame and crossmembers, high over the portal axles.
   for (const side of [-1, 1]) {
-    b.block(side * 0.36, 0.14, -2.175, 0.12, 0.22, 1.85, black, M.Metal, Z.Trim);
+    b.block(side * 0.36, 0.14, -2.05, 0.12, 0.22, 1.6, black, M.Metal, Z.Trim);
     b.rod(
       { x: side * 0.36, y: 0.14, z: -1.27 },
       { x: side * 0.45, y: 0.14, z: -1.0 },
@@ -69,130 +77,180 @@ function chassis(b: VehicleBuilder): void {
     );
     b.block(side * 0.45, 0.14, 1.2, 0.12, 0.22, 4.4, black, M.Metal, Z.Trim);
   }
-  for (const z of [-2.9, -1.0, 0.4, 1.3, 2.6]) b.block(0, 0.14, z, 0.9, 0.12, 0.1, black, M.Metal, Z.Trim);
+  for (const z of [-2.75, -1.0, 0.4, 1.3, 2.6]) b.block(0, 0.14, z, 0.9, 0.12, 0.1, black, M.Metal, Z.Trim);
   // Engine block and sump behind the front axle, the gearbox under the cab.
-  b.block(0, 0.42, -2.25, 0.66, 0.5, 1.0, black, M.Metal, Z.Trim, 0.03);
+  b.block(0, 0.36, -2.25, 0.66, 0.4, 0.7, black, M.Metal, Z.Trim, 0.03);
   b.block(0, 0.14, -2.05, 0.56, 0.18, 0.7, black, M.Metal, Z.Trim, 0.03);
-  b.block(0, 0.08, -0.75, 0.5, 0.24, 0.86, black, M.Metal, Z.Trim, 0.04);
+  b.block(0, 0.08, -1.3, 0.5, 0.24, 0.86, black, M.Metal, Z.Trim, 0.04);
   // Cab mounts up from the frame to the cab floor, and the tray's subframe on top of the rails.
   for (const x of [-0.45, 0.45]) {
-    for (const z of [-1.5, -0.3])
-      b.block(z < -1 ? Math.sign(x) * 0.32 : x, 0.4725, z, 0.14, 0.445, 0.16, black, M.Metal, Z.Trim, 0.01);
-    b.block(x, 0.41, 1.85, 0.1, 0.34, 3.1, black, M.Metal, Z.Trim);
+    for (const z of [-1.75, -0.85])
+      b.block(z < -1 ? Math.sign(x) * 0.32 : x, 0.395, z, 0.14, 0.29, 0.16, black, M.Metal, Z.Trim, 0.01);
+    b.block(x, 0.41, 1.45, 0.1, 0.34, 3.9, black, M.Metal, Z.Trim);
   }
   // Propshafts down to the axles' centre housings.
   const shaft = steel.clone().multiplyScalar(0.6);
-  b.rod({ x: 0.04, y: 0.0, z: -1.15 }, { x: 0.08, y: -0.06, z: -1.8 }, 0.04, shaft);
-  b.rod({ x: 0.04, y: 0.0, z: -0.35 }, { x: 0.08, y: -0.06, z: 1.8 }, 0.04, shaft);
-  // Fuel tank on the left, the battery box on the right, and the exhaust out to the right.
-  b.block(-0.8, 0.3, -0.35, 0.34, 0.42, 0.9, black, M.Metal, Z.Sides, 0.04);
-  b.block(0.8, 0.34, -0.55, 0.3, 0.32, 0.5, paint, M.Paint, Z.Sides, 0.02);
-  // Brackets out from the rails under the tank and the battery box.
-  for (const z of [-0.65, -0.05]) b.block(-0.6, 0.11, z, 0.32, 0.04, 0.06, black, M.Metal, Z.Trim);
-  for (const z of [-0.7, -0.4]) b.block(0.6, 0.2, z, 0.3, 0.04, 0.06, black, M.Metal, Z.Trim);
-  b.rod({ x: 0.3, y: 0.1, z: -1.7 }, { x: 0.3, y: 0.02, z: 0.7 }, 0.04, steel);
+  b.rod({ x: 0.04, y: 0.0, z: -1.7 }, { x: 0.08, y: -0.06, z: -1.85 }, 0.04, shaft);
+  b.rod({ x: 0.04, y: 0.0, z: -0.9 }, { x: 0.08, y: -0.06, z: 1.8 }, 0.04, shaft);
+  // Under the tray's front, as side.jpg and rear-34.jpg show them: the fuel tank with a
+  // stowage box ahead of it on the left, the battery box behind the spare on the right,
+  // and the exhaust out to the left.
+  b.block(-0.8, 0.3, 0.42, 0.34, 0.38, 0.75, black, M.Metal, Z.Sides, 0.04);
+  b.block(-0.8, 0.3, -0.32, 0.3, 0.32, 0.55, paint, M.Paint, Z.Sides, 0.02);
+  b.block(0.8, 0.3, 0.62, 0.3, 0.32, 0.6, paint, M.Paint, Z.Sides, 0.02);
+  // Brackets out from the rails under the tank and the boxes.
+  for (const z of [0.2, 0.65]) b.block(-0.6, 0.11, z, 0.32, 0.04, 0.06, black, M.Metal, Z.Trim);
+  for (const z of [-0.5, -0.15]) b.block(-0.6, 0.2, z, 0.3, 0.04, 0.06, black, M.Metal, Z.Trim);
+  for (const z of [0.4, 0.85]) b.block(0.6, 0.2, z, 0.3, 0.04, 0.06, black, M.Metal, Z.Trim);
+  b.rod({ x: -0.3, y: 0.1, z: -1.7 }, { x: -0.3, y: 0.02, z: 0.9 }, 0.04, steel);
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()
-    .translate(0.62, 0.15, 0.95)
+    .translate(-0.62, 0.15, 1.15)
     .rotate(0, 0, Math.PI / 2);
   b.geometry(new THREE.CylinderGeometry(0.13, 0.13, 0.5, 14), steel.clone().multiplyScalar(0.55));
   b.pop();
-  b.rod({ x: 0.3, y: 0.02, z: 0.7 }, { x: 0.45, y: 0.12, z: 0.95 }, 0.04, steel);
-  b.rod({ x: 0.87, y: 0.15, z: 0.95 }, { x: 1.0, y: 0.1, z: 1.15 }, 0.04, steel);
+  b.rod({ x: -0.3, y: 0.02, z: 0.9 }, { x: -0.45, y: 0.12, z: 1.15 }, 0.04, steel);
+  b.rod({ x: -0.87, y: 0.15, z: 1.15 }, { x: -1.0, y: 0.1, z: 1.35 }, 0.04, steel);
 }
 
 function frontEnd(b: VehicleBuilder, tuning: VehicleTuning): void {
-  // The short 435 bonnet tapers to the nose, with rolled shoulders and a gentle crown.
-  const top = (z: number) => BONNET.front + ((BONNET.back - BONNET.front) * (z - NOSE)) / (CAB.front - NOSE);
-  const half = (z: number) => 0.6 + (0.07 * (z - NOSE)) / (CAB.front - NOSE);
+  const S = CAB.side,
+    r = BONNET.round;
+  // The bonnet and the cheeks' tops are one surface the full width of the cab, sloping
+  // down to the nose, its shoulders and its nose edge rounded over `r` (front-34.jpg); the
+  // grid is denser towards those edges.
   surface(
     b,
-    24,
+    32,
     16,
     (u, t) => {
-      const z = NOSE + t * (CAB.front - NOSE),
-        x = (u * 2 - 1) * half(z);
-      return new THREE.Vector3(x, top(z) + 0.032 * (1 - (u * 2 - 1) ** 2), z);
+      const x = S * Math.sin(((u * 2 - 1) * Math.PI) / 2),
+        z = NOSE + (CAB.front - NOSE) * (1 - Math.cos((t * Math.PI) / 2));
+      const a = Math.max(0, (Math.abs(x) - (S - r)) / r),
+        c = Math.max(0, (NOSE + r - z) / r);
+      return v(x, bonnetTop(z) - r + r * Math.sqrt(Math.max(0, 1 - a * a - c * c)), z);
     },
-    new THREE.Vector3(0, 1, 0),
+    v(0, 1, 0),
     paint,
     M.Paint,
     Z.Front,
     0.014,
   );
+  // The lid's shut line on the top surface.
+  const seam = paint.clone().multiplyScalar(0.6);
+  const lid = (x0: number, z0: number, x1: number, z1: number) =>
+    b.rod(
+      { x: x0, y: bonnetTop(z0) + 0.003, z: z0 },
+      { x: x1, y: bonnetTop(z1) + 0.003, z: z1 },
+      0.004,
+      seam,
+      M.Paint,
+      Z.Front,
+    );
+  for (const x of [-0.56, 0.56]) lid(x, NOSE + 0.1, x, CAB.front - 0.03);
+  lid(-0.56, NOSE + 0.1, 0.56, NOSE + 0.1);
+  // The cheeks' front faces either side of the grille, the nose's corners wrapped round.
+  const faceTop = bonnetTop(NOSE) - r;
+  const grille: Vtx[] = [
+    [-0.55, 0.45],
+    [0.55, 0.45],
+    [0.55, faceTop - 0.04, 0.02],
+    [-0.55, faceTop - 0.04, 0.02],
+  ];
+  frontPane(
+    b,
+    [
+      [-(S - r), CHEEK.bottom],
+      [S - r, CHEEK.bottom],
+      [S - r, faceTop],
+      [-(S - r), faceTop],
+    ],
+    NOSE,
+    -1,
+    paint,
+    M.Paint,
+    Z.Front,
+    grille,
+  );
   for (const side of [-1, 1]) {
-    surface(
+    cornerWrap(
       b,
-      16,
-      4,
-      (t, u) => {
-        const z = NOSE + t * (CAB.front - NOSE);
-        const low = 0.5 + 0.2 * Math.sin((Math.PI * Math.min(1, (z - NOSE) / 0.5)) / 2) ** 2;
-        return new THREE.Vector3(side * half(z), low + u * (top(z) - low), z);
-      },
-      new THREE.Vector3(side, 0, 0),
+      side,
+      side * (S - r),
+      NOSE + r,
+      r,
+      r,
+      (CHEEK.bottom + faceTop) / 2,
+      faceTop - CHEEK.bottom,
       paint,
       M.Paint,
       Z.Front,
-      0.014,
     );
+    // Louvres in the cheek's side above the wheel arch (rear-34.jpg).
     for (let i = 0; i < 5; i++) {
-      const z = -2.55 + i * 0.12,
-        x = side * (half(z) + 0.006);
-      b.block(x, 0.83, z, 0.015, 0.22, 0.041, black, M.Rubber, Z.Front, 0.004);
-      b.block(x + side * 0.005, 0.83, z + 0.012, 0.012, 0.19, 0.01, paint, M.Paint, Z.Front, 0.002);
+      const z = -2.5 + i * 0.1,
+        x = side * (S + 0.006);
+      b.block(x, 0.78, z, 0.015, 0.1, 0.034, black, M.Rubber, Z.Front, 0.004);
+      b.block(x + side * 0.005, 0.78, z + 0.01, 0.012, 0.08, 0.008, paint, M.Paint, Z.Front, 0.002);
     }
-    b.block(side * 0.47, 1.325, CAB.front - 0.055, 0.13, 0.014, 0.065, paint, M.Paint, Z.Front, 0.004);
-    b.block(side * (half(-2.71) + 0.008), 0.96, -2.71, 0.018, 0.11, 0.033, bar, M.Metal, Z.Front, 0.003);
+    // Indicator and side lamp on the cheek's front face beside the grille.
+    const ix = side * 0.78;
+    b.block(ix, 0.74, NOSE - 0.02, 0.16, 0.07, 0.04, black, M.Rubber, Z.Front, 0.008);
+    b.block(ix + side * 0.035, 0.745, NOSE - 0.045, 0.06, 0.045, 0.01, amber, M.Amber, Z.Front, 0.004);
+    b.block(ix - side * 0.035, 0.745, NOSE - 0.045, 0.06, 0.045, 0.01, lens, M.Headlamp, Z.Front, 0.004);
   }
-  const lip: Vtx[] = [
-    [-0.6, 1.06],
-    [0.6, 1.06],
-    [0.6, 1.08],
-  ];
-  for (let i = 1; i <= 16; i++) {
-    const x = 0.6 - i * 0.075;
-    lip.push([x, 1.08 + 0.032 * (1 - (x / 0.6) ** 2)]);
-  }
-  frontPane(b, lip, NOSE - 0.014, -1, paint, M.Paint, Z.Front);
-  b.block(0, 0.79, NOSE + 0.012, 1.2, 0.58, 0.05, paint, M.Paint, Z.Front, 0.035);
-  b.block(0, 0.8, NOSE - 0.023, 0.96, 0.44, 0.024, bar, M.Rubber, Z.Front, 0.018);
-  b.block(0, 0.8, NOSE - 0.038, 0.91, 0.395, 0.012, black, M.Rubber, Z.Front, 0.009);
-  for (let i = 0; i < 11; i++)
-    b.block(0, 0.625 + i * 0.035, NOSE - 0.048, 0.865, 0.012, 0.016, rubber, M.Rubber, Z.Front, 0.003);
-  // Three-point star in a circular grille badge, sitting above the recessed louvers.
-  b.ring(0, 0.8, NOSE - 0.064, 0.14, 0.007, steel, M.Metal, 'z', Z.Front);
+  // Black slotted grille in its rubber frame, flush with the cheeks, with the star badge.
+  const gy = (0.45 + faceTop - 0.04) / 2,
+    gh = faceTop - 0.04 - 0.45;
+  b.block(0, gy, NOSE + 0.03, 1.2, gh + 0.1, 0.06, paint, M.Paint, Z.Front, 0.01);
+  b.block(0, gy, NOSE - 0.005, 1.12, gh + 0.02, 0.014, bar, M.Rubber, Z.Front, 0.01);
+  b.block(0, gy, NOSE - 0.014, 1.06, gh - 0.02, 0.01, black, M.Rubber, Z.Front, 0.006);
+  for (let i = 0; i < 9; i++)
+    b.block(
+      0,
+      gy - (gh - 0.06) / 2 + (i * (gh - 0.06)) / 8,
+      NOSE - 0.022,
+      1.0,
+      0.012,
+      0.012,
+      rubber,
+      M.Rubber,
+      Z.Front,
+      0.003,
+    );
+  b.ring(0, gy, NOSE - 0.03, 0.12, 0.007, steel, M.Metal, 'z', Z.Front);
   const star = new THREE.Shape();
   for (let i = 0; i < 6; i++) {
     const a = Math.PI / 2 + (i * Math.PI) / 3,
-      r = i % 2 ? 0.025 : 0.132;
-    if (i === 0) star.moveTo(Math.cos(a) * r, Math.sin(a) * r);
-    else star.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      rr = i % 2 ? 0.022 : 0.112;
+    if (i === 0) star.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    else star.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
   }
   star.closePath();
-  b.push().translate(0, 0.8, 0);
-  extrudeZ(b, star, NOSE - 0.068, NOSE - 0.06, steel, M.Metal, Z.Front, 0.001);
+  b.push().translate(0, gy, 0);
+  extrudeZ(b, star, NOSE - 0.034, NOSE - 0.026, steel, M.Metal, Z.Front, 0.001);
   b.pop();
 
-  // Front bumper with its towing jaw, and the winch drum behind it with a roller fairlead.
-  b.block(0, 0.38, -3.1, 2.2, 0.28, 0.16, paint, M.Paint, Z.Front, 0.012);
-  b.block(0, 0.25, -3.12, 2.1, 0.04, 0.14, black, M.Metal, Z.Front);
+  // Front bumper with its towing jaws, and the winch drum behind it with a roller fairlead.
+  const { z: bz, face, y: by } = BUMPER;
+  b.block(0, by, bz, 2.2, 0.28, 0.16, paint, M.Paint, Z.Front, 0.012);
+  b.block(0, by - 0.13, bz - 0.02, 2.1, 0.04, 0.14, black, M.Metal, Z.Front);
   for (const side of [-1, 1]) {
-    b.block(side * 0.6, 0.38, -3.19, 0.14, 0.2, 0.06, black, M.Metal, Z.Front, 0.01);
+    b.block(side * 0.6, by, face - 0.03, 0.14, 0.2, 0.06, black, M.Metal, Z.Front, 0.01);
     b.rod(
-      { x: side * 0.6, y: 0.31, z: -3.235 },
-      { x: side * 0.6, y: 0.45, z: -3.235 },
+      { x: side * 0.6, y: by - 0.07, z: face - 0.075 },
+      { x: side * 0.6, y: by + 0.07, z: face - 0.075 },
       0.018,
       steel,
       M.Metal,
       Z.Front,
     );
   }
-  b.rod({ x: -0.32, y: 0.5, z: -2.96 }, { x: 0.32, y: 0.5, z: -2.96 }, 0.11, black, M.Metal, Z.Front);
-  b.block(0.42, 0.5, -2.96, 0.14, 0.22, 0.22, bar, M.Metal, Z.Front, 0.02);
-  for (let i = 0; i < 19; i++)
-    b.ring(-0.27 + i * 0.03, 0.5, -2.96, 0.111, 0.006, steel, M.Metal, 'x', Z.Front);
+  const dz = bz + 0.09;
+  b.rod({ x: -0.32, y: 0.5, z: dz }, { x: 0.32, y: 0.5, z: dz }, 0.1, black, M.Metal, Z.Front);
+  b.block(0.42, 0.5, dz, 0.14, 0.2, 0.2, bar, M.Metal, Z.Front, 0.02);
+  for (let i = 0; i < 19; i++) b.ring(-0.27 + i * 0.03, 0.5, dz, 0.101, 0.006, steel, M.Metal, 'x', Z.Front);
   const mount = tuning.winchMount;
   b.block(0, mount.y, mount.z + 0.025, 0.38, 0.16, 0.06, bar, M.Metal, Z.Front, 0.006);
   b.block(0, mount.y, mount.z - 0.008, 0.25, 0.065, 0.015, black, M.Rubber, Z.Front, 0.004);
@@ -207,13 +265,13 @@ function frontEnd(b: VehicleBuilder, tuning: VehicleTuning): void {
       M.Metal,
       Z.Front,
     );
-  armyPlate(b, 0.33, 0.4, -3.19, -1, '41-108');
+  armyPlate(b, 0.33, by, face - 0.005, -1, '41-108');
 
   for (const side of [-1, 1]) {
     // Round headlamps set in recesses at the ends of the front bumper, behind wire guards.
     const lx = side * 0.86,
-      ly = 0.38,
-      lz = -3.18;
+      ly = by,
+      lz = face - 0.02;
     b.slot = M.Rubber;
     b.tag = Z.Front;
     b.push()
@@ -259,72 +317,74 @@ function frontEnd(b: VehicleBuilder, tuning: VehicleTuning): void {
       b.rod({ x, y, z: gz }, { x, y, z: lz + 0.004 }, 0.005, black, M.Metal, Z.Front);
       b.block(x, y, lz + 0.004, 0.024, 0.024, 0.016, black, M.Metal, Z.Front, 0.003);
     }
-    // Indicator and side lamp standing on the mudguard's front edge.
-    b.block(side * 0.98, 0.75, -2.53, 0.12, 0.06, 0.04, black, M.Rubber, Z.Front, 0.008);
-    b.block(side * 1.02, 0.76, -2.555, 0.05, 0.04, 0.01, amber, M.Amber, Z.Front, 0.004);
-    b.block(side * 0.94, 0.76, -2.555, 0.05, 0.04, 0.01, lens, M.Headlamp, Z.Front, 0.004);
-    mudguard(b, side, -AXLE_Z, 0.72, Z.Front, true);
   }
 }
 
 /**
- * A flat-topped mudguard over a wheel: its ends slope down and away from the wheel, a lip
- * turns down along the outer edge, two struts hold it to the body, and a rubber flap
- * hangs behind it.
+ * The front wheel arch cut in the cab's side skin, as (z, y) points from its rear foot
+ * at the cab's bottom edge up and over to its front foot at the cheek's lower edge: a
+ * flattened arch, as side.jpg shows it.
  */
-function mudguard(
-  b: VehicleBuilder,
-  side: number,
-  axle: number,
-  top: number,
-  zone: number,
-  front: boolean,
-): void {
-  const x = side * 0.98;
-  b.block(x, top - 0.02, axle, 0.46, 0.04, 1.24, paint, M.Paint, zone, 0.01);
-  b.block(side * 1.205, top - 0.07, axle, 0.02, 0.1, 1.24, paint, M.Paint, zone, 0.006);
-  for (const end of [-1, 1]) {
-    // Hinged on the top's end edge and leaning out, so the guard opens downwards round the tyre.
-    b.push()
-      .translate(x, top - 0.152, axle + end * 0.692)
-      .rotate(-end * 0.5, 0, 0);
-    b.block(0, 0, 0, 0.46, 0.3, 0.035, paint, M.Paint, zone, 0.008);
-    b.block(side * 0.225, 0, -end * 0.05, 0.02, 0.3, 0.1, paint, M.Paint, zone, 0.006);
-    b.pop();
-    // A front guard is held by struts to the bonnet side; a rear one is bolted under the tray.
-    if (front)
-      b.rod(
-        { x: side * 0.86, y: top - 0.012, z: axle + end * 0.35 },
-        { x: side * 0.63, y: top + 0.15, z: axle + end * 0.2 },
-        0.018,
-        black,
-        M.Metal,
-        Z.Trim,
-      );
+function archPoints(): Vtx[] {
+  const { halfLen: a, top, centreY } = ARCH,
+    n = 3,
+    ry = top - centreY;
+  const theta = (y: number) => Math.asin(((y - centreY) / ry) ** (n / 2));
+  const t0 = theta(CAB.floor),
+    t1 = Math.PI - theta(CHEEK.bottom);
+  const pts: Vtx[] = [];
+  for (let i = 0; i <= 12; i++) {
+    const th = t0 + ((t1 - t0) * i) / 12,
+      c = Math.cos(th),
+      s = Math.sin(th);
+    pts.push([-AXLE_Z + a * Math.sign(c) * Math.abs(c) ** (2 / n), centreY + ry * s ** (2 / n)]);
   }
-  // Inner edge so the guard reads as a deep channel from the side.
+  return pts;
+}
+
+/**
+ * One side of the cab below the windows: the cheek beside the bonnet, the wheel arch cut
+ * into it, and the door's lower panel behind, all one skin in the cab's side plane, with
+ * the wheel well's roof and inner wall behind the arch.
+ */
+function cabSide(b: VehicleBuilder, side: number): void {
+  const { front, back, side: S, floor, waist } = CAB,
+    r = BONNET.round;
+  const topS = (z: number) => bonnetTop(z) - r;
+  const nose = NOSE + r;
+  const outline: Vtx[] = [
+    [nose, CHEEK.bottom],
+    [nose, topS(nose)],
+    [front, topS(front), 0.02],
+    [front, waist],
+    [back, waist],
+    [back, floor],
+    ...archPoints(),
+  ];
+  const x0 = side > 0 ? S - 0.04 : -S;
+  extrudeX(b, sideShape(outline), x0, x0 + 0.04, paint, M.Paint, Z.Sides, 0.012, [[-AXLE_Z, ARCH.centreY]]);
+  const inner = side * (S - 0.37);
+  b.block(side * (S - 0.2), ARCH.top + 0.01, -AXLE_Z, 0.34, 0.04, 2 * ARCH.halfLen, black, M.Metal, Z.Trim);
   b.block(
-    side * 0.76,
-    top - 0.02,
-    axle,
+    inner,
+    (CHEEK.bottom + ARCH.top) / 2,
+    -AXLE_Z,
     0.02,
-    0.035,
-    1.2,
-    paint.clone().multiplyScalar(0.8),
-    M.Paint,
+    ARCH.top - CHEEK.bottom,
+    2 * ARCH.halfLen,
+    black,
+    M.Metal,
     Z.Trim,
   );
-  const low = top - 0.28;
-  b.block(x, (low + 0.06) / 2, axle + 0.775, 0.42, low - 0.06, 0.02, black, M.Rubber, Z.Trim);
 }
 
 function cab(b: VehicleBuilder): void {
-  const { front, back, side: S, floor, waist, roof } = CAB;
-  const mid = (front + back) / 2,
-    len = back - front;
-  // Front wall above the bonnet, the floor pan, the rear wall and its small window.
-  b.block(0, (floor + waist) / 2, front, 2 * S, waist - floor, 0.05, paint, M.Paint, Z.Front, 0.01);
-  b.block(0, floor, mid, 2 * S, 0.05, len, black, M.Metal, Z.Trim);
+  const { front, back, side: S, floor, waist, roof, lean } = CAB;
+  const roofFront = front + lean;
+  /** Where the leaning screen pillar's front edge stands at height y. */
+  const pillar = (y: number) => front + (lean * (y - waist)) / (roof - waist);
+  // The floor pan, the rear wall and its small window.
+  b.block(0, floor, (front + back) / 2, 2 * S, 0.05, back - front, black, M.Metal, Z.Trim);
   const outline: Vtx[] = [
     [-S, floor],
     [S, floor],
@@ -332,10 +392,10 @@ function cab(b: VehicleBuilder): void {
     [-S, roof - 0.08, 0.025],
   ];
   const window: Vtx[] = [
-    [-0.35, 1.47, 0.02],
-    [0.35, 1.47, 0.02],
-    [0.35, 1.73, 0.02],
-    [-0.35, 1.73, 0.02],
+    [-0.35, 1.3, 0.02],
+    [0.35, 1.3, 0.02],
+    [0.35, 1.54, 0.02],
+    [-0.35, 1.54, 0.02],
   ];
   const wall = new THREE.Shape(rounded(outline));
   wall.holes.push(new THREE.Path(rounded(window)));
@@ -343,10 +403,10 @@ function cab(b: VehicleBuilder): void {
   frontPane(
     b,
     [
-      [-0.37, 1.45, 0.02],
-      [0.37, 1.45, 0.02],
-      [0.37, 1.75, 0.02],
-      [-0.37, 1.75, 0.02],
+      [-0.37, 1.28, 0.02],
+      [0.37, 1.28, 0.02],
+      [0.37, 1.56, 0.02],
+      [-0.37, 1.56, 0.02],
     ],
     back + 0.027,
     1,
@@ -356,10 +416,11 @@ function cab(b: VehicleBuilder): void {
     window,
   );
   frontPane(b, window, back + 0.003, 1, glass, M.Glass, Z.Glass);
-  // Upright one-piece windscreen leaning back a little, and its wipers hanging from the top.
-  const lean = Math.atan2(0.08, roof - waist);
-  b.push().translate(0, waist, front).rotate(lean, 0, 0);
+  // One-piece windscreen on pillars leaning back `lean` over its height, with its wipers
+  // hanging from the top; the pillars' sides and the doors' front posts lean with it.
+  const leanA = Math.atan2(lean, roof - waist);
   const h = roof - waist - 0.06;
+  b.push().translate(0, waist, front).rotate(leanA, 0, 0);
   b.block(0, 0.03, 0, 2 * S, 0.06, 0.07, paint, M.Paint, Z.Front, 0.01);
   b.block(0, h, 0, 2 * S, 0.08, 0.08, paint, M.Paint, Z.Front, 0.01);
   for (const x of [-S + 0.04, S - 0.04]) b.block(x, h / 2, 0, 0.08, h, 0.07, paint, M.Paint, Z.Front, 0.01);
@@ -367,7 +428,7 @@ function cab(b: VehicleBuilder): void {
   for (const x of [0.5, -0.4]) {
     b.rod(
       { x, y: h - 0.06, z: -0.03 },
-      { x: x - 0.12, y: h - 0.5, z: -0.03 },
+      { x: x - 0.12, y: h - 0.45, z: -0.03 },
       0.007,
       black,
       M.Rubber,
@@ -375,18 +436,25 @@ function cab(b: VehicleBuilder): void {
     );
     b.rod(
       { x, y: h - 0.06, z: -0.036 },
-      { x: x - 0.1, y: h - 0.46, z: -0.036 },
+      { x: x - 0.1, y: h - 0.41, z: -0.036 },
       0.004,
       black,
       M.Rubber,
       Z.Front,
     );
   }
+  for (const side of [-1, 1]) {
+    b.block(side * (S - 0.025), h / 2, 0.05, 0.05, h, 0.1, paint, M.Paint, Z.Sides, 0.008);
+    b.block(side * (S + 0.004), h / 2, 0.105, 0.006, h - 0.04, 0.008, black, M.Rubber, Z.Sides);
+    b.block(side * (S - 0.025), h / 2, 0.145, 0.05, h, 0.07, paint, M.Paint, Z.Sides, 0.008);
+  }
   b.pop();
   // Steel cab roof with a raised circular access hatch and hinge/latch fittings.
+  const mid = (roofFront + back) / 2,
+    len = back - roofFront;
   b.block(0, roof + 0.02, mid, 2 * S + 0.04, 0.08, len + 0.08, paint, M.Paint, Z.Roof, 0.035);
   const hx = -0.48,
-    hz = -0.75;
+    hz = mid;
   b.ring(hx, roof + 0.067, hz, 0.265, 0.012, rubber, M.Rubber, 'y', Z.Roof);
   b.slot = M.Paint;
   b.tag = Z.Roof;
@@ -404,7 +472,6 @@ function cab(b: VehicleBuilder): void {
     M.Metal,
     Z.Roof,
   );
-
   for (const x of [hx - 0.08, hx + 0.08])
     b.rod(
       { x, y: roof + 0.08, z: hz - 0.12 },
@@ -416,60 +483,68 @@ function cab(b: VehicleBuilder): void {
     );
   for (const side of [-1, 1]) {
     const x = side * S;
-    // Steel lower side and door, its shut lines, handle and a window frame with glass.
-    b.block(x, (floor + waist) / 2, mid, 0.04, waist - floor, len, paint, M.Paint, Z.Sides, 0.01);
-    const d0 = front + 0.28,
-      d1 = back - 0.15;
-    for (const z of [d0, d1])
-      b.block(
-        x + side * 0.022,
-        (floor + roof) / 2 - 0.02,
-        z,
-        0.006,
-        roof - floor - 0.1,
-        0.008,
-        black,
-        M.Rubber,
-        Z.Sides,
-      );
-    b.block(x + side * 0.03, waist - 0.08, d1 - 0.12, 0.02, 0.04, 0.14, rubber, M.Rubber, Z.Sides, 0.006);
+    cabSide(b, side);
+    // The door: its front shut line continues the pillar's rear edge down to the sill, the
+    // rear one runs the full height; a handle, and the window frame with its glass.
+    const d1 = back - 0.12;
+    b.block(
+      x + side * 0.004,
+      (floor + 0.06 + waist) / 2,
+      front + 0.105,
+      0.006,
+      waist - floor - 0.06,
+      0.008,
+      black,
+      M.Rubber,
+      Z.Sides,
+    );
+    b.block(
+      x + side * 0.004,
+      (floor + roof) / 2 - 0.02,
+      d1,
+      0.006,
+      roof - floor - 0.1,
+      0.008,
+      black,
+      M.Rubber,
+      Z.Sides,
+    );
+    b.block(x + side * 0.02, waist - 0.1, d1 - 0.14, 0.02, 0.04, 0.14, rubber, M.Rubber, Z.Sides, 0.006);
     const y1 = roof - 0.04;
     const frame = (ya: number, yb: number, za: number, zb: number) =>
       b.block(x, (ya + yb) / 2, (za + zb) / 2, 0.05, yb - ya, zb - za, paint, M.Paint, Z.Sides, 0.008);
     frame(waist, waist + 0.05, front, back);
-    frame(y1 - 0.05, y1, front, back);
-    frame(waist, y1, front, front + 0.08);
+    frame(y1 - 0.05, y1, pillar(y1 - 0.025) + 0.05, back);
     frame(waist, y1, d1 - 0.04, back);
-    frame(waist, y1, d0 - 0.03, d0 + 0.03);
-    b.block(
-      x,
-      (waist + y1) / 2,
-      (front + 0.08 + d1 - 0.04) / 2,
-      0.008,
-      y1 - waist - 0.1,
-      d1 - front - 0.12,
+    const gz = (y: number) => pillar(y) + 0.17;
+    sidePane(
+      b,
+      [
+        [gz(waist + 0.05), waist + 0.05],
+        [d1 - 0.04, waist + 0.05],
+        [d1 - 0.04, y1 - 0.05],
+        [gz(y1 - 0.05), y1 - 0.05],
+      ],
+      side,
+      x + side * 0.004,
       glass,
       M.Glass,
       Z.Glass,
     );
-    // Grab handle up the rear pillar and a two-rung step below the door.
+    // Grab handle up the rear pillar and a two-rung step below the door, behind the wheel.
     b.rod(
-      { x: x + side * 0.05, y: 0.9, z: back - 0.06 },
-      { x: x + side * 0.05, y: 1.6, z: back - 0.06 },
+      { x: x + side * 0.05, y: floor + 0.3, z: back - 0.06 },
+      { x: x + side * 0.05, y: waist + 0.3, z: back - 0.06 },
       0.014,
       steel,
       M.Metal,
       Z.Sides,
     );
-    for (const y of [-0.15, 0.27]) b.block(side * 1.08, y, -0.75, 0.18, 0.03, 0.42, black, M.Metal, Z.Sides);
-    for (const z of [-0.95, -0.55]) {
+    for (const y of [-0.1, 0.34]) b.block(side * 1.08, y, -1.12, 0.18, 0.03, 0.42, black, M.Metal, Z.Sides);
+    for (const z of [-1.3, -0.95]) {
       continuousTube(
         b,
-        [
-          new THREE.Vector3(side * 1.08, -0.17, z),
-          new THREE.Vector3(side * 1.08, floor - 0.04, z),
-          new THREE.Vector3(side * S, floor, z),
-        ],
+        [v(side * 1.08, -0.12, z), v(side * 1.08, floor - 0.04, z), v(side * S, floor, z)],
         0.014,
         black,
         Z.Sides,
@@ -482,19 +557,19 @@ function cab(b: VehicleBuilder): void {
     // a tall main mirror clamped to it and a small wide-angle one below.
     const mx = x + side * 0.26,
       mz = front - 0.02;
-    for (const y of [1.6, 1.9])
-      b.rod({ x, y: y - 0.04, z: front + 0.04 }, { x: mx, y, z: mz }, 0.014, black, M.Metal, Z.Sides);
-    b.rod({ x: mx, y: 1.44, z: mz }, { x: mx, y: 1.92, z: mz }, 0.014, black, M.Metal, Z.Sides);
-    for (const y of [1.5, 1.7, 1.86])
+    for (const y of [1.4, 1.68])
+      b.rod({ x, y: y - 0.04, z: pillar(y) + 0.05 }, { x: mx, y, z: mz }, 0.014, black, M.Metal, Z.Sides);
+    b.rod({ x: mx, y: 1.24, z: mz }, { x: mx, y: 1.72, z: mz }, 0.014, black, M.Metal, Z.Sides);
+    for (const y of [1.3, 1.5, 1.66])
       b.block(mx + side * 0.04, y, mz, 0.07, 0.03, 0.03, black, M.Metal, Z.Trim);
-    mirrorHead(b, side, { x: mx + side * 0.12, y: 1.78, z: mz }, 0.17, 0.3, 0.06, black, 0.2);
-    mirrorHead(b, side, { x: mx + side * 0.11, y: 1.5, z: mz }, 0.15, 0.12, 0.06, black, 0.35);
+    mirrorHead(b, side, { x: mx + side * 0.12, y: 1.58, z: mz }, 0.17, 0.3, 0.06, black, 0.2);
+    mirrorHead(b, side, { x: mx + side * 0.11, y: 1.3, z: mz }, 0.15, 0.12, 0.06, black, 0.35);
   }
   // HF whip aerial on the left rear corner of the cab.
   b.block(-0.98, roof + 0.07, back - 0.08, 0.08, 0.08, 0.08, black, M.Rubber, Z.Roof, 0.01);
   b.rod(
     { x: -0.98, y: roof + 0.1, z: back - 0.08 },
-    { x: -1.0, y: 3.9, z: back + 0.05 },
+    { x: -1.0, y: 3.7, z: back + 0.05 },
     0.005,
     black,
     M.Rubber,
@@ -502,43 +577,86 @@ function cab(b: VehicleBuilder): void {
   );
 }
 
-/** The spare wheel standing on the frame behind the cab, and the air intake stack beside it. */
-function behindCab(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
-  b.tag = Z.Rear;
-  b.push()
-    .translate(0, 1.05, SPARE_Z)
-    .rotate(0, Math.PI / 2, 0);
-  b.geometry(wheel.clone(), black);
-  b.pop();
-  b.block(0, 0.46, SPARE_Z, 1.0, 0.06, 0.3, black, M.Metal, Z.Trim);
-  for (const x of [-0.45, 0.45]) b.block(x, 0.34, SPARE_Z, 0.12, 0.2, 0.2, black, M.Metal, Z.Trim);
-  for (const x of [-0.5, 0.5])
-    b.rod({ x, y: 0.46, z: SPARE_Z }, { x: x * 0.4, y: 1.5, z: SPARE_Z }, 0.02, black);
+/**
+ * The air intake stack on the right screen pillar (front-34.jpg, side.jpg): the pipe
+ * comes up through the bonnet's right shoulder at the cowl, elbows out past the pillar
+ * and runs straight up it to the head and its cap above the roof.
+ */
+function intakeStack(b: VehicleBuilder, tuning: VehicleTuning): void {
   const { x, y, z } = tuning.intake;
-  // The intake pipe comes up from under the cab's back corner.
+  const { front, waist, roof, lean, side: S } = CAB;
+  const pillar = (yy: number) => front + (lean * (yy - waist)) / (roof - waist);
+  const cowl = bonnetTop(z - 0.1);
   continuousTube(
     b,
-    [
-      new THREE.Vector3(x, 0.72, CAB.back - 0.25),
-      new THREE.Vector3(x, 0.72, z),
-      new THREE.Vector3(x, y + 0.05, z),
-    ],
-    0.075,
+    [v(x - 0.2, cowl - 0.05, z - 0.1), v(x - 0.2, cowl + 0.12, z - 0.1), v(x, 1.32, z), v(x, y + 0.22, z)],
+    0.06,
     paint,
-    Z.Rear,
+    Z.Sides,
     M.Paint,
     ROUND_BEND,
   );
   b.slot = M.Paint;
   b.tag = Z.Roof;
-  b.push().translate(x, y + 0.1, z);
-  b.geometry(new THREE.CylinderGeometry(0.11, 0.11, 0.1, 16), black);
+  b.push().translate(x, y + 0.3, z);
+  b.geometry(new THREE.CylinderGeometry(0.1, 0.1, 0.1, 16), black);
   b.pop();
-  b.push().translate(x, y + 0.17, z);
-  b.geometry(new THREE.CylinderGeometry(0.08, 0.12, 0.05, 16), black);
+  b.push().translate(x, y + 0.375, z);
+  b.geometry(new THREE.CylinderGeometry(0.07, 0.11, 0.05, 16), black);
   b.pop();
-  for (const yy of [1.2, 1.7])
-    b.rod({ x, y: yy, z }, { x: CAB.side - 0.02, y: yy, z: CAB.back }, 0.012, black);
+  for (const yy of [1.35, 1.7])
+    b.rod({ x, y: yy, z }, { x: S - 0.02, y: yy, z: pillar(yy) + 0.05 }, 0.012, black);
+}
+
+/** The spare, lying flat on a cradle under the tray's front on the right (rear-34.jpg). */
+function underSpare(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
+  const { x, y, z } = UNDER_SPARE;
+  b.tag = Z.Sides;
+  b.push()
+    .translate(x, y, z)
+    .rotate(0, 0, Math.PI / 2);
+  b.geometry(wheel.clone(), black);
+  b.pop();
+  // Two bars under the tyre hung from the chassis rail, and a spigot through the hub.
+  for (const dz of [-0.32, 0.32]) {
+    b.block(0.5, 0.02, z + dz, 0.06, 0.44, 0.06, black, M.Metal, Z.Trim);
+    b.block(x + 0.12, -0.19, z + dz, 0.9, 0.04, 0.06, black, M.Metal, Z.Trim);
+  }
+  b.rod({ x, y: -0.21, z }, { x, y: 0.21, z }, 0.04, black, M.Metal, Z.Trim);
+}
+
+/**
+ * A flat-topped mudguard over a rear wheel: its ends slope down and away from the wheel, a
+ * lip turns down along the outer edge, it bolts up under the tray, and a rubber flap
+ * hangs behind it.
+ */
+function mudguard(b: VehicleBuilder, side: number, axle: number, top: number, zone: number): void {
+  const x = side * 0.98;
+  b.block(x, top - 0.02, axle, 0.46, 0.04, 1.24, paint, M.Paint, zone, 0.01);
+  b.block(side * 1.205, top - 0.07, axle, 0.02, 0.1, 1.24, paint, M.Paint, zone, 0.006);
+  for (const end of [-1, 1]) {
+    // Hinged on the top's end edge and leaning out, so the guard opens downwards round the tyre.
+    b.push()
+      .translate(x, top - 0.152, axle + end * 0.692)
+      .rotate(-end * 0.5, 0, 0);
+    b.block(0, 0, 0, 0.46, 0.3, 0.035, paint, M.Paint, zone, 0.008);
+    b.block(side * 0.225, 0, -end * 0.05, 0.02, 0.3, 0.1, paint, M.Paint, zone, 0.006);
+    b.pop();
+  }
+  // Inner edge so the guard reads as a deep channel from the side.
+  b.block(
+    side * 0.76,
+    top - 0.02,
+    axle,
+    0.02,
+    0.035,
+    1.2,
+    paint.clone().multiplyScalar(0.8),
+    M.Paint,
+    Z.Trim,
+  );
+  const low = top - 0.28;
+  b.block(x, (low + 0.06) / 2, axle + 0.775, 0.42, low - 0.06, 0.02, black, M.Rubber, Z.Trim);
 }
 
 function tray(b: VehicleBuilder): void {
@@ -554,11 +672,11 @@ function tray(b: VehicleBuilder): void {
   const h = top - floor;
   for (const side of [-1, 1]) {
     b.block(side * (S - 0.02), (floor + top) / 2, mid, 0.04, h, len, paint, M.Paint, Z.Sides, 0.008);
-    for (const y of [floor + 0.12, floor + 0.28])
+    for (const y of [floor + 0.14, floor + 0.32])
       b.block(side * (S + 0.002), y, mid, 0.012, 0.035, len - 0.1, paint, M.Paint, Z.Sides, 0.004);
-    for (let z = front + 0.4; z < back - 0.2; z += 0.95)
+    for (const z of [front + 1.34, front + 2.69])
       b.block(side * (S + 0.006), (floor + top) / 2, z, 0.02, h, 0.05, paint, M.Paint, Z.Sides, 0.006);
-    for (const z of [0.75, 1.55, 2.4, 3.2]) {
+    for (const z of [front + 0.3, front + 1.2, front + 2.2, front + 3.1, back - 0.3]) {
       b.block(side * (S + 0.009), floor + 0.055, z, 0.025, 0.105, 0.11, paint, M.Paint, Z.Sides, 0.004);
       b.rod(
         { x: side * (S + 0.022), y: floor, z: z - 0.065 },
@@ -569,11 +687,11 @@ function tray(b: VehicleBuilder): void {
         Z.Sides,
       );
     }
-    mudguard(b, side, AXLE_Z, floor - 0.015, Z.Rear, false);
+    mudguard(b, side, AXLE_Z, floor - 0.015, Z.Rear);
   }
   b.block(0, (floor + top) / 2, front, 2 * S, h, 0.04, paint, M.Paint, Z.Sides, 0.008);
   b.block(0, (floor + top) / 2, back - 0.02, 2 * S, h, 0.04, paint, M.Paint, Z.Rear, 0.008);
-  for (const y of [floor + 0.12, floor + 0.28])
+  for (const y of [floor + 0.14, floor + 0.32])
     b.block(0, y, back + 0.002, 2 * S - 0.1, 0.035, 0.012, paint, M.Paint, Z.Rear, 0.004);
   for (const x of [-0.9, 0.9]) b.block(x, top - 0.04, back + 0.01, 0.08, 0.05, 0.03, steel, M.Metal, Z.Rear);
 
@@ -626,7 +744,17 @@ function rear(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   for (const y of [sy - 0.25, TRAY.top - 0.09])
     b.block(face - 0.025, y, sz, 0.05, 0.06, 0.8, black, M.Metal, Z.Sides);
   for (const z of [sz - 0.3, sz + 0.3])
-    b.block(face - 0.025, 0.875, z, 0.05, 0.41, 0.05, black, M.Metal, Z.Sides);
+    b.block(
+      face - 0.025,
+      (sy - 0.25 + TRAY.top - 0.09) / 2,
+      z,
+      0.05,
+      TRAY.top - 0.09 - sy + 0.25,
+      0.05,
+      black,
+      M.Metal,
+      Z.Sides,
+    );
   b.block(face - 0.06, sy, sz, 0.04, 0.26, 0.26, black, M.Metal, Z.Sides, 0.01);
   b.tag = Z.Sides;
   b.push().translate(sx, sy, sz);
@@ -665,7 +793,8 @@ export function buildUnimogBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
   chassis(b);
   frontEnd(b, tuning);
   cab(b);
-  behindCab(b, tuning, wheel);
+  intakeStack(b, tuning);
+  underSpare(b, wheel);
   tray(b);
   rear(b, tuning, wheel);
   addUnimogInterior(b, tuning.engine.redlineRpm);

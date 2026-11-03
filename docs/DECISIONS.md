@@ -2020,28 +2020,54 @@ The full test run after v1.19 showed two trailer tests failing that passed befor
 
 v1.22 took the Army No. 5 to its published 1,550 mm by moving the hubs 40 mm out each side (a 1.32 m track) as well as standing the lip out. The unit tests, run after that update went out as CLAUDE.md asks, caught what the wider track did: loaded, in a hard turn at 25 km/h across a 15° slope, the trailer now stayed up, where the No. 5 is meant to go over at a lower speed than the box trailer (its narrow track and high floor are the point of it, v0.49). The hubs go back to ±0.62 (a 1.24 m track, 1.43 m over the tyres) and the published width stays in the rolled lip (±0.775), which is where the figure leaves room for it: the inside box is 1,320 mm and the overall 1,550 mm, so 115 mm a side is pressed side and lip. `tests/trailer.test.ts` passes again (32 of 32); the tipping figure in `src/data/trailers.ts` is back to 0.64 g. `reference/vehicles/army-no5-trailer/SOURCES.md` records both figures.
 
-## v1.27: fewer triangles in every vehicle, round two
+## v1.27: the Unimog laid out from its photographs
 
-Again no vehicle changes shape. The renders of every vehicle at the studio's eight views were compared against v1.26 as in v1.24; the mean pixel difference is at most 0.12 of 255 on every view. Every vehicle is now under the 80,000 the v1.24 note aimed at, and most are near the 62,000 budget.
+The model's layout was checked against `reference/vehicles/unimog-ul1700l/side.jpg`, `front-34.jpg`, `rear-34.jpg` and `three-quarter-museum.jpg`, before and after, on the studio page, and the side render laid over `side.jpg` with the studio camera set up to match the photograph (on the truck's right, level, 1.3 m above the hubs, 9.75 m out from the near wheel faces, a 45° vertical field of view on a 4:3 frame).
+
+**What `side.jpg` measures** (369 px/m, the hubs 1,420 px apart for the 3,850 mm wheelbase; stations in the vehicle frame, origin mid-wheelbase, the front axle at −1.925): the windscreen pillars stand above the front axle, the cowl at about −2.0 and the roof's front edge at −1.85, so the pillars lean back about 0.15 m over the screen's height; the cab's rear wall at −0.68; the cab's lower front cheeks run forward beside the bonnet to the grille plane at about −2.63, with the front wheel arch cut into them; the bumper face at −2.93 with the towing jaws just ahead; the tray's headboard right behind the cab at about −0.62 and its tail at 3.45. Heights above the ground: the cab's lower edge 1.2 m, waist 1.9 m, roof 2.44 m, the bonnet 1.6 m at the grille rising to 1.8 m at the cowl, the dropsides 1.33–1.86 m, the tilt top 2.9 m (published 2,875 mm). The brief put a "cab front wall" 0.33 m ahead of the front axle; no edge at that station could be found in the photograph, so the pillar sits over the axle as measured, and the cheeks run on to the grille.
+
+**What the model had** (`unimogBody.ts` before this change): the cab from −1.65 to −0.1, a 1.29 m bonnet, the tray from 0.43 with the spare standing in a 0.5 m gap behind the cab, the cab roof 2.72 m above the ground, and the intake stack behind the cab's right rear corner. So the cab was about 0.35 m too far back at the pillar and 0.55 m at the rear wall, the tray a metre too far back, and the cab 0.28 m too tall.
+
+**What moved.** The stations now live in `src/render/unimogLayout.ts`, and the body, the tilt (`unimogCanvas.ts`), the interior, the cabin layout in `src/data/vehicles.ts`, the headlamp positions and the physics boxes in `src/data/unimog.ts` all follow them:
+
+- **Cab** −2.0 (cowl) to −0.65, 2.24 m wide, floor 0.54, waist 1.19, roof 1.76 (2.50 m above the ground with the roof panel). The screen pillars lean back 0.15 m; the door's front shut line continues the pillar's rear edge, the door glass leans with it. The rear wall, its window, the roof hatch, mirrors, grab handles and the aerial move with the cab. The step is behind the front wheel, as in the photographs.
+- **Cheeks and bonnet.** One sloping top surface the full width of the cab from the cowl (1.11) to the nose (0.92), its shoulders and nose edge rounded over 0.1 m; the cheeks' side skins are one extrusion each with the front wheel arch cut out (a flattened arch 1.13 m wide at its feet, 0.66 high), the door's lower panel behind, and the wheel well's roof and inner wall inside; the cheeks' front faces either side of the grille with the nose corners wrapped round; the indicators on the cheeks' front faces, louvres above the arches. The grille sits flush between the cheeks at −2.66, the bumper face at −2.94 with its centre line at 0.30 (the photograph's bumper is 0.17–0.41 m above the ground), the headlamps in it; the winch fairlead on the bumper's face (`winchMount` z −3.0, from −3.22).
+- **Intake stack** on the right screen pillar: up through the bonnet's right shoulder at the cowl, out past the pillar and straight up it, the head and cap 0.17 m above the roof (`front-34.jpg` and `side.jpg`). The tuning's flood point (`intake`, 2.3 m above the ground) moves to the stack at the same height; the drawn head stands about 0.35 m above it.
+- **Tray** −0.58 to 3.45, floor 0.70, dropsides to 1.18 (the photograph's are 0.53 m tall); the tilt and its bows follow the tray's ends and the dropside top.
+- **Spare** lying flat on a cradle under the tray's front on the right, behind the cab, where `rear-34.jpg` shows it (centre x 0.6, y 0, z −0.3). The second spare on the left dropside stays. Under the tray, the fuel tank and a stowage box on the left and the battery box on the right follow `side.jpg` and `rear-34.jpg`, the exhaust now out to the left.
+- **Interior and cockpit**: the dash under the screen at the cowl, the seats against the rear wall, the eye at (0.5, 1.52, −1.15) (was 1.74, −0.6), the dials, lamps, wheel and handbrake with it.
+- **Physics boxes**: the cab, the cheeks and bonnet, the wheel wells' roofs, the tray and tilt, the bumper and the under-tray spare at their new places. The spare's box is thinner than the drawn tyre (its bottom 0.58 m above the ground) so the Unimog keeps the clearance margin its test asks for.
+
+**Against the photograph after the change**, the cab's rear wall, the cowl and the bumper face are within 30–50 mm of `side.jpg`, the grille and the headboard within about 50 mm, the roof within 60 mm. What still disagrees: the axles are drawn like the other vehicles' axles, not as portal axles (v0.11); the headlamps are round behind wire guards where `front-34.jpg` shows square housings with mesh guards; the grille carries the star where the Army truck's is plain mesh; the roof's front corners and the screen are squarer than the real cab's; the cheeks carry one row of louvres where `rear-34.jpg` shows two groups; the overall length over the towing jaws is 6.4 m, as the photograph measures, against the published 5,500–6,100 mm (which must leave the jaws out).
+
+**SOURCES.md** said the model gave the cab a canvas roof; the code has drawn a painted steel roof with a round hatch since v0.31, so the text is corrected and its "in the current model" column updated.
+
+**Cost.** The body is 81,400 triangles after v1.24's cuts (79,200 on `main` before this change, `scripts/tri-count.ts`); the next rounds of cutting are on the roadmap.
+
+**Tests.** `tests/unimog.test.ts` passes (the length comment now says 6.6 m over the jaws and the pintle hook); the headlight, camera, current, trailer and CREB Unimog tests pass except one: "climbs Bob's Hill in the wet in the Unimog in low range with open diffs" stops 112.5 m from the end on `main` before this change as well (checked on a clean checkout), so it is left for a follow-up and not a result of the new layout. The same goes for `tests/current.test.ts`'s "stops the short-wheelbase 4WD on the deep line", which does not involve the Unimog and fails on `main` as well.
+
+## v1.28: fewer triangles in every vehicle, round two
+
+Again no vehicle changes shape. The renders of every vehicle at the studio's eight views were compared against v1.26 (and the Unimog against v1.27, which laid it out afresh) as in v1.24; the mean pixel difference is at most 0.12 of 255 on every view. Every vehicle is now under the 80,000 the v1.24 note aimed at, and most are near the 62,000 budget.
 
 - **Rings and rods sized by the part.** `VehicleBuilder.ring` was a 6 × 32 torus (384 triangles) whether it was a wheel rim or a 4 mm bead line; a 32-step ring now needs a radius over 180 mm, a small one has 12 steps, and a tube under 8 mm is four-sided. `rod` has six sides up to 8 mm radius, eight up to 20 mm and ten above (it was ten always). The winch drums alone (14 to 19 rings each) were 5,000 to 7,000 triangles a vehicle.
 - **Chains of rods are one tube.** `VehicleBuilder.chain` sweeps one tube through a list of points (`sweptTube`, the same sweep `continuousTube` uses). The LC79's three roof ribs were 20 capped rods each and the Unimog's tilt bows 32; a chain has no caps and no overlap at the joints.
 - **Tube bends get segments for their turn.** `continuousTube` gave every bend five segments; a bend now gets one per 18° of turn, so a bull bar's right angle keeps five and the 21-point hoop of a Unimog bow, bending about 8° at each point, gets one at each.
 - **LC79:** the roof was subdivided three times over (64 triangles for one) to carry its pressed ribs; twice (16) carries them as well. The honeycomb grille mesh has 30 mm cells in 6 rows of 28, where 20 mm cells in 9 rows of 42 cost 4,500 triangles for ribs no camera in the game resolves.
 - **80 Series:** the side skins have a row every 54 mm instead of 27 (46 rows, not 91), which halves the skins and their inner faces. Dents still land on them; a dent now moves vertices 54 mm apart.
-- **Unimog:** the canvas tilt's grids are half as fine each way (16 × 30 for the roof, 24 × 6 for each side).
+- **Unimog:** the canvas tilt's grids are half as fine each way (16 × 30 for the roof, 24 × 6 for each side). Its row below is against v1.27's new layout, which was 104,000 before these cuts.
 - **Lamp lenses:** flattened domes of 20 × 8 segments where some were 28 × 12, 32 × 12 or 40 × 20. The Camel Trophy's arch panels follow their arcs with 21 points, not 41.
 - **Wheels:** the dished centres' vents, hubs and caps have half the points round (a 48-point disc is 32, a 14-point vent 8, a 32-sided hub 16).
 - **Kept as they were:** the HJ60's stripe pieces and its script lettering (together 2,800 triangles now that each stroke is a plain block, and the README's v1.12 check wants TOYOTA LAND CRUISER readable), the block TOYOTA and NISSAN lettering on grilles and tailgates (1,200 to 2,400 a vehicle), and the bevelled panel extrusions, whose rounded edges are the silhouette. The third round planned in v1.24 (fewer, larger lettering blocks) is not needed for the budget and is left out.
 
-| vehicle  | v1.26  | v1.27 | body (v1.26 → v1.27) | per wheel   |
+| vehicle  | v1.27  | v1.28 | body (v1.27 → v1.28) | per wheel   |
 | -------- | ------ | ----- | -------------------- | ----------- |
 | sooty80  | 90.0k  | 73.0k | 66.2k → 52.2k        | 5.2k → 4.5k |
 | shortie  | 75.5k  | 60.4k | 56.8k → 45.5k        | 4.6k → 3.6k |
 | camel    | 92.5k  | 72.2k | 71.6k → 53.1k        | 4.8k → 4.4k |
 | perentie | 88.4k  | 62.0k | 72.3k → 48.2k        | 4.0k → 3.4k |
 | hilux    | 71.4k  | 57.9k | 53.1k → 41.9k        | 4.5k → 3.9k |
-| unimog   | 102.0k | 64.4k | 79.2k → 44.4k        | 5.6k → 4.9k |
+| unimog   | 104.2k | 65.0k | 81.4k → 45.0k        | 5.6k → 4.9k |
 | hj60     | 94.0k  | 77.8k | 71.3k → 58.8k        | 5.6k → 4.7k |
 | troopy   | 80.6k  | 62.1k | 61.9k → 47.8k        | 4.6k → 3.5k |
 | patrol   | 87.8k  | 72.9k | 67.6k → 55.1k        | 5.0k → 4.4k |

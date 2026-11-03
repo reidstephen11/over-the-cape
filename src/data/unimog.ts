@@ -40,25 +40,27 @@ export const unimogTuning: VehicleTuning = {
   damperRelaxation: 2.4,
   maxSuspensionForce: 220000,
   bodyBoxes: [
+    // Where the parts stand follows src/render/unimogLayout.ts, measured on the side photograph.
     // Ladder chassis rails high above the portal axles, and the gearbox under the cab.
-    { cx: -0.45, cy: 0.14, cz: 0.15, hx: 0.06, hy: 0.11, hz: 3.25 },
-    { cx: 0.45, cy: 0.14, cz: 0.15, hx: 0.06, hy: 0.11, hz: 3.25 },
-    { cx: 0, cy: 0.08, cz: -0.75, hx: 0.26, hy: 0.13, hz: 0.45 },
-    // Engine and the short bonnet ahead of the cab, and the sump below it.
-    { cx: 0, cy: 0.62, cz: -2.3, hx: 0.62, hy: 0.42, hz: 0.66 },
+    { cx: -0.45, cy: 0.14, cz: 0.3, hx: 0.06, hy: 0.11, hz: 3.1 },
+    { cx: 0.45, cy: 0.14, cz: 0.3, hx: 0.06, hy: 0.11, hz: 3.1 },
+    { cx: 0, cy: 0.08, cz: -1.3, hx: 0.26, hy: 0.13, hz: 0.45 },
+    // The short bonnet and the cab's cheeks beside it ahead of the cowl, and the sump below.
+    { cx: 0, cy: 0.7, cz: -2.33, hx: 1.12, hy: 0.3, hz: 0.33 },
     { cx: 0, cy: 0.16, cz: -2.05, hx: 0.3, hy: 0.1, hz: 0.38 },
     // The cab, from its floor over the front wheels to the roof.
-    { cx: 0, cy: 1.32, cz: -0.86, hx: 1.1, hy: 0.66, hz: 0.78 },
-    // Front mudguards over the wheels.
-    { cx: -0.98, cy: 0.66, cz: -1.925, hx: 0.22, hy: 0.06, hz: 0.62 },
-    { cx: 0.98, cy: 0.66, cz: -1.925, hx: 0.22, hy: 0.06, hz: 0.62 },
-    // The dropside tray and the canvas tilt over it.
-    { cx: 0, cy: 0.86, cz: 1.86, hx: 1.15, hy: 0.21, hz: 1.62 },
-    { cx: 0, cy: 1.66, cz: 1.86, hx: 1.12, hy: 0.6, hz: 1.6 },
-    // Bumper with the winch behind it, the spare wheel behind the cab, the rear
-    // crossmember with its pintle hook, and the second spare on the left dropside.
-    { cx: 0, cy: 0.38, cz: -3.08, hx: 1.1, hy: 0.15, hz: 0.12 },
-    { cx: 0, cy: 1.05, cz: 0.12, hx: 0.58, hy: 0.58, hz: 0.17 },
+    { cx: 0, cy: 1.18, cz: -1.325, hx: 1.12, hy: 0.64, hz: 0.675 },
+    // The wheel wells' roofs in the cab's sides, over the front wheels.
+    { cx: -0.98, cy: 0.63, cz: -1.925, hx: 0.2, hy: 0.05, hz: 0.62 },
+    { cx: 0.98, cy: 0.63, cz: -1.925, hx: 0.2, hy: 0.05, hz: 0.62 },
+    // The dropside tray right behind the cab and the canvas tilt over it.
+    { cx: 0, cy: 0.94, cz: 1.435, hx: 1.15, hy: 0.24, hz: 2.015 },
+    { cx: 0, cy: 1.7, cz: 1.435, hx: 1.12, hy: 0.56, hz: 2.0 },
+    // Bumper with the winch behind it, the spare lying under the tray's front on the
+    // right, the rear crossmember with its pintle hook, and the second spare on the left
+    // dropside.
+    { cx: 0, cy: 0.3, cz: -2.86, hx: 1.1, hy: 0.14, hz: 0.08 },
+    { cx: 0.6, cy: 0.04, cz: -0.3, hx: 0.56, hy: 0.1, hz: 0.56 },
     { cx: 0, cy: 0.2, cz: 3.42, hx: 0.95, hy: 0.1, hz: 0.08 },
     { cx: -1.39, cy: 0.95, cz: 0.85, hx: 0.17, hy: 0.56, hz: 0.56 },
   ],
@@ -146,10 +148,12 @@ export const unimogTuning: VehicleTuning = {
     keyboardReturnRate: 3.4,
     padRate: 6,
   },
-  // The air cleaner breathes through a stack behind the cab's right-hand corner.
+  // The air cleaner breathes through a stack up the right-hand screen pillar; the drawn
+  // head stands a little above this point.
   intakeHeight: 2.3,
-  intake: { x: 0.95, y: 2.3 - R - 0.12, z: 0 },
-  winchMount: { x: 0, y: 0.32, z: -3.22 },
+  intake: { x: 1.22, y: 2.3 - R - 0.12, z: -1.9 },
+  // The roller fairlead on the bumper's face.
+  winchMount: { x: 0, y: 0.3, z: -3.0 },
   towPoint: { x: 0, y: 0.12, z: 3.52 },
   // The pintle hook on the rear crossmember (src/render/unimogBody.ts).
   hitch: { x: 0, y: 0.11, z: 3.54 },
