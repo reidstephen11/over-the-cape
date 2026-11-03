@@ -29,7 +29,8 @@ export class WheelContacts {
     for (let i = 0; i < t.wheels.length; i++) {
       const w = t.wheels[i];
       const steer = controller.wheelSteering(i) ?? 0;
-      const sx = -Math.sin(steer);
+      // Along the wheel's rolling direction: (0, 0, 1) turned by the steering angle about +y.
+      const sx = Math.sin(steer);
       const sz = Math.cos(steer);
       let bestLength = Infinity;
       let offset = 0;

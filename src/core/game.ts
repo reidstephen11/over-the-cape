@@ -5,7 +5,7 @@ import { devEnvironment, devFlood, isDevMode, type DevWeather } from '../data/de
 import { environmentFor, presetHours, type Conditions } from '../data/environment';
 import { episodeWeatherAt } from '../data/weatherTimeline';
 import { scoreRun, type RunScore } from '../sim/runScore';
-import { SectionTimes, type SectionTime } from '../sim/sectionTimes';
+import { SectionTimes, timedSections, type SectionTime } from '../sim/sectionTimes';
 import { GhostGap, GhostRecorder, loadGhost, minSec, saveGhost, type GhostTrace } from '../sim/ghost';
 import { GhostView } from '../render/ghostView';
 import { strandedPose } from '../sim/stranded';
@@ -14,6 +14,7 @@ import {
   createTrafficBody,
   placeTrafficBody,
   type OncomingCar,
+  trafficPlans,
   type TrafficEvent,
 } from '../sim/traffic';
 import { poseOf, snapshotPose, type PosedBody } from '../sim/bodyPose';
@@ -288,19 +289,13 @@ export class Game {
     this.lampBeams = sim.env.lampBeams;
     const tuning = vehicles[vehicleId].tuning;
     this.crawlRuns = new CrawlRuns(world.map.crawlTrails ?? [], world.features.tracks, crawlBests);
-    const sections = (setup.def.timedSections ?? []).flatMap((id) => {
-      const t = world.map.tracks.find((tr) => tr.id === id);
-      if (!t || t.points.length < 2) return [];
-      const [a, b] = [t.points[0], t.points[t.points.length - 1]];
-      return [{ id, name: t.name ?? id, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] } }];
-    });
-    this.sectionTimes = new SectionTimes(sections, setup.progress[setup.def.id]?.sectionBests ?? {});
-    const traffic = (setup.def.traffic ?? []).flatMap((t) => {
-      const track = world.map.tracks.find((tr) => tr.id === t.track);
-      this.trafficLooks.set(t.name, t.look);
-      return track ? [{ name: t.name, points: track.points.map(([x, z]) => [x, z] as const) }] : [];
-    });
-    this.traffic = new Traffic(traffic);
+    // Both follow the generated tracks' dense centrelines, not the authored control points.
+    this.sectionTimes = new SectionTimes(
+      timedSections(setup.def.timedSections ?? [], world.features.tracks),
+      setup.progress[setup.def.id]?.sectionBests ?? {},
+    );
+    for (const t of setup.def.traffic ?? []) this.trafficLooks.set(t.name, t.look);
+    this.traffic = new Traffic(trafficPlans(setup.def.traffic ?? [], world.features.tracks));
     this.gateCount = new GateCount(world.features.gates);
     this.input = new InputManager(window);
     this.input.setSteering(tuning.steering);
@@ -958,7 +953,12 @@ export class Game {
       // What was taken after the camp is back where it was found.
       this.finds.reset(this.checkpoint.taken);
       this.findMarkers.show(this.finds.defs, this.finds.taken);
+      // Places found and sections timed after the camp are new again, and any car coming
+      // the other way is gone: the track sends one afresh.
+      this.exploration.reset(this.checkpoint.discovered);
       this.exploration.lastCampsite = this.checkpoint.camp;
+      this.sectionTimes.reset();
+      this.clearTraffic();
       this.seen = this.seenFrom(this.checkpoint, this.world);
       this.run.restart(this.checkpoint);
       this.ghostRecorder.rewind(this.checkpoint.elapsed);
@@ -1702,13 +1702,21 @@ export class Game {
       this.hud.toast(`${car.name} has stopped for you: pull off to one side to let it past`, 3000);
     } else if (e.type === 'moving' && car.s > 1) {
       this.hud.toast(`${car.name} squeezes past with a wave`, 2200);
-    } else if (e.type === 'gone') {
-      const drawn = this.trafficCars.get(car);
-      if (!drawn) return;
-      this.sim.physics.world.removeRigidBody(drawn.car.body);
-      this.view.scene.remove(drawn.view.model.root);
-      this.trafficCars.delete(car);
-    }
+    } else if (e.type === 'gone') this.removeTrafficCar(car);
+  }
+
+  private removeTrafficCar(car: OncomingCar): void {
+    const drawn = this.trafficCars.get(car);
+    if (!drawn) return;
+    this.sim.physics.world.removeRigidBody(drawn.car.body);
+    this.view.scene.remove(drawn.view.model.root);
+    this.trafficCars.delete(car);
+  }
+
+  /** Every oncoming car off the road and out of the scene, and the tracks ready to send one again. */
+  private clearTraffic(): void {
+    for (const car of [...this.trafficCars.keys()]) this.removeTrafficCar(car);
+    this.traffic.reset();
   }
 
   private onSectionTime(t: SectionTime): void {
@@ -1878,7 +1886,7 @@ export class Game {
     for (const d of this.drumViews.values()) d.update(between);
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
-    this.toolsView.update(v, tools, this.sim.probeGround, this.clock, between);
+    this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock, between);
     this.view.particles.update(v, this.loop.paused ? 0 : frameDt);
     if (this.freeCamOn) this.freeCam.update(frameDt);
     else if (!this.loop.paused) {
