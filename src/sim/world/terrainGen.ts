@@ -801,6 +801,8 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
           hz,
           yaw: Math.atan2(dx, dz),
           roll,
+          // Rounded off, so it reads as a granite band rather than a kerb.
+          bevel: 0.12,
         });
       }
     }
@@ -1109,10 +1111,18 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       tint[i] = edgeTint;
     } else tint[i] = def.surface === 'gravel' ? GroundTint.Gravel : GroundTint.DirtTrack;
   }
-  // Rocky steps on tracks show as rock.
+  // Rocky steps and granite ledges on tracks show as rock, the ledge's landing included.
   for (const t of tracks) {
-    for (const st of t.def.rockySteps ?? []) {
-      const k = Math.min(t.poly.count - 1, Math.round(st.at));
+    const rockAt = [
+      ...(t.def.rockySteps ?? []).map((st) => st.at),
+      ...(t.def.steps ?? []).flatMap((st) => {
+        const out: number[] = [];
+        for (let s = st.from; s <= st.to; s += st.spacing) out.push(s, s + 2);
+        return out;
+      }),
+    ];
+    for (const at of rockAt) {
+      const k = Math.min(t.poly.count - 1, Math.round(at));
       const cx = t.poly.xs[k];
       const cz = t.poly.zs[k];
       for (let dz = -3; dz <= 3; dz++)

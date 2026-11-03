@@ -82,8 +82,9 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'upper-daintree-road': {
     rough: { ...roadRough, bogs: 0, washouts: 1, washoutDepth: 0.16 },
     pinSmooth: 10,
-    // A band of rock across the bench, with boulders either side.
-    rockySteps: [{ at: 175, rise: 0.42 }],
+    // A band of rock across the bench, standing out of it as a ledge the wheels step up,
+    // with boulders either side. A rocky step here only smoothed out into a ramp.
+    steps: [{ from: 175, to: 175, spacing: 1, rise: 0.35 }],
     stones: [boulder(173, -3.6, 0.8, 1.5), boulder(178, 3.7, 0.7, 1.3)],
     routeHint: 'One control at a time: low range L, locks Z and X, crawl P, then the winch',
   },
