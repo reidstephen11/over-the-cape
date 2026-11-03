@@ -577,8 +577,17 @@ describe('Episode 1: the CREB Track', () => {
         s.sim.physics.free();
       }
     };
-    const crown = await driveLine(0, 'both', 180);
-    expect(crown.done, `crown stopped ${crown.remaining.toFixed(0)} m short`).toBe(true);
+    // In the wet the clay cuts up under a crawl on the pinches (v0.70's churn, kept at full
+    // strength in v0.71), so the crown is a winch job: it hooks the marked rocks placed
+    // ahead of each pinch (v0.87) and pulls up the climb.
+    const s = await scene('big-red', false, 'both', vehicleTuning);
+    try {
+      const crown = await runLeg(s, s.track, false, 300, true);
+      expect(crown.done, `crown stopped ${crown.remaining.toFixed(0)} m short`).toBe(true);
+      expect(crown.winched).toBeLessThanOrEqual(4);
+    } finally {
+      s.sim.physics.free();
+    }
     // A line drifted onto the left gutter high-centres before the steepest of the face.
     const gutter = await driveLine(-1.15, 'both', 90);
     expect(gutter.done).toBe(false);
@@ -611,7 +620,7 @@ describe('Episode 1: the CREB Track', () => {
 
   const legs: [string, 'both' | 'high', number][] = [
     ['daintree-crossing', 'both', 150],
-    ['big-red', 'both', 200],
+    ['big-red', 'both', 300],
     ['big-red-bypass', 'both', 400],
     ['creb-ridge', 'both', 700],
     ['roaring-meg-climb', 'both', 300],
@@ -650,10 +659,12 @@ describe('Episode 1: the CREB Track', () => {
     }
   }, 900_000);
 
-  it("climbs Bob's Hill in the wet in the Unimog in low range with open diffs, where the others need both lockers", async () => {
+  it("climbs Bob's Hill in the wet in the Unimog in low range with open diffs, with a pull or two on the winch, where the others need both lockers", async () => {
     const s = await scene('bobs-hill', false, 'open', unimogTuning);
     try {
-      await driveLeg(s, s.track, false, 200);
+      // The pinches cut up under it (v0.70's churn) and it winches to a tree.
+      const r = await driveLeg(s, s.track, false, 200, true);
+      expect(r.winched).toBeLessThanOrEqual(2);
     } finally {
       s.sim.physics.free();
     }
@@ -664,7 +675,11 @@ describe('Episode 1: the CREB Track', () => {
       it(`drives ${id} in the wet in the ${tuning.name}`, async () => {
         const s = await scene(id, false, 'both', tuning);
         try {
-          await driveLeg(s, s.track, false, 200);
+          // Big Red's pinches cut up under the wheels in the wet; the winch to the marked
+          // rocks (v0.87) is part of the climb. Bob's Hill goes without it.
+          const bigRed = id === 'big-red';
+          const r = await driveLeg(s, s.track, false, bigRed ? 300 : 200, bigRed);
+          expect(r.winched).toBeLessThanOrEqual(bigRed ? 4 : 0);
         } finally {
           s.sim.physics.free();
         }

@@ -85,6 +85,12 @@ export class WinchRecovery {
   private stuck = 0;
   private free = 0;
   private target = -1;
+  /** Time since the last pull ended (s). */
+  private sincePull = Infinity;
+  /** Pulls to each anchor so far: a player tries a rock twice, not all afternoon. */
+  private readonly pulls = new Map<string, number>();
+  /** Time left backing off (s). */
+  private backing = 0;
 
   constructor(
     private readonly sim: Simulation,
@@ -102,6 +108,11 @@ export class WinchRecovery {
     return best;
   }
 
+  /** Backing off after a stall with nothing to winch to: reverse, straight, gently. */
+  get backingOff(): boolean {
+    return this.backing > 0;
+  }
+
   update(dt: number): boolean {
     const { sim, v } = this;
     const winch = sim.toolsOf(v.id).winch;
@@ -111,20 +122,49 @@ export class WinchRecovery {
       if (here >= this.target - 6 || winch.length < 3 || this.free > 1.5) {
         sim.detachWinch(v.id);
         this.stuck = 0;
+        this.sincePull = 0;
         return false;
       }
       return true;
     }
-    this.stuck = Math.abs(v.speed) < 0.3 ? this.stuck + dt : 0;
-    if (this.stuck < this.after) return false;
+    this.sincePull += dt;
+    if (this.backing > 0) {
+      this.backing -= dt;
+      this.stuck = 0;
+      return false;
+    }
+    // Not getting anywhere: stopped, or sliding back down the hill under the brakes.
+    this.stuck = v.speed < 0.3 ? this.stuck + dt : 0;
+    // Stalled again straight after a pull (on the churned verge beside the rock it was
+    // pulled to), a player hooks the next anchor at once rather than spinning for longer.
+    const after = this.sincePull < 20 ? Math.min(this.after, 2) : this.after;
+    if (this.stuck < after) return false;
     let best: { anchor: ReturnType<Simulation['findAnchors']>[number]; i: number } | null = null;
+    const mount = v.tuning.winchMount;
+    const m = v.localToWorld(mount.x, mount.y, mount.z);
     for (const anchor of sim.findAnchors(v.id)) {
       const { i, d } = this.indexOf(anchor.point.x, anchor.point.z);
-      if (i > here + 8 && d < 12 && (!best || i > best.i)) best = { anchor, i };
+      // Not one it is already beside (that pull would only drag it sideways), and not
+      // one it has been pulled to twice already.
+      const reach = Math.hypot(anchor.point.x - m.x, anchor.point.z - m.z);
+      if (
+        i > here + 8 &&
+        d < 12 &&
+        reach > 6 &&
+        (this.pulls.get(anchor.id) ?? 0) < 2 &&
+        (!best || i > best.i)
+      )
+        best = { anchor, i };
     }
     this.stuck = 0;
-    if (!best) return false;
+    // Nothing to hook: back off a few metres rather than dig in, as the README says to;
+    // it also brings the rock it was pulled to back within reach for a second pull.
+    if (!best) {
+      this.backing = 2.5;
+      return false;
+    }
     sim.attachTo(v.id, best.anchor);
+    this.pulls.set(best.anchor.id, (this.pulls.get(best.anchor.id) ?? 0) + 1);
     this.target = best.i;
     this.uses++;
     return true;
@@ -177,6 +217,19 @@ export class PlankCrossing {
   }
 }
 
+/**
+ * Crawling flat out, as the test drives do, with the car sliding backwards down a greasy
+ * climb: a player gets on the brakes until it stops (then waits, and winches if there is
+ * something to winch to), rather than spinning the wheels all the way down and cutting the
+ * clay up as it goes. Both pedals together brake (the brake pedal alone, below walking
+ * pace, means reverse), and the handbrake helps hold it.
+ */
+export function holdOnRollback(v: Vehicle, command: VehicleInput, rolling: { back: boolean }): VehicleInput {
+  if (v.speed < -0.3) rolling.back = true;
+  else if (v.speed > -0.05) rolling.back = false;
+  return rolling.back ? { ...command, throttle: 1, brake: 1, handbrake: true } : command;
+}
+
 /** Hands the event loop back to Vitest so its worker messages don't time out on long drives. */
 const yieldToRunner = () => new Promise((resolve) => setImmediate(resolve));
 
@@ -201,6 +254,7 @@ export async function runLeg(
   if (lookAhead > 0) pilot.lookAhead = lookAhead;
   const recovery = winch ? new WinchRecovery(sim, v, path) : null;
   const bridge = planks ? new PlankCrossing(sim, v, planks) : null;
+  const rolling = { back: false };
   pilot.lowRange = !high;
   let tilt = 0,
     pitch = 0,
@@ -217,9 +271,17 @@ export async function runLeg(
     if (!high) {
       command.throttle = 1;
       command.brake = 0;
+      command = holdOnRollback(v, command, rolling);
     }
     if (bridge) command = bridge.update(command, DT);
-    if (recovery) command.winchIn = recovery.update(DT);
+    if (recovery) {
+      command.winchIn = recovery.update(DT);
+      // On the cable, steer hard for the line: a rock beside the track would otherwise
+      // drag the car onto the verge, and a player holds it on the crown while winching.
+      pilot.lookAhead = command.winchIn ? 3 : lookAhead;
+      // (The brake pedal alone below walking pace is reverse.)
+      if (recovery.backingOff) command = { ...command, throttle: 0, brake: 0.7, steer: 0, handbrake: false };
+    }
     for (const axle of ['front', 'rear'] as const)
       if (v.differentials[axle] !== s.lockers[axle]) v.toggleDiff(axle);
     inputs.set('p', command);
@@ -368,7 +430,8 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       const pilot = new Autopilot(path, crawl ? 0.7 : speed);
       pilot.lowRange = crawl;
       const bridge = planks ? new PlankCrossing(sim, v, planks) : null;
-      let [tilt, roll, deviation, time, stopped, swept] = [0, 0, 0, 0, 0, 0];
+      const rolling = { back: false };
+      let [tilt, roll, deviation, time, stopped, swept, crept] = [0, 0, 0, 0, 0, 0, 0];
       for (let n = 0; time < limit; time += DT, n++) {
         if (n % 600 === 599) await yieldToRunner();
         let command = pilot.input(v, DT);
@@ -376,6 +439,7 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
         if (crawl) {
           command.throttle = 1;
           command.brake = 0;
+          command = holdOnRollback(v, command, rolling);
         }
         if (bridge) command = bridge.update(command, DT);
         const along = trailProgress(track, v.position.x, v.position.z).along;
@@ -392,6 +456,7 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
         roll = Math.max(roll, Math.abs(attitude(v).roll));
         const near = trailProgress(track, v.position.x, v.position.z);
         deviation = Math.max(deviation, near.distance);
+        if (stopped > 0 && stopped < 20) crept = Math.max(crept, near.distance);
         swept = Math.max(swept, v.swept);
       }
       const c = v.condition;
@@ -408,6 +473,8 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
         suspension: Math.min(...c.suspension),
         /** Longest the current carried it (s); 4 s is swept away. */
         swept,
+        /** How far off the line the current pushed it while it was held stopped (m). */
+        crept,
         flooded: c.flood.stalled,
       };
     } finally {
@@ -429,6 +496,8 @@ export async function driveFork(
   path: ReadonlyArray<readonly [number, number]>,
   tuning: VehicleTuning,
   limit = 400,
+  /** Called after every step (dev probes log the drive through it). */
+  onStep?: (sim: Simulation, v: Vehicle, time: number) => void,
 ) {
   const sim = new Simulation(await loadRapier(), world, env);
   try {
@@ -443,6 +512,7 @@ export async function driveFork(
     const pilot = new Autopilot(path, 1.2);
     pilot.lowRange = true;
     const recovery = new WinchRecovery(sim, v, path);
+    const rolling = { back: false };
     let cuts = 0;
     sim.events.on('damage', (e) => {
       if (e.part === 'tyre') cuts++;
@@ -450,15 +520,19 @@ export async function driveFork(
     let time = 0;
     for (let step = 0; time < limit; time += DT, step++) {
       if (step % 600 === 599) await yieldToRunner();
-      const command = pilot.input(v, DT);
+      let command = pilot.input(v, DT);
       if (pilot.done) break;
       command.throttle = 1;
       command.brake = 0;
+      command = holdOnRollback(v, command, rolling);
       command.winchIn = recovery.update(DT);
+      pilot.lookAhead = command.winchIn ? 3 : 0;
+      if (recovery.backingOff) command = { ...command, throttle: 0, brake: 0.7, steer: 0, handbrake: false };
       for (const axle of ['front', 'rear'] as const)
         if (!v.differentials[axle] && Math.abs(v.speed) < 1.3) v.toggleDiff(axle);
       inputs.set('p', command);
       sim.step(inputs, DT);
+      onStep?.(sim, v, time);
     }
     return {
       done: pilot.done,

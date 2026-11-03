@@ -44,6 +44,8 @@ const BANK_CUT = 0.4;
  * track grading must cut a ramp through that weir or the channel skip leaves a wall.
  */
 const CREEK_BANK_RAMP = 8;
+/** A creek's banks are filled to at most this far (m) above its water, within that reach. */
+const CREEK_BANK_FILL = 0.35;
 
 interface Grid {
   resX: number;
@@ -508,7 +510,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       water[i] = W;
     } else {
       const upper = W + (d - hw) * bankSlope;
-      const lower = W + Math.min(0.35, (d - hw) * bankSlope * 0.9);
+      const lower = W + Math.min(CREEK_BANK_FILL, (d - hw) * bankSlope * 0.9);
       let h = heights[i];
       if (h > upper) h = upper;
       if (d < hw + CREEK_BANK_RAMP && h < lower) h = lower;
@@ -616,13 +618,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       if (cHw <= 0 || creekDist[i] > cHw + CREEK_BANK_RAMP) continue;
       const c = creekLines[creekOwner[i]];
       const u = atParam(c.poly.u, creekParam[i]);
-      profile[k] = fordRamp(
-        attrAt(c.water, u) - attrAt(c.depth, u),
-        cHw,
-        creekDist[i],
-        attrAt(c.bankSlope, u),
-        profile[k],
-      );
+      profile[k] = fordRamp(attrAt(c.water, u), cHw, creekDist[i], attrAt(c.bankSlope, u), profile[k]);
     }
     const shoulders = def.batter ? batterShoulders(def, poly, profile, sampleH) : undefined;
     tracks.push({ def, poly, profile, shoulders });
@@ -744,13 +740,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     if (creekOwner[i] >= 0 && creekHw > 0 && creekDist[i] < creekHw + CREEK_BANK_RAMP) {
       const c = creekLines[creekOwner[i]];
       const u = atParam(c.poly.u, creekParam[i]);
-      target = fordRamp(
-        attrAt(c.water, u) - attrAt(c.depth, u),
-        creekHw,
-        creekDist[i],
-        attrAt(c.bankSlope, u),
-        target,
-      );
+      target = fordRamp(attrAt(c.water, u), creekHw, creekDist[i], attrAt(c.bankSlope, u), target);
     }
     const w = d <= hw ? 1 : 1 - smoothstep(hw, hw + shoulderAt(t, p), d);
     heights[i] = h + (target - h) * w;
@@ -1214,13 +1204,25 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 }
 
 /**
- * Height of a ford at distance `d` from the creek: the bed at the water, then a ramp at
- * `bankSlope`. A road above the bed is cut down to that ramp; one below is filled up to
- * it. Either way the water's edge is at the bed, never a step.
+ * Height of a ford at distance `d` out from the creek's wet channel: the bed at the water's
+ * edge (the water level, where the carved channel comes up to meet the bank), then a bank
+ * rising at `bankSlope`. A road above that bank is cut down to it; one below the creek's
+ * own bank fill (the `lower` line of the carving, never under the water) is filled up to
+ * that. Either way the ground meets the water's edge at the bed, with no step.
+ *
+ * v0.88 measured the ramp from the centre-line bed (water − depth), so just outside the
+ * water the road was cut a creek's depth below the edge of the channel: a trench at the
+ * water's edge, under water, a wheel dropped into on every ford (0.9 m at the Daintree).
  */
-function fordRamp(bed: number, halfWidth: number, d: number, bankSlope: number, road: number): number {
-  const rise = Math.max(0, d - halfWidth) * bankSlope;
-  return road >= bed ? Math.min(road, bed + rise) : Math.max(road, bed - rise);
+function fordRamp(water: number, halfWidth: number, d: number, bankSlope: number, road: number): number {
+  const out = Math.max(0, d - halfWidth);
+  const rise = out * bankSlope;
+  // The fill fades out over the outer three quarters of the ramp, so a road that comes in
+  // below the water level (the Bloomfield Track at the Little Annan runs 2 m under it 10 m
+  // out) climbs onto the bank instead of meeting a wall at the ramp's edge.
+  const bank = water + Math.min(CREEK_BANK_FILL, rise * 0.9);
+  const fill = road + (bank - road) * (1 - smoothstep(CREEK_BANK_RAMP * 0.25, CREEK_BANK_RAMP, out));
+  return Math.min(Math.max(road, fill), water + rise);
 }
 
 /** Linear interpolation through [distance, value] pairs, holding the end values. */
