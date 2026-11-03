@@ -136,7 +136,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'roaring-meg-ledge': {
       title: 'Rock ledge',
-      text: 'A step of rock about a metre high across the climb. Low range, both lockers and a slow crawl walk the wheels up it. Spin them on the rock and you will cut the tyres.',
+      text: 'About a metre of rock across the climb, broken into three ledges with a lip to each. Low range, both lockers and a slow crawl walk the wheels up them, one wheel at a time. Open diffs will not do it, and spinning on the rock cuts the tyres.',
     },
     'range-sideling': {
       title: 'Sideling',

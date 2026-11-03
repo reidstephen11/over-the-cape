@@ -2290,3 +2290,15 @@ What could be done without pictures was done.
 **The factory body was re-checked.** `side-left.jpg` has a calibrated studio camera recorded for it (`studio.view(-4.87, 0.648, 0.121, 0, 0.648, 0.121, 40.5)` at 1600 × 1000 with `?stock&plain`), so the outline can be laid over the photograph. Re-rendered and compared: nothing beyond the deviations already listed under "Check these first" — the flare openings enlarged on purpose to clear the 35s, the front flare reaching a little further forward below the bumper, and the rear flare's tail 4 cm long. No body change was made, because none was warranted.
 
 **Nothing in the game changed**, so there is nothing to drive for this version. To go further the owner would have to supply photographs he owns or may redistribute, or decide to drop the Sooty framing and call the car a built-up 80 Series.
+
+## v1.42: Roaring Meg's ledge and the Helenvale granite, built the same way
+
+The two places v1.38 and v1.40 left open. Both were `rockySteps` — a rise added to the track's height profile — and both came out as ramps, because the profile is written into a heightfield sampled every metre and blended in over ±0.6 m. Roaring Meg's note promised "a step of rock about a metre high"; what was there was a 24° ramp. Helenvale's five rises of 0.4–0.55 m barely showed above a slope already running 17–28°. Both are now `rockStep` ridges, as the crawl lesson is.
+
+**Roaring Meg: five ledges, no terrain rise.** The 1 m `rockySteps` is gone and the band carries the climb itself: 0.42 and 0.50 m split across the track at 205–206 m, 0.38 and 0.46 m at 208–209, and a 0.36 m lip across the width at 211. The low half changes sides between the pairs, so one front wheel climbs before the other and the easy way up is a diagonal. The note now says what is there: about a metre of rock in three ledges with a lip to each.
+
+**Keeping the 1 m rise under the ledges did not work.** The first attempt left it in place and set the stones on its face. The Perentie hung up dead at 207.9 m with both lockers in and never moved, and at a rise of 0.45 m the Hilux hung up at 208.1 m: the ramp's steepest part and the ledges were in the same three metres. Dropping the rise to zero and making the stones taller gives the same metre of climb, in steps a car can walk up one axle at a time.
+
+**Helenvale: five split pairs on the knoll.** The slope does most of the work there, so the risers are lower than Roaring Meg's — 0.24 to 0.38 m, paired at 1451, 1463, 1476 and 1489 m with a 0.30 m lip at 1501. The `rockySteps` are gone; the five big boulders either side and the three loose rocks on the treads stay, because the note describes them.
+
+**Measured.** Crawling in low range at full throttle with **open** diffs, the Perentie cannot climb Roaring Meg on any line: it stops at 203–206 m and slides back. With both lockers it goes up at about 1.1 m/s, the short-wheelbase Land Rover tilting 31.7°. Every vehicle in the game crawls both bands with the lockers in. High range at 2 m/s still fails Roaring Meg and cuts tyres, which is what the stretch test asks of it.
