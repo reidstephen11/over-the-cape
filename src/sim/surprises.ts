@@ -5,6 +5,7 @@ import type { Vehicle } from './vehicle/vehicle';
 import type { TrackInfo } from './world/features';
 import { convexHull } from './world/convexHull';
 import type { FallenTreeDef } from './world/mapTypes';
+import { poseOf, snapshotPose, type PosedBody } from './bodyPose';
 import {
   distanceShort,
   piecePose,
@@ -25,7 +26,7 @@ export const FALLEN_TREE_STUBS: ReadonlyArray<readonly [number, number, number]>
 ];
 
 /** A movable world object: a fallen tree (the map's or a surprise's), a fallen rock, later planks. */
-export interface DynamicObject {
+export interface DynamicObject extends PosedBody {
   id: string;
   kind: 'fallenTree' | 'rock' | 'plank';
   body: RAPIER.RigidBody;
@@ -188,6 +189,8 @@ export class Surprises {
       l.t = 0;
       for (const p of l.pieces) this.place(p, 0, false);
     }
+    // Put back where they were: nothing is drawn on the way.
+    for (const l of this.live) for (const p of l.pieces) snapshotPose(p.obj);
   }
 
   /** Start an event now, wherever the car is (tests and the debug tools). */
@@ -318,7 +321,13 @@ export class Surprises {
       radius: d.radius,
       mass: d.mass,
     };
-    return { def: d, obj: { id, kind: 'fallenTree', body, def }, colliders, solid: true, dynamic: false };
+    return {
+      def: d,
+      obj: { id, kind: 'fallenTree', body, def, ...poseOf(body) },
+      colliders,
+      solid: true,
+      dynamic: false,
+    };
   }
 
   private makeRock(id: string, d: RockPiece): Piece {
@@ -337,7 +346,7 @@ export class Surprises {
     this.physics.colliderSurface.set(c.handle, SurfaceId.Rock);
     return {
       def: d,
-      obj: { id, kind: 'rock', body, shape, radius: Math.max(d.rx, d.rz) },
+      obj: { id, kind: 'rock', body, shape, radius: Math.max(d.rx, d.rz), ...poseOf(body) },
       colliders: [c],
       solid: true,
       dynamic: false,

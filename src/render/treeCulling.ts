@@ -16,8 +16,8 @@ const frustum = new THREE.Frustum();
 const viewProjection = new THREE.Matrix4();
 
 /**
- * Per-tree frustum culling for a tile of static trees, from bounding spheres worked out once
- * (x, y, z, radius per instance id, in world space). three.js's own culling rebuilt every
+ * Per-instance frustum culling for a batch of static trees (or rocks and logs), from bounding
+ * spheres worked out once (x, y, z, radius per instance id, in world space). three.js's own culling rebuilt every
  * tree's sphere from its matrix on every draw, twice a frame (the view and the shadow map):
  * about 3 ms a frame on a desktop under the Bloomfield forest, several times that on a phone.
  * The draw list is filled the way BatchedMesh.onBeforeRender fills it (three r186): the batch

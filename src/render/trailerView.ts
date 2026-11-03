@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { DRUM, drumSpots, type TrailerTuning } from '../data/trailers';
 import type { VehicleTuning } from '../data/vehicle';
 import type { Trailer } from '../sim/trailer';
-import { slerp } from '../sim/vehicle/math';
+import { followBody } from './followBody';
 import { patchFog } from './fog';
 import { perentieColors } from './perentiePaint';
 import {
@@ -34,7 +34,6 @@ export class TrailerView {
   private readonly jockey = new THREE.Group();
   private readonly drums = new THREE.Group();
   private drumCount = -1;
-  private readonly tmpQ = { x: 0, y: 0, z: 0, w: 1 };
 
   constructor(readonly trailer: Trailer) {
     const t = trailer.tuning;
@@ -140,15 +139,7 @@ export class TrailerView {
   update(alpha: number): void {
     const tr = this.trailer;
     this.setDrums(tr.drums);
-    const p0 = tr.prevPosition;
-    const p1 = tr.body.translation();
-    this.root.position.set(
-      p0.x + (p1.x - p0.x) * alpha,
-      p0.y + (p1.y - p0.y) * alpha,
-      p0.z + (p1.z - p0.z) * alpha,
-    );
-    const q = slerp(tr.prevRotation, tr.body.rotation(), alpha, this.tmpQ);
-    this.root.quaternion.set(q.x, q.y, q.z, q.w);
+    followBody(this.root, tr, alpha);
     const t = tr.tuning;
     for (let i = 0; i < this.wheels.length; i++) {
       this.wheels[i].pivot.position.y = t.wheels[i].y - tr.wheels[i].suspension;

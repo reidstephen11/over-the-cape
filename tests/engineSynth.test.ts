@@ -98,6 +98,26 @@ describe('engine synthesiser', () => {
     expect(Math.abs(synth.rpm - 800)).toBeLessThan(60);
   });
 
+  it('cranks without catching when the engine never runs (an empty tank), then goes quiet', () => {
+    const synth = new EngineSynth(SR);
+    synth.start();
+    const off = { rpm: 0, running: false };
+    render(0.5, off, synth);
+    expect(synth.cranking).toBe(true);
+    expect(synth.rpm).toBeGreaterThan(80);
+    expect(synth.rpm).toBeLessThan(260);
+    // Past the starter's time (0.8 s) and the grace for the sim's word, no fire and no flare.
+    let peak = 0;
+    for (let k = 0; k < 10; k++) {
+      render(0.1, off, synth);
+      peak = Math.max(peak, synth.rpm);
+    }
+    expect(peak).toBeLessThan(300);
+    expect(synth.cranking).toBe(false);
+    const quiet = rms(render(0.5, off, synth), SR / 4);
+    expect(quiet).toBeLessThan(rms(render(1, {}), SR / 4) * 0.01);
+  });
+
   it('goes quiet when the engine has stopped', () => {
     const running = rms(render(1, {}), SR / 4);
     const stopped = rms(render(1, { rpm: 0, running: false }), SR / 4);

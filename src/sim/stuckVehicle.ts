@@ -1,7 +1,8 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { SurfaceId } from '../data/surfaces';
 import { Groups, groups, type Physics, type Rapier } from './physics';
-import type { Vec3 } from './vehicle/math';
+import { v3, type Quat, type Vec3 } from './vehicle/math';
+import { snapshotPose, type PosedBody } from './bodyPose';
 
 /**
  * Someone else's vehicle bogged to its axles, waiting for a winch (an episode's `rescue`).
@@ -36,8 +37,10 @@ const MAX_SPEED = 1.2;
 
 const SOLID = groups(Groups.DYNAMIC, 0xffff);
 
-export class StuckVehicle {
+export class StuckVehicle implements PosedBody {
   readonly body: RAPIER.RigidBody;
+  readonly prevPosition = v3();
+  readonly prevRotation: Quat = { x: 0, y: 0, z: 0, w: 1 };
   /** How far it has been pulled (m). */
   moved = 0;
   freed = false;
@@ -82,6 +85,7 @@ export class StuckVehicle {
     this.x = this.def.x + this.fx * this.moved;
     this.z = this.def.z + this.fz * this.moved;
     this.place(true);
+    snapshotPose(this);
   }
 
   /**
