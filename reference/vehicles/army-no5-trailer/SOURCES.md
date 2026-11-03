@@ -11,16 +11,16 @@ The overall and inside dimensions and the payload are from Stephen Stansfield's 
 |                    | Published                                      | In the current model                                                             |
 | ------------------ | ---------------------------------------------- | -------------------------------------------------------------------------------- |
 | Length             | 3,180 mm overall (one owner measured 3.05 m)   | 3.19 m, ring centre (`coupling.z` −2.35) to the back of the box (0.835)          |
-| Width              | 1,550 mm overall                               | 1.55 m over the lip (±0.775) and 1.51 m over the tyres (±0.755), since v1.22     |
+| Width              | 1,550 mm overall                               | 1.55 m over the lip (±0.775, since v1.22) and 1.43 m over the tyres (±0.715)     |
 | Inside the box     | 1,850 × 1,320 mm, 475 mm deep                  | 1.85 × 1.32 m, 0.475 m deep (`bed`)                                              |
 | Between the arches | about 980 mm (an owner's measurement)          | 0.98 m (`arch` inner faces at ±0.49)                                             |
-| Track              | not published                                  | 1.32 m: the wheels sit under the box between the arches, as the rear photo shows |
+| Track              | not published                                  | 1.24 m: the wheels sit under the box between the arches, as the rear photo shows |
 | Tyres              | not published; the game uses 7.50-16 bar tyres | 0.76 m across                                                                    |
 | Tare               | 360 kg (one owner's weighbridge)               | 360 kg                                                                           |
 | Payload            | 500 kg ("general cargo … up to 500 kg")        | 500 kg                                                                           |
 | Floor height       | not published                                  | about 0.79 m above the ground, empty                                             |
 
-**Check these first.** The overall width matches since v1.22 (the hubs went 40 mm wider each side and the lip stands 85 mm out past the box's sides); the published figure does not say how much of it is lip. The floor height and the tyre size are judged from the photographs (the tyre's top meets the channel along the bottom of the box). How the prop leg folds, and the spare wheel's bracket, are guesses from one photograph of an upturned trailer.
+**Check these first.** The overall width matches since v1.22: the lip stands 85 mm out past the box's sides. (v1.22 also moved the hubs 40 mm out each side; v1.26 put them back, because the wider track stopped the loaded trailer tipping in the hard turn across a slope it is meant to go over in. The published figure does not say how much of the 1,550 mm is lip.) The floor height and the tyre size are judged from the photographs (the tyre's top meets the channel along the bottom of the box). How the prop leg folds, and the spare wheel's bracket, are guesses from one photograph of an upturned trailer.
 
 ## Gaps
 
