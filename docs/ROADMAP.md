@@ -27,7 +27,7 @@ For players who like 4WD challenges and realistic driving. v1.35 added the manua
 
 - Episodes 5–7: Telegraph Track South, Telegraph Track North and The Tip (SPEC.md §2).
 - A later delivery mission towing another vehicle.
-- Compare and correct the 80 Series against real Sooty MkII photographs; the current model remains a MkII-inspired draft.
+- The 80 Series stays a Sooty MkII-inspired draft, and **correcting it against the real car is blocked on licensing, not effort**: no photograph of Sooty exists under a licence that allows redistribution here (searched again November 2026 — it appears only in 4WD 24/7 videos, magazine features and retailer pages). v1.41 took what could be taken without pictures: MY4X4's written specification is now in `SOURCES.md`, with the three places the game's car disagrees with it (both diff locks, the snorkel, the rear bar and swing-away spare). The factory body underneath was re-checked against the black VX photographs at the calibrated side camera and matches within the deviations already recorded. To go further the owner would have to supply photographs he has the right to commit, or decide to drop the Sooty framing and call it a built-up 80.
 - Resolve the Army No. 5's documented width discrepancy and the estimated floor, prop-leg and spare-wheel details (`reference/vehicles/army-no5-trailer/SOURCES.md`).
 - Download the original box-trailer reference photograph; the model was matched to the Commons preview (`reference/vehicles/box-trailer-6x4/SOURCES.md`).
 - Vehicle triangle counts: done in v1.24 and v1.29 (every vehicle under 80,000; `npx vite-node scripts/tri-count.ts` prints the table). Still open if ever needed: fewer, larger blocks for the TOYOTA and NISSAN lettering, and the HJ60's script as one block a word.

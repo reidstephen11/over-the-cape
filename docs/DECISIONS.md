@@ -2276,3 +2276,17 @@ v1.38 gave the crawl lesson a step, and it was still easy in the dry. The reason
 **The engine changes from v1.38 go with the ledge.** The ledge box's bevel and the rock painting for `steps` are reverted, since nothing uses `steps` again. In their place, the ground is painted rock under a `ridge` stone — bedrock coming up through the track, unlike a boulder sitting loose beside it — and `nearObstacle` in `surprisePlan.ts` keeps rockfalls and fallen trees 50 m clear of a ridge stone rather than of a `steps` ledge.
 
 **Still open**, as in v1.38: Roaring Meg's rock ledge is a 1 m `rockySteps` rise that comes out as a 24° ramp, and the granite pinch on the Helenvale knoll is five more of them. Both would suit the same treatment.
+
+## v1.41: the 80 Series reference, as far as licensing allows
+
+The roadmap asked to compare and correct the 80 Series against real Sooty MkII photographs. **That is blocked, and not on effort.** No photograph of Shaun Whale's car exists under a licence that allows redistribution in this repository: searched again in November 2026 across Wikimedia Commons and the open web, it appears only in 4WD 24/7 videos, magazine features and retailer pages. `reference/vehicles/README.md` only permits CC BY, CC BY-SA, CC0 or public domain, so none of those may be committed, and the model cannot be checked against the car it is named after.
+
+What could be done without pictures was done.
+
+**The written specification is now recorded.** [MY4X4's build page](https://www.my4x4.info/sooty) is text, so it can be cited: a 1993 80 Series with the 1HD-FTE factory turbo diesel and an MTQ CT 26, King Springs with Superior drop arms and an adjustable panhard, General Grabber X3 tyres on bead locks, an ARB air locker **on the rear only**, a Dominator winch, a Custom RV bull bar with two 6 inch Livid lights, a 22 inch light bar, a reinforced roof rack, and scrub rails with custom sliders. It gives no lift height and no tyre size, so Repco's 3 inch and 35 inch figures stand as the only sources for those.
+
+**Three places the game's car disagrees with it**, now written into `SOURCES.md` rather than left implicit: the game gives every vehicle both diff locks where Sooty has the rear only (that is the shared control scheme, not a decision about this car, so it is left); the snorkel is in Repco's rundown and in the model but not in MY4X4's list; and the rear bar with the swing-away spare is likewise in one source and not the other. Neither source is a photograph, so neither of the last two can be settled now.
+
+**The factory body was re-checked.** `side-left.jpg` has a calibrated studio camera recorded for it (`studio.view(-4.87, 0.648, 0.121, 0, 0.648, 0.121, 40.5)` at 1600 × 1000 with `?stock&plain`), so the outline can be laid over the photograph. Re-rendered and compared: nothing beyond the deviations already listed under "Check these first" — the flare openings enlarged on purpose to clear the 35s, the front flare reaching a little further forward below the bumper, and the rear flare's tail 4 cm long. No body change was made, because none was warranted.
+
+**Nothing in the game changed**, so there is nothing to drive for this version. To go further the owner would have to supply photographs he owns or may redistribute, or decide to drop the Sooty framing and call the car a built-up 80 Series.
