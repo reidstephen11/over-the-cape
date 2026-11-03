@@ -35,6 +35,19 @@ describe('exploration and saving', () => {
     }
   });
 
+  it('keeps the gearbox setting and reads old or invalid saves as automatic', () => {
+    const s = new MemoryStore();
+    expect(defaultSettings.gearbox).toBe('automatic');
+    for (const gearbox of ['automatic', 'manual', 'clutch'] as const) {
+      writeSave(saveData({ settings: { ...defaultSettings, gearbox } }), s);
+      expect(loadSave(s)!.settings.gearbox).toBe(gearbox);
+    }
+    for (const gearbox of [undefined, null, 'sequential', 3, '__proto__']) {
+      s.setItem(SAVE_KEY, JSON.stringify({ version: 1, settings: { gearbox }, episodes: {} }));
+      expect(loadSave(s)!.settings.gearbox).toBe('automatic');
+    }
+  });
+
   it('discovers a POI once and remembers the last campsite', () => {
     const ex = new Exploration(highCountryMap.pois, { discovered: [], lastCampsite: 'river-flat-camp' });
     const hut = highCountryMap.pois.find((p) => p.id === 'mountain-hut')!;

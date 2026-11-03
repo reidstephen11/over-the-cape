@@ -11,6 +11,18 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 7. **Other traffic.** ~~Oncoming 4WDs on narrow sections that you pull over for~~ (done in v0.69, `src/sim/traffic.ts`). Stranded drivers to winch out for fuel or plugs done in v0.71 (`src/sim/stranded.ts`).
 8. ~~**Night finish.**~~ Done in v0.66.
 
+# Sim-audience follow-ups
+
+For players who like 4WD challenges and realistic driving. v1.35 added the manual gearbox (controller only). Next, one update at a time:
+
+1. **Transfer case.** Per vehicle `transfer: 'partTime' | 'fullTime'`: part-time with 2H/4H/4L and free-wheeling hubs (40, 60, Hilux, Troopy, Patrol, LC79); full-time with a centre diff lock (80 Series, Perentie and Camel; the Unimog full-time). L cycles 2H → 4H (on the move, hubs locked) → 4L (stopped). Hubs lock from the tool menu, stopped, about 20 s; auto hubs on the LC79. 2H: no front drive (the per-axle split goes to the rear only), slightly lower rolling drag and fuel, tail-happy on gravel. Part-time 4H/4L or the centre lock on rock or concrete winds the driveline up: steering effort and tyre scrub in tight turns, a creak, tyre wear; a 2H/4H/4L HUD lamp. The autopilot and the tests default to 4H with the hubs locked so nothing tuned moves.
+2. **Scored gate courses on the CREB**, using the existing `crawlCourse` and `gateCount` system (gates, touches and a score for the hard climbs).
+3. **Steering-wheel and pedal mapping**, with rumble, and field-of-view and sensitivity settings.
+4. **Tyre pressure in psi and more recovery gear:** a snatch block, a tree protector, a rear recovery point and a shovel.
+5. **Rendered mirrors and head motion** in the driver's seat.
+6. **Shift buttons on phones**, so the manual gearbox works with touch.
+7. **Solid-axle articulation** (high risk: it touches the suspension the whole game is tuned on).
+
 # Other follow-up work
 
 - Episodes 5–7: Telegraph Track South, Telegraph Track North and The Tip (SPEC.md §2).
