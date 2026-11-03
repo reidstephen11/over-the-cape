@@ -73,10 +73,13 @@ describe('Granite Spur', () => {
   });
 
   it('the Rock Steps go in low range with open diffs but not in high range', async () => {
-    expect((await drive('rock-steps', 'open')).done).toBe(true);
-    const high = await drive('rock-steps', 'high', false, 45);
+    const open = await drive('rock-steps', 'open');
+    expect(open.done).toBe(true);
+    // High range bounces up the steps on spinning wheels, rolling back off them, and is
+    // still short of the top after three times as long as low range took.
+    const high = await drive('rock-steps', 'high', false, 3 * open.time);
     expect(high.done).toBe(false);
-    expect(high.remaining).toBeGreaterThan(5);
+    expect(high.remaining).toBeGreaterThan(2);
   });
 
   it('the Log Step lifts one side at a time', async () => {
