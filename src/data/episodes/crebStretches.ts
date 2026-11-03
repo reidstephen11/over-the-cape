@@ -97,6 +97,48 @@ const crawlBand: TrailStoneDef[] = [
   boulder(178, 3.7, 0.7, 1.3),
 ];
 
+/**
+ * Roaring Meg: the metre of rock the track climbs out of the gorge, in bites rather than one
+ * face. The ground still steps up a metre under them; these break that face into three, split
+ * down the middle so one front wheel climbs before the other, with the low half changing sides.
+ */
+const roaringMegLedge: TrailStoneDef[] = [
+  rockStep(205.4, -0.85, 0.42, 1.9, tread(0.42), -6),
+  rockStep(206.2, 0.85, 0.5, 1.9, tread(0.5), 7),
+  rockStep(208.2, 0.8, 0.38, 1.9, tread(0.38), 5),
+  rockStep(209.0, -0.8, 0.46, 1.9, tread(0.46), -7),
+  rockStep(211.2, 0, 0.36, 3.4, tread(0.36), 3),
+  boulder(204, -2.9, 0.8, 1.4),
+  boulder(210, 3.0, 0.7, 1.3),
+];
+
+/**
+ * The Helenvale knoll: granite from the Black Mountain country coming up through the road in
+ * ledges, on a climb already at 17-28°. The slope does most of the work, so the risers are
+ * lower than the crawl lesson's: each pair is split, the low half changing sides up the hill,
+ * with the loose rocks on the treads under one wheel and then the other.
+ */
+const helenvaleGranite: TrailStoneDef[] = [
+  rockStep(1451.4, -1.15, 0.24, 2.4, tread(0.24), -6),
+  rockStep(1452.3, 1.15, 0.34, 2.4, tread(0.34), 6),
+  rockStep(1463.4, 1.1, 0.26, 2.4, tread(0.26), 5),
+  rockStep(1464.3, -1.1, 0.36, 2.4, tread(0.36), -7),
+  rockStep(1476.4, -1.15, 0.28, 2.4, tread(0.28), -5),
+  rockStep(1477.3, 1.15, 0.34, 2.4, tread(0.34), 7),
+  rockStep(1489.4, 1.1, 0.24, 2.4, tread(0.24), 6),
+  rockStep(1490.3, -1.1, 0.38, 2.4, tread(0.38), -6),
+  rockStep(1501.6, 0, 0.3, 4.6, tread(0.3), 4),
+  // Granite either side of the ledges, and on the treads under one wheel then the other.
+  boulder(1449, -3.1, 0.8, 1.5),
+  boulder(1460, 3.2, 0.9, 1.6),
+  boulder(1471, -3.3, 0.7, 1.3),
+  boulder(1484, 3.0, 0.85, 1.5),
+  boulder(1497, -3.0, 0.75, 1.4),
+  boulder(1469, 0.8, 0.42, 0.9, 1.1),
+  boulder(1482, -0.8, 0.42, 0.9, 1.1),
+  boulder(1495, 0.8, 0.4, 0.9, 1.1),
+];
+
 export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'upper-daintree-road': {
     rough: { ...roadRough, bogs: 0, washouts: 1, washoutDepth: 0.16 },
@@ -114,8 +156,9 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'creb-ridge': {
     rough: { ...rangeRough, longBogsKept: undefined },
   },
-  // Out of Roaring Meg's gorge the track climbs a rock ledge.
-  'roaring-meg-climb': { rough: rangeRough, rockySteps: [{ at: 207, rise: 1 }] },
+  // Out of Roaring Meg's gorge the track climbs a rock ledge: the ground steps up a metre and
+  // the bedrock breaks that face into three.
+  'roaring-meg-climb': { rough: rangeRough, stones: roaringMegLedge },
   // Bob's Hill: boulders beside the steepest of the pinch.
   'bobs-hill': {
     stones: [boulder(56, -3.2, 0.7, 1.3), boulder(70, 3.3, 0.8, 1.4), boulder(84, -3.4, 0.6, 1.2)],
@@ -138,24 +181,7 @@ export const stretchTracks: Record<string, Partial<TrackDef>> = {
   'bloomfield-track': {
     rough: { ...roadRough, potholes: 4, bogs: 0 },
     clay: [[855, 925]],
-    rockySteps: [
-      { at: 1452, rise: 0.4 },
-      { at: 1464, rise: 0.5 },
-      { at: 1477, rise: 0.45 },
-      { at: 1490, rise: 0.55 },
-      { at: 1502, rise: 0.4 },
-    ],
-    stones: [
-      // Granite either side of the ledges, and on the treads under one wheel then the other.
-      boulder(1449, -3.1, 0.8, 1.5),
-      boulder(1460, 3.2, 0.9, 1.6),
-      boulder(1471, -3.3, 0.7, 1.3),
-      boulder(1484, 3.0, 0.85, 1.5),
-      boulder(1497, -3.0, 0.75, 1.4),
-      boulder(1469, 0.8, 0.42, 0.9, 1.1),
-      boulder(1482, -0.8, 0.42, 0.9, 1.1),
-      boulder(1495, 0.8, 0.4, 0.9, 1.1),
-    ],
+    stones: helenvaleGranite,
     routeHint: 'A creek, a bog or a climb every few hundred metres. Keep moving in the water',
   },
   'big-red-bypass': { rockySteps: [{ at: 190, rise: 0.6 }] },
