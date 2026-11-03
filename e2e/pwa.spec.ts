@@ -3,7 +3,7 @@ import { collectErrors } from './helpers';
 
 test('the built site ships a Pages-scoped manifest and service worker', async ({ page, request }) => {
   const errors = collectErrors(page);
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await expect(page.locator('meta[name="theme-color"]').first()).toHaveAttribute('content', '#54614B');
   await expect(page.locator('link[rel="apple-touch-icon"]').first()).toHaveAttribute(
     'href',

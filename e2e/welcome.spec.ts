@@ -7,7 +7,7 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   const drive = page.locator('[data-welcome-drive]');
   await expect(drive).toBeVisible();

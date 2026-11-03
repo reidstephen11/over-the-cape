@@ -16,7 +16,7 @@ test('changing to the Land Rover from the pause menu restarts from the last camp
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('shortie');
@@ -53,7 +53,7 @@ test('the Hilux is chosen on the welcome screen, drives off, and has its own cab
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /Hilux single cab/ }).click();
@@ -91,7 +91,7 @@ test('the Unimog is chosen on the welcome screen, drives off, and has its own ca
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /Unimog UL1700L/ }).click();
@@ -131,7 +131,7 @@ test('the Troop Carrier is chosen on the welcome screen, starts with its sub-tan
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /Troop Carrier/ }).click();
@@ -178,7 +178,7 @@ test('the GQ Patrol is chosen on the welcome screen and drives off', async ({ pa
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await openJourney(page);
   await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /GQ Patrol/ }).click();
@@ -206,7 +206,7 @@ test('the LC79 V8 is chosen on the welcome screen and drives off', async ({ page
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/');
+  await page.goto('/?track=reopened');
   await openJourney(page);
   await page.locator('[data-group="setup"]').click();
   await page.getByRole('button', { name: /LC79 V8/ }).click();

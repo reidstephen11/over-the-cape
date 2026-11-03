@@ -72,7 +72,7 @@ test.describe('phone', () => {
   test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
 
   test('the title Settings page offers Low and Medium graphics only (v1.23)', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?track=reopened');
     await page.locator('[data-title-begin]').click();
     await page.locator('[data-value="settings"]').click();
     await expect(page.locator('[data-group="quality"]')).toHaveCount(2);
@@ -84,7 +84,7 @@ test.describe('phone', () => {
   }) => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
-    await page.goto('/?surprises=off');
+    await page.goto('/?surprises=off&track=reopened');
     await openJourney(page);
     await page.evaluate(() => localStorage.clear());
     await page.reload();
@@ -235,7 +235,7 @@ test.describe('phone', () => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
     await lowGraphics(page);
-    await page.goto('/?surprises=off');
+    await page.goto('/?surprises=off&track=reopened');
     await waitReady(page);
     await expect(page.locator('.touch-controls')).toHaveClass(/stick-drive/);
     await expect(page.locator('.touch-pedals.touch-drive')).toBeHidden();
@@ -280,7 +280,7 @@ test.describe('phone on the CREB', () => {
   test("the HUD's panels keep clear of each other and the buttons in every view", async ({ page }) => {
     test.setTimeout(900_000);
     const errors = collectErrors(page);
-    await page.goto('/?surprises=off');
+    await page.goto('/?surprises=off&track=reopened');
     await openJourney(page);
     await page.evaluate(() => localStorage.clear());
     await page.reload();
@@ -356,7 +356,7 @@ test.describe('phone on the CREB', () => {
 test('desktop shows no touch controls', async ({ page }) => {
   test.setTimeout(600_000);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
   await expect(page.locator('.touch-controls')).toBeHidden();

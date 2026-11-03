@@ -8,7 +8,7 @@ test('finds off the main line load once, show in the supplies, and camps keep th
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
   const start = await health(page);

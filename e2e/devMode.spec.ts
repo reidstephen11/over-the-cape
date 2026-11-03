@@ -7,7 +7,7 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?dev&surprises=off');
+  await page.goto('/?dev&surprises=off&track=reopened');
   await openJourney(page);
   // Every episode is open, with conditions to pick, before any is finished.
   await expect(page.locator('[data-group="episode"][disabled]')).toHaveCount(0);

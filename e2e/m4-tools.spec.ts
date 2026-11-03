@@ -16,7 +16,7 @@ test('M4: winch, planks, jack, flooding, dirt and dents', async ({ page }) => {
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?debug&surprises=off');
+  await page.goto('/?debug&surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
 

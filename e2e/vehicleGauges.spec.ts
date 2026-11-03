@@ -7,7 +7,7 @@ test('vehicle instruments show fuel, temperature, pressure setting and the damag
   test.setTimeout(600_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await waitReady(page);
 
   // The HUD style draws the dials; the older gauge panel stays in the page, hidden, and

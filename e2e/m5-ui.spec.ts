@@ -39,7 +39,7 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   const errors = collectErrors(page);
   await recordDiscoveryCards(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
   // Starting at Daintree Village discovers it.
@@ -124,7 +124,7 @@ test('M5: with storage blocked the game still runs', async ({ page }) => {
     });
   });
   await recordDiscoveryCards(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
   await expect.poll(() => discoveryCards(page), { timeout: 30_000 }).toContain('Daintree Village');

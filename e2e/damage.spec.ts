@@ -7,7 +7,7 @@ test('damage: a setting, shown on the HUD; fit a spare for a torn sidewall, camp
   test.setTimeout(1_200_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off');
+  await page.goto('/?surprises=off&track=reopened');
   await openJourney(page);
   await waitReady(page);
 
