@@ -62,14 +62,14 @@ export function buildVehicleWheel(tuning: VehicleTuning): THREE.BufferGeometry {
             cy + r * Math.sin((i * Math.PI * 2) / n),
           ),
       );
-    const disc = new THREE.Shape(circle(0, 0, rimR - 0.01, 48));
+    const disc = new THREE.Shape(circle(0, 0, rimR - 0.01, 32));
     for (let i = 0; i < 6; i++) {
       const a = (i * Math.PI) / 3,
         p = (r: number, t: number) => new THREE.Vector2(Math.cos(a + t) * r, Math.sin(a + t) * r);
       const hole = [p(0.122, 0.245), p(0.197, 0.145), p(0.197, 0.902), p(0.122, 0.802)];
       disc.holes.push(new THREE.Path(hole.reverse()));
     }
-    disc.holes.push(new THREE.Path(circle(0, 0, 0.051, 24).reverse()));
+    disc.holes.push(new THREE.Path(circle(0, 0, 0.051, 12).reverse()));
     b.push()
       .translate(side * (w * 0.5 - 0.03), 0, 0)
       .rotate(0, Math.PI / 2, 0);
@@ -79,13 +79,13 @@ export function buildVehicleWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 - 0.013), 0, 0)
       .rotate(0, 0, Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.205, 0.205, 0.035, 40, 1, true), rim);
+    b.geometry(new THREE.CylinderGeometry(0.205, 0.205, 0.035, 24, 1, true), rim);
     b.pop();
     b.slot = M.Paint;
     b.push()
       .translate(side * (w * 0.5 - 0.012), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 32), rim);
+    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 16), rim);
     b.pop();
     for (let i = 0; i < 6; i++) {
       const a = (i / 6) * Math.PI * 2;
@@ -101,7 +101,7 @@ export function buildVehicleWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.022), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.05, 0.058, 0.05, 20), steel.clone().multiplyScalar(0.9));
+    b.geometry(new THREE.CylinderGeometry(0.05, 0.058, 0.05, 12), steel.clone().multiplyScalar(0.9));
     b.pop();
   }
   // The bead ring; its 24 bolts a side were 1,150 triangles a wheel and never showed.

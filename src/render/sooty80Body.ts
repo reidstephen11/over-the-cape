@@ -196,7 +196,7 @@ function shell(
 /** Row positions along the car shared by the lower skins and the wing tops, so their edges meet. */
 function skinRows() {
   const tail = zRear(WAIST);
-  const zs = Array.from({ length: 91 }, (_, i) => F + ((TAIL - F) * i) / 90).filter((z) => z <= tail);
+  const zs = Array.from({ length: 46 }, (_, i) => F + ((TAIL - F) * i) / 45).filter((z) => z <= tail);
   for (const a of [-WB, WB])
     for (const d of [-1, 1]) zs.push(a + d * Math.sqrt(ARCH * ARCH - (SILL - ACY) ** 2));
   zs.push(AFOOT);
@@ -1149,7 +1149,7 @@ function bullbar(b: VehicleBuilder) {
     b.push()
       .translate(x, 0.545, zt - 0.148)
       .scale(1, 1, 0.12);
-    b.geometry(new THREE.SphereGeometry(0.092, 24, 10), lens);
+    b.geometry(new THREE.SphereGeometry(0.092, 20, 8), lens);
     b.pop();
     for (const [dx, dy] of [
       [-0.042, -0.032],

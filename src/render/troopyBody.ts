@@ -1103,12 +1103,12 @@ export function buildTroopyWheel(tuning: VehicleTuning): THREE.BufferGeometry {
             cy + r * Math.sin((i * Math.PI * 2) / n),
           ),
       );
-    const disc = new THREE.Shape(circle(0, 0, rimR - 0.01, 48));
+    const disc = new THREE.Shape(circle(0, 0, rimR - 0.01, 16));
     for (let i = 0; i < 6; i++) {
       const a = ((i + 0.5) * Math.PI) / 3;
-      disc.holes.push(new THREE.Path(circle(Math.cos(a) * 0.168, Math.sin(a) * 0.168, 0.022, 14).reverse()));
+      disc.holes.push(new THREE.Path(circle(Math.cos(a) * 0.168, Math.sin(a) * 0.168, 0.022, 8).reverse()));
     }
-    disc.holes.push(new THREE.Path(circle(0, 0, 0.051, 24).reverse()));
+    disc.holes.push(new THREE.Path(circle(0, 0, 0.051, 12).reverse()));
     b.push()
       .translate(side * (w * 0.5 - 0.03), 0, 0)
       .rotate(0, Math.PI / 2, 0);
@@ -1118,7 +1118,7 @@ export function buildTroopyWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 - 0.012), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 32), rim);
+    b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 16), rim);
     b.pop();
     for (let i = 0; i < 6; i++) {
       const a = (i / 6) * Math.PI * 2;
@@ -1134,7 +1134,7 @@ export function buildTroopyWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.022), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.05, 0.058, 0.05, 20), steel.clone().multiplyScalar(0.9));
+    b.geometry(new THREE.CylinderGeometry(0.05, 0.058, 0.05, 12), steel.clone().multiplyScalar(0.9));
     b.pop();
   }
   return cleanGeometry(b.build());

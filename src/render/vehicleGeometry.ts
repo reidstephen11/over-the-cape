@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MeshBuilder } from './lowpoly';
+import { sweptTube } from './sweptTube';
 
 /** Dirt zones stay independent of the material on each part. */
 export const BodyZone = { Front: 0, Sides: 1, Rear: 2, Roof: 3, Trim: 4, Glass: 5 } as const;
@@ -121,8 +122,26 @@ export class VehicleBuilder extends MeshBuilder {
     this.slot = slot;
     this.tag = zone;
     this.push(transform);
-    this.geometry(new THREE.CylinderGeometry(radius, radius, delta.length(), 10), color);
+    this.geometry(new THREE.CylinderGeometry(radius, radius, delta.length(), rodSides(radius)), color);
     this.pop();
+    return this;
+  }
+
+  /**
+   * One smooth tube through the points, for a rib or a hoop that was a chain of rods:
+   * `sides` quads a step, with no seams or end caps between the steps.
+   */
+  chain(
+    points: THREE.Vector3Like[],
+    radius: number,
+    color: THREE.Color,
+    slot: VehicleMaterialId = VehicleMaterial.Metal,
+    zone: number = BodyZone.Trim,
+  ): this {
+    this.slot = slot;
+    this.tag = zone;
+    const path = points.map((p) => new THREE.Vector3(p.x, p.y, p.z));
+    this.geometry(sweptTube(path, radius, rodSides(radius)), color);
     return this;
   }
 
@@ -142,7 +161,9 @@ export class VehicleBuilder extends MeshBuilder {
     this.push()
       .translate(x, y, z)
       .rotate(axis === 'y' ? Math.PI / 2 : 0, axis === 'x' ? Math.PI / 2 : 0, 0);
-    this.geometry(new THREE.TorusGeometry(radius, tube, 6, 32), color);
+    // Sides by size: a thin ring is four-sided, a small one has 12 steps round, a wheel rim 32.
+    const round = THREE.MathUtils.clamp(Math.round((2 * Math.PI * radius) / 0.035), 12, 32);
+    this.geometry(new THREE.TorusGeometry(radius, tube, tube < 0.008 ? 4 : 6, round), color);
     this.pop();
     return this;
   }
@@ -233,6 +254,11 @@ export function chamferBox(w: number, h: number, d: number, r: number): THREE.Bu
   g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   g.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
   return g;
+}
+
+/** Sides for a rod or chain of the given radius: six up to 8 mm, eight up to 20 mm, ten above. */
+function rodSides(radius: number): number {
+  return radius <= 0.008 ? 6 : radius <= 0.02 ? 8 : 10;
 }
 
 /** One draw group per material; preserve vertex order for dirt and dent deformation. */

@@ -289,7 +289,7 @@ function headlamp(b: VehicleBuilder, x: number, y: number): void {
   b.push()
     .translate(x, y, F - 0.03)
     .scale(1, 1, 0.12);
-  b.geometry(new THREE.SphereGeometry(r - 0.004, 28, 8), lens.clone().multiplyScalar(0.9));
+  b.geometry(new THREE.SphereGeometry(r - 0.004, 20, 8), lens.clone().multiplyScalar(0.9));
   b.pop();
 }
 
@@ -415,15 +415,17 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
   b.block(0, gy, F - 0.004, gw + 0.04, gh + 0.04, 0.02, trim, M.Rubber, Z.Front, 0.03);
   b.block(0, gy, F - 0.008, gw, gh, 0.02, black, M.Rubber, Z.Front, 0.025);
   // Open hexagonal ribs over a recessed backing; keep lamp and lettering zones clear.
+  // Cells of 30 mm radius (6 rows of 28): the real mesh is finer, but at 20 mm the ribs
+  // cost 4,500 triangles and read the same from any distance the game shows them at.
   const mesh = trim.clone().multiplyScalar(1.7),
-    radius = 0.02,
-    inner = 0.0168;
+    radius = 0.03,
+    inner = 0.0252;
   b.slot = M.Rubber;
   b.tag = Z.Front;
-  for (let row = 0; row < 9; row++)
-    for (let col = 0; col < 42; col++) {
+  for (let row = 0; row < 6; row++)
+    for (let col = 0; col < 28; col++) {
       const x = -0.7 + col * Math.sqrt(3) * radius + ((row % 2) * Math.sqrt(3) * radius) / 2;
-      const y = gy - 0.12 + row * 0.03;
+      const y = gy - 0.1125 + row * 0.045;
       if (
         Math.abs(x) > 0.69 ||
         Math.hypot(Math.abs(x) - 0.58, y - gy) < 0.125 ||
@@ -540,7 +542,7 @@ function roof(b: VehicleBuilder, paint: THREE.Color): void {
     curveSegments: 10,
   });
   g.rotateX(-Math.PI / 2);
-  g = subdivideSurface(g, (_p, n) => Math.abs(n.y) > 0.7, 3);
+  g = subdivideSurface(g, (_p, n) => Math.abs(n.y) > 0.7, 2);
   const p = g.getAttribute('position'),
     n = g.getAttribute('normal');
   for (let i = 0; i < p.count; i++) {
@@ -568,10 +570,14 @@ function roof(b: VehicleBuilder, paint: THREE.Color): void {
   for (const z of [-0.45, -0.05, 0.35]) {
     const t = (z - front) / (CAB_BACK - front),
       q = Math.sin(Math.PI * t) ** 2;
-    for (let i = 0; i < 20; i++) {
-      const point = (x: number) => v(x, ROOF + 0.004 + 0.035 * (1 - (x / SIDE) ** 2) ** 2 * q, z);
-      b.rod(point(-0.75 + i * 0.075), point(-0.75 + (i + 1) * 0.075), 0.006, paint, M.Paint, Z.Roof);
-    }
+    const point = (x: number) => v(x, ROOF + 0.004 + 0.035 * (1 - (x / SIDE) ** 2) ** 2 * q, z);
+    b.chain(
+      Array.from({ length: 21 }, (_, i) => point(-0.75 + i * 0.075)),
+      0.006,
+      paint,
+      M.Paint,
+      Z.Roof,
+    );
   }
 }
 
@@ -670,7 +676,7 @@ function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: numb
   b.ring(x, y, z, r + 0.005, 0.01, chrome, M.Metal, 'z', Z.Front);
   b.slot = M.DrivingLamp;
   b.push().translate(x, y, z).scale(1, 1, 0.2);
-  b.geometry(new THREE.SphereGeometry(r, 24, 8), lens);
+  b.geometry(new THREE.SphereGeometry(r, 20, 8), lens);
   b.pop();
   b.rod(v(x, y - r - 0.01, z + 0.06), v(x, y - r - 0.07, z + 0.06), 0.012, black, M.Metal, Z.Front);
 }
@@ -1179,7 +1185,7 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
       .translate(side * (w * 0.5 - 0.06), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
     b.geometry(
-      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 40),
+      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 24),
       rim.clone().multiplyScalar(0.7),
     );
     b.pop();
@@ -1210,7 +1216,7 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.008), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.04, 0.045, 0.02, 20), steel.clone().multiplyScalar(0.9));
+    b.geometry(new THREE.CylinderGeometry(0.04, 0.045, 0.02, 12), steel.clone().multiplyScalar(0.9));
     b.pop();
   }
   return cleanGeometry(b.build());

@@ -316,7 +316,7 @@ function frontEnd(b: VehicleBuilder): void {
     b.push()
       .translate(hx, 0.416, F - 0.058)
       .scale(1, 1, 0.16);
-    b.geometry(new THREE.SphereGeometry(0.096, 40, 20), lens);
+    b.geometry(new THREE.SphereGeometry(0.096, 20, 8), lens);
     b.pop();
     for (let i = -6; i <= 6; i++) {
       const x = i * 0.013,
@@ -1015,14 +1015,14 @@ export function buildHiluxWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       .translate(side * (w * 0.5 - 0.03), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
     b.geometry(
-      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 40),
+      new THREE.CylinderGeometry(rimR - 0.01, rimR - 0.01, 0.02, 24),
       rim.clone().multiplyScalar(0.88),
     );
     b.pop();
     b.push()
       .translate(side * (w * 0.5 - 0.012), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.115, 0.13, 0.03, 32), rim);
+    b.geometry(new THREE.CylinderGeometry(0.115, 0.13, 0.03, 16), rim);
     b.pop();
     for (let i = 0; i < 6; i++) {
       const a = ((i + 0.5) / 6) * Math.PI * 2;
@@ -1047,7 +1047,7 @@ export function buildHiluxWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.022), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.046, 0.054, 0.05, 20), steel.clone().multiplyScalar(0.9));
+    b.geometry(new THREE.CylinderGeometry(0.046, 0.054, 0.05, 12), steel.clone().multiplyScalar(0.9));
     b.pop();
   }
   return b.build();

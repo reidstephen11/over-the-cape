@@ -226,7 +226,7 @@ function frontEnd(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.push()
       .translate(lx, ly, lz - 0.006)
       .scale(1, 1, 0.3);
-    b.geometry(new THREE.SphereGeometry(0.088, 24, 12), lens);
+    b.geometry(new THREE.SphereGeometry(0.088, 20, 8), lens);
     b.pop();
     for (const dx of [-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06]) {
       const h = Math.sqrt(0.08 ** 2 - dx ** 2);
@@ -720,12 +720,12 @@ export function buildUnimogWheel(tuning: VehicleTuning): THREE.BufferGeometry {
             cy + r * Math.sin((i * Math.PI * 2) / n),
           ),
       );
-    const disc = new THREE.Shape(circle(0, 0, 0.25, 48));
+    const disc = new THREE.Shape(circle(0, 0, 0.25, 32));
     for (let i = 0; i < 10; i++) {
       const a = (i * Math.PI) / 5;
       disc.holes.push(new THREE.Path(circle(Math.cos(a) * 0.205, Math.sin(a) * 0.205, 0.022, 16).reverse()));
     }
-    disc.holes.push(new THREE.Path(circle(0, 0, 0.063, 32).reverse()));
+    disc.holes.push(new THREE.Path(circle(0, 0, 0.063, 16).reverse()));
     b.push()
       .translate(side * (w * 0.5 - 0.027), 0, 0)
       .rotate(0, Math.PI / 2, 0);
@@ -735,7 +735,7 @@ export function buildUnimogWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 - 0.015), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.155, 0.175, 0.03, 40), paint);
+    b.geometry(new THREE.CylinderGeometry(0.155, 0.175, 0.03, 24), paint);
     b.pop();
     for (let i = 0; i < 10; i++) {
       const a = (i * Math.PI) / 5;
@@ -751,7 +751,7 @@ export function buildUnimogWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.push()
       .translate(side * (w * 0.5 + 0.03), 0, 0)
       .rotate(0, 0, -Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.06, 0.08, 0.06, 20), black);
+    b.geometry(new THREE.CylinderGeometry(0.06, 0.08, 0.06, 12), black);
     b.pop();
   }
   return cleanGeometry(b.build());

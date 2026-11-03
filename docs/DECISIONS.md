@@ -2019,3 +2019,32 @@ The full test run after v1.19 showed two trailer tests failing that passed befor
 ## v1.26: the No. 5 keeps its narrow track
 
 v1.22 took the Army No. 5 to its published 1,550 mm by moving the hubs 40 mm out each side (a 1.32 m track) as well as standing the lip out. The unit tests, run after that update went out as CLAUDE.md asks, caught what the wider track did: loaded, in a hard turn at 25 km/h across a 15° slope, the trailer now stayed up, where the No. 5 is meant to go over at a lower speed than the box trailer (its narrow track and high floor are the point of it, v0.49). The hubs go back to ±0.62 (a 1.24 m track, 1.43 m over the tyres) and the published width stays in the rolled lip (±0.775), which is where the figure leaves room for it: the inside box is 1,320 mm and the overall 1,550 mm, so 115 mm a side is pressed side and lip. `tests/trailer.test.ts` passes again (32 of 32); the tipping figure in `src/data/trailers.ts` is back to 0.64 g. `reference/vehicles/army-no5-trailer/SOURCES.md` records both figures.
+
+## v1.27: fewer triangles in every vehicle, round two
+
+Again no vehicle changes shape. The renders of every vehicle at the studio's eight views were compared against v1.26 as in v1.24; the mean pixel difference is at most 0.12 of 255 on every view. Every vehicle is now under the 80,000 the v1.24 note aimed at, and most are near the 62,000 budget.
+
+- **Rings and rods sized by the part.** `VehicleBuilder.ring` was a 6 × 32 torus (384 triangles) whether it was a wheel rim or a 4 mm bead line; a 32-step ring now needs a radius over 180 mm, a small one has 12 steps, and a tube under 8 mm is four-sided. `rod` has six sides up to 8 mm radius, eight up to 20 mm and ten above (it was ten always). The winch drums alone (14 to 19 rings each) were 5,000 to 7,000 triangles a vehicle.
+- **Chains of rods are one tube.** `VehicleBuilder.chain` sweeps one tube through a list of points (`sweptTube`, the same sweep `continuousTube` uses). The LC79's three roof ribs were 20 capped rods each and the Unimog's tilt bows 32; a chain has no caps and no overlap at the joints.
+- **Tube bends get segments for their turn.** `continuousTube` gave every bend five segments; a bend now gets one per 18° of turn, so a bull bar's right angle keeps five and the 21-point hoop of a Unimog bow, bending about 8° at each point, gets one at each.
+- **LC79:** the roof was subdivided three times over (64 triangles for one) to carry its pressed ribs; twice (16) carries them as well. The honeycomb grille mesh has 30 mm cells in 6 rows of 28, where 20 mm cells in 9 rows of 42 cost 4,500 triangles for ribs no camera in the game resolves.
+- **80 Series:** the side skins have a row every 54 mm instead of 27 (46 rows, not 91), which halves the skins and their inner faces. Dents still land on them; a dent now moves vertices 54 mm apart.
+- **Unimog:** the canvas tilt's grids are half as fine each way (16 × 30 for the roof, 24 × 6 for each side).
+- **Lamp lenses:** flattened domes of 20 × 8 segments where some were 28 × 12, 32 × 12 or 40 × 20. The Camel Trophy's arch panels follow their arcs with 21 points, not 41.
+- **Wheels:** the dished centres' vents, hubs and caps have half the points round (a 48-point disc is 32, a 14-point vent 8, a 32-sided hub 16).
+- **Kept as they were:** the HJ60's stripe pieces and its script lettering (together 2,800 triangles now that each stroke is a plain block, and the README's v1.12 check wants TOYOTA LAND CRUISER readable), the block TOYOTA and NISSAN lettering on grilles and tailgates (1,200 to 2,400 a vehicle), and the bevelled panel extrusions, whose rounded edges are the silhouette. The third round planned in v1.24 (fewer, larger lettering blocks) is not needed for the budget and is left out.
+
+| vehicle  | v1.26  | v1.27 | body (v1.26 → v1.27) | per wheel   |
+| -------- | ------ | ----- | -------------------- | ----------- |
+| sooty80  | 90.0k  | 73.0k | 66.2k → 52.2k        | 5.2k → 4.5k |
+| shortie  | 75.5k  | 60.4k | 56.8k → 45.5k        | 4.6k → 3.6k |
+| camel    | 92.5k  | 72.2k | 71.6k → 53.1k        | 4.8k → 4.4k |
+| perentie | 88.4k  | 62.0k | 72.3k → 48.2k        | 4.0k → 3.4k |
+| hilux    | 71.4k  | 57.9k | 53.1k → 41.9k        | 4.5k → 3.9k |
+| unimog   | 102.0k | 64.4k | 79.2k → 44.4k        | 5.6k → 4.9k |
+| hj60     | 94.0k  | 77.8k | 71.3k → 58.8k        | 5.6k → 4.7k |
+| troopy   | 80.6k  | 62.1k | 61.9k → 47.8k        | 4.6k → 3.5k |
+| patrol   | 87.8k  | 72.9k | 67.6k → 55.1k        | 5.0k → 4.4k |
+| lc79     | 93.4k  | 63.5k | 71.2k → 43.2k        | 5.5k → 5.0k |
+
+Against the reviewer's v1.18 counts (83,000 to 154,000), every vehicle is now 40 to 55 percent lighter.

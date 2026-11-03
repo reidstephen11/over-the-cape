@@ -236,7 +236,7 @@ function headlamp(b: VehicleBuilder, x: number, y: number, z: number): void {
   b.push()
     .translate(x, y, z - 0.014)
     .scale(1, 1, 0.3);
-  b.geometry(new THREE.SphereGeometry(0.084, 24, 12), lamp);
+  b.geometry(new THREE.SphereGeometry(0.084, 20, 8), lamp);
   b.pop();
   for (let i = -3; i <= 3; i++) {
     const w = Math.sqrt(0.078 ** 2 - (i * 0.02) ** 2) * 2;
