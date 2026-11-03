@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { vehicleTuning as t } from '../src/data/vehicle';
 import {
   createDrivetrainState,
+  engineBrakeForce,
   engineTorque,
   totalRatio,
   updateDrivetrain,
@@ -41,6 +42,20 @@ describe('drivetrain', () => {
     const f = updateDrivetrain(t, s, { throttle: 1, reverse: true, speed: 0, enginePower: 1 }, 1 / 60);
     expect(s.gear).toBe(-1);
     expect(f).toBeLessThan(0);
+  });
+
+  it('a stalled engine drags the wheels in proportion to the gearing', () => {
+    const s = createDrivetrainState();
+    expect(engineBrakeForce(t, s)).toBe(0);
+    s.engineRunning = false;
+    s.gear = 0;
+    s.range = 'high';
+    const high = engineBrakeForce(t, s);
+    expect(high).toBeCloseTo((t.engine.engineBrake * totalRatio(t, 0, 'high')) / 2);
+    s.range = 'low';
+    expect(engineBrakeForce(t, s)).toBeCloseTo(high * t.ranges.low.ratio);
+    s.gear = 2;
+    expect(engineBrakeForce(t, s)).toBeLessThan(high * t.ranges.low.ratio);
   });
 
   it('gives no drive when the engine is stalled', () => {

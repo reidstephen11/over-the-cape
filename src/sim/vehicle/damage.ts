@@ -123,7 +123,8 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     if (Math.floor(before * 10) !== Math.floor(c.engine * 10))
       events.push({ part: 'engine', wheel: -1, health: c.engine, cause: 'inverted' });
   }
-  if (c.engineHeat > 1) {
+  // Boiling hurts only while the engine turns; switched off, it just cools.
+  if (v.drivetrain.engineRunning && c.engineHeat > 1) {
     const before = c.engine;
     hurt(E.overheatPerSecond * dt, 'overheat', true);
     if (Math.floor(before * 10) !== Math.floor(c.engine * 10))
