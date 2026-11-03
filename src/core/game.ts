@@ -92,6 +92,7 @@ import { AudioSystem } from '../audio/audioSystem';
 import { buildAudioFrame } from '../audio/frame';
 import { GameLoop } from './loop';
 import { ToolController } from './toolController';
+import { pendingUpdate } from './update';
 import { buildHudState } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
 import { damageMessage } from './damageMessages';
@@ -394,6 +395,7 @@ export class Game {
           this.closePause();
           void this.toMainMenu();
         },
+        restartForUpdate: () => void this.restartForUpdate(),
       },
       settings,
     );
@@ -404,6 +406,11 @@ export class Game {
       this.loop.paused = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
     });
     this.result = new ResultCard(uiRoot);
+    // A new build downloaded during the drive waits for the pause menu (v1.23).
+    pendingUpdate.onReady(() => {
+      this.pause.setUpdateReady(true);
+      this.hud.toast('A new version is ready: restart for it from the pause menu when you like', 6000);
+    });
     this.fade = new Fade(uiRoot);
 
     this.overlay = this.debug ? new DebugOverlay(uiRoot) : null;
@@ -705,6 +712,8 @@ export class Game {
   }
 
   start(): void {
+    // The Drive press on the briefing (Space, Enter, Cross or Options) is not a game press.
+    this.input.clearEdges();
     this.loop.start();
     // The engine is off as you arrive: the first press of the pedal starts it.
     this.sim.switchOffEngine(LOCAL_VEHICLE);
@@ -982,6 +991,17 @@ export class Game {
     await this.fade.run(() => {
       this.loop.paused = true;
       location.reload();
+    });
+  }
+
+  /** Install the downloaded version (pause menu): saved first, then the page reloads into it. */
+  async restartForUpdate(): Promise<void> {
+    this.save();
+    await this.fade.run(() => {
+      this.loop.paused = true;
+      if (!pendingUpdate.install()) location.reload();
+      // The reload comes when the new worker takes over; if it never does, reload anyway.
+      window.setTimeout(() => location.reload(), 5000);
     });
   }
 
@@ -1523,7 +1543,7 @@ export class Game {
       inp.throttle = 0;
       inp.brake = 0;
       inp.steer = 0;
-      inp.handbrake = this.tool.mode !== 'drive';
+      inp.handbrake = true;
       inp.winchAttach = false;
       inp.interact = false;
       inp.toggleFrontDiff = false;
@@ -1813,6 +1833,7 @@ export class Game {
 
   private renderFrame(alpha: number, frameDt: number): void {
     this.input.poll();
+    if (!this.loop.paused) this.history.tick(frameDt);
     this.map.updateInput(this.input.activeDevice, this.settings.controller);
     this.pause.setInputDevice(this.input.activeDevice);
     this.history.setInput(this.input.activeDevice, this.settings.controller);
