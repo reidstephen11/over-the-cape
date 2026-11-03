@@ -111,6 +111,12 @@ export interface CreekDef {
   rough?: readonly CreekRoughDef[];
   /** Scour holes in the bed (after any bars). */
   holes?: readonly CreekHoleDef[];
+  /**
+   * How rough a road's banks are where it fords this creek (m): a rut scoured under one
+   * wheel line then the other, and rocks standing out of the bank. Default 0.22; 0 leaves
+   * the banks as smooth ramps.
+   */
+  bankRough?: number;
   /** How far out (m) the banks are carved at `bankSlope`; a wide valley rather than a gorge (default 34). */
   valley?: number;
   /**
