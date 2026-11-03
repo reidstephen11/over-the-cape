@@ -18,7 +18,7 @@ export class InputManager {
   vehicleEnabled = true;
   /**
    * The gearbox the game is running (set by the game). In the manual settings D-pad
-   * left/right shift gears instead of zooming the camera, and ○/B is the clutch.
+   * left/right shift gears instead of zooming the camera.
    */
   gearboxMode: GearboxMode = 'automatic';
   /** A gamepad was connected at the last poll(). */
@@ -34,7 +34,6 @@ export class InputManager {
   private padButtons: boolean[] = [];
   private padAxes: number[] = [0, 0, 0, 0];
   private padTriggers = { lt: 0, rt: 0 };
-  private padClutch = 0;
   private wheelDelta = 0;
   private steeringRates: VehicleTuning['steering'] = vehicleTuning.steering;
   private readonly steering = new SteeringSmoother(
@@ -164,7 +163,6 @@ export class InputManager {
     const pad = [...pads].find((p) => p && p.connected) ?? null;
     this.gamepadConnected = !!pad;
     if (!pad) {
-      this.padClutch = 0;
       this.padButtons = [];
       this.padAxes = [0, 0, 0, 0];
       this.padTriggers = { lt: 0, rt: 0 };
@@ -177,8 +175,6 @@ export class InputManager {
     };
     this.padAxes = [axis(0), axis(1), axis(2), axis(3)];
     this.padButtons = pad.buttons.map((b) => b.pressed);
-    const clutchButton = pad.buttons[Pad.B];
-    this.padClutch = clutchButton?.pressed ? 1 : (clutchButton?.value ?? 0);
     const lt = pad.buttons[Pad.LT]?.value ?? 0;
     const rt = pad.buttons[Pad.RT]?.value ?? 0;
     this.padTriggers = {
@@ -244,7 +240,6 @@ export class InputManager {
     if (this.gearboxMode !== 'automatic' && this.gamepadConnected) {
       inp.shiftUp = edges.has('shiftUp');
       inp.shiftDown = edges.has('shiftDown');
-      inp.clutch = Math.min(1, Math.max(0, this.padClutch));
     }
     edges.clear();
     return inp;

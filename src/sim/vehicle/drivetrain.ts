@@ -3,9 +3,11 @@ import type { VehicleTuning } from '../../data/vehicle';
 export type Range = 'high' | 'low';
 
 /**
- * The gearbox setting: 'automatic' shifts itself (every vehicle, through its converter);
- * 'manual' holds the gear the player picks with the clutch worked for them; 'clutch' adds
- * a clutch pedal, and the engine can stall.
+ * The gearbox mode the sim drives: 'automatic' shifts itself (every vehicle, through its
+ * converter); 'manual' holds the gear the player picks with the clutch worked for them;
+ * 'clutch' adds a clutch pedal, and the engine can stall. 'clutch' is not offered in
+ * Settings for now (a controller button made a poor clutch); it stays for the sim and its
+ * tests until wheel-and-pedal support gives it a real pedal.
  */
 export type GearboxMode = 'automatic' | 'manual' | 'clutch';
 
@@ -13,6 +15,15 @@ export const GEARBOX_MODES: readonly GearboxMode[] = ['automatic', 'manual', 'cl
 
 export function isGearboxMode(x: unknown): x is GearboxMode {
   return typeof x === 'string' && (GEARBOX_MODES as readonly string[]).includes(x);
+}
+
+/** The gearbox choices Settings offers (controller only). */
+export type GearboxSetting = 'automatic' | 'manual';
+
+export const GEARBOX_SETTINGS: readonly GearboxSetting[] = ['automatic', 'manual'];
+
+export function isGearboxSetting(x: unknown): x is GearboxSetting {
+  return typeof x === 'string' && (GEARBOX_SETTINGS as readonly string[]).includes(x);
 }
 
 /** Time a manual gear change takes (s); the drive is out while it runs. */

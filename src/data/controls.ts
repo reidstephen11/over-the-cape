@@ -32,8 +32,7 @@ export type Action =
   | 'menuLeft'
   | 'menuRight'
   | 'shiftUp'
-  | 'shiftDown'
-  | 'clutch';
+  | 'shiftDown';
 
 export const keyBindings: Record<Action, readonly string[]> = {
   accelerate: ['KeyW', 'ArrowUp'],
@@ -67,7 +66,6 @@ export const keyBindings: Record<Action, readonly string[]> = {
   // The manual gearbox is controller only: the keyboard always drives automatic.
   shiftUp: [],
   shiftDown: [],
-  clutch: [],
 };
 
 /** Standard gamepad buttons. */
@@ -112,7 +110,6 @@ export const padBindings: Partial<Record<Action, readonly number[]>> = {
   // Manual gearbox settings only (D-pad left/right zoom the camera in Automatic).
   shiftUp: [Pad.Right],
   shiftDown: [Pad.Left],
-  clutch: [Pad.B],
 };
 
 export const padTuning = {
@@ -149,7 +146,6 @@ function padGlyphs(controller: ControllerType): Partial<Record<Action, string>> 
     cameraReset: p.cameraReset,
     shiftUp: 'D-pad →',
     shiftDown: 'D-pad ←',
-    clutch: p.back,
   };
 }
 
@@ -244,7 +240,6 @@ export function controlsTable(
     ['Orbit camera', 'Mouse drag / Num 4 6 8 2', 'Right stick'],
     ['Camera distance', 'Scroll', 'D-pad left/right (driving, Automatic gearbox)'],
     ['Shift up / down (manual gearbox, controller only)', '—', 'D-pad right / left'],
-    ['Clutch (manual gearbox, controller only)', '—', `Hold ${p.back} (Manual with clutch)`],
     ['Recenter camera', 'V / Num 5', p.cameraReset],
     ['Cycle crawler and driver views', 'C / View button', `Hold ${p.toolMenu} + ${p.cameraReset}`],
     ['Crawl gauges: auto (low range) / on / off', 'I', 'Shown in low range'],

@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { vehicleTuning } from '../src/data/vehicle';
 import { axleDriveCapacity } from '../src/sim/vehicle/differential';
 import { InputManager } from '../src/sim/input/inputManager';
+import { controlsTable, padBindings, Pad } from '../src/data/controls';
+import { controllerTypes } from '../src/data/controllers';
 import { makeScene } from './helpers/scenes';
 
 const DT = 1 / 60;
@@ -197,6 +199,29 @@ describe('crawl input bindings', () => {
       ]);
       input.poll();
       expect(input.vehicleInput(DT).togglePrecision).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('the clutch option is shelved (v1.37)', () => {
+  it('no controls row mentions a clutch and no button is bound to one', () => {
+    for (const c of controllerTypes)
+      for (const row of controlsTable(c)) expect(row.join(' ').toLowerCase()).not.toContain('clutch');
+    expect(Object.keys(padBindings)).not.toContain('clutch');
+  });
+
+  it('holding ○/B in Manual leaves the clutch out', () => {
+    const input = new InputManager(new EventTarget() as unknown as Window);
+    input.gearboxMode = 'manual';
+    const buttons = Array.from({ length: 17 }, () => ({ pressed: false, value: 0 }));
+    vi.stubGlobal('navigator', { getGamepads: () => [{ connected: true, axes: [0, 0, 0, 0], buttons }] });
+    try {
+      input.poll();
+      buttons[Pad.B] = { pressed: true, value: 1 };
+      input.poll();
+      expect(input.vehicleInput(DT).clutch).toBe(0);
     } finally {
       vi.unstubAllGlobals();
     }

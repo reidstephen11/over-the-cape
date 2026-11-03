@@ -171,8 +171,8 @@ export class Vehicle {
    */
   gearboxMode: GearboxMode = 'automatic';
   /**
-   * Set for the first step of a pedal press that couldn't start the engine: in a manual
-   * mode it starts only in neutral or with the clutch pressed.
+   * Set for the first step of a pedal press that couldn't start the engine: in the
+   * sim-level 'clutch' mode it starts only in neutral or with the clutch pressed.
    */
   startBlocked = false;
   private startBlockHeld = false;
@@ -555,8 +555,10 @@ export class Vehicle {
       }
     }
     // Pressing the pedal (either way) with the engine switched off turns it over first.
-    // With a clutch it only starts in neutral or with the clutch pressed.
-    const canStart = !this.clutchGearbox || this.drivetrain.neutral || input.clutch > 0.5;
+    // In the 'clutch' mode it only starts in neutral or with the clutch pressed; Manual has
+    // no clutch button, so it starts in any gear (the clutch is worked for the player).
+    const canStart =
+      !this.clutchGearbox || this.gearboxMode === 'manual' || this.drivetrain.neutral || input.clutch > 0.5;
     const blocked = this.engineOff && throttle > 0 && !canStart;
     this.startBlocked = blocked && !this.startBlockHeld;
     this.startBlockHeld = blocked;

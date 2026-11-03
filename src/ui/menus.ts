@@ -12,7 +12,7 @@ import type { EpisodeDef } from '../data/episodes';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
 import { hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
 import { offeredQualities, shownQuality } from '../data/quality';
-import { GEARBOX_MODES, type GearboxMode } from '../sim/vehicle/drivetrain';
+import { GEARBOX_SETTINGS, type GearboxSetting } from '../sim/vehicle/drivetrain';
 
 /** What each damage setting does, and which ways an episode can end with it. */
 export const damageNotes: Record<DamageMode, string> = {
@@ -22,20 +22,18 @@ export const damageNotes: Record<DamageMode, string> = {
     'Tyres puncture or tear and the engine can be wrecked. Plug punctures, fit spares for torn sidewalls; camps fix the engine and suspension. A flat with nothing left to fix it, a wrecked engine, an empty tank or the clock ends an episode.',
 };
 
-export const gearboxLabels: Record<GearboxMode, string> = {
+export const gearboxLabels: Record<GearboxSetting, string> = {
   automatic: 'Automatic',
   manual: 'Manual',
-  clutch: 'Manual with clutch',
 };
 
 /** What each gearbox setting does (controller only; the keyboard and touch drive automatic). */
-export function gearboxNote(mode: GearboxMode, back: string): string {
+export function gearboxNote(mode: GearboxSetting): string {
   return {
     automatic:
       'The gearbox changes gear itself. Controller only: the keyboard and touch always drive automatic.',
     manual:
       'D-pad right / left change up and down (N, then reverse below 1st); the clutch is worked for you. The 40 Series holds the gear of its automatic.',
-    clutch: `As Manual, with ${back} held as the clutch. Let it out gently: at idle with the wheels held the engine stalls. Start in neutral or with ${back} held.`,
   }[mode];
 }
 
@@ -251,11 +249,11 @@ export class PauseMenu {
         <p class="menu-note damage-note">${damageNotes[s.damage]}</p>
         ${
           showGearboxSetting(this.gamepadConnected)
-            ? `<div class="setting-row gearbox-setting">Gearbox<div class="seg">${GEARBOX_MODES.map(
+            ? `<div class="setting-row gearbox-setting">Gearbox<div class="seg">${GEARBOX_SETTINGS.map(
                 (m) =>
                   `<button data-focus data-gearbox="${m}" class="${s.gearbox === m ? 'on' : ''}" aria-pressed="${s.gearbox === m}">${gearboxLabels[m]}</button>`,
               ).join('')}</div></div>
-        <p class="menu-note gearbox-note">${gearboxNote(s.gearbox, controllers[s.controller].back)}</p>`
+        <p class="menu-note gearbox-note">${gearboxNote(s.gearbox)}</p>`
             : ''
         }
         <button data-focus data-act="back">Back</button>`;
@@ -332,7 +330,7 @@ export class PauseMenu {
       this.actions.changeSettings({ hudStyle: this.settings.hudStyle });
       this.show('settings');
     } else if (t.dataset.gearbox) {
-      this.settings.gearbox = t.dataset.gearbox as GearboxMode;
+      this.settings.gearbox = t.dataset.gearbox as GearboxSetting;
       this.actions.changeSettings({ gearbox: this.settings.gearbox });
       this.show('settings');
     } else if (t.dataset.damage) {

@@ -38,10 +38,13 @@ describe('exploration and saving', () => {
   it('keeps the gearbox setting and reads old or invalid saves as automatic', () => {
     const s = new MemoryStore();
     expect(defaultSettings.gearbox).toBe('automatic');
-    for (const gearbox of ['automatic', 'manual', 'clutch'] as const) {
+    for (const gearbox of ['automatic', 'manual'] as const) {
       writeSave(saveData({ settings: { ...defaultSettings, gearbox } }), s);
       expect(loadSave(s)!.settings.gearbox).toBe(gearbox);
     }
+    // "Manual with clutch" (v1.35-v1.36) is shelved: such a save opens as Manual.
+    s.setItem(SAVE_KEY, JSON.stringify({ version: 1, settings: { gearbox: 'clutch' }, episodes: {} }));
+    expect(loadSave(s)!.settings.gearbox).toBe('manual');
     for (const gearbox of [undefined, null, 'sequential', 3, '__proto__']) {
       s.setItem(SAVE_KEY, JSON.stringify({ version: 1, settings: { gearbox }, episodes: {} }));
       expect(loadSave(s)!.settings.gearbox).toBe('automatic');

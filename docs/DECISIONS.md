@@ -2222,3 +2222,15 @@ The owner found the way into and out of the crossings too smooth.
 **Steeper small creeks.** The creeks laid by `creekAcross` (the paddock creeks and the three Bloomfield Track creeks) have banks at 0.45 instead of 0.35 (24° instead of 19°).
 
 **Mud on the exits was tried and dropped.** Short black-soil bogs at the top of six more exit banks stopped the locked crawl at paddock-creek-south and the Bloomfield middle creek outright, even at 0.28 m, and the bog rules want creek-bank bogs deeper than 0.3 m with a marked rock in cable reach. The rough banks and steeper slopes alone keep the crawl tests passing, so this version ships those; exit mud would need its own tuning pass.
+
+## v1.37: the clutch gearbox option shelved
+
+The owner tried **Manual with clutch** (v1.35) and found a controller button a poor clutch: it is on or off, with nothing to feather, and the thumb that holds ○/B is also the one on the D-pad changing gear. The option comes out for now.
+
+**What the player sees.** Settings → **Gearbox** offers **Automatic** and **Manual** only (`GearboxSetting` and `GEARBOX_SETTINGS` in `src/sim/vehicle/drivetrain.ts`). A save that had Manual with clutch (`'clutch'`) loads as Manual; anything else unknown still loads as Automatic. ○/B is no longer the clutch: it is the jack when the car is rolled and Back in menus, as before v1.35. The clutch row is gone from the Controls table, and its binding and glyph from `src/data/controls.ts`.
+
+**Manual starts in any gear.** v1.35 started a manual gearbox only in neutral or with the clutch held. With no clutch button, Manual could never meet that in gear, so Manual now starts on the pedal in any gear (the clutch is already worked for the player). The "clutch in, or neutral" prompt and the `clutchToStart` toast remain only for the sim-level `'clutch'` mode, which no setting reaches, and they no longer name ○/B. The stall toast now reads "Stalled: press R2 to restart".
+
+**What stays.** The clutch maths in the drivetrain (Manual's auto-clutch is built on it), the sim-level `GearboxMode` `'clutch'`, `VehicleInput.clutch` (no device sets it for now) and `tests/manualGearbox.test.ts`. The option returns with steering-wheel and pedal support, which gives it a real clutch pedal.
+
+**Tests.** `tests/save.test.ts` covers the two settings and the `'clutch'` → Manual load; `tests/engineStart.test.ts` adds that Manual starts in 1st without neutral (the `'clutch'` sim test is unchanged); `tests/driveControls.test.ts` checks no controls row mentions a clutch, no button is bound to one, and holding ○/B in Manual leaves `clutch` at 0.
