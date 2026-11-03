@@ -19,6 +19,8 @@ export class InputManager {
   /** UI presses since the last frame, counted so quick taps in one slow frame aren't lost. */
   private readonly uiEdges = new Map<Action, number>();
   private readonly padPrev: boolean[] = [];
+  /** The first poll records what is held without counting it as pressed (the Drive press). */
+  private polled = false;
   private padButtons: boolean[] = [];
   private padAxes: number[] = [0, 0, 0, 0];
   private padTriggers = { lt: 0, rt: 0 };
@@ -137,8 +139,16 @@ export class InputManager {
     return this.keyDown(a) || this.padDown(a);
   }
 
+  /** Forget presses made before the game started (Space or Enter on the briefing). */
+  clearEdges(): void {
+    this.vehicleEdges.clear();
+    this.uiEdges.clear();
+  }
+
   /** Poll the gamepad once per rendered frame. */
   poll(): void {
+    const first = !this.polled;
+    this.polled = true;
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
     const pad = [...pads].find((p) => p && p.connected) ?? null;
     if (!pad) {
@@ -163,7 +173,7 @@ export class InputManager {
     let any = this.padAxes.some((a) => a !== 0) || this.padTriggers.lt > 0 || this.padTriggers.rt > 0;
     for (let i = 0; i < this.padButtons.length; i++) {
       if (this.padButtons[i]) any = true;
-      if (this.padButtons[i] && !this.padPrev[i]) {
+      if (this.padButtons[i] && !this.padPrev[i] && !first) {
         for (const [a, list] of Object.entries(padBindings) as [Action, readonly number[]][]) {
           if (list.includes(i)) this.press(a);
         }

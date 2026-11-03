@@ -5,8 +5,14 @@ import { glyphsFor } from '../data/controls';
 /** The CREB's four lessons, in the order the signs come on the road out of the village. */
 const LESSONS: readonly ControlInstruction[] = ['range', 'precision', 'locks', 'winch'];
 
-/** How long a short note stays up on a touch screen if it isn't tapped open. */
-const BRIEF_MS = 7000;
+/** How long a short note stays up on a touch screen if it isn't tapped open (seconds). */
+export const BRIEF_SECONDS = 7;
+
+/** How long a note stays up to be read: about 200 words a minute, and at least 12 s. */
+export function readingSeconds(text: string): number {
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(12, (words / 200) * 60 + 4);
+}
 
 /** On-screen button names that a touch lesson tells you to tap. */
 const TOUCH_KEYS = ['F LOCK', 'R LOCK', 'CRAWL', '4WD', 'LOW', 'USE', 'OUT', 'IN'];
@@ -52,7 +58,8 @@ export class HistoryCard {
   private current: HistoryNote | null = null;
   private device: InputDevice = 'keyboard';
   private controller: ControllerType = defaultController;
-  private timer = 0;
+  /** Seconds before the note closes by itself; counts down with the game (`tick`), so it waits while paused. */
+  private timeLeft = 0;
 
   /**
    * `root` takes the backdrop for a note read with the game stopped; `host` (the HUD's corner
@@ -98,7 +105,7 @@ export class HistoryCard {
 
   /** Close the card, showing the next one waiting. */
   next(): void {
-    clearTimeout(this.timer);
+    this.timeLeft = 0;
     const wasReading = this.reading;
     const n = this.queue.shift();
     this.current = n ?? null;
@@ -115,8 +122,14 @@ export class HistoryCard {
     this.fill(n);
     this.updateHint();
     if (n.reading) return;
-    if (this.el.classList.contains('brief')) this.timer = window.setTimeout(() => this.next(), BRIEF_MS);
-    else this.startReadingTimer(n);
+    this.timeLeft = this.el.classList.contains('brief') ? BRIEF_SECONDS : readingSeconds(this.noteText(n));
+  }
+
+  /** A frame of play went by (not called while the game is paused or the map is open). */
+  tick(dt: number): void {
+    if (this.timeLeft <= 0) return;
+    this.timeLeft -= dt;
+    if (this.timeLeft <= 0) this.next();
   }
 
   /** Open a short note to its full text, with the time to read it. */
@@ -124,14 +137,7 @@ export class HistoryCard {
     if (!this.current) return;
     this.el.classList.remove('brief');
     this.updateHint();
-    clearTimeout(this.timer);
-    this.startReadingTimer(this.current);
-  }
-
-  private startReadingTimer(note: HistoryNote): void {
-    // About 200 words a minute, and at least 12 s.
-    const words = this.noteText(note).split(/\s+/).length;
-    this.timer = window.setTimeout(() => this.next(), Math.max(12_000, (words / 200) * 60_000 + 4_000));
+    this.timeLeft = readingSeconds(this.noteText(this.current));
   }
 
   clear(): void {

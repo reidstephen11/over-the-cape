@@ -45,7 +45,7 @@ The `hj60` (v1.10) was built from `landcruiser-60/` in the same way. Its `SOURCE
 
 Get the proportions and the features that identify the vehicle right before adding smaller parts. SPEC.md §5a asks for accurate shapes, not a photo-real model: flat panels, the game's shared materials and no textures. Maker's names and badges on grilles are allowed since v0.34 (the owner's choice); like the number plates and the Camel Trophy lettering, they are drawn in code, never copied from artwork.
 
-A complete 40 Series (body, four wheels, spare, cabin, equipment and running gear) is about 62,000 triangles (docs/DECISIONS.md, the detailed 40 Series note). Keep a rebuilt body near that. `npx vite-node scripts/tri-count.ts` prints every vehicle's count (body, wheels and planks); the v1.23 note in DECISIONS.md says where the triangles tend to go. Add a panel when it changes the silhouette or makes the vehicle recognisable. Leave a bolt off when it does neither.
+A complete 40 Series (body, four wheels, spare, cabin, equipment and running gear) is about 62,000 triangles (docs/DECISIONS.md, the detailed 40 Series note). Keep a rebuilt body near that. `npx vite-node scripts/tri-count.ts` prints every vehicle's count (body, wheels and planks); the v1.24 note in DECISIONS.md says where the triangles tend to go. Add a panel when it changes the silhouette or makes the vehicle recognisable. Leave a bolt off when it does neither.
 
 Parts added for the game stay: bull bars, winches, snorkels, roof racks, the second spare, the LC79's lift and canopy. Match the factory body underneath them. `SOURCES.md` says which of those a stock photograph will not show.
 

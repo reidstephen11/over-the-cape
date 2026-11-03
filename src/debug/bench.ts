@@ -1,5 +1,5 @@
 import type { Game } from '../core/game';
-import { qualityFor, type QualityLevel } from '../data/quality';
+import { qualityFor, shownQuality, type QualityLevel } from '../data/quality';
 import { isTouchDevice } from '../ui/touchControls';
 import { headingOf } from '../sim/vehicle/math';
 
@@ -124,7 +124,7 @@ export class Bench {
     }
     this.done = true;
     this.show(
-      `Phone test done (${innerWidth}×${innerHeight}, pixel ratio ${devicePixelRatio}, ${this.g.settings.quality})\n` +
+      `Phone test done (${innerWidth}×${innerHeight}, pixel ratio ${devicePixelRatio}, ${shownQuality(this.g.settings.quality, isTouchDevice())})\n` +
         `${this.results.join('\n')}\n\nPlease send a screenshot of this.`,
     );
   }

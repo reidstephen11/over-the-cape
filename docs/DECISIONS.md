@@ -1967,7 +1967,21 @@ Steef wanted a way to pick which anchor the winch hooks. A chooser was already t
 - **The prompt names the pick**: "2/5 · Tree, 14 m". The driving prompt says "Choose a winch anchor (5 in reach)" when there is a choice.
 - **Tap or click an anchor** in the view to pick it, and tap it again to hook it. A tap is a press that moves less than 12 px in under half a second, so dragging the camera still works; it takes the nearest anchor within 64 px of a finger (40 px of the mouse).
 
-## v1.23: fewer triangles in every vehicle, round one
+## v1.23: no reload mid-drive, and small input and menu fixes
+
+A review of the game loop, the menus and the input found eight small things, fixed together.
+
+- **A deploy no longer reloads the page while Steef is driving.** The installed app opened the cached build, checked for a new one at once and, some seconds later when the new service worker had finished downloading, reloaded the page (vite-plugin-pwa's `autoUpdate`), losing everything since the last camp. The worker is now registered with `registerType: 'prompt'` and without `skipWaiting`, so the new build waits. `src/main.ts` installs it at once while the title screen is up (nothing to lose there) and otherwise hands it to `pendingUpdate` (`src/core/update.ts`): the HUD says a new version is ready, and the pause menu gains **Restart for the new version**, which saves, fades and reloads into it. A build that is never asked for takes over when the app is next opened, as before.
+- **Options / Cross to Drive no longer opens the pause menu on the first frame.** The briefing resolved on the press edge while the button was still held, and the input manager's first poll had no previous state, so the held Start read as a fresh press. The first `poll()` now records what is held without counting it (`InputManager.polled`), and `Game.start()` drops presses queued before the loop started (`clearEdges`), so Space or Enter on the briefing no longer toggles the handbrake or confirms anything.
+- **The briefing said "Space to release handbrake", but the handbrake is off at the start**, so that press put it on. The hints now say "Space handbrake" (HAND handbrake, □ handbrake). The run still starts with the brake off and the engine off; the first press of the pedal starts it.
+- **The tool menu holds the car.** Opening it zeroed the pedals but only set the handbrake in plank or anchor mode, so the car rolled on a slope while the menu was open. The handbrake is on whenever the menu or a tool mode is.
+- **II and MAP work while placing planks or choosing an anchor.** The tool took every press, so the two buttons at the top left did nothing. Pause and Map now cancel the tool and open as usual; Esc / Circle still just cancel.
+- **The title Settings page on a phone offers Low and Medium only**, as the pause menu has since v1.17, and a save on High shows Medium. `offeredQualities` and `shownQuality` in `src/data/quality.ts` are shared by the two menus; the `?bench` label prints the setting as drawn.
+- **Continuing from a camp, the briefing's On board line shows what is on board there** (`briefingLoad` in `src/core/launch.ts`), not the standard load.
+- **History notes count down with the game, not the clock.** The 7 s short card and the reading time ran on `setTimeout`, so a note vanished while the game was paused or the map was open. `HistoryCard.tick(dt)` runs from the render loop only while the game is not paused.
+- `AudioSystem.start()` added a `statechange` listener on every gesture before the context ran; it now adds one, which removes itself.
+
+## v1.24: fewer triangles in every vehicle, round one
 
 No vehicle changes shape. A reviewer counted each look (body, four wheels and the two carried planks, built the way the studio page builds them) and found every one well over the 62,000 the detailed 40 Series note set as the budget for a complete vehicle: from 83,000 (Hilux) to 154,000 (Camel Trophy and 80 Series; the counts below are after v1.22's body corrections). `scripts/tri-count.ts` now prints that table (`npx vite-node scripts/tri-count.ts`); it sums each mesh's index count over three. The studio renders of every vehicle (the seven views and the cockpit, `scripts/studio-shots.ts`) were taken before and after and laid side by side; the mean pixel difference is under 0.6 of 255 on every body view, and the tread and the bead rings account for the wheel close-ups.
 
@@ -1979,7 +1993,7 @@ Where the triangles went, and what changed:
 - **The Camel Trophy sand ladders** (16,500 a ladder) were extrusions whose bevel ran round all 34 rounded holes. The holes are now square and punched straight through; 800 a ladder.
 - **Tread blocks:** 16 lugs a row on every tyre (14 for the Unimog's chevrons) instead of 24 to 30, each lug a little longer along the tyre so the tread stays as dense. The 80 Series' 24 bead-ring bolts a side (1,150 a wheel, never visible) are gone; the ring stays.
 
-| vehicle  | v1.22  | v1.23  | body (v1.22 → v1.23) | per wheel   | planks (two) |
+| vehicle  | v1.23  | v1.24  | body (v1.23 → v1.24) | per wheel   | planks (two) |
 | -------- | ------ | ------ | -------------------- | ----------- | ------------ |
 | sooty80  | 152.9k | 90.0k  | 97.4k → 66.2k        | 6.7k → 5.2k | 28.6k → 2.9k |
 | shortie  | 90.6k  | 75.5k  | 70.9k → 56.8k        | 4.8k → 4.6k | 0.4k → 0.4k  |

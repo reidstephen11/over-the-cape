@@ -18,7 +18,7 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 - Compare and correct the 80 Series against real Sooty MkII photographs; the current model remains a MkII-inspired draft.
 - Resolve the Army No. 5's documented width discrepancy and the estimated floor, prop-leg and spare-wheel details (`reference/vehicles/army-no5-trailer/SOURCES.md`).
 - Download the original box-trailer reference photograph; the model was matched to the Commons preview (`reference/vehicles/box-trailer-6x4/SOURCES.md`).
-- Vehicle triangle counts (v1.23 started it; `npx vite-node scripts/tri-count.ts`): the LC79's hexagon grille mesh and roof-rib rod chains, the HJ60's stripe pieces and script lettering, rod and ring sides where the part is small, and the block lettering on grilles and tailgates. Aim: every vehicle under about 80,000 without changing a silhouette.
+- Vehicle triangle counts (v1.24 started it; `npx vite-node scripts/tri-count.ts`): the LC79's hexagon grille mesh and roof-rib rod chains, the HJ60's stripe pieces and script lettering, rod and ring sides where the part is small, and the block lettering on grilles and tailgates. Aim: every vehicle under about 80,000 without changing a silhouette.
 - Real-device checks in README.md. An unchecked box records an unverified check, rather than a known game fault.
 - Optional, not requested: Episode 2 supply side trips and diary entries for Episodes 1–2.
 - CREB follow-up, shared code: append `map.bogs` to `features.mudHoles` so authored bogs get winch trees and puddles without a hand-placed boulder. A per-track crown rut would save episodes from authoring erosion coordinates by hand.
