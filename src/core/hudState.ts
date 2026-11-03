@@ -170,10 +170,10 @@ export function buildHudState(i: HudInputs): HudState {
     else if (v.engineOff)
       prompts.push({
         keys: g.accelerate ?? 'W',
-        // With a clutch it starts only in neutral or with the clutch held.
+        // In the sim-level 'clutch' mode it starts only in neutral or with the clutch in.
         text:
-          v.clutchGearbox && !v.drivetrain.neutral
-            ? `Start the engine (${g.clutch ?? 'clutch'} held, or neutral)`
+          v.clutchGearbox && v.gearboxMode === 'clutch' && !v.drivetrain.neutral
+            ? 'Start the engine (clutch in, or neutral)'
             : 'Start the engine',
       });
     if (i.find && !t.repair)

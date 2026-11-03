@@ -25,7 +25,7 @@ import { MenuStick } from '../sim/input/touchStick';
 import { isTouchDevice } from './touchControls';
 import { applyHudStyle, hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
 import { damageNotes, gearboxLabels, gearboxNote, showGearboxSetting } from './menus';
-import { GEARBOX_MODES, type GearboxMode } from '../sim/vehicle/drivetrain';
+import { GEARBOX_SETTINGS, type GearboxSetting } from '../sim/vehicle/drivetrain';
 
 type Group =
   | 'menu'
@@ -230,7 +230,7 @@ export class WelcomeScreen {
         <section class="title-setting"><h3>HUD style</h3><div class="welcome-options seg">${pickableHudStyles.map((h) => setting('hudStyle', h, hudStyleLabels[h], this.settings.hudStyle === h)).join('')}</div></section>
         ${
           showGearboxSetting(this.padConnected)
-            ? `<section class="title-setting gearbox-setting"><h3>Gearbox</h3><div class="welcome-options seg">${GEARBOX_MODES.map((m) => setting('gearbox', m, gearboxLabels[m], this.settings.gearbox === m)).join('')}</div><p class="welcome-note gearbox-note">${gearboxNote(this.settings.gearbox, controllers[this.settings.controller].back)}</p></section>`
+            ? `<section class="title-setting gearbox-setting"><h3>Gearbox</h3><div class="welcome-options seg">${GEARBOX_SETTINGS.map((m) => setting('gearbox', m, gearboxLabels[m], this.settings.gearbox === m)).join('')}</div><p class="welcome-note gearbox-note">${gearboxNote(this.settings.gearbox)}</p></section>`
             : ''
         }
         <p class="title-settings-version" title="Build ${BUILD_LABEL}">${GAME_VERSION}</p>
@@ -480,7 +480,7 @@ export class WelcomeScreen {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
       else if (group === 'controller') this.settings.controller = value as ControllerType;
       else if (group === 'touchDrive') this.settings.touchDrive = value as TouchDriveScheme;
-      else if (group === 'gearbox') this.settings.gearbox = value as GearboxMode;
+      else if (group === 'gearbox') this.settings.gearbox = value as GearboxSetting;
       else if (group === 'hudStyle') {
         this.settings.hudStyle = value as HudStyle;
         applyHudStyle(this.settings.hudStyle);

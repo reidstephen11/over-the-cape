@@ -515,14 +515,11 @@ export class Game {
         return;
       }
       if (event === 'clutchToStart') {
-        this.hud.toast(`Clutch in (${controllers[this.settings.controller].back}) or neutral to start`, 2400);
+        this.hud.toast('Clutch in or neutral to start', 2400);
         return;
       }
       if (event === 'stalledLugged') {
-        this.hud.toast(
-          `Stalled: clutch in or neutral, then press ${controllers[this.settings.controller].accelerate}`,
-          3200,
-        );
+        this.hud.toast(`Stalled: press ${controllers[this.settings.controller].accelerate} to restart`, 3200);
         this.audio.engineEvent('stalled');
         return;
       }

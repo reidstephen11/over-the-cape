@@ -29,7 +29,7 @@ export interface VehicleInput {
   /** Edge-triggered: one gear up / down (manual gearbox settings, controller only). */
   shiftUp: boolean;
   shiftDown: boolean;
-  /** Held clutch pedal, 0 (out) .. 1 (pressed); only "Manual with clutch" uses it. */
+  /** Held clutch pedal, 0 (out) .. 1 (pressed). No device sets this for now; the sim and tests use it. */
   clutch: number;
 }
 

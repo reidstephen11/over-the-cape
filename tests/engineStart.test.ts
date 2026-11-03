@@ -93,7 +93,31 @@ describe('starting the engine', () => {
     expect(v.crank).toBeGreaterThan(0);
     sim.physics.free();
   });
-  it('with a manual gearbox, the pedal starts the engine only in neutral or with the clutch in', async () => {
+  it('in Manual (no clutch button), the pedal starts the engine in gear', async () => {
+    const world = testWorld();
+    const sim = new Simulation(await loadRapier(), world, lateAfternoon);
+    sim.setGearboxMode('manual');
+    const tuning = vehicles.hilux.tuning;
+    sim.addVehicle('p', sim.campsitePose(world.map.spawnCampsite, tuning.wheelRadius), tuning);
+    const v = sim.vehicles.get('p')!;
+    expect(v.drivetrain.neutral).toBe(true);
+    const inputs = new Map([['p', emptyInput()]]);
+    for (let i = 0; i < 30; i++) sim.step(inputs, DT);
+    sim.switchOffEngine('p');
+    const events: string[] = [];
+    sim.events.on('engine', ({ event }) => events.push(event));
+    // Into 1st with the engine off, then the pedal: it cranks without neutral or a clutch.
+    inputs.set('p', { ...emptyInput(), shiftUp: true });
+    sim.step(inputs, DT);
+    expect(v.drivetrain.neutral).toBe(false);
+    expect(v.drivetrain.gear).toBe(0);
+    inputs.set('p', { ...emptyInput(), throttle: 1 });
+    sim.step(inputs, DT);
+    expect(v.engineOff).toBe(false);
+    expect(events).toEqual(['starting']);
+    sim.physics.free();
+  });
+  it("in the sim-level 'clutch' mode, the pedal starts the engine only in neutral or with the clutch in", async () => {
     const world = testWorld();
     const sim = new Simulation(await loadRapier(), world, lateAfternoon);
     sim.setGearboxMode('clutch');
