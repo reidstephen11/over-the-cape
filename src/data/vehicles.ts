@@ -261,28 +261,29 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     // A tall, long truck: stand well back to see all of it.
     cameraScale: 1.4,
     cabin: {
-      // High above the front wheels behind a big upright screen, looking down over the bonnet.
-      eye: { x: 0.5, y: 1.74, z: -0.6 },
+      // High over the front wheels behind a big screen, looking down over the short bonnet
+      // (the cab's walls are in src/render/unimogLayout.ts).
+      eye: { x: 0.5, y: 1.52, z: -1.15 },
       pitch: -0.2,
-      dialY: 1.24,
-      dialZ: -1.335,
+      dialY: 1.08,
+      dialZ: -1.685,
       dials: {
         speed: { x: 0.5, radius: 0.06, max: 100, major: 20, minor: 10 },
         rpm: { x: 0.355, radius: 0.046, max: 3000, major: 500, minor: 250 },
         oil: { x: 0.645, radius: 0.036, max: 1, major: 0.5, minor: 0.25 },
       },
-      lamps: { xs: [0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65], y: 1.135, z: -1.338 },
+      lamps: { xs: [0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65], y: 0.975, z: -1.688 },
       // The handbrake lever on the floor, inboard of the driver's seat.
       handbrake: {
         kind: 'lever',
-        base: { x: 0.18, y: 0.76, z: -0.7 },
-        tip: { x: 0.17, y: 1.0, z: -0.86 },
+        base: { x: 0.18, y: 0.58, z: -1.2 },
+        tip: { x: 0.17, y: 0.82, z: -1.36 },
         travel: 0.6,
       },
       steeringWheel: {
         // A big wheel on a steep column, almost flat like a bus's.
-        centre: { x: 0.5, y: 1.36, z: -1.02 },
-        columnBase: { x: 0.5, y: 0.95, z: -1.42 },
+        centre: { x: 0.5, y: 1.15, z: -1.45 },
+        columnBase: { x: 0.5, y: 0.78, z: -1.82 },
         radius: 0.22,
         // Power steering: about two turns to full lock.
         ratio: 22,
