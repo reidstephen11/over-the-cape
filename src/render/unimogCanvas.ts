@@ -3,13 +3,15 @@ import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGe
 import { unimogColors } from './unimogPaint';
 import { continuousTube, ROUND_BEND } from './bodyRefinement';
 import { surface } from './unimogSurface';
+import { TRAY } from './unimogLayout';
 const { canvas, bar } = unimogColors,
   edge = canvas.clone().multiplyScalar(0.76);
-const FRONT = 0.46,
-  BACK = 3.42,
+/** The tilt sits on the tray's dropsides, just inside its ends (unimogLayout.ts). */
+const FRONT = TRAY.front + 0.03,
+  BACK = TRAY.back - 0.03,
   HALF = 1.16,
   TOP = 2.26,
-  HEM = 1.1;
+  HEM = TRAY.top - 0.04;
 export const TILT_BOWS = Array.from({ length: 5 }, (_, i) => FRONT + 0.1 + (i * (BACK - FRONT - 0.2)) / 4);
 export const BOARD_Z = (FRONT + BACK) / 2,
   BOARD_Y = 2.36;
@@ -68,17 +70,17 @@ export function addCargoCanvas(b: VehicleBuilder): void {
     );
     for (let z = FRONT + 0.17; z < BACK - 0.1; z += 0.44) {
       b.ring(side * (HALF + 0.008), HEM + 0.014, z, 0.008, 0.002, bar, M.Metal, 'x', Z.Sides);
-      b.block(side * 1.157, 1.06, z, 0.025, 0.024, 0.045, bar, M.Metal, Z.Sides, 0.003);
+      b.block(side * 1.157, HEM - 0.04, z, 0.025, 0.024, 0.045, bar, M.Metal, Z.Sides, 0.003);
       b.rod(
         v(side * (HALF + 0.012), HEM + 0.012, z - 0.01),
-        v(side * 1.174, 1.06, z),
+        v(side * 1.174, HEM - 0.04, z),
         0.0035,
         edge,
         M.Fabric,
         Z.Sides,
       );
       b.rod(
-        v(side * 1.174, 1.06, z),
+        v(side * 1.174, HEM - 0.04, z),
         v(side * (HALF + 0.012), HEM + 0.012, z + 0.01),
         0.0035,
         edge,
@@ -140,12 +142,12 @@ export function addCargoCanvas(b: VehicleBuilder): void {
 }
 export function addCargoBows(b: VehicleBuilder): void {
   for (const z of TILT_BOWS) {
-    const points = [v(-1.11, 1.14, z), v(-1.11, tiltY(-1.11, z) - 0.04, z)];
+    const points = [v(-1.11, HEM + 0.04, z), v(-1.11, tiltY(-1.11, z) - 0.04, z)];
     for (let i = 0; i <= 20; i++) {
       const x = -1.09 + i * 0.109;
       points.push(v(x, tiltY(x, z) - 0.035, z));
     }
-    points.push(v(1.11, tiltY(1.11, z) - 0.04, z), v(1.11, 1.14, z));
+    points.push(v(1.11, tiltY(1.11, z) - 0.04, z), v(1.11, HEM + 0.04, z));
     continuousTube(b, points, 0.015, bar, Z.Trim, M.Metal, ROUND_BEND);
   }
 }
