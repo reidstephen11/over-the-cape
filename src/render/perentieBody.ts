@@ -37,7 +37,7 @@ const glass = new THREE.Color('#A9BDB6'),
   white = new THREE.Color('#E8E6DC');
 
 /** Body sides, wheel openings and the main heights (vehicle frame). */
-const SIDE = 0.845;
+const SIDE = 0.895;
 const WAIST = 0.78;
 const SILL = 0.07;
 const ARCH = { radius: 0.51, cy: -0.05 };
@@ -207,11 +207,22 @@ function frontEnd(b: VehicleBuilder): void {
     b.block(side * 0.33, crownAt(0.33) + 0.004, -0.86, 0.12, 0.016, 0.06, steel, M.Metal, Z.Front);
     b.block(side * 0.5, 0.59, F - 0.002, 0.05, 0.05, 0.02, black, M.Rubber, Z.Front);
     // Wing top, the outer wing around the wheel and the inner wing beside the engine.
-    b.block(side * 0.727, 0.59, -1.41, 0.24, 0.04, 1.22, paint, M.Paint, Z.Front, 0.012);
+    b.block(
+      side * ((BONNET.half + SIDE) / 2),
+      0.59,
+      -1.41,
+      SIDE - BONNET.half + 0.01,
+      0.04,
+      1.22,
+      paint,
+      M.Paint,
+      Z.Front,
+      0.012,
+    );
     archPanel(b, side, F, SCUTTLE, -1.397, 0.585, Z.Front, 0.39);
     // Headlamp panel: round lamp in a black bezel, side lamp and indicator beneath, and
     // the convoy lamp above it.
-    b.block(side * 0.63, 0.33, F + 0.02, 0.42, 0.52, 0.04, paint, M.Paint, Z.Front, 0.01);
+    b.block(side * 0.655, 0.33, F + 0.02, 0.47, 0.52, 0.04, paint, M.Paint, Z.Front, 0.01);
     b.slot = M.Rubber;
     b.tag = Z.Front;
     b.push()
@@ -363,7 +374,7 @@ function frontEnd(b: VehicleBuilder): void {
 
 function windscreen(b: VehicleBuilder): void {
   // Scuttle with its two vent flaps, then the upright frame and its wipers.
-  b.block(0, 0.7, SCUTTLE, 1.7, 0.16, 0.1, paint, M.Paint, Z.Front, 0.012);
+  b.block(0, 0.7, SCUTTLE, 1.8, 0.16, 0.1, paint, M.Paint, Z.Front, 0.012);
   for (const x of [-0.38, 0.38]) {
     b.block(x, 0.7, SCUTTLE - 0.058, 0.44, 0.1, 0.02, paint, M.Paint, Z.Front, 0.008);
     b.block(x, 0.752, SCUTTLE - 0.062, 0.44, 0.008, 0.016, black, M.Rubber, Z.Front);
@@ -373,11 +384,11 @@ function windscreen(b: VehicleBuilder): void {
     .translate(0, WAIST, SCUTTLE + 0.01)
     .rotate(lean, 0, 0);
   const h = SCREEN_TOP - WAIST;
-  b.block(0, 0.03, 0, 1.66, 0.06, 0.07, paint, M.Paint, Z.Front, 0.01);
-  b.block(0, h - 0.03, 0, 1.66, 0.07, 0.08, paint, M.Paint, Z.Front, 0.01);
-  for (const x of [-0.8, 0.8]) b.block(x, h / 2, 0, 0.07, h, 0.07, paint, M.Paint, Z.Front, 0.01);
-  b.block(0, h / 2 + 0.005, 0, 1.53, h - 0.11, 0.012, glass, M.Glass, Z.Glass);
-  for (const y of [0.065, h - 0.07]) b.block(0, y, -0.012, 1.54, 0.012, 0.01, rubber, M.Rubber, Z.Front);
+  b.block(0, 0.03, 0, 1.76, 0.06, 0.07, paint, M.Paint, Z.Front, 0.01);
+  b.block(0, h - 0.03, 0, 1.76, 0.07, 0.08, paint, M.Paint, Z.Front, 0.01);
+  for (const x of [-0.85, 0.85]) b.block(x, h / 2, 0, 0.07, h, 0.07, paint, M.Paint, Z.Front, 0.01);
+  b.block(0, h / 2 + 0.005, 0, 1.63, h - 0.11, 0.012, glass, M.Glass, Z.Glass);
+  for (const y of [0.065, h - 0.07]) b.block(0, y, -0.012, 1.64, 0.012, 0.01, rubber, M.Rubber, Z.Front);
   for (const x of [0.5, -0.18]) {
     b.rod({ x, y: 0.07, z: -0.03 }, { x: x - 0.42, y: 0.1, z: -0.03 }, 0.007, black, M.Rubber, Z.Front);
     b.rod({ x, y: 0.07, z: -0.034 }, { x: x - 0.38, y: 0.1, z: -0.034 }, 0.004, black, M.Rubber, Z.Front);

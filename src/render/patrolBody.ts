@@ -940,7 +940,7 @@ export function buildPatrolBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
   snorkel(b, tuning);
   rearEnd(b, wheel);
   chassis(b);
-  addPatrolInterior(b, tuning.engine.redlineRpm);
+  addPatrolInterior(b, tuning.engine.redlineRpm, WIDEN);
   const g = b.build();
   const pos = g.getAttribute('position'),
     normal = g.getAttribute('normal');
