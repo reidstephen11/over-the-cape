@@ -2250,3 +2250,13 @@ The third orientation sign says "walk the wheels up the step", and there was no 
 Driven headless over 150–200 m, the Perentie, the short-wheelbase Land Rover, the Hilux, the Camel Trophy car and the Unimog all walk up it, slowing from 1.6 m/s to about 1.1 m/s at the face.
 
 **Still open.** Roaring Meg's rock ledge has the same problem: its note calls it "a step of rock about a metre high" and its `rockySteps` rise of 1 m comes out as a 24° ramp. The granite pinch on the Helenvale knoll is five more of them. Both are left for a later version.
+
+## v1.39: pin how wet the track is, and what the browser tests found
+
+**v1.33 made the browser tests non-deterministic, and this fixes it.** A new run's seed is random (`newRunSeed`), so rolling the day from it meant the e2e tests met a different track on every run — and they pin `?surprises=off` for exactly that reason. `m6-audio` caught it: it expects a kookaburra and got a magpie. The run it launched was a different day.
+
+`?track=dry|reopened|wet` pins the condition, beside `?seed=N` and `?surprises=off`, and every e2e entry URL now asks for `track=reopened`, the just-reopened day their expectations were written against (seed 1 would not have done: it rolls dry). `m6-audio` passes again. The parameter is not only for the tests: driving the same stretch on a dry day and then a wet one is the way to feel what v1.33 did, and the README's checklist asks for that.
+
+**The e2e suite had not run in a cloud session for some time.** v1.33's `CHROMIUM_PATH` made it possible again, and the first full run was 33 passed, 9 failed. Eight of the nine fail identically on v1.32, so they are not regressions, and they are on the roadmap with their names. The clearest is `devMode:4`: at half throttle the car covers 1.9885 m where the test wants more than 8 m, the same figure to four decimals on both versions, so something in that test or in test mode has been wrong for a while rather than drifting. `episode:103` fails on v1.32 and passes here after a 20-minute run, so it is flaky, not fixed.
+
+CI runs lint, the unit tests and the build, not e2e. That is why none of this showed up in a deploy.
