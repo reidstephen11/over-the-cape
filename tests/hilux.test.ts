@@ -20,7 +20,7 @@ describe('Hilux single cab', () => {
   it('is an early 4WD Hilux: 2.8 m wheelbase, 7.00-16s, four speeds, 4.375 axles and a 2.28 low range', () => {
     expect(vehicleOrder).toContain('hilux');
     expect(Math.abs(t.wheels[0].z - t.wheels[2].z)).toBeCloseTo(2.8, 3);
-    expect(t.wheelRadius * 2).toBeCloseTo(0.75, 2);
+    expect(t.wheelRadius * 2).toBeCloseTo(0.8, 2);
     expect(t.gearbox.ratios).toHaveLength(4);
     expect([t.gearbox.finalDrive, t.ranges.low.ratio]).toEqual([4.375, 2.28]);
     // A petrol four: its engine sound fires four cylinders and cranks as long as the starter.

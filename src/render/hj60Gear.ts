@@ -153,9 +153,10 @@ function underside(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: Vehic
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.07, 0.07, 0.42, 12), C.steel.clone().multiplyScalar(0.6));
   b.pop();
-  // The first spare, slung flat under the back on its cradle as the factory carried it.
+  // The first spare, slung flat under the back on its cradle as the factory carried it,
+  // below the frame rails (bottom at -0.105) and the two rear crossmembers.
   const sz = 2.06,
-    sy = -0.07;
+    sy = -0.105 - tuning.wheelWidth / 2 - 0.01;
   b.tag = Z.Rear;
   b.push()
     .translate(0, sy, sz)

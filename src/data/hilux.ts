@@ -6,9 +6,10 @@ import type { VehicleTuning } from './vehicle';
  * track, 7.00-16 tyres, leaf springs on both solid axles, the 2.0 L 18R petrol four
  * (about 65 kW and 150 Nm), a four-speed manual, the RF1A transfer case (1.0 and 2.28)
  * and 4.375 axles. Same local frame as the other vehicles: x right, y up, z back, origin
- * 0.12 m above the parked hubs, so the ground is about 0.5 m below it.
+ * 0.12 m above the parked hubs, so the ground is 0.52 m below it.
  */
-const R = 0.375;
+/** 7.00-16 tyres, about 0.80 m across. */
+const R = 0.4;
 const FRONT_TRACK = 0.715;
 const REAR_TRACK = 0.7;
 const HALF_BASE = 1.4;
@@ -20,9 +21,10 @@ export const hiluxTuning: VehicleTuning = {
   // About 1.43 t empty; with two aboard, the bull bar, winch, rack and gear about 1.65 t.
   // The engine sits over the front axle and the tub is light, so about 57% is on the front.
   // The centre of mass is about 0.78 m off the ground (the rack and its load sit high): it
-  // rolls over in a full-lock turn at 60 km/h, as the other vehicles do, but not at 50.
+  // rolls over in a full-lock turn at 60 km/h, as the other vehicles do, but not at 50. Its
+  // height above the origin came down 25 mm with the bigger tyres (v1.30) to keep that.
   mass: 1650,
-  com: { x: 0, y: 0.28, z: -0.2 },
+  com: { x: 0, y: 0.255, z: -0.2 },
   inertia: { x: 3300, y: 3550, z: 700 },
   wheelRadius: R,
   wheelWidth: 0.19,
@@ -59,7 +61,7 @@ export const hiluxTuning: VehicleTuning = {
     // Bull bar, the rear step bumper, the spare slung under the tub, and the rack's top.
     { cx: 0, cy: 0.27, cz: -2.27, hx: 0.85, hy: 0.24, hz: 0.07 },
     { cx: 0, cy: 0.1, cz: 2.5, hx: 0.82, hy: 0.06, hz: 0.07 },
-    { cx: 0, cy: 0.06, cz: 2.02, hx: 0.38, hy: 0.1, hz: 0.38 },
+    { cx: 0, cy: -0.205, cz: 2.02, hx: 0.4, hy: 0.1, hz: 0.4 },
     { cx: 0, cy: 1.28, cz: 1.42, hx: 0.8, hy: 0.04, hz: 1.0 },
   ],
   bumpRadius: 0.22,

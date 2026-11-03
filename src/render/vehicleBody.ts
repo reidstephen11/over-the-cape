@@ -857,10 +857,11 @@ function rear(b: VehicleBuilder, livery: Livery): void {
     b.block(tx, 0.42, TAIL + 0.026, 0.078, 0.065, 0.012, amber, M.Amber, Z.Rear, 0.006);
     b.block(tx, 0.345, TAIL + 0.026, 0.078, 0.055, 0.012, lamp, M.Lamp, Z.Rear, 0.006);
   }
-  // Stamped panel low on the left door, the handle, and the badges on the right corner.
-  b.block(-0.28, 0.52, TAIL + 0.004, 0.4, 0.22, 0.012, livery.body, M.Paint, Z.Rear, 0.02);
+  // Stamped panel low on the right door (behind the jerry can; the spare carrier is on the
+  // left door), the right door's handle, and the badges on the right corner.
+  b.block(0.28, 0.52, TAIL + 0.004, 0.4, 0.22, 0.012, livery.body, M.Paint, Z.Rear, 0.02);
   b.block(0, (LOW + CAP) / 2, TAIL + 0.002, 0.008, CAP - LOW, 0.006, rubber, M.Rubber, Z.Rear);
-  b.block(-0.09, 0.82, TAIL + 0.012, 0.11, 0.025, 0.025, steel, M.Metal, Z.Rear);
+  b.block(0.09, 0.82, TAIL + 0.012, 0.11, 0.025, 0.025, steel, M.Metal, Z.Rear);
   b.block(0.68, 0.62, TAIL + 0.003, 0.13, 0.03, 0.006, chrome, M.Metal, Z.Rear, 0.003);
 }
 

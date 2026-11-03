@@ -121,10 +121,11 @@ function archPanel(
     .rotate(0, Math.PI / 2, 0)
     .rotate(0, 0, Math.asin((SILL - ARCH.cy + 0.018) / (ARCH.radius + 0.012)))
     .scale(1, 1, 0.65);
+  // A flat pressed lip round the opening, a few millimetres proud of the skin.
   b.geometry(
     new THREE.TorusGeometry(
       ARCH.radius + 0.012,
-      0.03,
+      0.012,
       8,
       48,
       Math.PI - 2 * Math.asin((SILL - ARCH.cy + 0.018) / (ARCH.radius + 0.012)),
@@ -846,14 +847,17 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.pop();
   b.rod({ x: 0.3, y: -0.08, z: 0.88 }, { x: 0.32, y: -0.04, z: 1.7 }, 0.024, steel);
   b.rod({ x: 0.32, y: -0.04, z: 1.7 }, { x: 0.62, y: -0.05, z: 2.18 }, 0.024, steel);
-  // The spare wheel slung flat under the back of the tub.
+  // The spare wheel slung flat under the back of the tub, below the frame rails and the two
+  // rear crossmembers, on two cradle bars.
+  const spareY = -0.1 - tuning.wheelWidth / 2 - 0.01;
   b.tag = Z.Rear;
   b.push()
-    .translate(0, 0.06, 2.02)
+    .translate(0, spareY, 2.02)
     .rotate(0, 0, Math.PI / 2);
   b.geometry(wheel.clone(), black);
   b.pop();
-  for (const x of [-0.2, 0.2]) b.block(x, -0.04, 2.02, 0.05, 0.03, 0.8, black, M.Metal, Z.Trim);
+  for (const x of [-0.2, 0.2])
+    b.block(x, spareY - tuning.wheelWidth / 2 - 0.015, 2.02, 0.05, 0.03, 0.8, black, M.Metal, Z.Trim);
   // The second spare lies flat on the tub floor between the wheel housings, with a ratchet
   // strap over it to the tie-down rails.
   const sy = TUB_FLOOR + 0.03 + tuning.wheelWidth * 0.53,
@@ -880,7 +884,8 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   // Steel bar in place of the bumper: a heavy beam with three hoops over the grille and
   // headlamps. It covers the factory bumper lamps, so the amber park and indicator lamps
   // sit in the beam's ends, as bar makers fitted them.
-  const face = -2.34;
+  // The beam's front face is at z -2.32 with an 8 mm bevel, so the lamps and plate sit on it.
+  const face = -2.328;
   hiluxBullBar(b, bar);
   for (const side of [-1, 1]) {
     b.block(side * 0.68, 0.1, face - 0.004, 0.15, 0.06, 0.012, black, M.Rubber, Z.Front, 0.006);

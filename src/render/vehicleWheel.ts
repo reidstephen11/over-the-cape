@@ -12,7 +12,7 @@ export function buildVehicleWheel(
 ): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   const r = tuning.wheelRadius,
-    w = tuning.wheelWidth;
+    w = tuning.drawnWheels?.width ?? tuning.wheelWidth;
   const tyre = new THREE.Color('#232624');
   const rimR = 0.215;
   b.slot = M.Rubber;

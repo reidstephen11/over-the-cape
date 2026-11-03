@@ -148,6 +148,12 @@ export interface VehicleTuning {
     keyboardReturnRate: number;
     padRate: number;
   };
+  /**
+   * Where the wheels are drawn when the physics keeps a different track or tyre from the
+   * real car's: the half-track to draw the hubs at, and the tyre width to draw. The physics
+   * wheels (`wheels`, `wheelWidth`) stay where the game's balance was tuned.
+   */
+  drawnWheels?: { halfTrack: number; width: number };
   /** Air intake height above ground (SPEC §6.4). */
   intakeHeight: number;
   /** Air intake position (local), used for flooding. */
@@ -164,6 +170,11 @@ export type VehicleId =
   'shortie' | 'perentie' | 'camel' | 'hilux' | 'unimog' | 'troopy' | 'hj60' | 'patrol' | 'lc79' | 'sooty80';
 
 const R = 0.38;
+/**
+ * The physics track, 1.45 m. The FJ40's published track is 1.40 m, which the wheels are
+ * drawn on (`drawnWheels`); the physics keeps 1.45 m because the potholes, the creek lines
+ * and the tipping balance were tuned to it (v1.30 notes in docs/DECISIONS.md).
+ */
 const HALF_TRACK = 0.725;
 const HALF_BASE = 1.15;
 const MOUNT_Y = 0.32;
@@ -178,6 +189,9 @@ export const vehicleTuning: VehicleTuning = {
   inertia: { x: 2300, y: 2500, z: 720 },
   wheelRadius: R,
   wheelWidth: 0.26,
+  // Drawn as 7.50-16 tyres on the published track: outer faces at 0.805 m, inside the guard
+  // lips (HW 0.832), where the physics wheels would stand 33 mm outside them.
+  drawnWheels: { halfTrack: 0.7, width: 0.21 },
   wheels: [
     { x: -HALF_TRACK, y: MOUNT_Y, z: -HALF_BASE, front: true },
     { x: HALF_TRACK, y: MOUNT_Y, z: -HALF_BASE, front: true },
