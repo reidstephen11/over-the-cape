@@ -24,3 +24,6 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 - CREB follow-up, shared code: append `map.bogs` to `features.mudHoles` so authored bogs get winch trees and puddles without a hand-placed boulder. A per-track crown rut would save episodes from authoring erosion coordinates by hand.
 
 Episode 4 (the Frenchmans diesel delivery with a trailer) was removed in v0.73. The trailers, hitching, HUD, sound, delivery goal, water forces, spilled drums, trailer punctures and cargo checkpoint state remain in the code and in test mode.
+
+- Roll torque with the true steered axle: `addRollTorque` still uses the mirrored axle direction for steered wheels (about half the physical roll torque at full lock) because `rollTorqueScale` and the §6.2 roll checks were tuned with it; switching to `steeredAxle` rolled the car in a full-lock turn while towing (v1.25). Retune the roll per vehicle with the true axle, then re-check the trailer tests.
+- Pothole pinching on the paddock road: since the footprint rays sample along the wheel's true rolling direction (v1.19) neither vehicle cuts a tyre at 47 km/h over the clear stretches, and the "pinches tyres on the paddock road taken fast" test fails. Decide from a play test whether the potholes should pinch more often, then tune `damageTuning.tyre` and the test together.
