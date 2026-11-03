@@ -31,7 +31,7 @@ const glass = new THREE.Color('#9FB6B3'),
   plateInk = new THREE.Color('#1F3D6B');
 
 const DY = LC79_CAB_LIFT;
-const SIDE = 0.86;
+const SIDE = 0.895;
 const SILL = 0.04 + DY;
 const WAIST = 0.84 + DY;
 const F = -2.36;
@@ -401,13 +401,14 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
       Z.Front,
     );
   // Cowl under the screen, with its vent slots.
-  b.block(0, COWL.y - 0.02, COWL.z - 0.03, 1.66, 0.05, 0.1, paint, M.Paint, Z.Front, 0.015);
+  b.block(0, COWL.y - 0.02, COWL.z - 0.03, 1.76, 0.05, 0.1, paint, M.Paint, Z.Front, 0.015);
   for (let i = 0; i < 10; i++)
     b.block(-0.45 + i * 0.1, COWL.y + 0.006, COWL.z - 0.04, 0.06, 0.004, 0.05, black, M.Rubber, Z.Front);
 
   // Front panel as on the 2024-on 70 Series: one wide black mesh grille across the face
-  // with the round LED headlamps set into its ends, a centre badge, and the indicators in
-  // its lower outer corners.
+  // with the round LED headlamps set into its ends, a centre badge, and a tall amber
+  // indicator standing in each upper outer corner, outboard of the lamp and level with
+  // its bezel (front-34-single-cab.jpg, front-34-double-cab.jpg).
   const gy = LAMP_Y,
     gw = 1.44,
     gh = 0.3;
@@ -477,8 +478,8 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
   });
   for (const side of [-1, 1]) {
     headlamp(b, side * 0.58, gy);
-    b.block(side * 0.655, 0.535, F - 0.035, 0.145, 0.069, 0.055, black, M.Rubber, Z.Front, 0.009);
-    b.block(side * 0.655, 0.535, F - 0.066, 0.121, 0.045, 0.009, amber, M.Amber, Z.Front, 0.006);
+    b.block(side * 0.79, gy + 0.04, F - 0.02, 0.11, 0.16, 0.07, black, M.Rubber, Z.Front, 0.009);
+    b.block(side * 0.79, gy + 0.04, F - 0.058, 0.085, 0.14, 0.009, amber, M.Amber, Z.Front, 0.006);
   }
   // Three lower cooling slots and the narrow upper hood vent of the updated fascia.
   for (const x of [-0.235, 0, 0.235])
@@ -574,7 +575,10 @@ function roof(b: VehicleBuilder, paint: THREE.Color): void {
   }
 }
 
-/** Wide black flares round the front openings and over the tray's rear wheel cut-outs. */
+/**
+ * Wide black flares round the front openings and over the tray's rear wheel cut-outs;
+ * they reach 0.97 m out, over the 1.6 m track's 37 inch tyres.
+ */
 function flares(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
     const lip = sideShape([
@@ -584,8 +588,8 @@ function flares(b: VehicleBuilder): void {
     extrudeX(
       b,
       lip,
-      side > 0 ? SIDE - 0.01 : -SIDE - 0.11,
-      side > 0 ? SIDE + 0.11 : -SIDE + 0.01,
+      side > 0 ? SIDE - 0.01 : -SIDE - 0.075,
+      side > 0 ? SIDE + 0.075 : -SIDE + 0.01,
       flare,
       M.Rubber,
       Z.Front,
@@ -593,7 +597,7 @@ function flares(b: VehicleBuilder): void {
     );
     // Dark wheelhouse: an inner wall and a roof over the tyre.
     b.block(side * 0.35, 0.2, -AXLE, 0.03, 0.6, ARCH.r * 2, well, M.Rubber, Z.Trim);
-    b.block(side * 0.69, ARCH.cy + ARCH.r + 0.005, -AXLE, 0.36, 0.02, ARCH.r * 1.5, well, M.Rubber, Z.Trim);
+    b.block(side * 0.7, ARCH.cy + ARCH.r + 0.005, -AXLE, 0.4, 0.02, ARCH.r * 1.5, well, M.Rubber, Z.Trim);
   }
 }
 
@@ -1140,7 +1144,7 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Big staggered tread lugs that run over the shoulder onto the sidewall.
-  const blocks = 24;
+  const blocks = 16;
   for (let i = 0; i < blocks; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / blocks) * Math.PI * 2;
@@ -1148,12 +1152,12 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.26, Math.cos(angle) * r * 0.955, Math.sin(angle) * r * 0.955)
         .rotate(angle, side * 0.2, 0);
-      b.box(w * 0.46, 0.045, 0.075, tyre);
+      b.box(w * 0.46, 0.045, 0.095, tyre);
       b.pop();
       b.push()
         .translate(side * w * 0.5, Math.cos(angle) * r * 0.86, Math.sin(angle) * r * 0.86)
         .rotate(angle, 0, 0);
-      b.box(0.03, 0.05, 0.06, tyre);
+      b.box(0.03, 0.05, 0.075, tyre);
       b.pop();
     }
   }

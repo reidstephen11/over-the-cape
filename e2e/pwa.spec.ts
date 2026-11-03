@@ -28,6 +28,9 @@ test('the built site ships a Pages-scoped manifest and service worker', async ({
   );
   const sw = await request.get('/sw.js');
   expect(sw.ok()).toBe(true);
-  expect(await sw.text()).toContain('/over-the-cape/');
+  const worker = await sw.text();
+  expect(worker).toContain('/over-the-cape/');
+  // A new build waits for the game to ask for it (v1.23) instead of taking over at once.
+  expect(worker).toContain('SKIP_WAITING');
   expect(errors).toEqual([]);
 });

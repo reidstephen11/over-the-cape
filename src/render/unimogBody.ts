@@ -696,7 +696,7 @@ export function buildUnimogWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 56), tyre);
   b.pop();
   // Chevron bars: a bar out from each shoulder, staggered and angled towards the centre.
-  const lugs = 22;
+  const lugs = 14;
   for (let i = 0; i < lugs; i++)
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / lugs) * Math.PI * 2;
@@ -704,7 +704,7 @@ export function buildUnimogWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.24, Math.cos(angle) * r * 0.96, Math.sin(angle) * r * 0.96)
         .rotate(angle, side * 0.45, 0);
-      b.box(w * 0.5, 0.05, 0.07, tyre);
+      b.box(w * 0.5, 0.05, 0.09, tyre);
       b.pop();
     }
   for (const side of [-1, 1]) {

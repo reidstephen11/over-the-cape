@@ -112,10 +112,15 @@ const glass = new THREE.Color('#9FB6B3'),
   plateWhite = new THREE.Color('#E9E7DD'),
   plateInk = new THREE.Color('#1F3D6B');
 
-const SIDE = 0.845;
+const SIDE = 0.895;
 const SILL = 0.04;
 const WAIST = 0.84;
-const ARCH = { r: 0.515, cy: -0.08 };
+/**
+ * The 75 Series wheel openings: a flat top `y` above the hubs with short rounded corners
+ * (`r`), `top` half-wide along the flat, widening to `bottom` at the sill (side.jpg). `cy`
+ * is the well's centre for the dark inner shading.
+ */
+const ARCH = { y: 0.435, top: 0.33, bottom: 0.46, r: 0.12, cy: -0.08 };
 const F = -2.2;
 const COWL = { y: 0.84, z: -0.98 };
 const SCREEN_TOP = { y: 1.48, z: -0.8 };
@@ -142,17 +147,23 @@ const clipTop = (z: number) => CLIP.noseTop + ((z - F) / (CLIP.back - F)) * (CLI
 
 const v = (x: number, y: number, z: number) => ({ x, y, z });
 
-/** A round opening's outline from height yBack on its back side, over the top, to yFront on its front side. */
-function archPath(axle: number, yBack: number, yFront: number, grow = 0, steps = 24): Vtx[] {
-  const r = ARCH.r + grow;
-  const a0 = Math.asin(Math.max(-1, Math.min(1, (yBack - ARCH.cy) / r))),
-    a1 = Math.PI - Math.asin(Math.max(-1, Math.min(1, (yFront - ARCH.cy) / r)));
-  const out: Vtx[] = [];
-  for (let i = 0; i <= steps; i++) {
-    const a = a0 + ((a1 - a0) * i) / steps;
-    out.push([axle + r * Math.cos(a), ARCH.cy + r * Math.sin(a)]);
-  }
-  return out;
+/** Half-width of a wheel opening at height y: straight edges from the sill up to the flat top. */
+function archHalf(y: number): number {
+  const t = Math.max(0, Math.min(1, (y - SILL) / (ARCH.y - SILL)));
+  return ARCH.bottom + (ARCH.top - ARCH.bottom) * t;
+}
+
+/**
+ * A flat-topped opening's outline from height yBack on its back side, over the top, to
+ * yFront on its front side, `grow` outside the opening itself.
+ */
+function archPath(axle: number, yBack: number, yFront: number, grow = 0): Vtx[] {
+  return [
+    [axle + archHalf(yBack) + grow, yBack],
+    [axle + ARCH.top + grow, ARCH.y + grow, ARCH.r + grow],
+    [axle - ARCH.top - grow, ARCH.y + grow, ARCH.r + grow],
+    [axle - archHalf(yFront) - grow, yFront],
+  ];
 }
 
 /** Where the A pillar's front edge is at height y. */
@@ -190,7 +201,7 @@ function windows(): Vtx[][] {
 function sidePanels(b: VehicleBuilder): void {
   const wins = windows();
   const end = TAIL - CORNER;
-  const archBack = (y: number) => -AXLE + Math.sqrt(ARCH.r ** 2 - (y - ARCH.cy) ** 2);
+  const archBack = (y: number) => -AXLE + archHalf(y);
   const outline: Vtx[] = [
     ...[SILL, 0.1, 0.2, CLIP.low].map((y): Vtx => [archBack(y), y]),
     [archBack(CLIP.low + 0.03), CLIP.low + 0.03],
@@ -236,8 +247,8 @@ function sidePanels(b: VehicleBuilder): void {
       extrudeX(
         b,
         lip,
-        side > 0 ? SIDE - 0.02 : -SIDE - 0.035,
-        side > 0 ? SIDE + 0.035 : -SIDE + 0.02,
+        side > 0 ? SIDE - 0.02 : -SIDE - 0.02,
+        side > 0 ? SIDE + 0.02 : -SIDE + 0.02,
         trim,
         M.Rubber,
         axle < 0 ? Z.Front : Z.Rear,
@@ -245,14 +256,14 @@ function sidePanels(b: VehicleBuilder): void {
       );
       // Dark wheelhouse: an inner wall and a roof over the tyre.
       const wellX = axle < 0 ? 0.34 : 0.52;
-      b.block(side * wellX, 0.12, axle, 0.03, 0.56, ARCH.r * 2, well, M.Rubber, Z.Trim);
+      b.block(side * wellX, 0.12, axle, 0.03, 0.56, ARCH.bottom * 2, well, M.Rubber, Z.Trim);
       b.block(
         (side * (wellX + SIDE - 0.05)) / 2,
-        ARCH.cy + ARCH.r + 0.005,
+        ARCH.y + 0.005,
         axle,
         SIDE - 0.05 - wellX,
         0.02,
-        ARCH.r * 1.5,
+        ARCH.top * 2 + 0.1,
         well,
         M.Rubber,
         Z.Trim,
@@ -296,8 +307,8 @@ function sidePanels(b: VehicleBuilder): void {
     // Pressed swage line below the windows, and a lower one along the body.
     for (const [y, z0, z1] of [
       [WAIST - 0.04, DOOR.front + 0.03, end - 0.02],
-      [0.5, AXLE - ARCH.r - 0.1, end - 0.02],
-      [0.5, DOOR.back + 0.03, AXLE - ARCH.r - 0.14],
+      [0.5, AXLE - ARCH.bottom - 0.1, end - 0.02],
+      [0.5, DOOR.back + 0.03, AXLE - ARCH.bottom - 0.14],
     ])
       b.block(side * (SIDE + 0.004), y, (z0 + z1) / 2, 0.01, 0.02, z1 - z0, paint, M.Paint, Z.Sides, 0.008);
     // Handle and lock on the door.
@@ -485,7 +496,7 @@ function frontEnd(b: VehicleBuilder): void {
       Z.Front,
     );
   // Cowl under the screen, with its vent slots.
-  b.block(0, COWL.y - 0.02, COWL.z - 0.03, 1.66, 0.05, 0.1, paint, M.Paint, Z.Front, 0.015);
+  b.block(0, COWL.y - 0.02, COWL.z - 0.03, 1.76, 0.05, 0.1, paint, M.Paint, Z.Front, 0.015);
   for (let i = 0; i < 10; i++)
     b.block(-0.45 + i * 0.1, COWL.y + 0.006, COWL.z - 0.04, 0.06, 0.004, 0.05, black, M.Rubber, Z.Front);
 
@@ -604,7 +615,7 @@ function frontEnd(b: VehicleBuilder): void {
     );
   }
   // The black bumper with its brackets.
-  b.block(0, 0.18, F - 0.03, 1.72, 0.15, 0.1, bumper, M.Metal, Z.Front, 0.025);
+  b.block(0, 0.18, F - 0.03, 1.8, 0.15, 0.1, bumper, M.Metal, Z.Front, 0.025);
   for (const x of [-0.43, 0.43]) b.block(x, 0.1, F + 0.06, 0.07, 0.07, 0.16, black, M.Metal, Z.Trim);
   // Sump, steering box and the air cleaner's intake behind the left headlamp.
   b.block(0, -0.04, -1.75, 0.44, 0.16, 0.5, black, M.Metal, Z.Trim, 0.02);
@@ -787,7 +798,7 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   for (const x of [0.08, 0.58]) b.block(x, 0.72, T + 0.055, 0.055, 0.6, 0.09, black, M.Metal, Z.Rear, 0.004);
   b.block(0.33, 0.72, T + 0.09, 0.55, 0.055, 0.055, black, M.Metal, Z.Rear, 0.004);
   // Black rear bar with recovery points, a tow hitch, its brackets and the plate.
-  b.block(0, 0.08, T + 0.07, 1.7, 0.15, 0.13, bumper, M.Metal, Z.Rear, 0.025);
+  b.block(0, 0.08, T + 0.07, 1.78, 0.15, 0.13, bumper, M.Metal, Z.Rear, 0.025);
   // Bar lamps in each end: amber indicator outboard, red stop and tail inboard.
   for (const side of [-1, 1]) {
     b.block(side * 0.66, 0.08, T + 0.137, 0.26, 0.085, 0.006, black, M.Rubber, Z.Rear, 0.004);
@@ -1067,7 +1078,7 @@ export function buildTroopyWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Two rows of big staggered blocks that wrap onto the shoulders.
-  const blocks = 26;
+  const blocks = 16;
   for (let i = 0; i < blocks; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / blocks) * Math.PI * 2;
@@ -1075,7 +1086,7 @@ export function buildTroopyWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.25, Math.cos(angle) * r * 0.965, Math.sin(angle) * r * 0.965)
         .rotate(angle, side * 0.15, 0);
-      b.box(w * 0.44, 0.036, 0.058, tyre);
+      b.box(w * 0.44, 0.036, 0.075, tyre);
       b.pop();
     }
   }

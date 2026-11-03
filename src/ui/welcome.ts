@@ -7,6 +7,7 @@ import { isDevMode } from '../data/devWeather';
 import { timeLabels, timesOfDay, weatherLabels, weathers, type TimeOfDay } from '../data/environment';
 import { clockTime, episodeOrder, episodes, type EpisodeId } from '../data/episodes';
 import { maps } from '../data/maps';
+import { offeredQualities, shownQuality } from '../data/quality';
 import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
 import { vehicleLoadout, vehicleOrder, vehicles } from '../data/vehicles';
 import { isLockedVehicle, supplyRun, vehicleChallenges, vehicleOpen } from '../data/unlocks';
@@ -205,7 +206,18 @@ export class WelcomeScreen {
       const setting = (group: Group, value: string, label: string, on: boolean) =>
         `<button type="button" class="welcome-option ${on ? 'on' : ''}" aria-pressed="${on}" data-group="${group}" data-value="${value}">${label}</button>`;
       this.el.innerHTML = `<div class="title-settings title-panel"><button class="title-back" data-group="back">‹ Back</button><p class="title-eyebrow">Over the Cape</p><h2>Settings</h2>
-        <section class="title-setting"><h3>Graphics</h3><div class="welcome-options seg">${(['low', 'medium', 'high'] as const).map((q) => setting('quality', q, q[0].toUpperCase() + q.slice(1), this.settings.quality === q)).join('')}</div></section>
+        <section class="title-setting"><h3>Graphics</h3><div class="welcome-options seg">${offeredQualities(
+          isTouchDevice(),
+        )
+          .map((q) =>
+            setting(
+              'quality',
+              q,
+              q[0].toUpperCase() + q.slice(1),
+              shownQuality(this.settings.quality, isTouchDevice()) === q,
+            ),
+          )
+          .join('')}</div></section>
         <section class="title-setting phone-driving-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
@@ -400,7 +412,7 @@ export class WelcomeScreen {
       case 'touchDrive':
         return v === this.settings.touchDrive;
       case 'quality':
-        return v === this.settings.quality;
+        return v === shownQuality(this.settings.quality, isTouchDevice());
       case 'units':
         return v === this.settings.units;
       case 'hudStyle':

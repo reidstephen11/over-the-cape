@@ -8,8 +8,11 @@ import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
  * right-hand driver, two cloth bucket seats with a console between them carrying the
  * gear and transfer levers, a rear bench and the cargo floor behind it, door trims and
  * a pale headlining. The handbrake handle under the dash moves: see vehicleInstruments.ts.
+ * The body is stretched across by `widen` after this is drawn; the dial faces and the
+ * column are drawn narrowed by the same amount so they end up where the cabin data puts
+ * them, under the needles and wheel that VehicleInstruments adds unstretched.
  */
-export function addPatrolInterior(b: VehicleBuilder, redlineRpm: number): void {
+export function addPatrolInterior(b: VehicleBuilder, redlineRpm: number, widen = 1): void {
   const cabin = vehicles.patrol.cabin;
   const dash = new THREE.Color('#34383A'),
     dark = new THREE.Color('#25292B'),
@@ -24,7 +27,9 @@ export function addPatrolInterior(b: VehicleBuilder, redlineRpm: number): void {
   b.block(0, 0.8, -0.68, 1.62, 0.06, 0.3, dark, M.Rubber, Z.Trim, 0.025);
   b.block(0.42, 0.85, -0.565, 0.46, 0.2, 0.18, dark, M.Rubber, Z.Trim, 0.03);
   b.block(0.42, 0.955, -0.55, 0.48, 0.03, 0.22, dark, M.Rubber, Z.Trim, 0.012);
+  b.push().scale(1 / widen, 1, 1);
   addDialFaces(b, cabin, redlineRpm);
+  b.pop();
   // Heater and radio panel in the middle, glovebox and vents on the passenger side.
   b.block(0, 0.66, -0.525, 0.36, 0.18, 0.02, dark, M.Rubber, Z.Trim, 0.01);
   b.block(0, 0.7, -0.512, 0.24, 0.05, 0.01, new THREE.Color('#151718'), M.Rubber, Z.Trim);
@@ -33,7 +38,9 @@ export function addPatrolInterior(b: VehicleBuilder, redlineRpm: number): void {
   for (const x of [-0.72, -0.2, 0.18, 0.72])
     b.block(x, 0.78, -0.53, 0.12, 0.05, 0.012, new THREE.Color('#151718'), M.Rubber, Z.Trim, 0.008);
   b.block(0.05, 1.18, -0.6, 0.22, 0.06, 0.02, dark, M.Rubber, Z.Trim, 0.01);
+  b.push().scale(1 / widen, 1, 1);
   addSteeringColumn(b, cabin);
+  b.pop();
   // Clutch, brake and accelerator.
   for (const [x, w] of [
     [0.3, 0.07],

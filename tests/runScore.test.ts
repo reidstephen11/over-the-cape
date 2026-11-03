@@ -36,4 +36,19 @@ describe('scoreRun', () => {
     // Packed three spares and six plugs, used a spare and three plugs.
     expect(kit({ ...packed, spares: 3, plugs: 6 })).toBe(160);
   });
+
+  it('scores the car on its engine, suspension and tyres: a wreck gets nothing', () => {
+    const c = createCondition(70);
+    c.engine = 0;
+    c.suspension = [0, 0, 0, 0];
+    c.tyres = [0, 0, 0, 0];
+    const s = scoreRun({ condition: c, packed, minutes: 25, hoursSpare: 2, targetMinutes: 30 });
+    expect(s.parts[1]).toEqual({ label: 'Car', points: 0 });
+    // Half the tyres gone: a third of the share is the tyres', and half of that is lost.
+    const d = createCondition(70);
+    d.tyres = [0, 0, 1, 1];
+    expect(
+      scoreRun({ condition: d, packed, minutes: 25, hoursSpare: 2, targetMinutes: 30 }).parts[1].points,
+    ).toBe(333);
+  });
 });

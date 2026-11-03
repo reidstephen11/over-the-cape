@@ -10,6 +10,8 @@ import { mkdirSync } from 'node:fs';
 const [outDir, vehicleId, url = 'http://localhost:5173/'] = process.argv.slice(2);
 mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch({
+  // A Chromium outside Playwright's cache (a container's preinstalled one, say).
+  executablePath: process.env.STUDIO_CHROMIUM,
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
 });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

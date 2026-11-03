@@ -71,6 +71,14 @@ function overlapping(page: Page, selector = '.touch-btn, .hud button'): Promise<
 test.describe('phone', () => {
   test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
 
+  test('the title Settings page offers Low and Medium graphics only (v1.23)', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('[data-title-begin]').click();
+    await page.locator('[data-value="settings"]').click();
+    await expect(page.locator('[data-group="quality"]')).toHaveCount(2);
+    await expect(page.locator('[data-group="quality"][data-value="high"]')).toHaveCount(0);
+  });
+
   test('on-screen controls drive the car, and the layout works in landscape and portrait', async ({
     page,
   }) => {

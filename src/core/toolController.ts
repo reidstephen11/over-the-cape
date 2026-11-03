@@ -93,6 +93,11 @@ export class ToolController {
       this.cancel();
       return true;
     }
+    // Pause (II, Options, Esc) and the map leave the tool and open as usual.
+    if (inp.pressed('pause') || inp.pressed('map')) {
+      this.cancel();
+      return false;
+    }
     if (inp.pressed('confirm') || inp.pressed('interact') || inp.pressed('winch')) {
       this.confirm();
       return true;

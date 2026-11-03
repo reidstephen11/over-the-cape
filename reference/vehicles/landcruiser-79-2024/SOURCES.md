@@ -18,12 +18,12 @@ Wheelbase 3,180 mm, and the family's lengths, widths and heights, are the J70 in
 | --------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Wheelbase | 3,180 mm                                            | 3.18 m                                                                                                      |
 | Length    | 5,245 mm is the longer of the two J70 lengths       | about 5.34 m from the nose skin to the tray's back, before judging the bull bar (`F` −2.36, tray back 2.98) |
-| Cab width | 1,790–1,870 mm for the family                       | cab 1.72 m (`SIDE` 0.86); tray 1.90 m                                                                       |
+| Cab width | 1,790–1,870 mm for the family                       | cab 1.79 m (`SIDE` 0.895, v1.22); 1.94 m over the front flares; tray 1.90 m                                 |
 | Tyres     | stock tyres vary; the game specifies 37×12.5R17     | radius 0.47 m, which is 37 inches                                                                           |
 | Lift      | the game specifies 4 inches                         | `LC79_CAB_LIFT` 0.10 m                                                                                      |
 | Track     | stock is narrower; the game uses 1.6 m with spacers | 1.6 m                                                                                                       |
 
-**Check these first.** The model sets round LED lamps into a wide black mesh grille (`lc79Body.ts`). Open `front-34-single-cab.jpg` and `front-34-wagon.jpg` beside a studio front view and match the lamp units and the grille to those, rather than to the pre-facelift round sealed beams. The wheelbase, the 37-inch tyres and the 4-inch lift already follow the brief.
+**Check these first.** The model sets round LED lamps into a wide black mesh grille (`lc79Body.ts`), with a tall amber indicator in each upper outer corner, outboard of the lamp and level with its bezel, as `front-34-single-cab.jpg` and `front-34-double-cab.jpg` show (v1.22; it had them in the lower corners before). Open those and `front-34-wagon.jpg` beside a studio front view and match the lamp units and the grille to those, rather than to the pre-facelift round sealed beams. The wheelbase, the 37-inch tyres and the 4-inch lift already follow the brief. The cab is the 1,790 mm body; the 1,870 mm figure is the wide-guard ute, which the game's black flares stand in for.
 
 ## Gaps
 

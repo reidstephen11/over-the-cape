@@ -5,7 +5,7 @@ import { continuousTube } from './bodyRefinement';
 
 const FRONT = -0.73,
   BACK = 2.31,
-  HALF = 0.855,
+  HALF = 0.905,
   TOP = 1.51;
 const { canvas, galv, bar } = perentieColors;
 const seam = canvas.clone().multiplyScalar(0.73),
@@ -86,7 +86,7 @@ export function addCanvasTilt(b: VehicleBuilder): void {
       mid = (start + end) / 2;
     const roll = new THREE.CylinderGeometry(0.044, 0.044, end - start, 24, 24);
     roll.rotateX(Math.PI / 2);
-    roll.translate(side * 0.861, 0, mid);
+    roll.translate(side * (HALF + 0.006), 0, mid);
     const p = roll.getAttribute('position');
     for (let i = 0; i < p.count; i++) {
       const z = p.getZ(i),
@@ -99,13 +99,23 @@ export function addCanvasTilt(b: VehicleBuilder): void {
     b.geometry(roll, canvas);
     for (const z of [start, end])
       for (const radius of [0.027, 0.038])
-        b.ring(side * 0.861, canvasY(HALF, z) - 0.035, z, radius, 0.0022, seam, M.Fabric, 'z', Z.Sides);
+        b.ring(
+          side * (HALF + 0.006),
+          canvasY(HALF, z) - 0.035,
+          z,
+          radius,
+          0.0022,
+          seam,
+          M.Fabric,
+          'z',
+          Z.Sides,
+        );
     for (const z of [0.39, 0.95, 1.62, 2.18]) {
       const y = canvasY(HALF, z) - 0.035;
-      b.ring(side * 0.861, y, z, 0.046, 0.0045, seam, M.Fabric, 'z', Z.Sides);
+      b.ring(side * (HALF + 0.006), y, z, 0.046, 0.0045, seam, M.Fabric, 'z', Z.Sides);
       b.block(side * 0.903, y + 0.012, z, 0.01, 0.025, 0.022, galv, M.Metal, Z.Sides, 0.002);
       b.rod(
-        v(side * 0.861, y + 0.045, z),
+        v(side * (HALF + 0.006), y + 0.045, z),
         v(side * 0.837, canvasY(0.837, z) + 0.003, z),
         0.004,
         seam,
@@ -161,18 +171,20 @@ export function addCanvasTilt(b: VehicleBuilder): void {
 }
 export function addCanvasHoops(b: VehicleBuilder): void {
   for (const z of [0.23, 0.95, 1.62, 2.26]) {
-    const pts = [v(-0.8, 0.79, z), v(-0.8, 1.385, z)];
+    const leg = HALF - 0.055,
+      arc = leg - 0.02;
+    const pts = [v(-leg, 0.79, z), v(-leg, 1.385, z)];
     for (let i = 0; i <= 16; i++) {
-      const x = -0.78 + i * 0.0975;
+      const x = -arc + (i * arc) / 8;
       pts.push(v(x, canvasY(x, z) - 0.023, z));
     }
-    pts.push(v(0.8, 1.385, z), v(0.8, 0.79, z));
+    pts.push(v(leg, 1.385, z), v(leg, 0.79, z));
     continuousTube(b, pts, 0.012, galv, Z.Trim, M.Paint);
   }
 }
 export function addTiltRack(b: VehicleBuilder): void {
   for (const z of TILT_RACK_Z) {
-    b.block(0, 1.56, z, 1.63, 0.03, 0.045, bar, M.Metal, Z.Roof, 0.004);
+    b.block(0, 1.56, z, 1.73, 0.03, 0.045, bar, M.Metal, Z.Roof, 0.004);
     for (const side of [-1, 1]) {
       b.block(side * 0.8, 1.47, z, 0.035, 0.18, 0.045, bar, M.Metal, Z.Roof, 0.004);
       b.block(side * 0.8, 1.39, z, 0.065, 0.035, 0.1, bar, M.Metal, Z.Roof, 0.004);

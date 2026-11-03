@@ -11,6 +11,7 @@ import { coursePoint } from '../sim/world/crawlCourse';
 import { trailPoint, staticLogMesh } from '../sim/world/crawlTrail';
 import { rockShape } from '../sim/world/rockShape';
 import { onBridge } from '../sim/world/bridges';
+import { followBody } from './followBody';
 
 const timber = () => pal('barkPale').clone().lerp(pal('barkOchre'), 0.35).multiplyScalar(0.82);
 const rust = () => pal('dirtDark').clone().lerp(pal('mud'), 0.3);
@@ -693,12 +694,8 @@ export class WorldProps {
     return b.build();
   }
 
-  update(): void {
-    for (const { obj, mesh } of this.dynamicMeshes) {
-      const p = obj.body.translation();
-      const q = obj.body.rotation();
-      mesh.position.set(p.x, p.y, p.z);
-      mesh.quaternion.set(q.x, q.y, q.z, q.w);
-    }
+  /** Fallen trees and loose rocks follow their bodies (`alpha` 0 = before the last step, 1 = after). */
+  update(alpha: number): void {
+    for (const { obj, mesh } of this.dynamicMeshes) followBody(mesh, obj, alpha);
   }
 }

@@ -96,19 +96,19 @@ export const no5Trailer: TrailerTuning = {
   com: { x: 0, y: 0.14, z: -0.22 },
   inertia: { x: 150, y: 190, z: 80 },
   // 7.50-16 bar tyres on Land Rover rims, tucked under the box between the arches: a
-  // 1.24 m track.
+  // 1.32 m track, the tyres' outer faces 1.51 m apart under the 1.55 m lip.
   wheelRadius: 0.38,
   wheelWidth: 0.19,
   wheels: [
-    { x: -0.62, y: 0, z: 0 },
-    { x: 0.62, y: 0, z: 0 },
+    { x: -0.66, y: 0, z: 0 },
+    { x: 0.66, y: 0, z: 0 },
   ],
   suspensionRestLength: 0.2,
   suspensionTravel: 0.12,
   springRate: 60000,
   damperCompression: 2.6,
   damperRelaxation: 3.4,
-  // Loaded, it tips at about 0.64 g sideways (centre of mass about 0.97 m up on a 1.24 m
+  // Loaded, it tips at about 0.68 g sideways (centre of mass about 0.97 m up on a 1.32 m
   // track). Its tyres grip sideways well under that, so shoved sideways at a fold it skids
   // rather than bouncing over (at 0.6 it still rolled); across a slope, or in a hard turn on
   // one, it still goes over (the Army found the same).

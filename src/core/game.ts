@@ -5,7 +5,7 @@ import { devEnvironment, devFlood, isDevMode, type DevWeather } from '../data/de
 import { environmentFor, presetHours, type Conditions } from '../data/environment';
 import { episodeWeatherAt } from '../data/weatherTimeline';
 import { scoreRun, type RunScore } from '../sim/runScore';
-import { SectionTimes, type SectionTime } from '../sim/sectionTimes';
+import { SectionTimes, timedSections, type SectionTime } from '../sim/sectionTimes';
 import { GhostGap, GhostRecorder, loadGhost, minSec, saveGhost, type GhostTrace } from '../sim/ghost';
 import { GhostView } from '../render/ghostView';
 import { strandedPose } from '../sim/stranded';
@@ -14,9 +14,10 @@ import {
   createTrafficBody,
   placeTrafficBody,
   type OncomingCar,
+  trafficPlans,
   type TrafficEvent,
 } from '../sim/traffic';
-import type RAPIER from '@dimforge/rapier3d-compat';
+import { poseOf, snapshotPose, type PosedBody } from '../sim/bodyPose';
 import {
   clockTime,
   episodeOrder,
@@ -91,6 +92,7 @@ import { AudioSystem } from '../audio/audioSystem';
 import { buildAudioFrame } from '../audio/frame';
 import { GameLoop } from './loop';
 import { ToolController } from './toolController';
+import { pendingUpdate } from './update';
 import { buildHudState } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
 import { damageMessage } from './damageMessages';
@@ -200,7 +202,7 @@ export class Game {
   /** Seconds behind the ghost (negative: ahead). */
   private ghostBehind = 0;
   readonly traffic: Traffic;
-  private readonly trafficCars = new Map<OncomingCar, { body: RAPIER.RigidBody; view: StuckVehicleView }>();
+  private readonly trafficCars = new Map<OncomingCar, { car: PosedBody; view: StuckVehicleView }>();
   private readonly trafficLooks = new Map<string, VehicleId>();
   private churnNoted = false;
   private readonly ruts: RutsView;
@@ -288,19 +290,13 @@ export class Game {
     this.lampBeams = sim.env.lampBeams;
     const tuning = vehicles[vehicleId].tuning;
     this.crawlRuns = new CrawlRuns(world.map.crawlTrails ?? [], world.features.tracks, crawlBests);
-    const sections = (setup.def.timedSections ?? []).flatMap((id) => {
-      const t = world.map.tracks.find((tr) => tr.id === id);
-      if (!t || t.points.length < 2) return [];
-      const [a, b] = [t.points[0], t.points[t.points.length - 1]];
-      return [{ id, name: t.name ?? id, a: { x: a[0], z: a[1] }, b: { x: b[0], z: b[1] } }];
-    });
-    this.sectionTimes = new SectionTimes(sections, setup.progress[setup.def.id]?.sectionBests ?? {});
-    const traffic = (setup.def.traffic ?? []).flatMap((t) => {
-      const track = world.map.tracks.find((tr) => tr.id === t.track);
-      this.trafficLooks.set(t.name, t.look);
-      return track ? [{ name: t.name, points: track.points.map(([x, z]) => [x, z] as const) }] : [];
-    });
-    this.traffic = new Traffic(traffic);
+    // Both follow the generated tracks' dense centrelines, not the authored control points.
+    this.sectionTimes = new SectionTimes(
+      timedSections(setup.def.timedSections ?? [], world.features.tracks),
+      setup.progress[setup.def.id]?.sectionBests ?? {},
+    );
+    for (const t of setup.def.traffic ?? []) this.trafficLooks.set(t.name, t.look);
+    this.traffic = new Traffic(trafficPlans(setup.def.traffic ?? [], world.features.tracks));
     this.gateCount = new GateCount(world.features.gates);
     this.input = new InputManager(window);
     this.input.setSteering(tuning.steering);
@@ -399,6 +395,7 @@ export class Game {
           this.closePause();
           void this.toMainMenu();
         },
+        restartForUpdate: () => void this.restartForUpdate(),
       },
       settings,
     );
@@ -409,6 +406,11 @@ export class Game {
       this.loop.paused = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
     });
     this.result = new ResultCard(uiRoot);
+    // A new build downloaded during the drive waits for the pause menu (v1.23).
+    pendingUpdate.onReady(() => {
+      this.pause.setUpdateReady(true);
+      this.hud.toast('A new version is ready: restart for it from the pause menu when you like', 6000);
+    });
     this.fade = new Fade(uiRoot);
 
     this.overlay = this.debug ? new DebugOverlay(uiRoot) : null;
@@ -710,6 +712,8 @@ export class Game {
   }
 
   start(): void {
+    // The Drive press on the briefing (Space, Enter, Cross or Options) is not a game press.
+    this.input.clearEdges();
     this.loop.start();
     // The engine is off as you arrive: the first press of the pedal starts it.
     this.sim.switchOffEngine(LOCAL_VEHICLE);
@@ -958,7 +962,12 @@ export class Game {
       // What was taken after the camp is back where it was found.
       this.finds.reset(this.checkpoint.taken);
       this.findMarkers.show(this.finds.defs, this.finds.taken);
+      // Places found and sections timed after the camp are new again, and any car coming
+      // the other way is gone: the track sends one afresh.
+      this.exploration.reset(this.checkpoint.discovered);
       this.exploration.lastCampsite = this.checkpoint.camp;
+      this.sectionTimes.reset();
+      this.clearTraffic();
       this.seen = this.seenFrom(this.checkpoint, this.world);
       this.run.restart(this.checkpoint);
       this.ghostRecorder.rewind(this.checkpoint.elapsed);
@@ -982,6 +991,17 @@ export class Game {
     await this.fade.run(() => {
       this.loop.paused = true;
       location.reload();
+    });
+  }
+
+  /** Install the downloaded version (pause menu): saved first, then the page reloads into it. */
+  async restartForUpdate(): Promise<void> {
+    this.save();
+    await this.fade.run(() => {
+      this.loop.paused = true;
+      if (!pendingUpdate.install()) location.reload();
+      // The reload comes when the new worker takes over; if it never does, reload anyway.
+      window.setTimeout(() => location.reload(), 5000);
     });
   }
 
@@ -1523,7 +1543,7 @@ export class Game {
       inp.throttle = 0;
       inp.brake = 0;
       inp.steer = 0;
-      inp.handbrake = this.tool.mode !== 'drive';
+      inp.handbrake = true;
       inp.winchAttach = false;
       inp.interact = false;
       inp.toggleFrontDiff = false;
@@ -1531,6 +1551,7 @@ export class Game {
       inp.togglePrecision = false;
     }
     this.inputs.set(LOCAL_VEHICLE, inp);
+    for (const { car } of this.trafficCars.values()) snapshotPose(car);
     this.sim.step(this.inputs, dt);
     this.run.tick(dt);
     if (this.run.status === 'driving') this.recordGhost();
@@ -1623,8 +1644,8 @@ export class Game {
       this.churnNoted = true;
       this.hud.toast('The ground is cutting up under the wheels: spinning here makes it slipperier', 3200);
     }
-    for (const [car, { body }] of this.trafficCars)
-      placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), false);
+    for (const [plan, { car }] of this.trafficCars)
+      placeTrafficBody(car.body, plan, (x, z) => this.world.terrain.heightAt(x, z), false);
     if (this.gateCount.total) {
       const f = v.forward();
       const flat = Math.hypot(f.x, f.z) || 1;
@@ -1691,25 +1712,31 @@ export class Game {
     if (e.type === 'spawned') {
       const body = createTrafficBody(this.sim.R, this.sim.physics);
       placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), true);
-      const view = new StuckVehicleView(
-        { body },
-        vehicles[this.trafficLooks.get(car.name) ?? 'troopy'].tuning,
-      );
+      const posed: PosedBody = { body, ...poseOf(body) };
+      const view = new StuckVehicleView(posed, vehicles[this.trafficLooks.get(car.name) ?? 'troopy'].tuning);
       view.model.root.name = 'traffic';
       this.view.scene.add(view.model.root);
-      this.trafficCars.set(car, { body, view });
+      this.trafficCars.set(car, { car: posed, view });
       this.hud.toast(`${car.name} is coming the other way on this narrow track`, 3000);
     } else if (e.type === 'waiting') {
       this.hud.toast(`${car.name} has stopped for you: pull off to one side to let it past`, 3000);
     } else if (e.type === 'moving' && car.s > 1) {
       this.hud.toast(`${car.name} squeezes past with a wave`, 2200);
-    } else if (e.type === 'gone') {
-      const drawn = this.trafficCars.get(car);
-      if (!drawn) return;
-      this.sim.physics.world.removeRigidBody(drawn.body);
-      this.view.scene.remove(drawn.view.model.root);
-      this.trafficCars.delete(car);
-    }
+    } else if (e.type === 'gone') this.removeTrafficCar(car);
+  }
+
+  private removeTrafficCar(car: OncomingCar): void {
+    const drawn = this.trafficCars.get(car);
+    if (!drawn) return;
+    this.sim.physics.world.removeRigidBody(drawn.car.body);
+    this.view.scene.remove(drawn.view.model.root);
+    this.trafficCars.delete(car);
+  }
+
+  /** Every oncoming car off the road and out of the scene, and the tracks ready to send one again. */
+  private clearTraffic(): void {
+    for (const car of [...this.trafficCars.keys()]) this.removeTrafficCar(car);
+    this.traffic.reset();
   }
 
   private onSectionTime(t: SectionTime): void {
@@ -1806,6 +1833,7 @@ export class Game {
 
   private renderFrame(alpha: number, frameDt: number): void {
     this.input.poll();
+    if (!this.loop.paused) this.history.tick(frameDt);
     this.map.updateInput(this.input.activeDevice, this.settings.controller);
     this.pause.setInputDevice(this.input.activeDevice);
     this.history.setInput(this.input.activeDevice, this.settings.controller);
@@ -1866,14 +1894,17 @@ export class Game {
       this.anchorCount = this.sim.findAnchors(LOCAL_VEHICLE).length;
       this.anchorInReach = this.anchorCount > 0;
     }
-    this.model.update(v, this.loop.paused ? 1 : alpha, frameDt);
+    // Everything with a physics body is drawn part way between the last two steps, so it
+    // all glides with the car and the camera (paused, it stands where it is).
+    const between = this.loop.paused ? 1 : alpha;
+    this.model.update(v, between, frameDt);
     this.syncDeliveryViews();
-    for (const s of this.stuckViews) s.update();
-    for (const { view } of this.trafficCars.values()) view.update();
+    for (const s of this.stuckViews) s.update(between);
+    for (const { view } of this.trafficCars.values()) view.update(between);
     this.ghost?.update(this.run.elapsed);
     this.ruts.update(frameDt);
-    for (const t of this.trailerViews.values()) t.update(this.loop.paused ? 1 : alpha);
-    for (const d of this.drumViews.values()) d.update();
+    for (const t of this.trailerViews.values()) t.update(between);
+    for (const d of this.drumViews.values()) d.update(between);
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
     this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock);
@@ -1897,7 +1928,7 @@ export class Game {
     this.view.focus.copy(this.model.root.position);
     this.view.shelter.copy(this.model.root.matrixWorld);
     const t0 = performance.now();
-    this.view.render();
+    this.view.render(between);
     this.sceneMs += (performance.now() - t0 - this.sceneMs) * 0.1;
     // Not while tests drive a fixed number of steps a frame on the slow software renderer.
     const cpuMs = this.loop.timings.sim + this.loop.timings.render;

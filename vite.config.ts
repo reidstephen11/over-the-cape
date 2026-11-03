@@ -52,7 +52,9 @@ export default defineConfig({
   define: { __BUILD_LABEL__: JSON.stringify(buildLabel()) },
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': a new build waits until main.ts installs it (title screen or pause menu),
+      // instead of reloading the page while someone is driving (v1.23).
+      registerType: 'prompt',
       // Register from main.ts so local preview / e2e (served at /) do not 404 /over-the-cape/sw.js.
       injectRegister: false,
       base: PAGES_BASE,
@@ -96,7 +98,6 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
         navigateFallback: `${PAGES_BASE}index.html`,
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         // Vite already hashes files under assets/; a Workbox query string can break large ones.

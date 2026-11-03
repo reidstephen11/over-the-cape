@@ -68,7 +68,12 @@ export const TIGHT_BEND: TubeBend = { min: 0.085, perRadius: 0, share: 0.35 };
 /** Wider bends that grow with the tube, as on the Unimog and the Troop Carrier's bull bar. */
 export const ROUND_BEND: TubeBend = { min: 0.085, perRadius: 2.4, share: 0.45 };
 
-/** One smoothly swept tube per bent member, rather than separate cylinders and joint balls. */
+/**
+ * One smoothly swept tube per bent member, rather than separate cylinders and joint balls.
+ * Each straight is one ring of quads and each bend five, so a bull bar member costs a few
+ * hundred triangles where a uniformly sampled tube cost 1,728 however short it was. Thin
+ * tubes get six sides, bar tubes ten.
+ */
 export function continuousTube(
   b: VehicleBuilder,
   points: THREE.Vector3[],
@@ -78,7 +83,7 @@ export function continuousTube(
   slot: typeof b.slot = M.Metal,
   bend: TubeBend = TIGHT_BEND,
 ): void {
-  const path = new THREE.CurvePath<THREE.Vector3>();
+  const samples: THREE.Vector3[] = [points[0].clone()];
   let previous = points[0];
   for (let i = 1; i < points.length - 1; i++) {
     const corner = points[i],
@@ -90,14 +95,68 @@ export function continuousTube(
       );
     const start = corner.clone().add(previous.clone().sub(corner).normalize().multiplyScalar(distance));
     const end = corner.clone().add(next.clone().sub(corner).normalize().multiplyScalar(distance));
-    path.add(new THREE.LineCurve3(previous, start));
-    path.add(new THREE.QuadraticBezierCurve3(start, corner, end));
+    const arc = new THREE.QuadraticBezierCurve3(start, corner, end);
+    for (let k = 0; k <= BEND_SEGMENTS; k++) samples.push(arc.getPoint(k / BEND_SEGMENTS));
     previous = end;
   }
-  path.add(new THREE.LineCurve3(previous, points[points.length - 1]));
+  samples.push(points[points.length - 1].clone());
   b.slot = slot;
   b.tag = zone;
-  b.geometry(new THREE.TubeGeometry(path, 72, radius, 12, false), color);
+  b.geometry(sweptTube(samples, radius, radius < 0.012 ? 6 : radius < 0.025 ? 8 : 10), color);
+}
+
+const BEND_SEGMENTS = 5;
+
+/** An open tube of `sides` smooth-shaded quads per step along `samples`, framed by parallel transport. */
+export function sweptTube(samples: THREE.Vector3[], radius: number, sides: number): THREE.BufferGeometry {
+  const n = samples.length;
+  const tangents = samples.map((_, i) => {
+    const a = samples[Math.max(0, i - 1)],
+      c = samples[Math.min(n - 1, i + 1)];
+    return c.clone().sub(a).normalize();
+  });
+  // Parallel-transport one normal along the tube so the quads never twist at a bend.
+  const normals: THREE.Vector3[] = [];
+  const t0 = tangents[0];
+  const pick = Math.abs(t0.x) < 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+  normals.push(pick.cross(t0).normalize());
+  for (let i = 1; i < n; i++) {
+    const axis = tangents[i - 1].clone().cross(tangents[i]);
+    const next = normals[i - 1].clone();
+    if (axis.lengthSq() > 1e-12) {
+      const angle = Math.acos(THREE.MathUtils.clamp(tangents[i - 1].dot(tangents[i]), -1, 1));
+      next.applyAxisAngle(axis.normalize(), angle);
+    }
+    normals.push(next);
+  }
+  const rings = samples.map((p, i) => {
+    const bin = tangents[i].clone().cross(normals[i]);
+    return Array.from({ length: sides }, (_, k) => {
+      const a = (k / sides) * Math.PI * 2;
+      const dir = normals[i].clone().multiplyScalar(Math.cos(a)).addScaledVector(bin, Math.sin(a));
+      return { p: p.clone().addScaledVector(dir, radius), n: dir };
+    });
+  });
+  const positions: number[] = [],
+    norms: number[] = [];
+  const put = (...vs: { p: THREE.Vector3; n: THREE.Vector3 }[]) => {
+    for (const v of vs) {
+      positions.push(v.p.x, v.p.y, v.p.z);
+      norms.push(v.n.x, v.n.y, v.n.z);
+    }
+  };
+  for (let i = 0; i < n - 1; i++)
+    for (let k = 0; k < sides; k++) {
+      const a = rings[i][k],
+        bb = rings[i][(k + 1) % sides],
+        c = rings[i + 1][(k + 1) % sides],
+        d = rings[i + 1][k];
+      put(a, c, bb, a, d, c);
+    }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(norms, 3));
+  return g;
 }
 
 /** Remove collapsed primitive faces without discarding smooth normals or semantic attributes. */
