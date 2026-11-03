@@ -51,6 +51,13 @@ describe('engine flooding (M4)', () => {
     expect(f.stalled).toBe(false);
   });
 
+  it('floods faster when a bow wave throws water into the intake', () => {
+    const f = createCondition().flood;
+    for (let t = 0; t < 2; t += DT) updateFlood(f, true, 0, DT, 5);
+    expect(f.timer).toBeCloseTo(10, 0);
+    expect(f.stalled).toBe(true);
+  });
+
   it('counts back down slowly when the intake comes out of the water', () => {
     const f = createCondition().flood;
     for (let t = 0; t < 6; t += DT) updateFlood(f, true, 0, DT);

@@ -574,11 +574,11 @@ export const crebMap: MapDef = {
       name: 'Daintree River',
       valley: 70,
       // Running high after the overnight rain: enough to carry a vehicle off the deep line.
-      flow: 2.6,
+      flow: 2.9,
       points: [
         { x: -640, z: 2250, water: 5.4, halfWidth: 20, depth: 1.6, bankSlope: 0.3 },
         { x: -330, z: 2245, water: 5.2, halfWidth: 21, depth: 1.5, bankSlope: 0.3 },
-        { x: -30, z: 2238, water: 5.0, halfWidth: 26, depth: 1.05, bankSlope: 0.2, bed: 'gravel' },
+        { x: -30, z: 2238, water: 5.0, halfWidth: 26, depth: 1.2, bankSlope: 0.2, bed: 'gravel' },
         { x: 220, z: 2230, water: 4.8, halfWidth: 22, depth: 1.5, bankSlope: 0.3 },
         { x: 640, z: 2205, water: 4.6, halfWidth: 22, depth: 1.6, bankSlope: 0.3 },
       ],
