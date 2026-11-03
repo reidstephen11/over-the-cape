@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import { pal } from './colors';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
-import { BONNET_TOP, HW, NOSE, ROOF, TAIL } from './vehicleBody';
+import { HW, NOSE, ROOF, TAIL } from './vehicleBody';
 
 /** The rack was laid out on a roof at 1.64 m; it rides on the lower hardtop by this much. */
 const rackDrop = () => ROOF - 1.64;
@@ -282,22 +282,39 @@ function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.pop();
 }
 
-/** The second spare lying flat on a plate on the bonnet, held down by a centre clamp. */
-function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
+/**
+ * The second spare lying flat on the roof rack, held by the same centre clamp it had on
+ * the bonnet. The basket is already full: recovery boards down the left and centre, a
+ * toolbox and a canvas roll on the right. The plate sits on the boards, left of the roll
+ * and behind the driver's eye, so the lower hub is inside the plate rather than in the
+ * boards. A spine in the slot between the boards carries it from the deck, which is what
+ * shows once the boards are put down on a crossing. The door spare is unchanged.
+ */
+function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   const width = tuning.drawnWheels?.width ?? tuning.wheelWidth;
-  const z = -1.2,
-    base = BONNET_TOP + 0.08,
-    top = base + width + 0.044;
-  b.block(0, BONNET_TOP + 0.04, z, 0.34, 0.08, 0.34, bar, M.Metal, Z.Front, 0.01);
-  b.tag = Z.Front;
+  const drop = rackDrop();
+  const x = -0.24;
+  const z = 1.02;
+  const plankTop = 1.81 + drop + 0.0275;
+  const deck = 1.77 + drop + 0.0125;
+  const plateH = 0.058;
+  const plateBottom = plankTop + 0.006;
+  const base = plateBottom + plateH;
+  const top = base + width + 0.044;
+  // The slot between the boards is only 60 mm, centred at x -0.28.
+  const spineTop = plateBottom + 0.012;
+  const spineH = spineTop - deck;
+  b.block(-0.28, deck + spineH / 2, z, 0.036, spineH, 0.32, bar, M.Metal, Z.Roof, 0.004);
+  b.block(x, plateBottom + plateH / 2, z, 0.4, plateH, 0.4, bar, M.Metal, Z.Roof, 0.008);
+  b.tag = Z.Roof;
   b.push()
-    .translate(0, base + width / 2, z)
+    .translate(x, base + width / 2, z)
     .rotate(0, 0, Math.PI / 2);
   b.geometry(wheel.clone(), black);
   b.pop();
-  b.rod(v(0, base, z), v(0, top + 0.04, z), 0.014, steel, M.Metal, Z.Front);
-  b.block(0, top + 0.01, z, 0.24, 0.02, 0.06, bar, M.Metal, Z.Front, 0.006);
-  b.rod(v(-0.06, top + 0.04, z), v(0.06, top + 0.04, z), 0.01, steel, M.Metal, Z.Front);
+  b.rod(v(x, base, z), v(x, top + 0.04, z), 0.014, steel, M.Metal, Z.Roof);
+  b.block(x, top + 0.01, z, 0.24, 0.02, 0.06, bar, M.Metal, Z.Roof, 0.006);
+  b.rod(v(x - 0.06, top + 0.04, z), v(x + 0.06, top + 0.04, z), 0.01, steel, M.Metal, Z.Roof);
 }
 
 export function addVehicleEquipment(
@@ -312,7 +329,7 @@ export function addVehicleEquipment(
   chassis(b);
   roofGear(b);
   rearDoorGear(b, wheel);
-  bonnetSpare(b, tuning, wheel);
+  roofSpare(b, tuning, wheel);
   // Flexible whip aerial on the guard.
   const ax = aerialSide * (HW - 0.08);
   b.block(ax, 0.655, -0.95, 0.06, 0.04, 0.06, black, M.Rubber, Z.Front);

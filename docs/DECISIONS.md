@@ -2302,3 +2302,15 @@ The two places v1.38 and v1.40 left open. Both were `rockySteps` — a rise adde
 **Helenvale: five split pairs on the knoll.** The slope does most of the work there, so the risers are lower than Roaring Meg's — 0.24 to 0.38 m, paired at 1451, 1463, 1476 and 1489 m with a 0.30 m lip at 1501. The `rockySteps` are gone; the five big boulders either side and the three loose rocks on the treads stay, because the note describes them.
 
 **Measured.** Crawling in low range at full throttle with **open** diffs, the Perentie cannot climb Roaring Meg on any line: it stops at 203–206 m and slides back. With both lockers it goes up at about 1.1 m/s, the short-wheelbase Land Rover tilting 31.7°. Every vehicle in the game crawls both bands with the lockers in. High range at 2 m/s still fails Roaring Meg and cuts tyres, which is what the stretch test asks of it.
+
+## v1.43: the 40 Series' second spare leaves the bonnet
+
+The second spare on the short-wheelbase 4WD lay flat on the bonnet, clamped through the hub (`bonnetSpare` in `src/render/vehicleEquipment.ts`). From the driver's seat it sat in the middle of the windscreen. `front-34.jpg` shows the bonnet clear, so the spare was game kit, not the factory bonnet.
+
+**Where it went.** It now lies flat on the roof rack that was already there, over the recovery boards and left of the canvas roll. Centre at x −0.24, z 1.02: left of the vehicle's centre so the tread stays about 3 cm inside the left rail, and far enough back that the whole tyre is behind the driver's eye (z 0.44). The same centre clamp holds it. The plate sits 6 mm above the boards, thick enough that the lower hub is inside the plate rather than in the timber, and a spine in the 60 mm slot between the boards carries the plate from the rack deck, so the spare still has something under it when the boards are laid on a crossing.
+
+**Why there, and not on the deck.** The boards run the length of the basket on the left and down the middle, and the toolbox and the canvas roll take the right. A 0.76 m tyre will not sit on the slats without going through one of those, and none of them moved. Standing the spare upright at the back of the rack would clear them, and would also stand about a metre above the roof on a short hardtop. Flat in the basket is how the Patrol, the 60 Series and the LC79 already carry a second spare.
+
+**What did not move.** The body, the door spare (still on the left rear door, as `rear-34-left.jpg` and `rear-34-orange-1977.jpg` show), the jerry can, the boards, the roll, the toolbox, the bull bar and the collision boxes. The bonnet spare was already outside those boxes; this one is too. It is drawn only.
+
+Compared in the studio before and after, from the driver's seat, the front, the front-left and above. The bonnet is clear, the spare is inside the rack rails, and it does not meet the boards, the roll, the toolbox or the roof.
