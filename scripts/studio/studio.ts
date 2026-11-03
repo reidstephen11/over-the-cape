@@ -103,6 +103,8 @@ if (trailerId) {
     prevRotation: { x: q.x, y: q.y, z: q.z, w: q.w },
     body: { translation: () => pos, rotation: () => q },
     wheels: t.wheels.map(() => ({ suspension: susp, rotation: 0 })),
+    tyres: [1, 1],
+    drums: 0,
     hitchedTo: alone ? null : {},
   } as unknown as Trailer;
   const view = new TrailerView(fake);

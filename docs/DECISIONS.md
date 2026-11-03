@@ -1910,15 +1910,6 @@ Steef's Pixel 10a stayed choppy under the Bloomfield forest on High (20–39 fps
 
 **On a touch screen, Settings → Graphics offers Low and Medium only, and a phone saved on High draws Medium** (and the menu shows Medium as chosen). The saved setting is left as it is, so the same save on a computer still gets High. `qualityFor(level, touch)` in `src/data/quality.ts` gives the preset as drawn; the game and `?bench` use it. Computers are unchanged.
 
-## v1.18: choosing the winch anchor
-
-Steef wanted a way to pick which anchor the winch hooks. A chooser was already there (tool menu → Winch, A/D or the stick to step through the anchors, E to hook), but it was easy to miss and didn't say which anchor was picked.
-
-- **USE / E opens the chooser when two or more anchors are in reach.** It starts on the one the quick hook would have taken, so a second press hooks that one; with a single anchor in reach, USE still hooks it at once. Planks to pick up and a trailer to hitch still come first. The press that opens the chooser is held back for one frame, so it can't also confirm. (Steef was asked whether USE should stay a quick hook instead; this is the recommended choice, built while he decides.)
-- **Every anchor in reach gets a faint ring**, the picked one a bright bobbing ring, and a dashed line runs from the winch to it, so you can see where the cable would go.
-- **The prompt names the pick**: "2/5 · Tree, 14 m". The driving prompt says "Choose a winch anchor (5 in reach)" when there is a choice.
-- **Tap or click an anchor** in the view to pick it, and tap it again to hook it. A tap is a press that moves less than 12 px in under half a second, so dragging the camera still works; it takes the nearest anchor within 64 px of a finger (40 px of the mouse).
-
 ## v1.19: winching, camp and plank fixes
 
 Five vehicle-simulation bugs, each verified headless before the change.
@@ -1951,7 +1942,32 @@ Each was found by a reviewer and checked in the code before it was changed.
 - **Changing Graphics in the pause menu left the rain at the old preset's drop count.** The rain is built with a fixed number of drops (7,000, Low scales to 3,150); `setQuality` now builds it again when the particle share changes.
 - **The engine sound fired and flared when the engine didn't catch.** The synthesiser's start sequence went crank → catch → run on its own clock, whatever the simulation said, so with an empty tank (or a wrecked engine in realistic mode, or a dried-out flooded engine with no fuel) you heard the starter, the engine fire, rev to about 1,500 and die, while the gauges showed it never ran. Each vehicle's starter time matches its simulated crank time, so at the end of the crank the synth now looks at the running flag: running, it catches and flares as before; not running, the starter turns over a quarter second longer and the sound dies away. A unit test covers the failed start.
 
-## v1.22: fewer triangles in every vehicle, round one
+## v1.22: vehicle-model corrections from the review
+
+A reviewer measured the LC79, the Troop Carrier, the GQ Patrol, the Perentie and the Army No. 5 trailer against their `SOURCES.md` figures and photographs. Each item was checked again on the studio page before it was changed (before and after renders: the near-orthographic front, side, rear and top views from `reference/vehicles/README.md`, plus a close front of the LC79, close shots of the Troopy's wheel openings and each cockpit), and nothing was reshaped from memory.
+
+- **The studio can show a trailer again.** `scripts/studio/studio.ts` builds a stand-in Trailer for the page; `TrailerView.update()` has read `tyres` since the punctures of v0.5x, so the page threw before `studio.ready` and `studio-shots.ts trailer:no5` timed out. The stand-in now has `tyres` and `drums`. `studio-shots.ts` also takes `STUDIO_CHROMIUM` for a Chromium outside Playwright's cache.
+- **LC79 front indicators.** `front-34-single-cab.jpg` and `front-34-double-cab.jpg` show a tall amber unit in each upper outer corner of the black grille panel, outboard of the headlamp with its top level with the lamp bezel; the model had short wide ones in the lower corners, 145 mm below the lamps. They are now 85 × 140 mm amber on a black surround at x ±0.79, centred 40 mm above the lamp centres. The three lower cooling slots stay.
+- **The 70 Series cab is 1.79 m wide** (`SIDE` 0.895, was 0.86 on the LC79 and 0.845 on the Troopy) against Toyota Australia's 1,790–1,870 mm. The LC79's flares keep their 0.97 m outer edge over the 1.6 m track and 37 inch tyres, so they now stand 75 mm off the cab instead of 110; the Troopy's lips stand 20 mm off instead of 35. The shared cab interior's floor, firewall and dash grew to meet the doors, and the cowls and the Troopy's bumpers with them.
+- **Troopy wheel openings have a flat top.** `side.jpg`, `front-34-b.jpg`, `detail.jpg` and `rear-34-ambulance.jpg` all show a flat run of about 0.4 m along the top with short rounded corners and the sides opening out towards the sill, like the Patrol's; the model cut circles. `archPath` in `troopyBody.ts` now draws that shape (top 0.435 m above the origin, 0.66 m across the flat, 0.92 m at the sill, 0.12 m corners), and the side panel, the front clip, the lips and the wheelhouses follow it.
+- **Troopy length.** The reviewer measured `side.jpg` (hubs 800 px for the 2.98 m wheelbase): nose skin 0.62 m ahead of the front axle, tail 1.18 m behind the rear, so 4.78 m of skin, which is what the model has. Its `SOURCES.md` no longer calls the model 200 mm short: the 4,995 mm figure includes the bumpers. The split is off (the model's nose is 90 mm too far forward and its tail 90 mm short); moving `F` and `TAIL` is left for a later pass, because the tow point, the collision boxes, the rack, the barn doors and the fixed windows are placed from their own figures and would all have to move together.
+- **Patrol dials and column under the needles and wheel.** `patrolBody.ts` stretches every vertex across by `WIDEN` (1.035) after the interior is drawn, but `VehicleInstruments` builds the needles and the steering wheel from the unstretched cabin data, so the speedo face sat 17 mm, the tacho 12 mm and the wheel rim 15 mm off their needles and column. `addPatrolInterior` now draws the dial faces and the column narrowed by `1 / WIDEN`, so the stretch puts them back where the cabin data says.
+- **Perentie body 1.79 m wide** (`SIDE` 0.895, was 0.845) against the 110's 1,791 mm, with nothing hiding it: the wing tops, the headlamp panels, the scuttle and windscreen frame, the canvas tilt (`HALF` 0.905), its rolled curtains, hoops and rack, and the interior's floor, bulkhead and dash rail grew with it.
+- **Army No. 5 at 1.55 m overall.** The hubs moved from ±0.62 to ±0.66 (a 1.32 m track) and the rolled lip now stands 85 mm out past the box's sides, so the lip and the tyres' outer faces both come to about 1.55 m, the published figure. The inside box, the arch spacing and the ring-to-tail length were already right. It tips at about 0.68 g loaded now, from 0.64.
+- **Photographs relabelled.** The Patrol's `side-right-1989.jpg` is a rear three-quarter from the right, not a profile, so the folder has no right side. The Perentie's `front-county.jpg` is a close-up of a door mirror, A pillar and wing badge, and `side.jpg` is a head-on front of a hardtop behind two military police motorcycles; neither is the angle its name says, so the Perentie's "check the wing intake and lamps against front-county.jpg" line is gone and the Gaps say there is no straight front of a County and no true side. `front.jpg`, `front-6x6-ambulance.jpg` and `side-county.jpg` are the ones to use.
+
+The Unimog and the triangle budget were left for their own updates.
+
+## v1.18: choosing the winch anchor
+
+Steef wanted a way to pick which anchor the winch hooks. A chooser was already there (tool menu → Winch, A/D or the stick to step through the anchors, E to hook), but it was easy to miss and didn't say which anchor was picked.
+
+- **USE / E opens the chooser when two or more anchors are in reach.** It starts on the one the quick hook would have taken, so a second press hooks that one; with a single anchor in reach, USE still hooks it at once. Planks to pick up and a trailer to hitch still come first. The press that opens the chooser is held back for one frame, so it can't also confirm. (Steef was asked whether USE should stay a quick hook instead; this is the recommended choice, built while he decides.)
+- **Every anchor in reach gets a faint ring**, the picked one a bright bobbing ring, and a dashed line runs from the winch to it, so you can see where the cable would go.
+- **The prompt names the pick**: "2/5 · Tree, 14 m". The driving prompt says "Choose a winch anchor (5 in reach)" when there is a choice.
+- **Tap or click an anchor** in the view to pick it, and tap it again to hook it. A tap is a press that moves less than 12 px in under half a second, so dragging the camera still works; it takes the nearest anchor within 64 px of a finger (40 px of the mouse).
+
+## v1.23: fewer triangles in every vehicle, round one
 
 No vehicle changes shape. A reviewer counted each look (body, four wheels and the two carried planks, built the way the studio page builds them) and found every one well over the 62,000 the detailed 40 Series note set as the budget for a complete vehicle: from 83,000 (Hilux) to 154,000 (Camel Trophy and 80 Series). `scripts/tri-count.ts` now prints that table (`npx vite-node scripts/tri-count.ts`); it sums each mesh's index count over three. The studio renders of every vehicle (the seven views and the cockpit, `scripts/studio-shots.ts`) were taken before and after and laid side by side; the mean pixel difference is under 0.6 of 255 on every body view, and the tread and the bead rings account for the wheel close-ups.
 
@@ -1963,7 +1979,7 @@ Where the triangles went, and what changed:
 - **The Camel Trophy sand ladders** (16,500 a ladder) were extrusions whose bevel ran round all 34 rounded holes. The holes are now square and punched straight through; 800 a ladder.
 - **Tread blocks:** 16 lugs a row on every tyre (14 for the Unimog's chevrons) instead of 24 to 30, each lug a little longer along the tyre so the tread stays as dense. The 80 Series' 24 bead-ring bolts a side (1,150 a wheel, never visible) are gone; the ring stays.
 
-| vehicle  | v1.21  | v1.22  | body (v1.21 → v1.22) | per wheel   | planks (two) |
+| vehicle  | v1.22  | v1.23  | body (v1.22 → v1.23) | per wheel   | planks (two) |
 | -------- | ------ | ------ | -------------------- | ----------- | ------------ |
 | sooty80  | 152.9k | 90.0k  | 97.4k → 66.2k        | 6.7k → 5.2k | 28.6k → 2.9k |
 | shortie  | 90.9k  | 75.5k  | 70.9k → 56.8k        | 4.8k → 4.6k | 0.7k → 0.4k  |
