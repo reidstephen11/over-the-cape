@@ -27,7 +27,7 @@ export function buildVehicleWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Two rows of big staggered blocks that wrap onto the shoulders.
-  const blocks = 26;
+  const blocks = 16;
   for (let i = 0; i < blocks; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / blocks) * Math.PI * 2;
@@ -35,18 +35,18 @@ export function buildVehicleWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.25, Math.cos(angle) * r * 0.965, Math.sin(angle) * r * 0.965)
         .rotate(angle, side * 0.15, 0);
-      b.box(w * 0.28, 0.036, 0.058, tyre);
+      b.box(w * 0.28, 0.036, 0.075, tyre);
       b.pop();
     }
   }
-  for (let i = 0; i < 26; i++) {
-    const a = ((i + 0.25) * Math.PI * 2) / 26;
+  for (let i = 0; i < blocks; i++) {
+    const a = ((i + 0.25) * Math.PI * 2) / blocks;
     b.slot = M.Rubber;
     b.tag = Z.Trim;
     b.push()
       .translate(0, Math.cos(a) * r * 0.965, Math.sin(a) * r * 0.965)
       .rotate(a, i % 2 ? 0.07 : -0.07, 0);
-    b.box(w * 0.3, 0.034, 0.054, tyre);
+    b.box(w * 0.3, 0.034, 0.07, tyre);
     b.pop();
   }
   for (const side of [-1, 1]) {
@@ -104,18 +104,8 @@ export function buildVehicleWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.geometry(new THREE.CylinderGeometry(0.05, 0.058, 0.05, 20), steel.clone().multiplyScalar(0.9));
     b.pop();
   }
-  for (const side of [-1, 1]) {
+  // The bead ring; its 24 bolts a side were 1,150 triangles a wheel and never showed.
+  for (const side of [-1, 1])
     b.ring(side * (w * 0.5 + 0.009), 0, 0, 0.215, 0.012, steel, M.Metal, 'x', Z.Trim);
-    for (let i = 0; i < 24; i++) {
-      const a = (i * Math.PI) / 12;
-      b.slot = M.Metal;
-      b.tag = Z.Trim;
-      b.push()
-        .translate(side * (w * 0.5 + 0.022), Math.cos(a) * 0.215, Math.sin(a) * 0.215)
-        .rotate(0, 0, Math.PI / 2);
-      b.geometry(new THREE.CylinderGeometry(0.0065, 0.0065, 0.011, 6), steel);
-      b.pop();
-    }
-  }
   return cleanGeometry(b.build());
 }

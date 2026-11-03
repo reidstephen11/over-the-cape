@@ -19,6 +19,7 @@ import { scatterTuning } from '../data/vegetation';
 import { winchTuning } from '../data/tools';
 import { VehicleTools, type RepairKind, type ToolEvent } from './tools/tools';
 import { anchorPoint, type Anchor } from './tools/anchors';
+import type { GroundProbe } from './tools/planks';
 import { updateWear } from './vehicle/wear';
 import {
   limitDamage,
@@ -31,6 +32,7 @@ import {
 import { emptyInput } from './input/vehicleInput';
 import { headingOf, rotate, v3 } from './vehicle/math';
 import { addTrunkColliders, Surprises, type DynamicObject, type SurpriseEvent } from './surprises';
+import { poseOf, snapshotPose } from './bodyPose';
 import type { SurprisePlan } from './world/surprisePlan';
 import { StuckVehicle, type StuckVehicleDef } from './stuckVehicle';
 import { ChurnMap } from './world/churn';
@@ -260,7 +262,7 @@ export class Simulation {
         .setAngularDamping(1.2),
     );
     addTrunkColliders(R, this.physics, body, f.length, f.radius, f.mass);
-    this.dynamics.set(f.id, { id: f.id, kind: 'fallenTree', body, def: f });
+    this.dynamics.set(f.id, { id: f.id, kind: 'fallenTree', body, def: f, ...poseOf(body) });
   }
 
   /**
@@ -654,6 +656,12 @@ export class Simulation {
   }
 
   step(inputs: ReadonlyMap<string, VehicleInput>, dt: number): void {
+    // Where everything else stood before this step, so the renderer can draw it between
+    // steps as it does the car (which remembers its own pose in Vehicle.step).
+    for (const tools of this.tools.values()) for (const pl of tools.planks.placed) snapshotPose(pl);
+    for (const obj of this.dynamics.values()) snapshotPose(obj);
+    for (const s of this.stuck.values()) snapshotPose(s);
+    for (const d of this.looseDrums.values()) snapshotPose(d);
     for (const [id, v] of this.vehicles) {
       let input = inputs.get(id);
       if (!input) continue;
@@ -677,9 +685,10 @@ export class Simulation {
         this.toolEvent(id, { type: 'planksPickedUp', count: n });
       } else if (input.interact && this.hitchOption(id)?.kind === 'hitch') this.hitchTrailer(id);
       else if (input.winchAttach) this.quickAttach(id);
-      // Winching a bogged vehicle out, the brakes hold this one where it stands (unless driving).
+      // Winching a bogged vehicle out, the handbrake holds this one where it stands (unless
+      // driving). Not the brake pedal: pressed at a standstill, that selects reverse.
       if (tools.winch.anchor?.id.startsWith('stuck:') && input.throttle === 0 && !tools.repair)
-        input = { ...input, brake: 1 };
+        input = { ...input, handbrake: true };
       tools.updateFreeRoll(v, input);
       const before = v.drivetrain.range;
       const frontBefore = v.differentials.front;
@@ -915,8 +924,11 @@ export class Simulation {
 
   // --- Planks ------------------------------------------------------------
 
-  /** Height of whatever static or dynamic thing is under (x, z). */
-  probeGround = (x: number, z: number, fromY: number): number => {
+  /**
+   * Height of whatever static or dynamic thing (a placed plank, a rock, a bogged car) is
+   * under (x, z), leaving out `exclude` (the car doing the probing).
+   */
+  probeGround = (x: number, z: number, fromY: number, exclude?: RAPIER.RigidBody): number => {
     const R = this.R;
     const ray = new R.Ray({ x, y: fromY + 3, z }, { x: 0, y: -1, z: 0 });
     const hit = this.physics.world.castRay(
@@ -924,15 +936,23 @@ export class Simulation {
       60,
       true,
       undefined,
-      groups(Groups.DYNAMIC, Groups.TERRAIN | Groups.STATIC),
+      groups(Groups.DYNAMIC, Groups.TERRAIN | Groups.STATIC | Groups.DYNAMIC),
+      undefined,
+      exclude,
     );
     return hit ? fromY + 3 - hit.timeOfImpact : this.world.terrain.heightAt(x, z);
   };
 
+  /** `probeGround` for a vehicle: it never lands on its own body. */
+  probeGroundFor(id: string): GroundProbe {
+    const body = this.vehicleOf(id).body;
+    return (x, z, fromY) => this.probeGround(x, z, fromY, body);
+  }
+
   placePlanks(id: string): boolean {
     const tools = this.toolsOf(id);
     const n = tools.planks.carried;
-    const ok = tools.planks.place(this.vehicleOf(id), this.physics, this.probeGround);
+    const ok = tools.planks.place(this.vehicleOf(id), this.physics, this.probeGroundFor(id));
     if (ok) this.toolEvent(id, { type: 'planksPlaced', count: n });
     return ok;
   }
@@ -1054,8 +1074,11 @@ export class Simulation {
    */
   repairAtCamp(id: string): void {
     const c = this.vehicleOf(id).condition;
-    let mended = c.engine < 1 || c.suspension.some((h) => h < 1);
+    let mended =
+      c.engine < 1 || c.engineHeat > damageTuning.engine.heatWarn || c.suspension.some((h) => h < 1);
     c.engine = 1;
+    // A boiling engine cools over the rest, so it isn't still boiling (and losing health) at camp.
+    c.engineHeat = 0.5;
     c.suspension.fill(1);
     for (let i = 0; i < 4; i++)
       if (

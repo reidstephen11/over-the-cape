@@ -96,7 +96,9 @@ export const no5Trailer: TrailerTuning = {
   com: { x: 0, y: 0.14, z: -0.22 },
   inertia: { x: 150, y: 190, z: 80 },
   // 7.50-16 bar tyres on Land Rover rims, tucked under the box between the arches: a
-  // 1.24 m track.
+  // 1.24 m track, the tyres' outer faces 1.43 m apart under the 1.55 m lip. (v1.22 tried
+  // 1.32 m to help the width; it made the loaded trailer stand up in the hard turn across
+  // a slope that the No. 5 is meant to go over in, so the width is in the lip instead.)
   wheelRadius: 0.38,
   wheelWidth: 0.19,
   wheels: [

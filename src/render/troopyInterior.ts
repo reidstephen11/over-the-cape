@@ -28,12 +28,12 @@ export function addTroopyInterior(
     radio = new THREE.Color('#151716');
   const floor = 0.16;
   // Floor mat, the transmission tunnel and the footwell bulkhead.
-  b.block(0, floor, -0.35, 1.6, 0.03, 1.3, mat, M.Rubber, Z.Trim);
+  b.block(0, floor, -0.35, 1.7, 0.03, 1.3, mat, M.Rubber, Z.Trim);
   b.block(0, floor + 0.09, -0.48, 0.34, 0.16, 0.8, mat, M.Rubber, Z.Trim, 0.04);
-  b.block(0, 0.5, -0.97, 1.6, 0.66, 0.03, paint.clone().multiplyScalar(0.7), M.Paint, Z.Trim);
+  b.block(0, 0.5, -0.97, 1.7, 0.66, 0.03, paint.clone().multiplyScalar(0.7), M.Paint, Z.Trim);
   // Dash: the steel lower panel, the padded top under the screen, and the binnacle.
-  b.block(0, 0.8, -0.78, 1.6, 0.2, 0.3, paint.clone().multiplyScalar(0.85), M.Paint, Z.Trim, 0.02);
-  b.block(0, 0.915, -0.8, 1.62, 0.05, 0.36, vinyl, M.Rubber, Z.Trim, 0.025);
+  b.block(0, 0.8, -0.78, 1.7, 0.2, 0.3, paint.clone().multiplyScalar(0.85), M.Paint, Z.Trim, 0.02);
+  b.block(0, 0.915, -0.8, 1.72, 0.05, 0.36, vinyl, M.Rubber, Z.Trim, 0.025);
   b.block(0.39, 1.0, -0.66, 0.44, 0.2, 0.12, dark, M.Rubber, Z.Trim, 0.02);
   b.block(0.39, 1.11, -0.63, 0.46, 0.03, 0.15, vinyl, M.Rubber, Z.Trim, 0.012);
   addDialFaces(b, cabin, redlineRpm);

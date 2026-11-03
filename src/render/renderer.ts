@@ -115,6 +115,7 @@ export class GameRenderer {
   }
 
   setQuality(q: QualityPreset): void {
+    const particlesBefore = this.quality.particles;
     this.quality = q;
     this.renderScale = new RenderScale(q.minRenderScale);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
@@ -127,6 +128,13 @@ export class GameRenderer {
     this.vegetation?.setQuality(q);
     this.particles?.setQuality(q);
     applyFogEnvironment(this.scene, this.env, q.drawDistance);
+    // The rain's drop count is fixed when it is built: build it again for the new preset.
+    if (this.rain && q.particles !== particlesBefore) {
+      this.scene.remove(this.rain.mesh);
+      this.rain.dispose();
+      this.rain = new Rain(this.env.rain, q.particles);
+      this.scene.add(this.rain.mesh);
+    }
     this.resize();
   }
 
@@ -215,13 +223,14 @@ export class GameRenderer {
     this.particles.clear();
   }
 
-  render(): void {
+  /** Draw a frame; `alpha` places moving bodies between physics steps (0 = before the last, 1 = after). */
+  render(alpha = 1): void {
     const now = performance.now();
     const dt = Math.min(0.25, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
     this.terrainMesh.update(this.camera.position, this.firstFrame);
     this.vegetation.update(this.camera.position, this.firstFrame ? 1 : dt);
-    this.props.update();
+    this.props.update(alpha);
     this.ruts.update(this.camera.position, 420);
     this.firstFrame = false;
     this.lighting.follow(this.focus);

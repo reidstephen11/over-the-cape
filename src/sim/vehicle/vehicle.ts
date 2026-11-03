@@ -49,6 +49,14 @@ const SLIP_BACK = 1.5;
 /** Rapier's positive steering turns left; our input is + = right. */
 const STEER_SIGN = -1;
 
+/**
+ * World-space axle of a wheel steered by `steer`: Rapier turns the axle (1, 0, 0) about +y,
+ * which takes it to (cos s, 0, −sin s). Its side impulse acts along this.
+ */
+export function steeredAxle(q: Quat, steer: number): Vec3 {
+  return rotate(q, Math.cos(steer), 0, -Math.sin(steer));
+}
+
 export interface WheelState {
   contact: boolean;
   surface: SurfaceId;
@@ -859,6 +867,10 @@ export class Vehicle {
       const cp = c.wheelContactPoint(i);
       const n = c.wheelContactNormal(i);
       if (!cp || !n) continue;
+      // Not `steeredAxle`: the roll tuning (rollTorqueScale, the trailer tests) was calibrated
+      // with this mirrored direction for the steered wheels, which gives them about half the
+      // roll torque at full lock. With the true axle a full-lock turn while towing rolls the
+      // car. Retuning the roll with the true axle is on the roadmap.
       const s = c.wheelSteering(i) ?? 0;
       const axle = rotate(q, Math.cos(s), 0, Math.sin(s));
       const proj = axle.x * n.x + axle.y * n.y + axle.z * n.z;
@@ -897,7 +909,7 @@ export class Vehicle {
       const load = Math.min(this.tuning.maxSuspensionForce, c.wheelSuspensionForce(i) ?? 0) * dt;
       const steer = c.wheelSteering(i) ?? 0;
       // Wheel axle and forward directions (forward = normal × axle, as in Rapier).
-      const ax = rotate(q, Math.cos(steer), 0, Math.sin(steer));
+      const ax = steeredAxle(q, steer);
       const fx = n.y * ax.z - n.z * ax.y;
       const fy = n.z * ax.x - n.x * ax.z;
       const fz = n.x * ax.y - n.y * ax.x;

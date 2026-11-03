@@ -49,7 +49,7 @@ export class LoadingScreen {
         <div class="progress"><div class="progress-fill"></div></div>
         <p class="progress-label">Starting…</p>
         <button type="button" class="welcome-drive briefing-drive hidden" data-briefing-drive>Drive</button>
-        <p class="launch-controls">${device === 'gamepad' ? `Left stick to steer · ${pad.accelerate} to drive · ${pad.handbrake} to release handbrake` : stickDrive ? 'Stick to steer and drive · HAND to release brake' : device === 'touch' ? 'Stick to steer · GAS to drive · HAND to release brake' : 'WASD to drive · Space to release handbrake'}</p>
+        <p class="launch-controls">${device === 'gamepad' ? `Left stick to steer · ${pad.accelerate} to drive · ${pad.handbrake} handbrake` : stickDrive ? 'Stick to steer and drive · HAND handbrake' : device === 'touch' ? 'Stick to steer · GAS to drive · HAND handbrake' : 'WASD to drive · Space handbrake'}</p>
         <details class="launch-details"><summary>Story & trip details</summary><div class="briefing-text"></div><ul class="briefing-facts"></ul></details>
         <details class="launch-details"><summary>Controls</summary><ul class="controls-reminder">${
           device === 'gamepad'

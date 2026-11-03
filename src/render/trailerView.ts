@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { DRUM, drumSpots, type TrailerTuning } from '../data/trailers';
 import type { VehicleTuning } from '../data/vehicle';
 import type { Trailer } from '../sim/trailer';
-import { slerp } from '../sim/vehicle/math';
+import { followBody } from './followBody';
 import { patchFog } from './fog';
 import { perentieColors } from './perentiePaint';
 import {
@@ -34,7 +34,6 @@ export class TrailerView {
   private readonly jockey = new THREE.Group();
   private readonly drums = new THREE.Group();
   private drumCount = -1;
-  private readonly tmpQ = { x: 0, y: 0, z: 0, w: 1 };
 
   constructor(readonly trailer: Trailer) {
     const t = trailer.tuning;
@@ -140,15 +139,7 @@ export class TrailerView {
   update(alpha: number): void {
     const tr = this.trailer;
     this.setDrums(tr.drums);
-    const p0 = tr.prevPosition;
-    const p1 = tr.body.translation();
-    this.root.position.set(
-      p0.x + (p1.x - p0.x) * alpha,
-      p0.y + (p1.y - p0.y) * alpha,
-      p0.z + (p1.z - p0.z) * alpha,
-    );
-    const q = slerp(tr.prevRotation, tr.body.rotation(), alpha, this.tmpQ);
-    this.root.quaternion.set(q.x, q.y, q.z, q.w);
+    followBody(this.root, tr, alpha);
     const t = tr.tuning;
     for (let i = 0; i < this.wheels.length; i++) {
       this.wheels[i].pivot.position.y = t.wheels[i].y - tr.wheels[i].suspension;
@@ -360,14 +351,27 @@ function buildNo5(t: TrailerTuning): THREE.BufferGeometry {
       b.block(x, midY, z + out * 0.015, 0.08, h - 0.08, 0.025, rib, M.Paint, zone);
     b.block(0, bottom + 0.16, z + out * 0.02, half * 2 - 0.04, 0.05, 0.03, rib, M.Paint, zone);
   }
-  // The rolled lip round the top.
+  // The rolled lip round the top: it stands out past the ribs to the published 1.55 m
+  // overall width (SOURCES.md), 85 mm beyond the box's sides.
+  const lip = 0.085;
   for (const side of [-1, 1]) {
-    b.block(side * (half + 0.015), top, bed.cz, 0.06, 0.03, len + 0.06, army, M.Paint, Z.Sides, 0.01);
+    b.block(
+      side * (half + lip / 2),
+      top,
+      bed.cz,
+      lip + 0.005,
+      0.03,
+      len + 0.06,
+      army,
+      M.Paint,
+      Z.Sides,
+      0.01,
+    );
     b.block(
       0,
       top,
       side < 0 ? front - 0.015 : back + 0.015,
-      half * 2 + 0.06,
+      half * 2 + lip * 2,
       0.03,
       0.06,
       army,

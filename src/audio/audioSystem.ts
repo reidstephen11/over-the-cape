@@ -83,6 +83,8 @@ export class AudioSystem {
   private g: Graph | null = null;
   private settings: Settings;
   private failed = false;
+  /** A statechange listener is on the context, waiting for it to run. */
+  private stateWatched = false;
   private lastGear = 0;
   private vehicle: VehicleId = 'shortie';
   private readonly buf = new Float32Array(1024);
@@ -137,7 +139,16 @@ export class AudioSystem {
     const ctx = this.g.ctx;
     if (ctx.state === 'suspended' && !document.hidden) void ctx.resume().catch(() => undefined);
     if (ctx.state === 'running') this.removeGestureListeners();
-    else ctx.addEventListener('statechange', () => ctx.state === 'running' && this.removeGestureListeners());
+    else if (!this.stateWatched) {
+      // One listener, however many gestures arrive before the context runs.
+      this.stateWatched = true;
+      const onState = () => {
+        if (ctx.state !== 'running') return;
+        ctx.removeEventListener('statechange', onState);
+        this.removeGestureListeners();
+      };
+      ctx.addEventListener('statechange', onState);
+    }
   }
 
   private removeGestureListeners(): void {
