@@ -995,7 +995,7 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Two rows of staggered tread blocks and shoulder lugs down the sidewall.
-  const blocks = 30;
+  const blocks = 16;
   for (let i = 0; i < blocks; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / blocks) * Math.PI * 2;
@@ -1003,12 +1003,12 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.2, Math.cos(angle) * r * 0.968, Math.sin(angle) * r * 0.968)
         .rotate(angle, side * 0.12, 0);
-      b.box(w * 0.34, 0.03, 0.055, tyre);
+      b.box(w * 0.34, 0.03, 0.075, tyre);
       b.pop();
       b.push()
         .translate(side * w * 0.47, Math.cos(angle) * r * 0.9, Math.sin(angle) * r * 0.9)
         .rotate(angle, 0, 0);
-      b.box(0.03, 0.05, 0.04, tyre);
+      b.box(0.03, 0.05, 0.055, tyre);
       b.pop();
     }
   }

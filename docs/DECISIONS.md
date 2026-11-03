@@ -1918,3 +1918,30 @@ Steef wanted a way to pick which anchor the winch hooks. A chooser was already t
 - **Every anchor in reach gets a faint ring**, the picked one a bright bobbing ring, and a dashed line runs from the winch to it, so you can see where the cable would go.
 - **The prompt names the pick**: "2/5 · Tree, 14 m". The driving prompt says "Choose a winch anchor (5 in reach)" when there is a choice.
 - **Tap or click an anchor** in the view to pick it, and tap it again to hook it. A tap is a press that moves less than 12 px in under half a second, so dragging the camera still works; it takes the nearest anchor within 64 px of a finger (40 px of the mouse).
+
+## v1.19: fewer triangles in every vehicle, round one
+
+No vehicle changes shape. A reviewer counted each look (body, four wheels and the two carried planks, built the way the studio page builds them) and found every one well over the 62,000 the detailed 40 Series note set as the budget for a complete vehicle: from 83,000 (Hilux) to 154,000 (Camel Trophy and 80 Series). `scripts/tri-count.ts` now prints that table (`npx vite-node scripts/tri-count.ts`); it sums each mesh's index count over three. The studio renders of every vehicle (the seven views and the cockpit, `scripts/studio-shots.ts`) were taken before and after and laid side by side; the mean pixel difference is under 0.6 of 255 on every body view, and the tread and the bead rings account for the wheel close-ups.
+
+Where the triangles went, and what changed:
+
+- **Every rounded block was 108 triangles.** `VehicleBuilder.block` with a radius used `RoundedBoxGeometry` at one segment, which is a 3 × 3 grid on each face. Light-bar LEDs, bolt heads, brackets and rack slats are drawn with it in their hundreds. It now draws a chamfered box (`chamferBox`: 6 faces, 12 edge strips and 8 corner triangles, 44 in all) whose vertices keep their face normals, so the shading still grades round the edge like a fillet. A block under 20 mm in any direction, or with a radius under 4 mm, is a plain 12-triangle box: nothing that small shows its rounding.
+- **Every swept tube was 1,728 triangles.** `continuousTube` (bull bars, rack rails, roll cages, the Unimog's canvas hoops) sampled its path uniformly 72 times at 12 sides, however short the tube. It now puts one ring of quads on each straight and five on each bend, with six sides under 12 mm radius, eight under 25 mm and ten above (`sweptTube`, framed by parallel transport so the quads don't twist). A four-corner bull bar member is now about 400 triangles.
+- **The 80 Series recovery boards** (14,300 a board) were two bevelled extrusions with bevelled hand holes and 51 teeth each as rounded blocks. Each is now an unbevelled extrusion with three steps per corner; the top board keeps its 51 teeth as plain blocks and the lower board, whose teeth sit under the top one, has three ridges. 1,450 a board.
+- **The Camel Trophy sand ladders** (16,500 a ladder) were extrusions whose bevel ran round all 34 rounded holes. The holes are now square and punched straight through; 800 a ladder.
+- **Tread blocks:** 16 lugs a row on every tyre (14 for the Unimog's chevrons) instead of 24 to 30, each lug a little longer along the tyre so the tread stays as dense. The 80 Series' 24 bead-ring bolts a side (1,150 a wheel, never visible) are gone; the ring stays.
+
+| vehicle  | v1.18  | v1.19  | body (v1.18 → v1.19) | per wheel   | planks (two) |
+| -------- | ------ | ------ | -------------------- | ----------- | ------------ |
+| sooty80  | 152.9k | 90.0k  | 97.4k → 66.2k        | 6.7k → 5.2k | 28.6k → 2.9k |
+| shortie  | 90.9k  | 75.5k  | 70.9k → 56.8k        | 4.8k → 4.6k | 0.7k → 0.4k  |
+| camel    | 154.2k | 92.5k  | 100.3k → 71.6k       | 5.2k → 4.8k | 33.1k → 1.6k |
+| perentie | 112.0k | 88.4k  | 89.5k → 72.3k        | 5.5k → 4.0k | 0.6k → 0.3k  |
+| hilux    | 83.5k  | 71.4k  | 63.2k → 53.1k        | 4.9k → 4.5k | 0.6k → 0.3k  |
+| unimog   | 125.0k | 102.0k | 101.2k → 79.2k       | 5.8k → 5.6k | 0.6k → 0.3k  |
+| hj60     | 111.9k | 94.0k  | 87.5k → 71.3k        | 5.9k → 5.6k | 0.6k → 0.3k  |
+| troopy   | 98.4k  | 83.8k  | 78.5k → 65.1k        | 4.8k → 4.6k | 0.6k → 0.3k  |
+| patrol   | 107.4k | 87.8k  | 84.3k → 67.6k        | 5.6k → 5.0k | 0.6k → 0.3k  |
+| lc79     | 117.5k | 93.4k  | 90.5k → 71.2k        | 6.6k → 5.5k | 0.6k → 0.3k  |
+
+The next rounds, planned in `docs/ROADMAP.md`: the LC79's hexagon grille mesh and roof-rib rod chains, the HJ60's stripe pieces and script, rod and ring sides where the part is small, and the block lettering on grilles and tailgates. The aim is every vehicle under about 80,000.

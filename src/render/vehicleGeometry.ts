@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { MeshBuilder } from './lowpoly';
 
 /** Dirt zones stay independent of the material on each part. */
@@ -95,8 +94,9 @@ export class VehicleBuilder extends MeshBuilder {
     this.slot = slot;
     this.tag = zone;
     this.push().translate(x, y, z);
-    if (radius > 0)
-      this.geometry(new RoundedBoxGeometry(w, h, d, 1, Math.min(radius, w / 2, h / 2, d / 2)), color);
+    const r = Math.min(radius, w / 2, h / 2, d / 2);
+    // Rounding too small to see, or a part too small to show it, is a plain box (12 triangles).
+    if (r >= 0.004 && Math.min(w, h, d) >= 0.02) this.geometry(chamferBox(w, h, d, r), color);
     else this.box(w, h, d, color);
     this.pop();
     return this;
@@ -154,6 +154,85 @@ export class VehicleBuilder extends MeshBuilder {
     geometry.setAttribute('materialSlot', new THREE.Float32BufferAttribute(this.slots, 1));
     return geometry;
   }
+}
+
+/**
+ * A box with its edges rounded over `r`, drawn as chamfers shaded like fillets: 44 triangles
+ * (6 faces, 12 edge strips, 8 corner triangles) where RoundedBoxGeometry at one segment
+ * needs 108. Each vertex keeps its face's normal, so the shading grades round the edge.
+ */
+export function chamferBox(w: number, h: number, d: number, r: number): THREE.BufferGeometry {
+  const half = [w / 2, h / 2, d / 2];
+  const c = r * 0.75;
+  const positions: number[] = [],
+    normals: number[] = [];
+  // Vertex `axis` of corner (sx, sy, sz): on that axis's face, pulled in by c on the other two.
+  const vertex = (s: number[], axis: number): [number[], number[]] => {
+    const p = s.map((sign, k) => sign * (k === axis ? half[k] : half[k] - c));
+    const n = [0, 0, 0];
+    n[axis] = s[axis];
+    return [p, n];
+  };
+  const tri = (a: [number[], number[]], b: [number[], number[]], cc: [number[], number[]]) => {
+    // Wind each triangle outwards: its geometric normal must follow its vertex normals.
+    const u = b[0].map((x, k) => x - a[0][k]),
+      v = cc[0].map((x, k) => x - a[0][k]);
+    const cross = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+    const sum = a[1].map((x, k) => x + b[1][k] + cc[1][k]);
+    const order = cross[0] * sum[0] + cross[1] * sum[1] + cross[2] * sum[2] < 0 ? [a, cc, b] : [a, b, cc];
+    for (const [p, n] of order) {
+      positions.push(...p);
+      normals.push(...n);
+    }
+  };
+  const quad = (
+    a: [number[], number[]],
+    b: [number[], number[]],
+    cc: [number[], number[]],
+    dd: [number[], number[]],
+  ) => {
+    tri(a, b, cc);
+    tri(a, cc, dd);
+  };
+  const signs = [-1, 1];
+  for (let axis = 0; axis < 3; axis++) {
+    const u = (axis + 1) % 3,
+      vv = (axis + 2) % 3;
+    for (const sa of signs) {
+      // The face: its four corners' vertices on this axis.
+      const corner = (su: number, sv: number) => {
+        const s = [0, 0, 0];
+        s[axis] = sa;
+        s[u] = su;
+        s[vv] = sv;
+        return s;
+      };
+      quad(
+        vertex(corner(-1, -1), axis),
+        vertex(corner(1, -1), axis),
+        vertex(corner(1, 1), axis),
+        vertex(corner(-1, 1), axis),
+      );
+      // The edge strips between this face and the two faces on axis `u` (one per sign).
+      for (const su of signs)
+        quad(
+          vertex(corner(su, -1), axis),
+          vertex(corner(su, 1), axis),
+          vertex(corner(su, 1), u),
+          vertex(corner(su, -1), u),
+        );
+    }
+  }
+  for (const sx of signs)
+    for (const sy of signs)
+      for (const sz of signs) {
+        const s = [sx, sy, sz];
+        tri(vertex(s, 0), vertex(s, 1), vertex(s, 2));
+      }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  return g;
 }
 
 /** One draw group per material; preserve vertex order for dirt and dent deformation. */

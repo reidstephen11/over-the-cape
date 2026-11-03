@@ -1140,7 +1140,7 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Big staggered tread lugs that run over the shoulder onto the sidewall.
-  const blocks = 24;
+  const blocks = 16;
   for (let i = 0; i < blocks; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / blocks) * Math.PI * 2;
@@ -1148,12 +1148,12 @@ export function buildLc79Wheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.26, Math.cos(angle) * r * 0.955, Math.sin(angle) * r * 0.955)
         .rotate(angle, side * 0.2, 0);
-      b.box(w * 0.46, 0.045, 0.075, tyre);
+      b.box(w * 0.46, 0.045, 0.095, tyre);
       b.pop();
       b.push()
         .translate(side * w * 0.5, Math.cos(angle) * r * 0.86, Math.sin(angle) * r * 0.86)
         .rotate(angle, 0, 0);
-      b.box(0.03, 0.05, 0.06, tyre);
+      b.box(0.03, 0.05, 0.075, tyre);
       b.pop();
     }
   }

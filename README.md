@@ -231,6 +231,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v1.19 lighter vehicles, round one:** the loading screen shows v1.19. Walk round each vehicle (`?dev` opens all ten) close up: do they look as they did? In particular the bull bars and roof racks (their tubes are drawn with far fewer sides along the straights), the tyres (16 lugs a row instead of 24–30, each a little longer), the 80 Series' orange recovery boards and the Camel Trophy's sand ladders on the rack. Anything that now looks faceted, has a gap, or has lost a feature you could see before?
 - [ ] **v1.18 choose the winch anchor:** the loading screen shows v1.18. Stop where there are several trees or rocks in reach (the bog before the Daintree, or below Big Red) and press USE (E): do faint rings show on each anchor, a bright one on the picked anchor and a dashed line to it, with the prompt naming it ("Tree, 14 m")? Push the stick left / right (A / D) to step through them, or tap one, and press USE again (or tap it again): does the winch hook the one you picked? With just one anchor in reach, does USE still hook it at once?
 - [ ] **v1.17 no High on a phone:** the loading screen shows v1.17. On your phone, Settings → Graphics shows only Low and Medium. On a computer, High is still there.
 - [ ] **v1.16 quieter place cards on a phone:** the loading screen shows v1.16. Drive onto the Bloomfield River bridge on your phone: is there now one small card top right (the history note, place name and two lines) instead of a big Discovered card above a long note? Does it go after about 7 seconds if you leave it? Tap it: does the whole note open, and does × close it? Try a lesson sign too: are the keys to press still shown in the short card? On a computer the note should look as before, without the Discovered card on top of it.
@@ -398,7 +399,7 @@ scripts/   route-check (track grades, heights and creek levels), track-profile (
            map id (creb); creb-drive (autopilot drive of the whole route with fuel, winching and arrival
            time); surprise-check (where
            runs' surprises land on the CREB) and surprise-drive (drive up to them and get past); studio (one vehicle on plain ground; studio-shots
-           photographs it); and the labs from 4WD Simulator
+           photographs it; tri-count prints each vehicle's triangle counts); and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
 e2e/       Playwright browser tests
 docs/      DECISIONS.md (choices made along the way), HISTORY.md (sources for the history in the game) and

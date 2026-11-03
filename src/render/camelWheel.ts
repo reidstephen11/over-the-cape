@@ -28,7 +28,7 @@ export function buildCamelWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   b.geometry(new THREE.LatheGeometry(profile, 48), tyre);
   b.pop();
   // Staggered shoulder lugs and centre blocks, deep like a military cross-country tyre.
-  const lugs = 26;
+  const lugs = 16;
   for (let i = 0; i < lugs; i++) {
     for (const side of [-1, 1]) {
       const angle = ((i + (side > 0 ? 0.5 : 0)) / lugs) * Math.PI * 2;
@@ -36,14 +36,14 @@ export function buildCamelWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       b.push()
         .translate(side * w * 0.26, Math.cos(angle) * r * 0.965, Math.sin(angle) * r * 0.965)
         .rotate(angle, side * 0.18, 0);
-      b.box(w * 0.42, 0.04, 0.05, tyre);
+      b.box(w * 0.42, 0.04, 0.065, tyre);
       b.pop();
     }
     const angle = ((i + 0.25) / lugs) * Math.PI * 2;
     b.push()
       .translate(0, Math.cos(angle) * r * 0.97, Math.sin(angle) * r * 0.97)
       .rotate(angle, 0, 0);
-    b.box(w * 0.18, 0.04, 0.035, tyre);
+    b.box(w * 0.18, 0.04, 0.045, tyre);
     b.pop();
   }
   for (const side of [-1, 1]) {
