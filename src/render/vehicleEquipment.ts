@@ -4,6 +4,7 @@ import type { VehicleTuning } from '../data/vehicle';
 import { pal } from './colors';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { HW, NOSE, ROOF, TAIL } from './vehicleBody';
+import { mountSpare, spareSidewall } from './spares';
 
 /** The rack was laid out on a roof at 1.64 m; it rides on the lower hardtop by this much. */
 const rackDrop = () => ROOF - 1.64;
@@ -244,11 +245,7 @@ function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.block(sx, sy, TAIL + 0.03, 0.26, 0.26, 0.04, bar, M.Metal, Z.Rear, 0.01);
   b.rod(v(sx, sy, TAIL + 0.03), v(sx, sy, sz - 0.13), 0.045, bar, M.Metal, Z.Rear);
   b.tag = Z.Rear;
-  b.push()
-    .translate(sx, sy, sz)
-    .rotate(0, -Math.PI / 2, 0);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: sx, y: sy, z: sz }, 'back', black);
   // Jerry can in a cradle on the right door, below the window.
   const olive = new THREE.Color('#667258');
   const cx = 0.27,
@@ -300,18 +297,16 @@ function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
   const plateH = 0.058;
   const plateBottom = plankTop + 0.006;
   const base = plateBottom + plateH;
-  const top = base + width + 0.044;
+  // The tyre's sidewall rests on the plate, 4 mm clear; the hub caps sink into its middle.
+  const hubY = base + spareSidewall(wheel) + 0.004;
+  const top = hubY + width / 2 + 0.044;
   // The slot between the boards is only 60 mm, centred at x -0.28.
   const spineTop = plateBottom + 0.012;
   const spineH = spineTop - deck;
   b.block(-0.28, deck + spineH / 2, z, 0.036, spineH, 0.32, bar, M.Metal, Z.Roof, 0.004);
   b.block(x, plateBottom + plateH / 2, z, 0.4, plateH, 0.4, bar, M.Metal, Z.Roof, 0.008);
   b.tag = Z.Roof;
-  b.push()
-    .translate(x, base + width / 2, z)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x, y: hubY, z }, 'up', black);
   b.rod(v(x, base, z), v(x, top + 0.04, z), 0.014, steel, M.Metal, Z.Roof);
   b.block(x, top + 0.01, z, 0.24, 0.02, 0.06, bar, M.Metal, Z.Roof, 0.006);
   b.rod(v(x - 0.06, top + 0.04, z), v(x + 0.06, top + 0.04, z), 0.01, steel, M.Metal, Z.Roof);

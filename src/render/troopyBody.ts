@@ -91,6 +91,7 @@ function extrudeX(
   extrudePanel(b, shape, x0, x1, color, slot, zone, bevel, wells, segments, ratio, reshape);
 }
 import { cleanGeometry, continuousTube, ROUND_BEND, subdivideSurface } from './bodyRefinement';
+import { mountSpare, spareSidewall } from './spares';
 
 /**
  * 75 Series Troop Carrier body: a front clip with round-shouldered guards, rounded front
@@ -695,33 +696,35 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
     b.block(lx, 0.235, T + 0.016, 0.12, 0.09, 0.01, lens, M.Lamp, Z.Rear, 0.008);
     b.block(lx, 0.29, T + 0.023, 0.12, 0.012, 0.006, black, M.Rubber, Z.Rear);
   }
-  // Covered spare on the wide right door, carried off the painted skin.
+  // Covered spare on the wide right door, carried off the painted skin: the cover's back
+  // stands clear of the carrier's uprights and cross bar (with the cover at T + 0.215 and the
+  // bar at T + 0.09, the bar ran 35 mm into the tyre).
   b.tag = Z.Rear;
-  b.push()
-    .translate(0.33, 0.72, T + 0.215)
-    .rotate(0, Math.PI / 2, 0);
-  b.geometry(wheel.clone(), black);
-  b.pop();
-  const profile = [
-    [0, -0.15],
-    [0.36, -0.15],
-    [0.402, -0.14],
-    [0.418, -0.1],
-    [0.418, 0.09],
-    [0.407, 0.14],
-    [0.36, 0.16],
-    [0, 0.16],
-  ].map(([x, y]) => new THREE.Vector2(x, y));
-  b.slot = M.Fabric;
-  b.tag = Z.Rear;
-  b.push()
-    .translate(0.33, 0.72, T + 0.215)
-    .rotate(Math.PI / 2, 0, 0);
-  b.geometry(new THREE.LatheGeometry(profile, 48), black.clone().multiplyScalar(1.18));
-  b.pop();
-  b.ring(0.33, 0.72, T + 0.356, 0.397, 0.003, trim, M.Fabric, 'z', Z.Rear);
+  mountSpare(b, wheel, { x: 0.33, y: 0.72, z: T + 0.255 }, 'back', black, {
+    reversed: true,
+    cover: () => {
+      const profile = [
+        [0, -0.15],
+        [0.36, -0.15],
+        [0.402, -0.14],
+        [0.418, -0.1],
+        [0.418, 0.09],
+        [0.407, 0.14],
+        [0.36, 0.16],
+        [0, 0.16],
+      ].map(([x, y]) => new THREE.Vector2(x, y));
+      b.slot = M.Fabric;
+      b.tag = Z.Rear;
+      b.push()
+        .translate(0.33, 0.72, T + 0.255)
+        .rotate(Math.PI / 2, 0, 0);
+      b.geometry(new THREE.LatheGeometry(profile, 48), black.clone().multiplyScalar(1.18));
+      b.pop();
+    },
+  });
+  b.ring(0.33, 0.72, T + 0.396, 0.397, 0.003, trim, M.Fabric, 'z', Z.Rear);
   for (const x of [0.08, 0.58]) b.block(x, 0.72, T + 0.055, 0.055, 0.6, 0.09, black, M.Metal, Z.Rear, 0.004);
-  b.block(0.33, 0.72, T + 0.09, 0.55, 0.055, 0.055, black, M.Metal, Z.Rear, 0.004);
+  b.block(0.33, 0.72, T + 0.07, 0.55, 0.055, 0.055, black, M.Metal, Z.Rear, 0.004);
   // Black rear bar with recovery points, a tow hitch, its brackets and the plate.
   b.block(0, 0.08, T + 0.07, 1.78, 0.15, 0.13, bumper, M.Metal, Z.Rear, 0.025);
   // Bar lamps in each end: amber indicator outboard, red stop and tail inboard.
@@ -803,13 +806,10 @@ function roofRack(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   extrudeX(b, deflector, -0.8, 0.8, bar, M.Metal, Z.Roof, 0);
   for (const x of [-0.29, 0.29]) b.block(x, y + 0.045, 1.98, 0.055, 0.03, 0.65, bar, M.Metal, Z.Roof, 0.004);
   for (const z of [1.78, 2.18]) b.rod(v(-0.8, y, z), v(0.8, y, z), 0.014, bar, M.Metal, Z.Roof);
-  const sy = y + 0.174;
+  // The tyre's sidewall rests on the two bars (their top at y + 0.06), 4 mm clear.
+  const sy = y + 0.06 + spareSidewall(wheel) + 0.004;
   b.tag = Z.Roof;
-  b.push()
-    .translate(0, sy, 1.98)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: sy, z: 1.98 }, 'up', black);
   for (const z of [1.78, 2.18]) {
     const strap = new THREE.Color('#C2862F');
     webbing(

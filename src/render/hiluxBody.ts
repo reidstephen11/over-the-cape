@@ -9,6 +9,7 @@ import { hiluxBullBar } from './hiluxBullbar';
 import { cleanGeometry } from './bodyRefinement';
 import { roundHead, stalk } from './mirrors';
 import { jerryCan, numberPlate } from './bodyKit';
+import { mountSpare } from './spares';
 
 /**
  * Early Toyota Hilux 4WD single cab (1979–83) with the factory styleside tub, in deep
@@ -778,11 +779,7 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   // rear crossmembers, on two cradle bars.
   const spareY = -0.1 - tuning.wheelWidth / 2 - 0.01;
   b.tag = Z.Rear;
-  b.push()
-    .translate(0, spareY, 2.02)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: spareY, z: 2.02 }, 'down', black);
   for (const x of [-0.2, 0.2])
     b.block(x, spareY - tuning.wheelWidth / 2 - 0.015, 2.02, 0.05, 0.03, 0.8, black, M.Metal, Z.Trim);
   // The second spare lies flat on the tub floor between the wheel housings, with a ratchet
@@ -792,11 +789,7 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     strapY = sy + tuning.wheelWidth * 0.53 + 0.006;
   const orangeStrap = new THREE.Color('#C9762C');
   b.tag = Z.Rear;
-  b.push()
-    .translate(0, sy, sz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: sy, z: sz }, 'up', black);
   b.block(0, strapY, sz, 0.76, 0.008, 0.05, orangeStrap, M.Fabric, Z.Rear);
   for (const side of [-1, 1])
     b.rod(

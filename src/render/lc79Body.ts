@@ -9,6 +9,7 @@ import { extrudeX, extrudeZ, frontPane, inset, rounded, sidePane, sideShape, typ
 import { mirrorHead } from './mirrors';
 import { GLYPHS, PLATE_WHITE, numberPlate, strokeText } from './bodyKit';
 import { cleanGeometry, continuousTube, subdivideSurface } from './bodyRefinement';
+import { mountSpare, spareSidewall } from './spares';
 
 /**
  * LandCruiser 79 single cab, built up: the 70 Series cab and front clip on a 4 inch lift,
@@ -849,11 +850,8 @@ function spare(
   flat: boolean,
 ): void {
   b.tag = flat ? Z.Roof : Z.Rear;
-  b.push().translate(x, y, z);
-  if (flat) b.rotate(0, 0, Math.PI / 2);
-  else b.rotate(0, Math.PI / 2, 0);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  if (flat) mountSpare(b, wheel, { x, y, z }, 'up', black);
+  else mountSpare(b, wheel, { x, y, z }, 'back', black, { reversed: true });
 }
 
 /** The canopy: black alloy box with gullwing doors each side, a rear door and a roof rack. */
@@ -964,9 +962,10 @@ function canopyBox(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
   // The spare on the rear door: a carrier frame bolted through the door, a hub plate and
   // the wheel, its outer face just inside the end of the tray.
   const sp = LC79_SPARE;
+  // The frame lies on the door skin; 28 mm further out it was in the tyre's inner sidewall.
   for (const y of [sp.y - 0.3, sp.y + 0.3])
-    b.block(0, y, back + 0.048, 0.7, 0.05, 0.04, bar, M.Metal, Z.Rear, 0.008);
-  for (const x of [-0.3, 0.3]) b.block(x, sp.y, back + 0.048, 0.05, 0.65, 0.04, bar, M.Metal, Z.Rear, 0.008);
+    b.block(0, y, back + 0.02, 0.7, 0.05, 0.04, bar, M.Metal, Z.Rear, 0.008);
+  for (const x of [-0.3, 0.3]) b.block(x, sp.y, back + 0.02, 0.05, 0.65, 0.04, bar, M.Metal, Z.Rear, 0.008);
   b.block(0, sp.y, back + 0.075, 0.24, 0.24, 0.04, bar, M.Metal, Z.Rear, 0.01);
   spare(b, wheel, 0, sp.y, sp.z, false);
   // Roof rack: two rails on low feet and cross bars, the platform for the recovery boards.
@@ -1001,7 +1000,7 @@ function canopyBox(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
     );
   // The second spare lies flat in the middle of the rack, between the boards, with a
   // strap over it.
-  const sy = RACK.y + 0.015 + tuning.wheelWidth * 0.53,
+  const sy = RACK.y + 0.015 + spareSidewall(wheel) + 0.004,
     sz = LC79_ROOF_SPARE_Z;
   spare(b, wheel, 0, sy, sz, true);
   const strapY = sy + tuning.wheelWidth * 0.53 + 0.006;

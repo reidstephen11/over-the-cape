@@ -6,6 +6,7 @@ import { ROUND_BEND, cleanGeometry, continuousTube } from './bodyRefinement';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { mqColors as C } from './mqPaint';
 import { NOSE, ROOF_EDGE, TAIL, WS } from './mqBody';
+import { mountSpare, spareSidewall } from './spares';
 
 // What the game adds to the factory MQ: a period steel bull bar with a winch, a steel rear
 // bar with a tow ball, a gutter-mounted roof rack carrying the second spare and the planks,
@@ -195,11 +196,7 @@ function doorSpare(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.rod(v(latch, 0.18, fz), v(latch, 0.25, fz), 0.009, C.steel, M.Metal, Z.Rear);
   b.rod(v(latch - 0.04, 0.215, fz), v(latch + 0.04, 0.215, fz), 0.007, C.steel, M.Metal, Z.Rear);
   b.tag = Z.Rear;
-  b.push()
-    .translate(sx, sy, sz)
-    .rotate(0, -Math.PI / 2, 0);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
+  mountSpare(b, wheel, { x: sx, y: sy, z: sz }, 'back', C.rubber);
   // The centre stud through the hub, and its wing nut past the outer hub cap.
   b.rod(v(sx, sy, backFace), v(sx, sy, sz + 0.175), 0.012, C.steel, M.Metal, Z.Rear);
   b.block(sx, sy, sz + 0.165, 0.09, 0.024, 0.016, C.steel, M.Metal, Z.Rear, 0.004);
@@ -274,17 +271,34 @@ function rack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   const sx = 0.3,
     sz = back - 0.46;
   b.tag = Z.Roof;
-  b.push()
-    .translate(sx, DECK + 0.01 + tuning.wheelWidth / 2, sz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
-  b.rod(v(sx, DECK + 0.01, sz), v(sx, DECK + tuning.wheelWidth + 0.05, sz), 0.012, C.steel, M.Metal, Z.Roof);
-  b.block(sx, DECK + tuning.wheelWidth + 0.04, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Roof, 0.006);
+  // The tyre's sidewall rests on the slats (their top at DECK + 0.01), 4 mm clear.
+  const sy = DECK + 0.01 + spareSidewall(wheel) + 0.004;
+  mountSpare(b, wheel, { x: sx, y: sy, z: sz }, 'up', C.rubber);
+  b.rod(
+    v(sx, DECK + 0.01, sz),
+    v(sx, sy + tuning.wheelWidth / 2 + 0.04, sz),
+    0.012,
+    C.steel,
+    M.Metal,
+    Z.Roof,
+  );
+  b.block(sx, sy + tuning.wheelWidth / 2 + 0.03, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Roof, 0.006);
   b.block(0.3, DECK + 0.12, 0.3, 0.56, 0.22, 0.7, new THREE.Color('#6E6B4E'), M.Fabric, Z.Roof, 0.05);
   for (const z of [0.12, 0.5])
     b.block(0.3, DECK + 0.12, z, 0.58, 0.235, 0.035, C.rubber, M.Rubber, Z.Roof, 0.01);
-  b.block(0.3, DECK + 0.09, 0.98, 0.56, 0.16, 0.4, C.bar.clone().multiplyScalar(1.6), M.Metal, Z.Roof, 0.012);
+  // The toolbox stops short of the spare's tread (at z 0.98 it ran 0.12 m into it).
+  b.block(
+    0.3,
+    DECK + 0.09,
+    0.86,
+    0.56,
+    0.16,
+    0.36,
+    C.bar.clone().multiplyScalar(1.6),
+    M.Metal,
+    Z.Roof,
+    0.012,
+  );
   // Whip aerial on the left guard by the screen.
   b.block(-0.76, 0.62, -0.8, 0.05, 0.03, 0.05, C.rubber, M.Rubber, Z.Front);
   b.rod(v(-0.76, 0.63, -0.8), v(-0.78, 1.5, -0.76), 0.005, C.bar);

@@ -6,6 +6,7 @@ import { ROUND_BEND, cleanGeometry, continuousTube } from './bodyRefinement';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { rangieColors as C } from './rangiePaint';
 import { NOSE, ROOF_EDGE, TAIL, wAt } from './rangieBody';
+import { mountSpare, spareSidewall } from './spares';
 
 // What the game adds to the factory two-door: a tubular steel roo bar of the period with a
 // winch on its pan and two driving lamps on the centre hoop (as the green Australian car in
@@ -174,12 +175,11 @@ function underside(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: Vehic
   b.pop();
   // The first spare standing upright in the load bay on the left, strapped to the side.
   b.tag = Z.Rear;
-  b.push()
-    .translate(-0.56, 0.16 + tuning.wheelRadius, 1.72)
-    .rotate(0, 0, 0);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
-  b.block(-0.56, 0.16 + tuning.wheelRadius, 1.72, 0.03, 0.5, 0.05, C.rubber, M.Rubber, Z.Rear, 0.004);
+  // Its inner sidewall stands 6 mm off the rear wheelhouse's inner face (x -0.52), which it
+  // stood inside at x -0.56, and the strap runs down its outer face over the hub.
+  const bay = { x: -0.39, y: 0.16 + tuning.wheelRadius, z: 1.72 };
+  mountSpare(b, wheel, bay, 'right', C.rubber);
+  b.block(bay.x + 0.141, bay.y, bay.z, 0.03, 0.5, 0.05, C.rubber, M.Rubber, Z.Rear, 0.004);
 }
 
 /** The gutter-mounted rack: clamps on the rails, a slatted deck and a tube rail round it. */
@@ -218,13 +218,18 @@ function rack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   const sx = 0.3,
     sz = back - 0.45;
   b.tag = Z.Roof;
-  b.push()
-    .translate(sx, DECK + 0.01 + tuning.wheelWidth / 2, sz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
-  b.rod(v(sx, DECK + 0.01, sz), v(sx, DECK + tuning.wheelWidth + 0.05, sz), 0.012, C.steel, M.Metal, Z.Roof);
-  b.block(sx, DECK + tuning.wheelWidth + 0.04, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Roof, 0.006);
+  // The tyre's sidewall rests on the slats (their top at DECK + 0.01), 4 mm clear.
+  const sy = DECK + 0.01 + spareSidewall(wheel) + 0.004;
+  mountSpare(b, wheel, { x: sx, y: sy, z: sz }, 'up', C.rubber);
+  b.rod(
+    v(sx, DECK + 0.01, sz),
+    v(sx, sy + tuning.wheelWidth / 2 + 0.04, sz),
+    0.012,
+    C.steel,
+    M.Metal,
+    Z.Roof,
+  );
+  b.block(sx, sy + tuning.wheelWidth / 2 + 0.03, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Roof, 0.006);
   b.block(0.3, DECK + 0.12, 0.42, 0.56, 0.22, 0.7, new THREE.Color('#6F6A55'), M.Fabric, Z.Roof, 0.05);
   for (const z of [0.22, 0.62])
     b.block(0.3, DECK + 0.12, z, 0.58, 0.235, 0.035, C.rubber, M.Rubber, Z.Roof, 0.01);

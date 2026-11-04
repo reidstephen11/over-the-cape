@@ -8,6 +8,7 @@ import { cleanGeometry, continuousTube } from './bodyRefinement';
 import { reviewRanges, markPart, attachParts } from './sooty80Parts';
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 import { mirrorHead } from './mirrors';
+import { mountSpare } from './spares';
 export { buildVehicleWheel } from './sooty80Wheel';
 /**
  * The body is laid out on the 80 Series photographs in reference/vehicles/landcruiser-80-sooty
@@ -1301,11 +1302,7 @@ function rearCarrier(b: VehicleBuilder, w: THREE.BufferGeometry) {
   });
   markPart(b, 64, () => {
     b.tag = Z.Rear;
-    b.push()
-      .translate(x, y, z)
-      .rotate(0, -Math.PI / 2, 0);
-    b.geometry(w.clone(), black);
-    b.pop();
+    mountSpare(b, w, { x, y, z }, 'back', black);
   });
   b.block(0, 0.035, TAIL + 0.18, 0.11, 0.07, 0.18, black, M.Metal, Z.Rear, 0.008);
   b.slot = M.Metal;

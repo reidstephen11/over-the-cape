@@ -39,6 +39,7 @@ import {
   UNIMOG_SIDE_SPARE,
   bonnetTop,
 } from './unimogLayout';
+import { mountSpare } from './spares';
 
 /**
  * Unimog UL1700L cargo truck in Australian Army green, with an Army plate (41-108), laid
@@ -608,21 +609,23 @@ function intakeStack(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.rod({ x, y: yy, z }, { x: S - 0.02, y: yy, z: pillar(yy) + 0.05 }, 0.012, black);
 }
 
-/** The spare, lying flat on a cradle under the tray's front on the right (rear-34.jpg). */
+/** The spare, lying flat on a cradle under the tray's front on the right (rear-34.jpg), below the frame rail. */
 function underSpare(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   const { x, y, z } = UNDER_SPARE;
   b.tag = Z.Sides;
-  b.push()
-    .translate(x, y, z)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
-  // Two bars under the tyre hung from the chassis rail, and a spigot through the hub.
-  for (const dz of [-0.32, 0.32]) {
-    b.block(0.5, 0.02, z + dz, 0.06, 0.44, 0.06, black, M.Metal, Z.Trim);
-    b.block(x + 0.12, -0.19, z + dz, 0.9, 0.04, 0.06, black, M.Metal, Z.Trim);
+  mountSpare(b, wheel, { x, y, z }, 'down', black);
+  // A cradle frame under the tyre, 2 mm below its sidewall: two bars along the truck under it
+  // and two across, outside the tyre, hung from the right chassis rail (x 0.45, its underside
+  // at 0.03) by two hangers, with a brace from each outer corner up to the rail. A spigot
+  // runs through the hub. The tyre lies wholly below the rail; at y 0 it ran through it.
+  const fy = y - 0.19;
+  for (const dx of [-0.25, 0.25]) b.block(x + dx, fy, z, 0.06, 0.04, 1.26, black, M.Metal, Z.Trim);
+  for (const dz of [-0.6, 0.6]) {
+    b.block(x, fy, z + dz, 0.56, 0.04, 0.06, black, M.Metal, Z.Trim);
+    b.block(0.45, (0.03 + fy - 0.02) / 2, z + dz, 0.06, 0.03 - fy + 0.02, 0.06, black, M.Metal, Z.Trim);
+    b.rod({ x: x + 0.25, y: fy, z: z + dz }, { x: 0.47, y: 0.2, z: z + dz }, 0.016, black, M.Metal, Z.Trim);
   }
-  b.rod({ x, y: -0.21, z }, { x, y: 0.21, z }, 0.04, black, M.Metal, Z.Trim);
+  b.rod({ x, y: y - 0.24, z }, { x, y: y + 0.24, z }, 0.04, black, M.Metal, Z.Trim);
 }
 
 /**
@@ -757,9 +760,7 @@ function rear(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
     );
   b.block(face - 0.06, sy, sz, 0.04, 0.26, 0.26, black, M.Metal, Z.Sides, 0.01);
   b.tag = Z.Sides;
-  b.push().translate(sx, sy, sz);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: sx, y: sy, z: sz }, 'left', black);
 }
 
 /** Pressed-steel jerry can in a cage, its long side facing out. */
