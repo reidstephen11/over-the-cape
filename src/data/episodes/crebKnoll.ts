@@ -479,10 +479,10 @@ export const knollBogs: BogDef[] = (() => {
   );
   const spots: Array<readonly [number, number, number]> = [
     // [metres along, half-length, depth]
-    [32, 7, 0.45],
-    [46, 8, 0.6],
-    [62, 9, 0.7],
-    [78, 8, 0.55],
+    [32, 7, 0.62],
+    [46, 8, 0.66],
+    [62, 9, 0.72],
+    [78, 8, 0.64],
   ];
   return spots
     .map(([at, half, depth], k): BogDef => {
@@ -526,7 +526,7 @@ export const knollProps: PropDef[] = [
 
 /**
  * Marked rocks to winch from: above the rock climb's pitch, below the drop and on the
- * trench's bank ahead of each bog (map.bogs plant no winch trees of their own).
+ * trench's bank beside each bog (map.bogs plant no winch trees of their own).
  */
 export const knollAnchors: BoulderDef[] = (
   [
@@ -534,10 +534,10 @@ export const knollAnchors: BoulderDef[] = (
     ['knoll-drop', 0.75 * 145, 5.5],
     ['knoll-steep-descent', 0.85 * 116, -5.5],
     ['knoll-axle-twisters', 65, 5.5],
-    ['knoll-bog-trench', 50, 5],
-    ['knoll-bog-trench', 72, -5],
-    ['knoll-bog-trench', 96, 5],
-    ['knoll-bog-trench', 118, -5],
+    ['knoll-bog-trench', 34, 5],
+    ['knoll-bog-trench', 50, -5],
+    ['knoll-bog-trench', 66, 5],
+    ['knoll-bog-trench', 84, -5],
   ] as const
 ).map(([id, along, lateral]) => {
   const poly = lineOf(id).poly;
