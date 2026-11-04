@@ -14,6 +14,7 @@ import {
   TILT_RACK_Z,
 } from './perentieCanvas';
 import { mirrorHead, stalk } from './mirrors';
+import { armyPlate, jerryCan } from './bodyKit';
 import { extrudeX, extrudeZ, sideShape, rounded, type Vtx } from './bodyShapes';
 
 /**
@@ -124,67 +125,6 @@ function archPanel(
     M.Rubber,
     Z.Trim,
   );
-}
-
-/** Five-segment stroke digits for the Army number plates. */
-const GLYPHS: Record<string, number[][]> = {
-  '0': [
-    [0, 0, 1, 0],
-    [1, 0, 1, 1],
-    [1, 1, 0, 1],
-    [0, 1, 0, 0],
-  ],
-  '1': [
-    [0.55, 0, 0.55, 1],
-    [0.2, 0.75, 0.55, 1],
-  ],
-  '4': [
-    [0.75, 0, 0.75, 1],
-    [0.75, 1, 0, 0.35],
-    [0, 0.35, 1, 0.35],
-  ],
-  '8': [
-    [0, 0, 1, 0],
-    [1, 0, 1, 1],
-    [1, 1, 0, 1],
-    [0, 1, 0, 0],
-    [0, 0.5, 1, 0.5],
-  ],
-  '-': [[0.15, 0.5, 0.85, 0.5]],
-};
-
-/**
- * Black Army plate with white digits, "48-001" unless told otherwise (the plate faces -z
- * before `facing` turns it). Draws 0, 1, 4, 8 and the dash.
- */
-export function armyPlate(
-  b: VehicleBuilder,
-  x: number,
-  y: number,
-  z: number,
-  facing: 1 | -1,
-  text = '48-001',
-): void {
-  b.push()
-    .translate(x, y, z)
-    .rotate(0, facing > 0 ? Math.PI : 0, 0);
-  b.block(0, 0, 0, 0.34, 0.11, 0.012, black, M.Rubber, Z.Trim, 0.006);
-  const w = 0.03,
-    h = 0.055,
-    pitch = 0.047;
-  for (let i = 0; i < text.length; i++) {
-    const x0 = (i - (text.length - 1) / 2) * pitch;
-    for (const [ax, ay, bx, by] of GLYPHS[text[i]])
-      b.rod(
-        { x: -(x0 + (ax - 0.5) * w), y: (ay - 0.5) * h, z: -0.009 },
-        { x: -(x0 + (bx - 0.5) * w), y: (by - 0.5) * h, z: -0.009 },
-        0.0032,
-        white,
-        M.Lamp,
-        Z.Trim,
-      );
-  }
-  b.pop();
 }
 
 function frontEnd(b: VehicleBuilder): void {
@@ -521,7 +461,7 @@ function rearBody(b: VehicleBuilder): void {
     b.block(side * 0.76, 0.17, TAIL + 0.058, 0.1, 0.05, 0.012, amber, M.Amber, Z.Rear, 0.005);
     b.ring(side * 0.76, 0.36, TAIL + 0.03, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
     // Jerry can in its holder behind each rear wheel.
-    jerryCan(b, side * (SIDE + 0.1), 0.41, 2.08);
+    canInHolder(b, side * (SIDE + 0.1), 0.41, 2.08);
   }
   // Fuel filler on the right, behind the door.
   b.slot = M.Metal;
@@ -636,21 +576,9 @@ function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
 }
 
 /** Pressed-steel jerry can in a holder, standing against the body side. */
-function jerryCan(b: VehicleBuilder, x: number, y: number, z: number): void {
-  const can = new THREE.Color('#5B6640');
+function canInHolder(b: VehicleBuilder, x: number, y: number, z: number): void {
   const s = Math.sign(x);
-  b.block(x, y, z, 0.165, 0.47, 0.34, can, M.Paint, Z.Rear, 0.02);
-  for (const k of [-1, 1])
-    b.rod(
-      { x: x + s * 0.085, y: y - 0.18, z: z - 0.12 * k },
-      { x: x + s * 0.085, y: y + 0.18, z: z + 0.12 * k },
-      0.008,
-      can,
-      M.Paint,
-      Z.Rear,
-    );
-  b.block(x, y + 0.26, z - 0.08, 0.03, 0.05, 0.12, can, M.Paint, Z.Rear, 0.01);
-  b.block(x, y + 0.255, z + 0.1, 0.06, 0.04, 0.06, can, M.Paint, Z.Rear, 0.01);
+  jerryCan(b, x, y, z, { colour: new THREE.Color('#5B6640'), zone: Z.Rear, width: 0.165, ribX: s * 0.085 });
   b.block(x - s * 0.06, y - 0.25, z, 0.25, 0.03, 0.38, bar, M.Metal, Z.Rear);
   b.block(x + s * 0.09, y + 0.05, z, 0.012, 0.04, 0.38, black, M.Rubber, Z.Rear);
   for (const dz of [-0.185, 0.185]) b.block(x, y + 0.05, z + dz, 0.19, 0.04, 0.012, black, M.Rubber, Z.Rear);

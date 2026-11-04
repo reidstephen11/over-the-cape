@@ -8,6 +8,7 @@ import { hiluxColors } from './hiluxPaint';
 import { hiluxBullBar } from './hiluxBullbar';
 import { cleanGeometry } from './bodyRefinement';
 import { roundHead, stalk } from './mirrors';
+import { jerryCan, numberPlate } from './bodyKit';
 
 /**
  * Early Toyota Hilux 4WD single cab (1979–83) with the factory styleside tub, in deep
@@ -28,7 +29,6 @@ const red = new THREE.Color('#B3271F'),
   amber = new THREE.Color('#E5992F'),
   lens = new THREE.Color('#E6E4D2');
 const glass = new THREE.Color('#A2BAB6'),
-  plateWhite = new THREE.Color('#E9E7DD'),
   maroon = new THREE.Color('#6A1F2A');
 
 /** Body sides, wheel openings and the main heights and stations (vehicle frame). */
@@ -146,67 +146,6 @@ function archPanel(
     M.Rubber,
     Z.Trim,
   );
-}
-
-/** Stroke characters for the number plates, in a unit box (x right, y up). */
-const GLYPHS: Record<string, number[][]> = {
-  '0': [
-    [0, 0, 1, 0],
-    [1, 0, 1, 1],
-    [1, 1, 0, 1],
-    [0, 1, 0, 0],
-  ],
-  '3': [
-    [0, 1, 1, 1],
-    [1, 1, 1, 0],
-    [1, 0, 0, 0],
-    [0.25, 0.5, 1, 0.5],
-  ],
-  '6': [
-    [1, 1, 0, 1],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [1, 0, 1, 0.5],
-    [1, 0.5, 0, 0.5],
-  ],
-  R: [
-    [0, 0, 0, 1],
-    [0, 1, 1, 1],
-    [1, 1, 1, 0.5],
-    [1, 0.5, 0, 0.5],
-    [0.35, 0.5, 1, 0],
-  ],
-  N: [
-    [0, 0, 0, 1],
-    [0, 1, 1, 0],
-    [1, 0, 1, 1],
-  ],
-  '-': [[0.15, 0.5, 0.85, 0.5]],
-};
-
-/** White plate with maroon "RN-036" (the plate faces -z before `facing` turns it). */
-function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: 1 | -1): void {
-  b.push()
-    .translate(x, y, z)
-    .rotate(0, facing > 0 ? Math.PI : 0, 0);
-  b.block(0, 0, 0, 0.36, 0.12, 0.012, plateWhite, M.Lamp, Z.Trim, 0.006);
-  const text = 'RN-036';
-  const w = 0.032,
-    h = 0.058,
-    pitch = 0.05;
-  for (let i = 0; i < text.length; i++) {
-    const x0 = (i - (text.length - 1) / 2) * pitch;
-    for (const [ax, ay, bx, by] of GLYPHS[text[i]])
-      b.rod(
-        { x: -(x0 + (ax - 0.5) * w), y: (ay - 0.5) * h, z: -0.009 },
-        { x: -(x0 + (bx - 0.5) * w), y: (by - 0.5) * h, z: -0.009 },
-        0.0034,
-        maroon,
-        M.Rubber,
-        Z.Trim,
-      );
-  }
-  b.pop();
 }
 
 /** Crowned, closed bonnet panel: the ridge falls gently towards the front edge. */
@@ -722,9 +661,9 @@ function tub(b: VehicleBuilder): void {
   b.block(0, 0.1, 2.5, 1.64, 0.11, 0.1, chrome, M.Metal, Z.Rear, 0.025);
   b.block(0, 0.158, 2.49, 0.5, 0.012, 0.08, rubber, M.Rubber, Z.Rear, 0.004);
   for (const x of [-0.42, 0.42]) b.block(x, 0.04, 2.44, 0.06, 0.07, 0.12, black, M.Metal, Z.Trim);
-  plate(b, 0, 0.1, 2.556, 1);
+  numberPlate(b, 0, 0.1, 2.556, 1, 'RN-036', maroon);
   // A jerry can strapped against the front wall, and a steel toolbox.
-  jerryCan(b, -0.55, TUB_FLOOR + 0.25, TUB_FRONT + 0.17);
+  strappedCan(b, -0.55, TUB_FLOOR + 0.25, TUB_FRONT + 0.17);
   b.block(
     0.42,
     TUB_FLOOR + 0.13,
@@ -752,21 +691,9 @@ function tub(b: VehicleBuilder): void {
   b.block(0.42, TUB_FLOOR + 0.2, TUB_FRONT + 0.355, 0.08, 0.03, 0.012, chrome, M.Metal, Z.Trim, 0.004);
 }
 
-/** Pressed-steel jerry can, standing upright, with its handles and cap. */
-function jerryCan(b: VehicleBuilder, x: number, y: number, z: number): void {
-  const can = new THREE.Color('#5E6A43');
-  b.block(x, y, z, 0.17, 0.47, 0.34, can, M.Paint, Z.Trim, 0.02);
-  for (const k of [-1, 1])
-    b.rod(
-      { x: x + 0.087, y: y - 0.18, z: z - 0.12 * k },
-      { x: x + 0.087, y: y + 0.18, z: z + 0.12 * k },
-      0.008,
-      can,
-      M.Paint,
-      Z.Trim,
-    );
-  b.block(x, y + 0.26, z - 0.08, 0.03, 0.05, 0.12, can, M.Paint, Z.Trim, 0.01);
-  b.block(x, y + 0.255, z + 0.1, 0.06, 0.04, 0.06, can, M.Paint, Z.Trim, 0.01);
+/** Pressed-steel jerry can, standing upright, with its handles and cap, and a strap round it. */
+function strappedCan(b: VehicleBuilder, x: number, y: number, z: number): void {
+  jerryCan(b, x, y, z, { colour: new THREE.Color('#5E6A43'), zone: Z.Trim, width: 0.17, ribX: 0.087 });
   b.block(x, y + 0.05, z, 0.19, 0.035, 0.36, black, M.Rubber, Z.Trim);
 }
 
@@ -891,7 +818,7 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     b.block(side * 0.68, 0.1, face - 0.004, 0.15, 0.06, 0.012, black, M.Rubber, Z.Front, 0.006);
     b.block(side * 0.68, 0.1, face - 0.012, 0.13, 0.044, 0.01, amber, M.Amber, Z.Front, 0.005);
   }
-  plate(b, -0.38, 0.1, face - 0.012, -1);
+  numberPlate(b, -0.38, 0.1, face - 0.012, -1, 'RN-036', maroon);
   // Winch drum in its cradle behind the bar, its motor, and a roller fairlead at the cable exit.
   b.rod({ x: -0.18, y: 0.15, z: -2.23 }, { x: 0.18, y: 0.15, z: -2.23 }, 0.065, black, M.Metal, Z.Front);
   for (let i = 0; i < 12; i++)

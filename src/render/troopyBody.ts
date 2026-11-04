@@ -17,6 +17,7 @@ import {
   type Vtx,
 } from './bodyShapes';
 import { mirrorHead } from './mirrors';
+import { PLATE_WHITE, numberPlate, strokeText } from './bodyKit';
 
 /** Panels as `extrudePanel`, with a 22 mm crown on the bonnet top and an 8 mm outward press in the lower side skins. */
 function extrudeX(
@@ -109,7 +110,6 @@ const red = new THREE.Color('#B3271F'),
   amber = new THREE.Color('#E5992F'),
   lens = new THREE.Color('#E6E4D2');
 const glass = new THREE.Color('#9FB6B3'),
-  plateWhite = new THREE.Color('#E9E7DD'),
   plateInk = new THREE.Color('#1F3D6B');
 
 const SIDE = 0.895;
@@ -407,61 +407,6 @@ function sidePanels(b: VehicleBuilder): void {
   }
 }
 
-/** White plate with blue "HZJ-75" (the plate faces -z before `facing` turns it). */
-const GLYPHS: Record<string, number[][]> = {
-  H: [
-    [0, 0, 0, 1],
-    [1, 0, 1, 1],
-    [0, 0.5, 1, 0.5],
-  ],
-  Z: [
-    [0, 1, 1, 1],
-    [1, 1, 0, 0],
-    [0, 0, 1, 0],
-  ],
-  J: [
-    [1, 1, 1, 0],
-    [1, 0, 0, 0],
-    [0, 0, 0, 0.3],
-  ],
-  '7': [
-    [0, 1, 1, 1],
-    [1, 1, 0.3, 0],
-  ],
-  '5': [
-    [1, 1, 0, 1],
-    [0, 1, 0, 0.5],
-    [0, 0.5, 1, 0.5],
-    [1, 0.5, 1, 0],
-    [1, 0, 0, 0],
-  ],
-  '-': [[0.15, 0.5, 0.85, 0.5]],
-};
-
-function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: 1 | -1): void {
-  b.push()
-    .translate(x, y, z)
-    .rotate(0, facing > 0 ? Math.PI : 0, 0);
-  b.block(0, 0, 0, 0.36, 0.12, 0.012, plateWhite, M.Lamp, Z.Trim, 0.006);
-  const text = 'HZJ-75';
-  const w = 0.032,
-    h = 0.058,
-    pitch = 0.05;
-  for (let i = 0; i < text.length; i++) {
-    const x0 = (i - (text.length - 1) / 2) * pitch;
-    for (const [ax, ay, bx, by] of GLYPHS[text[i]])
-      b.rod(
-        { x: -(x0 + (ax - 0.5) * w), y: (ay - 0.5) * h, z: -0.009 },
-        { x: -(x0 + (bx - 0.5) * w), y: (by - 0.5) * h, z: -0.009 },
-        0.0034,
-        plateInk,
-        M.Rubber,
-        Z.Trim,
-      );
-  }
-  b.pop();
-}
-
 function frontEnd(b: VehicleBuilder): void {
   // The front clip in one piece: the face, the bonnet and guard tops sloping down to the
   // nose, the front wheel openings, and its shoulders and front corners well rounded.
@@ -512,38 +457,18 @@ function frontEnd(b: VehicleBuilder): void {
   for (const y of [gy - 0.056, gy + 0.056])
     b.block(0, y, F - 0.038, 0.9, 0.016, 0.016, grille, M.Rubber, Z.Front, 0.003);
   b.block(0, gy, F - 0.04, 0.43, 0.068, 0.016, black, M.Rubber, Z.Front, 0.004);
-  const letters: Record<string, number[][]> = {
-    T: [
-      [0, 1, 1, 1],
-      [0.5, 1, 0.5, 0],
-    ],
-    O: [
-      [0, 0, 0, 1],
-      [0, 1, 1, 1],
-      [1, 1, 1, 0],
-      [1, 0, 0, 0],
-    ],
-    Y: [
-      [0, 1, 0.5, 0.5],
-      [1, 1, 0.5, 0.5],
-      [0.5, 0.5, 0.5, 0],
-    ],
-    A: [
-      [0, 0, 0.5, 1],
-      [0.5, 1, 1, 0],
-      [0.2, 0.42, 0.8, 0.42],
-    ],
-  };
-  [...'TOYOTA'].forEach((ch, i) => {
-    for (const [x0, y0, x1, y1] of letters[ch])
-      b.rod(
-        v(0.211 - i * 0.075 - x0 * 0.049, gy - 0.023 + y0 * 0.046, F - 0.051),
-        v(0.211 - i * 0.075 - x1 * 0.049, gy - 0.023 + y1 * 0.046, F - 0.051),
-        0.0032,
-        plateWhite,
-        M.Metal,
-        Z.Front,
-      );
+  strokeText(b, 'TOYOTA', {
+    x: 0.211,
+    y: gy - 0.023,
+    z: F - 0.051,
+    dir: -1,
+    w: 0.049,
+    h: 0.046,
+    pitch: 0.075,
+    radius: 0.0032,
+    colour: PLATE_WHITE,
+    slot: M.Metal,
+    zone: Z.Front,
   });
   for (const side of [-1, 1]) {
     const hx = side * 0.6;
@@ -812,7 +737,7 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.pop();
   for (const x of [-0.43, 0.43]) b.block(x, 0.04, T - 0.05, 0.06, 0.08, 0.16, black, M.Metal, Z.Trim);
   for (const side of [-1, 1]) b.ring(side * 0.62, -0.03, T + 0.12, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
-  plate(b, -0.46, 0.5, T + 0.008, 1);
+  numberPlate(b, -0.46, 0.5, T + 0.008, 1, 'HZJ-75', plateInk);
 }
 
 function jerryCan(b: VehicleBuilder, x: number, y: number, z: number): void {
@@ -992,7 +917,7 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.ring(x, -0.04, face - 0.01, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
   }
   b.block(0.42, 0.17, face - 0.021, 0.38, 0.14, 0.02, bar, M.Metal, Z.Front, 0.004);
-  plate(b, 0.42, 0.17, face - 0.035, -1);
+  numberPlate(b, 0.42, 0.17, face - 0.035, -1, 'HZJ-75', plateInk);
 }
 
 function chassis(b: VehicleBuilder): void {

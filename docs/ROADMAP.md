@@ -23,6 +23,18 @@ For players who like 4WD challenges and realistic driving. v1.35 added the manua
 6. **Shift buttons on phones**, so the manual gearbox works with touch.
 7. **Solid-axle articulation** (high risk: it touches the suspension the whole game is tuned on).
 
+# Performance follow-ups
+
+Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.57). Measure each first, with `?bench`, `?debug` and `window.__game.breakdown()` on the owner's phone and desktop, and ship it only if the numbers improve.
+
+- **Tree tiles copy all 42 tree geometries each** (`src/render/vegetation.ts`); sharing them would save memory and upload time.
+- **Nine footprint rays per wheel** (`src/sim/vehicle/wheelContacts.ts`); fewer may hold the same contact.
+- **A traffic car's `VehicleModel` is built inside the physics step** (now in `src/core/trafficCars.ts`); building it ahead, or off the step, would remove a hitch when one appears.
+- **Terrain generation in a Worker**, which is most of the 20 s between Drive and Ready on a 4-core machine.
+- **The props mesh stays one mesh** (v1.49 measured at most about 2% of the triangles to gain for 5–15 more draw calls a pass); revisit only if a GPU trace says otherwise.
+- **One shader program still compiles after Ready** (v1.46), made by something drawn only once driving starts; finding it needs a GPU trace. Dawn and a vehicle swap still recompile, where dusk no longer does.
+- **Unit-test shards are uneven** (about 545, 600 and 225 s of test time, v1.45), because Vitest shards by a hash of the path; a sequencer balanced by duration would need timings kept between CI runs.
+
 # Other follow-up work
 
 - Episodes 5–7: Telegraph Track South, Telegraph Track North and The Tip (SPEC.md §2).

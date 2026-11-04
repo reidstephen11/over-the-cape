@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import { plankTuning } from '../data/tools';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
-import { armyPlate } from './perentieBody';
+import { armyPlate } from './bodyKit';
 import { mirrorHead } from './mirrors';
 import { addUnimogInterior } from './unimogInterior';
 import { unimogColors } from './unimogPaint';
