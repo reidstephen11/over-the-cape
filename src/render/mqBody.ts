@@ -565,7 +565,10 @@ function rear(b: VehicleBuilder): void {
     ]),
   );
   face.holes.push(new THREE.Path(rounded(REAR_WINDOW)));
-  extrudeZ(b, face, TAIL - 0.05, TAIL, C.paint, M.Paint, Z.Rear, 0.03);
+  // A 20 mm bevel keeps the panel between TAIL - 0.05 and TAIL. At 30 mm the extrusion ran
+  // 11 mm proud of TAIL, over the shut lines, and its caps lost the window hole: a painted
+  // triangle across the right of the rear glass, seen from outside and from the cabin.
+  extrudeZ(b, face, TAIL - 0.05, TAIL, C.paint, M.Paint, Z.Rear, 0.02);
   const g = new THREE.ShapeGeometry(new THREE.Shape(rounded(inset(REAR_WINDOW, -0.012))));
   b.slot = M.Glass;
   b.tag = Z.Glass;
@@ -600,7 +603,8 @@ function rear(b: VehicleBuilder): void {
       C.steel,
     );
   }
-  // Handle and lock on the left, clear of the spare carrier; the NISSAN PATROL badge under
+  // Handle and lock on the left, clear of the spare, whose carrier swings off the bar before
+  // the door opens; the NISSAN PATROL badge under
   // them, and the plate below that.
   b.block(-0.47, 0.66, TAIL + 0.012, 0.11, 0.03, 0.02, C.chrome, M.Metal, Z.Rear, 0.008);
   b.ring(-0.34, 0.66, TAIL + 0.003, 0.011, 0.003, C.chrome, M.Metal, 'z', Z.Rear);
