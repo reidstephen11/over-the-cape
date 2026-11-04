@@ -7,6 +7,7 @@ import { ROUND_BEND, cleanGeometry, continuousTube } from './bodyRefinement';
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 import { mirrorHead } from './mirrors';
 import { letter, camel } from './camelMarkings';
+import { GLYPHS, strokeText } from './bodyKit';
 
 /**
  * The 1986 Camel Trophy Land Rover Ninety, as the Australian event ran it: a left-hand-drive
@@ -553,42 +554,20 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, side: number)
     .rotate(0, side < 0 ? Math.PI : 0, 0);
   b.block(0, 0, 0, 0.27, 0.105, 0.015, black, M.Rubber, Z.Trim, 0.006);
   b.block(0, 0, 0.01, 0.25, 0.086, 0.008, side > 0 ? yellow : lens, M.Paint, Z.Trim, 0.004);
-  const lines: Record<string, number[][]> = {
-    C: [
-      [1, 1, 0, 1],
-      [0, 1, 0, 0],
-      [0, 0, 1, 0],
-    ],
-    T: [
-      [0, 1, 1, 1],
-      [0.5, 1, 0.5, 0],
-    ],
-    '-': [[0.2, 0.5, 0.8, 0.5]],
-    '8': [
-      [0, 0, 1, 0],
-      [1, 0, 1, 1],
-      [1, 1, 0, 1],
-      [0, 1, 0, 0],
-      [0, 0.5, 1, 0.5],
-    ],
-    '6': [
-      [1, 1, 0, 1],
-      [0, 1, 0, 0],
-      [0, 0, 1, 0],
-      [1, 0, 1, 0.5],
-      [1, 0.5, 0, 0.5],
-    ],
-  };
-  for (let k = 0; k < 5; k++)
-    for (const [ax, ay, bx, by] of lines['CT-86'[k]])
-      b.rod(
-        v(-0.102 + k * 0.041 + ax * 0.029, -0.027 + ay * 0.054, 0.018),
-        v(-0.102 + k * 0.041 + bx * 0.029, -0.027 + by * 0.054, 0.018),
-        0.0025,
-        black,
-        M.Rubber,
-        Z.Trim,
-      );
+  strokeText(b, 'CT-86', {
+    x: -0.102,
+    y: -0.027,
+    z: 0.018,
+    dir: 1,
+    w: 0.029,
+    h: 0.054,
+    pitch: 0.041,
+    radius: 0.0025,
+    colour: black,
+    slot: M.Rubber,
+    zone: Z.Trim,
+    glyphs: { ...GLYPHS, '-': [[0.2, 0.5, 0.8, 0.5]] },
+  });
   b.pop();
 }
 function bullbar(b: VehicleBuilder) {
