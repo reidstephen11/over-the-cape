@@ -10,7 +10,7 @@ import type {
   XZ,
 } from '../../sim/world/mapTypes';
 import { densify, pointAt } from '../../sim/world/polyline';
-import { banks, boulder, endSign, gradedLine, rockStep, tread, type GradedLine } from '../courseKit';
+import { banks, boulder, endSign, gradedLine, rockStep, slab, tread, type GradedLine } from '../courseKit';
 import { daintreeCrossing, upperDaintreeRoad, type Waypoint } from './crebRoute';
 
 /**
@@ -19,7 +19,7 @@ import { daintreeCrossing, upperDaintreeRoad, type Waypoint } from './crebRoute'
  * the east, and a loop track rings that top from the village road to the river crossing.
  * Lines leave the loop for the summit or come back down to it, and two more hang off the
  * loop on the flat:
- *   - Rock climb: straight up the south face over tall split granite ledges
+ *   - Rock climb: straight up the south face on rock all the way: ledges, slab, notch
  *   - Switchbacks: up the east face in tight hairpins
  *   - Side slope: round the west flank, leaning out over the drop, and down to the loop
  *   - The drop: down the north-west face and off a near-vertical lip into a mud hole
@@ -100,8 +100,10 @@ function arcAt(points: readonly Waypoint[], index: number): number {
 }
 
 // ---------------------------------------------------------------------------------------
-// Rock climb: straight up the south face. The foot is easy; the top 40 m is a pitch near 27°
-// with granite breaking out across it in tall split ledges.
+// Rock climb: straight up the south face, on rock from the loop to the summit, the way a
+// real rock hill climb is (v1.57): broken granite at the foot, a staircase of ledges, an
+// off-camber slab, a V-notch between two whalebacks, then the steep pitch of tall split
+// ledges and one full-width crux below the top. Boulders line both sides the whole way.
 export const rockClimb: Waypoint[] = [
   joinLoop(108, 2572, 7.98),
   [106, 2545],
@@ -111,19 +113,119 @@ export const rockClimb: Waypoint[] = [
   polar(SUMMIT, 180),
 ];
 const pitch = arcAt(rockClimb, 3);
+
+/** Granite bedded in the track: rows of low rocks across it, staggered so no wheel runs clear. */
+function brokenGranite(from: number, to: number): TrailStoneDef[] {
+  const out: TrailStoneDef[] = [];
+  for (let at = from, k = 0; at <= to; at += 1.7, k++) {
+    const lanes = k % 2 ? [-1.2, 0, 1.2] : [-0.6, 0.6];
+    lanes.forEach((lateral, j) => {
+      const n = k * 3 + j;
+      const h = 0.14 + ((n * 7) % 5) * 0.045;
+      const w = 0.8 + ((n * 5) % 3) * 0.2;
+      out.push(boulder(at + ((n * 3) % 4) * 0.15, lateral, h + 0.15, w, w * 1.2, n * 41, -0.15));
+    });
+  }
+  return out;
+}
+
+/** Low flat sheets of bedrock in two lanes, so no smooth track shows between the ledges. */
+function bedrock(from: number, to: number): TrailStoneDef[] {
+  const out: TrailStoneDef[] = [];
+  for (let at = from, k = 0; at <= to; at += 2, k++)
+    for (const lateral of [-0.85, 0.85]) {
+      const n = k * 2 + (lateral > 0 ? 1 : 0);
+      out.push(slab(at + (n % 2) * 0.6, lateral, 0.03 + (n % 3) * 0.01, 1.5, 1.8, 0, ((n * 23) % 30) - 15));
+    }
+  return out;
+}
+
 const rockClimbStones: TrailStoneDef[] = [
-  rockStep(pitch + 2, 0, 0.32, 4, tread(0.32), 3),
-  rockStep(pitch + 8, -1.05, 0.46, 2.1, tread(0.46), -5),
-  rockStep(pitch + 8.8, 1.05, 0.36, 2.1, tread(0.36), 6),
-  rockStep(pitch + 15, 1.05, 0.48, 2.1, tread(0.48), 5),
-  rockStep(pitch + 15.8, -1.05, 0.38, 2.1, tread(0.38), -6),
-  rockStep(pitch + 22, 0, 0.42, 4, tread(0.42), -3),
-  rockStep(pitch + 28, -1.05, 0.5, 2.1, tread(0.5), -4),
-  rockStep(pitch + 28.8, 1.05, 0.4, 2.1, tread(0.4), 5),
-  // Loose rocks on the treads, under one wheel then the other.
+  // Broken granite: the foot of the face, rough everywhere but no single big step.
+  ...brokenGranite(5, 30),
+  // The staircase: a ledge every 3.5 m, some full width, some split so one wheel goes first.
+  rockStep(32, 0, 0.28, 4, tread(0.28), 2),
+  rockStep(35.5, -1.05, 0.34, 2.1, tread(0.34), -4),
+  rockStep(36.2, 1.05, 0.26, 2.1, tread(0.26), 5),
+  rockStep(39.5, 0, 0.32, 4, tread(0.32), -3),
+  rockStep(43, 1.05, 0.38, 2.1, tread(0.38), 5),
+  rockStep(43.8, -1.05, 0.28, 2.1, tread(0.28), -5),
+  rockStep(47, 0, 0.34, 4, tread(0.34), 3),
+  rockStep(50.5, -1.05, 0.4, 2.1, tread(0.4), -4),
+  rockStep(51.3, 1.05, 0.3, 2.1, tread(0.3), 6),
+  rockStep(54.5, 0, 0.36, 4, tread(0.36), -2),
+  boulder(41.3, 0.8, 0.3, 0.7, 0.8, 20),
+  boulder(49, -0.7, 0.3, 0.7, 0.8, 70),
+  // The off-camber slab: a long sheet of granite tipped to the left across the track.
+  {
+    shape: 'ridge',
+    at: 64,
+    lateral: 0.3,
+    width: 4.2,
+    length: 12,
+    height: 0.45,
+    rollDeg: -13,
+    profile: [
+      [-6, 0.15],
+      [-5, 0.45],
+      [5, 0.45],
+      [6, 0.1],
+    ],
+  },
+  boulder(61, -0.9, 0.28, 0.8, 0.9, 15, 0.3),
+  boulder(67, 0.9, 0.24, 0.7, 0.8, 60, 0.38),
+  // The V-notch: two whalebacks either side, sloping in, so the wheels ride their flanks.
+  {
+    shape: 'ridge',
+    at: 76,
+    lateral: -1.55,
+    width: 1.9,
+    length: 7,
+    height: 0.6,
+    rollDeg: 15,
+    profile: [
+      [-3.5, 0.15],
+      [-2, 0.55],
+      [2.5, 0.6],
+      [3.5, 0.2],
+    ],
+  },
+  {
+    shape: 'ridge',
+    at: 76.5,
+    lateral: 1.55,
+    width: 1.9,
+    length: 7,
+    height: 0.55,
+    rollDeg: -15,
+    profile: [
+      [-3.5, 0.15],
+      [-2, 0.5],
+      [2.5, 0.55],
+      [3.5, 0.2],
+    ],
+  },
+
+  // Bedrock between the notch and the pitch.
+  ...bedrock(81, pitch),
+  // The pitch: tall split ledges near 27°, loose rocks on the treads.
+  rockStep(pitch + 2, 0, 0.36, 4, tread(0.36), 3),
+  rockStep(pitch + 8, -1.05, 0.5, 2.1, tread(0.5), -5),
+  rockStep(pitch + 8.8, 1.05, 0.38, 2.1, tread(0.38), 6),
+  rockStep(pitch + 15, 1.05, 0.52, 2.1, tread(0.52), 5),
+  rockStep(pitch + 15.8, -1.05, 0.4, 2.1, tread(0.4), -6),
+  rockStep(pitch + 22, 0, 0.44, 4, tread(0.44), -3),
+  rockStep(pitch + 28, -1.05, 0.52, 2.1, tread(0.52), -4),
+  rockStep(pitch + 28.8, 1.05, 0.42, 2.1, tread(0.42), 5),
+  boulder(pitch + 5, -0.7, 0.3, 0.8, 0.9, 10),
   boulder(pitch + 11.5, 0.8, 0.34, 0.8, 1),
+  boulder(pitch + 19, -0.8, 0.32, 0.8, 0.9, 50),
   boulder(pitch + 25, -0.8, 0.34, 0.8, 1),
-  ...banks(pitch - 4, pitch + 32, 4, 2.9, 1),
+  // The crux: one full-width ledge below the summit.
+  rockStep(pitch + 34, 0, 0.48, 4, tread(0.48), 2),
+  // Boulders bank the line from the loop to the summit, so it reads as a rock gully.
+  ...banks(6, pitch + 36, 3, 2.7, 1.15),
+  ...banks(7.5, pitch + 36, 3, 3.9, 1.5, 0.4),
 ];
 
 // Switchbacks: up the east face in four legs across the slope, joined by tight hairpins
@@ -295,7 +397,7 @@ export const knollTracks: TrackDef[] = [
     pinMode: 'follow',
     pinSmooth: 6,
     stones: rockClimbStones,
-    routeHint: 'Hard. Low range, both lockers, crawl. Split ledges: one front wheel climbs before the other',
+    routeHint: 'Hard. Low range, both lockers, crawl. Ledges, an off-camber slab and a V-notch, all rock',
   },
   {
     id: 'knoll-switchbacks',
@@ -580,7 +682,7 @@ const poi = (
 
 export const knollPois: PoiDef[] = [
   poi('knoll-top', 'Knoll summit', 'The top of the play area; the lines down start here', [TOP.x, TOP.z], 16),
-  poi('knoll-rock-climb', 'Rock climb', 'Split granite ledges up the south face'),
+  poi('knoll-rock-climb', 'Rock climb', 'Granite all the way up the south face'),
   poi('knoll-switchbacks', 'Switchbacks', 'Tight hairpins up the east face'),
   poi('knoll-side-slope', 'Side slope', 'Round the west flank, leaning out'),
   poi(

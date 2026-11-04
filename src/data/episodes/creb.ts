@@ -200,7 +200,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'knoll-rock-climb': {
       title: 'Rock climb',
-      text: 'Granite breaks out of the south face in ledges near half a metre high, split down the middle so one front wheel climbs before the other, on a pitch near 28°. Low range, both lockers, precision crawl, and let each wheel walk up. A marked rock at the top is there to winch to.',
+      text: 'Rock from the loop to the summit, boulders banked either side. Broken granite at the foot, then a staircase of ledges, a slab that tips you to the left, and a V-notch between two whalebacks where the wheels ride the rock. Above it the pitch steepens to near 28° over ledges half a metre high, split so one front wheel climbs before the other, and one full-width ledge below the top. Low range, both lockers, precision crawl, and let each wheel walk up. A marked rock at the top is there to winch to.',
     },
     'knoll-switchbacks': {
       title: 'Switchbacks',
