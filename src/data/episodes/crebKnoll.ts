@@ -514,7 +514,7 @@ const lineOf = (id: string) => lines.find((l) => l.id === id)!.line;
 
 /**
  * A sign at both ends of each line: the start names it, and the far end says which way it
- * goes, so a player arriving there knows whether it is a way through (v1.49).
+ * goes, so a player arriving there knows whether it is a way through (v1.50).
  */
 const bothEnds = (id: string, start: string, far: string): PropDef[] => [
   endSign(lineOf(id), 0, start, graded),

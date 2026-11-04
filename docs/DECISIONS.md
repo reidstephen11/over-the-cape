@@ -2433,7 +2433,7 @@ The fourth phase of `docs/PLAN-efficiency.md`. Nothing about driving changes; th
 
 **Measured in the browser** (SwiftShader, Medium, `window.__game.stats()` and `breakdown()`), before → after: start 465 calls / 1,113,165 triangles → 466 / 1,113,283; Bloomfield forest 262 / 810,737 → 261 / 810,849; Roaring Meg 266 / 821,689 → 265 / 821,341. The draw is unchanged, as it should be: the wins are the second draw a 120 Hz phone no longer makes and main-thread time and garbage, not triangles.
 
-## v1.49: signs at both ends of the knoll's lines
+## v1.50: signs at both ends of the knoll's lines
 
 The owner kept arriving at the wrong end of one-way lines in the knoll play area: v1.47 signed only each line's start. Each line now has a sign at both ends (`endSign` at end 1 as well as end 0, in `crebKnoll.ts`). The start names the line and, where it has one, its direction; the far end says which way it goes:
 
