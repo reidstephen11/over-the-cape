@@ -36,7 +36,7 @@ describe('the knoll play area', () => {
     }
   });
 
-  it('joins every line to the loop or the summit, level with it, with a sign and a note', () => {
+  it('joins every line to the loop or the summit, level with it, with a sign at each end and a note', () => {
     const loop = trackOf('knoll-loop');
     const summit = crebMap.flats.find((f) => f.id === 'knoll-top')!;
     for (const id of LINES) {
@@ -67,11 +67,14 @@ describe('the knoll play area', () => {
           expect(Math.max(...heights) - mid, `${id}@${s} hump`).toBeLessThan(0.2);
         }
       }
-      const start = trailPoint(line, 0);
-      expect(
-        crebMap.props.some((p) => p.kind === 'signpost' && Math.hypot(p.x - start.x, p.z - start.z) < 14),
-        `${id} sign`,
-      ).toBe(true);
+      // A sign at both ends, so a player arriving at the far end knows which way it goes.
+      for (const s of [0, line.poly.length]) {
+        const end = trailPoint(line, s);
+        expect(
+          crebMap.props.some((p) => p.kind === 'signpost' && Math.hypot(p.x - end.x, p.z - end.z) < 14),
+          `${id} sign @${s.toFixed(0)}`,
+        ).toBe(true);
+      }
     }
     for (const poi of knollPois) expect(crebEpisode.notes[poi.id], poi.id).toBeDefined();
   });
