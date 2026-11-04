@@ -333,7 +333,9 @@ describe('Episode 1: the CREB Track', () => {
         const banks = [-1, 1].map((side) => t.heightAt(p.x + nx * side * out, p.z + nz * side * out) - road);
         // (A mud hole is a hollow by design.)
         const bog = world.features.mudHoles.some((b) => Math.hypot(b.x - p.x, b.z - p.z) < b.radiusZ + 3);
-        if (Math.min(...banks) > 1.5 && !bog) trenches.push(`${track.def.id}@${s}`);
+        // (The knoll's bog trench is a trench by design: crebKnoll.test.ts checks its walls.)
+        if (Math.min(...banks) > 1.5 && !bog && track.def.id !== 'knoll-bog-trench')
+          trenches.push(`${track.def.id}@${s}`);
       }
     }
     expect(trenches).toEqual([]);
