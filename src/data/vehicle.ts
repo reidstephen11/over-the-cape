@@ -187,7 +187,8 @@ export type VehicleId =
   | 'mq'
   | 'patrol'
   | 'lc79'
-  | 'sooty80';
+  | 'sooty80'
+  | 'rangie';
 
 const R = 0.38;
 /**

@@ -17,6 +17,8 @@ import { buildVehicleWheel as buildSooty80Wheel } from './sooty80Wheel';
 import { buildHj60Body, buildHj60Plank, buildHj60Wheel } from './hj60Body';
 import { UTE_NOSE, buildUte40Body, buildUte40Plank, buildUte40Wheel } from './ute40Body';
 import { NOSE as MQ_NOSE, buildMqBody, buildMqPlank, buildMqWheel } from './mqBody';
+import { buildRangieBody, buildRangiePlank, buildRangieWheel } from './rangieBody';
+import { RANGIE_DRIVING_LAMPS } from './rangieGear';
 import type { SuspensionLayout } from './vehicleSuspension';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
@@ -91,6 +93,21 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
         { x: 0.626, y: 0.467, z: -1.84 },
       ],
       roof: [-0.61, -0.27, 0.27, 0.61].map((x) => ({ x, y: 1.84, z: -0.74 })),
+    },
+  },
+  rangie: {
+    name: 'range-rover-two-door',
+    body: buildRangieBody,
+    wheel: buildRangieWheel,
+    plank: buildRangiePlank,
+    // Solid single-stage paint kept polished: a little more gloss than the 60's.
+    paint: { roughness: 0.38, metalness: 0.07, clearcoat: 0.55, clearcoatRoughness: 0.28 },
+    springs: 'coil',
+    suspension: { coilInboard: 0.4, radiusArmAxleX: 0.34, radiusArmChassisX: 0.4, rearDamperOffset: -0.08 },
+    lamps: {
+      head: [-0.56, 0.56].map((x) => ({ x, y: 0.335, z: -2.026 })),
+      // The two driving lamps on the bar come on with high beam.
+      roof: RANGIE_DRIVING_LAMPS,
     },
   },
   perentie: {
