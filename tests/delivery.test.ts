@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { environmentAt } from '../src/data/environment';
-import type { EpisodeDef } from '../src/data/episodes';
-import { crebEpisode } from '../src/data/episodes/creb';
+import { crebEpisode as E } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
+import { supplyRun } from '../src/data/unlocks';
+import { unimogTuning } from '../src/data/unimog';
+import { SAVE_KEY } from '../src/core/config';
 import { boxTrailer } from '../src/data/trailers';
 import { SurfaceId } from '../src/data/surfaces';
 import { Trailer, poseBehind } from '../src/sim/trailer';
@@ -13,16 +15,13 @@ import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier, Physics } from '../src/sim/physics';
 import { loadSave, writeSave } from '../src/sim/save/save';
 import { Simulation } from '../src/sim/sim';
+import { hitchSupplyTrailer, supplyDelivered } from '../src/sim/supplyRun';
 import { readDeliveryState } from '../src/sim/trailerState';
 import { buildWorld } from '../src/sim/world/world';
 import { MemoryStore, saveData } from './helpers/saves';
 
-// The delivery goal outlived Episode 4 (removed in v0.73); a stand-in CREB run with drums to deliver keeps it tested.
-const E: EpisodeDef = {
-  ...crebEpisode,
-  delivery: { drums: 2 },
-  deadline: { hour: 18.25, label: 'Dark at 6:15 pm' },
-};
+// A flat stand-in for the CREB with the supply run's camp (Wujal Wujal) where the run starts.
+const CAMP = supplyRun.goal;
 const world = buildWorld({
   ...crebMap,
   width: 256,
@@ -44,15 +43,14 @@ const world = buildWorld({
   blackSoil: undefined,
   horizon: undefined,
   vegetation: { ...crebMap.vegetation, maxTreeDensity: 0, boulderDensity: 0, termiteMounds: 0 },
-  pois: [{ id: 'start', name: 'Camp', kind: 'campsite', x: 0, z: 0, radius: 20 }],
-  spawnCampsite: 'start',
+  pois: [{ id: CAMP, name: 'Wujal Wujal', kind: 'campsite', x: 0, z: 0, radius: 20 }],
+  spawnCampsite: CAMP,
 });
 const DT = 1 / 60;
 async function scene() {
   const sim = new Simulation(await loadRapier(), world, environmentAt(10, 'clear'));
   const v = sim.addVehicle('p', sim.poseAt(0, 0, 0));
-  const t = sim.addTrailer('delivery', boxTrailer, 'p');
-  t.loadDrums(2);
+  const t = hitchSupplyTrailer(sim, v.tuning, 'p');
   const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
   const step = (n = 120) => {
     for (let i = 0; i < n; i++) sim.step(inputs, DT);
@@ -61,26 +59,55 @@ async function scene() {
   return { sim, v, t, step };
 }
 
-describe('fuel delivery and trailer persistence', () => {
-  it('needs both drums and the parked upright trailer at the goal, before the deadline', async () => {
+describe('the Army supply run and trailer persistence', () => {
+  it('hitches the box trailer behind a ball hitch and the No. 5 behind a pintle, each with the drums', async () => {
     const { sim, v, t } = await scene();
-    const goal = world.pois[0];
-    const run = () => new EpisodeRun(E, startCheckpoint(E, 'start', 'shortie'), true);
-    expect(run().check(v, 'mild', goal)).toBeNull();
+    expect(t.tuning.id).toBe('box6x4');
+    expect(t.drums).toBe(supplyRun.drums);
+    expect(t.hitchedTo).toBe(v);
+    sim.physics.free();
+    const sim2 = new Simulation(await loadRapier(), world, environmentAt(10, 'clear'));
+    const mog = sim2.addVehicle('m', sim2.poseAt(0, 0, 0), unimogTuning);
+    const no5 = hitchSupplyTrailer(sim2, unimogTuning, 'm');
+    expect(no5.tuning.id).toBe('no5');
+    expect(no5.drums).toBe(supplyRun.drums);
+    expect(no5.hitchedTo).toBe(mog);
+    sim2.physics.free();
+  });
+
+  it('is delivered (the Perentie unlock) only by both drums on a parked upright trailer at the camp', async () => {
+    const { sim, t } = await scene();
+    const pois = world.pois;
+    expect(supplyDelivered([t], pois)).toBe(true);
+    expect(supplyDelivered([], pois)).toBe(false);
+    expect(supplyDelivered([t], [{ ...pois[0], id: 'elsewhere' }])).toBe(false);
+    expect(supplyDelivered([t], [{ ...pois[0], x: 100 }])).toBe(false);
     t.loadDrums(1);
-    expect(run().check(v, 'mild', goal, [t])).toBeNull();
+    expect(supplyDelivered([t], pois)).toBe(false);
     t.loadDrums(2);
     t.body.setLinvel({ x: 2, y: 0, z: 0 }, true);
-    expect(run().check(v, 'mild', goal, [t])).toBeNull();
+    expect(supplyDelivered([t], pois)).toBe(false);
     t.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
     t.body.setRotation({ x: 0, y: 0, z: Math.SQRT1_2, w: Math.SQRT1_2 }, true);
-    expect(run().check(v, 'mild', goal, [t])).toBeNull();
+    expect(supplyDelivered([t], pois)).toBe(false);
     t.body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
-    const late = run();
-    late.hour = E.deadline!.hour;
-    expect(late.check(v, 'mild', goal, [t])).toBe('failed');
-    expect(run().check(v, 'mild', goal, [t])).toBe('complete');
+    expect(supplyDelivered([t], pois)).toBe(true);
     sim.physics.free();
+  });
+
+  it('keeps the supply run in the save, and loads old checkpoints with a rescue flag', () => {
+    const checkpoint = { ...startCheckpoint(E, CAMP, 'shortie'), supply: true };
+    const store = new MemoryStore();
+    writeSave(saveData({ episode: 'creb', episodes: { creb: { completed: false, checkpoint } } }), store);
+    expect(loadSave(store)!.episodes.creb!.checkpoint!.supply).toBe(true);
+    // Before v1.51 a checkpoint carried `rescued` for the removed Episode 3's stockman.
+    const old = JSON.parse(store.getItem(SAVE_KEY)!);
+    old.episodes.creb.checkpoint.rescued = true;
+    store.setItem(SAVE_KEY, JSON.stringify(old));
+    const loaded = loadSave(store)!.episodes.creb!.checkpoint!;
+    expect(loaded.camp).toBe(CAMP);
+    expect(loaded.supply).toBe(true);
+    expect('rescued' in loaded).toBe(false);
   });
 
   it('round-trips unhitched trailers, punctures and spilled drums without moving or duplicating cargo', async () => {
@@ -91,8 +118,8 @@ describe('fuel delivery and trailer persistence', () => {
     t.tyres[0] = 0;
     t.strain = 0.7;
     const state = sim.deliveryState();
-    const run = new EpisodeRun(E, startCheckpoint(E, 'start', 'shortie'), true);
-    const checkpoint = checkpointAt('start', run, v, ['start'], [], [], state);
+    const run = new EpisodeRun(E, startCheckpoint(E, CAMP, 'shortie'), true);
+    const checkpoint = checkpointAt(CAMP, run, v, [CAMP], [], [], state);
     const store = new MemoryStore();
     writeSave(saveData({ episode: 'creb', episodes: { creb: { completed: false, checkpoint } } }), store);
     const loaded = loadSave(store)!.episodes.creb!.checkpoint!.delivery!;
