@@ -194,6 +194,38 @@ export const crebEpisode: EpisodeDef = {
       title: 'Little Annan River',
       text: 'The road fords the river where it is deepest and fastest. Downstream, where it widens, a gravel bar keeps the water about half as deep: a longer way round along the south bank, but a safer one when the river is up.',
     },
+    'knoll-top': {
+      title: 'Knoll play area',
+      text: 'Before the river, a track loops round the knoll east of the village road, with lines up and down every face to warm up on. Up: the rock climb or the switchbacks. Down: the drop or the steep descent. Round the west flank: the side slope. On the flat: the axle twisters and the bog trench. Every line comes back to the loop, and the loop comes out at the river crossing.',
+    },
+    'knoll-rock-climb': {
+      title: 'Rock climb',
+      text: 'Granite breaks out of the south face in ledges near half a metre high, split down the middle so one front wheel climbs before the other, on a pitch near 28°. Low range, both lockers, precision crawl, and let each wheel walk up. A marked rock at the top is there to winch to.',
+    },
+    'knoll-switchbacks': {
+      title: 'Switchbacks',
+      text: 'Four legs across the east face, joined by hairpins too tight for one sweep in a long vehicle. The hairpins are where it climbs. Swing wide, use full lock, and back up for a second go rather than run a wheel off the edge.',
+    },
+    'knoll-side-slope': {
+      title: 'Side slope',
+      text: 'Round the west flank the track leans you out towards the knoll, more than 20° for sixty metres. Crawl, steer smoothly and never turn downhill. If it feels like going over, stop and back out the way you came. It comes down to the loop by the river.',
+    },
+    'knoll-drop': {
+      title: 'The drop',
+      text: 'Off the summit to the north-west, a steep run down the face ends at a lip of rock with a near-vertical bank below it, about three metres in all, and a mud hole at the bottom. Low range first, wheels dead straight, crawl over the lip and let the nose drop. It is not a way up.',
+    },
+    'knoll-steep-descent': {
+      title: 'Steep descent',
+      text: 'Straight down the north face, past 30° at the top, through ruts the rain has cut. Low range first gear and crawl hold you back. Straddle the ruts and keep off the brakes: locked wheels slide on wet clay.',
+    },
+    'knoll-axle-twisters': {
+      title: 'Axle twisters',
+      text: 'Holes dug under alternate wheels, each with a mound beside it under the other, so a front wheel and the opposite rear lift off. An open diff spins the wheel in the air. Lock the rear, or both, and crawl.',
+    },
+    'knoll-bog-trench': {
+      title: 'Bog trench',
+      text: 'A long bog sunk between clay walls higher than the bonnet. Once you are in there is no way round and no way out but along it. Lock both, pick a gear and keep moving; if it stops you, the winch reaches the trees on the bank.',
+    },
   },
   wrapUp: [
     'You made the Lions Den. The hotel was built in 1875 beside the junction of Mungumby Creek and the Little Annan River, for the tin and gold miners working the country round the Annan. It stayed in the same family until 1964.',

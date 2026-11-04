@@ -2376,3 +2376,34 @@ The third phase of `docs/PLAN-efficiency.md`. Nothing about driving changes; the
 How to read it: on this 4-core container world generation is about 20 s of CPU, and the network now hides almost entirely behind it, because Rapier loads in parallel and the script is a quarter of the size. SwiftShader has no `KHR_parallel_shader_compile` and compiles each shader again on its first draws, so here the warm-up frame costs about 12 s at the loading screen and the first frames after Drive are still slow; on a GPU with the extension (the owner's Chrome) the warm-up is mostly in parallel and the first frames should draw at once. Every frame on SwiftShader takes 1.5–3.5 s, so the dusk frame times here are noise (before 5.1, 7.8, 4.5 s; after 1.8, 5.7 s); the CPU figure above is the one that holds.
 
 **Left.** The one program that appears after Ready is made by something drawn only once driving starts; finding it would take a GPU trace. Dawn could warm its programs the same way as dusk if the clock ever runs through a night.
+
+## v1.47: the knoll play area
+
+The owner asked for the stretch before the Daintree River to be a place to warm up for hours before the CREB, with many different obstacles round the hill the village road climbs: a hard rock climb, a drop like the Gunshot, a steep descent, a switchback climb, a long bog with high sides and articulation.
+
+**Where.** The village road climbs over the knoll (`village-knoll`, 19 m) on its west side; its ramp, crawl step, locker pinch and winch bog are the control lessons, so it was left alone. The knoll is too small and too taken up by the road to carry every line, so a higher top (`knoll-east-top`, a 25 m dome, 88 m radius) joins it on the east, with a 12 m flat summit where the lines meet. Its centre is 100 m from the road, so nothing the road stands on moved. Everything is in `src/data/episodes/crebKnoll.ts`.
+
+**The loop.** The Knoll track leaves the village road at its second waypoint, on the flat before the low-range ramp, and ends where the river crossing starts, so a player can drive out of the village, play, and carry on across the river without coming back. It follows the ground and has no mud: a procedural bog on it would add to the deep-hole count `crebStretches.test.ts` pins.
+
+**The lines.** Each leaves the loop or the summit and ends on the other, so the loop is always the way round:
+
+- _Rock climb_: the foot follows the ground; the top 40 m is a pitch of about 26–28° with ledges of 0.32–0.5 m, split down the middle so one front wheel climbs first (the crawl band's pattern, taller). The short-wheelbase 4WD gets up in low range with both lockers, pitching to 44°.
+- _Switchbacks_: four legs across the east face and three hairpins of 7 m radius. On a 25 m top the legs run nearly along the contours, so the hairpins took the climb (up to 21°, at full lock), and the short-wheelbase 4WD slid to a stop in the top one. Each hairpin is graded evenly from 15 m before it to 25 m after (`even`), so the turns are tight but not pinches.
+- _Side slope_: round the west flank at 20–24° of lean for about 60 m, then down the knoll's east flank to the loop by the river. It first climbed the west shoulder to the summit, but that was 22–27° straight up while still leaning, and the autopilot nearly rolled it. The track keeps all the hill's lean (`camber: 1`); `cant` tops it up where the flank is gentler and takes some off where it is steeper, and takes the knoll's own flank (27° the other way) back to about 20°. It is hard-packed dirt, not clay: on wet clay at that lean both the short-wheelbase 4WD and the Troop Carrier slid off the flank; on dirt both get round, rolling to 34°.
+- _The drop_: the ground is pinned at the lip and drops about 2.3 m in the next 2.5 m (about 45° over the 1 m grid), with a band of rock across the lip standing 0.7 m higher, so the nose goes over a face of about 3 m. It is a `ridge` stone with its riser on the downhill side, the crawl band's rock step turned round. A shallow mud hole lies at the foot. The short-wheelbase 4WD crawls off it in low range, pitching nose-down to 63°, and drives out.
+- _Steep descent_: straight down the north face, about 30° at the top, with the Ironbark park's erosion ruts.
+- _Axle twisters_: fourteen holes, 0.5 m deep, under alternate wheels with a 0.3 m mound beside each, as in the Ironbark park's harder line. Dug level across (`camber: 0.1`), so the twist is the holes' and not the hillside's.
+- _Bog trench_: cut 1.4 m below the ground with banks at 1.6 rise per metre, and four deep bogs end to end over about 50 m (deepened in v1.48). The banks are well over 1.5 m above the bog floor, so `creb.test.ts`'s "no track runs in a trench" check skips this one track. `crebKnoll.test.ts` checks its walls instead.
+
+**Junctions are pinned.** Each line's end on the loop is pinned to the loop's graded height there (`joinLoop`, measured). Unpinned, a line graded about half a metre above the loop left a narrow ridge across it where they met, and the autopilot stalled on the one below the steep descent. `crebKnoll.test.ts` checks the profiles agree and the loop has no hump at each junction.
+
+**Checked by driving** in the wet with the autopilot, low range and both lockers: the short-wheelbase 4WD round the loop and along every line (the bog trench with one winch to a marked rock on its bank, since `map.bogs` plant no trees), and the Troop Carrier on the rock climb, switchbacks, side slope and drop.
+
+**Not a forced route.** None of the lines is on the route, the timed sections or the scoring. The arrival notes in `creb.ts` say what each wants.
+
+## v1.48: the bog trench's bogs made deep enough
+
+v1.47's unit tests found one failure after it shipped: `creb.test.ts` holds every hand-placed bog on the map to the road bogs' rule, deep (sticky black soil) and more than 0.6 m, with a marked winch rock within 16 m, because `map.bogs` plant no trees of their own. Two of the bog trench's four bogs were 0.45 and 0.55 m, and its marked rocks stood ahead of the bogs rather than beside them.
+
+- The trench's bogs are now 0.62, 0.66, 0.72 and 0.64 m, and its four marked rocks stand on the bank beside each bog, alternating sides. The short-wheelbase 4WD still gets through in the wet with low range and both lockers, now with two pulls on the winch instead of one.
+- The mud hole below the drop stays a shallow splash (0.35 m, not sticky): a winch bog straight after a 3 m drop would be unfair. The test skips that one by id, with a note.

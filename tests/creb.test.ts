@@ -333,7 +333,9 @@ describe('Episode 1: the CREB Track', () => {
         const banks = [-1, 1].map((side) => t.heightAt(p.x + nx * side * out, p.z + nz * side * out) - road);
         // (A mud hole is a hollow by design.)
         const bog = world.features.mudHoles.some((b) => Math.hypot(b.x - p.x, b.z - p.z) < b.radiusZ + 3);
-        if (Math.min(...banks) > 1.5 && !bog) trenches.push(`${track.def.id}@${s}`);
+        // (The knoll's bog trench is a trench by design: crebKnoll.test.ts checks its walls.)
+        if (Math.min(...banks) > 1.5 && !bog && track.def.id !== 'knoll-bog-trench')
+          trenches.push(`${track.def.id}@${s}`);
       }
     }
     expect(trenches).toEqual([]);
@@ -415,7 +417,8 @@ describe('Episode 1: the CREB Track', () => {
         expect(ring, b.id).toBeGreaterThan(world.terrain.heightAt(b.x, b.z));
       }
     }
-    for (const b of world.map.bogs) {
+    // (The knoll play area's shallow mud hole below the drop is a splash, not a winch bog.)
+    for (const b of world.map.bogs.filter((b) => b.id !== 'knoll-drop-mud')) {
       expect(b.deep, b.id).toBe(true);
       // Creek-bank bogs are sticky but shallower, so a locked crawl can just get through.
       expect(b.depth, b.id).toBeGreaterThan(b.id.includes('-creek-') ? 0.3 : 0.6);
