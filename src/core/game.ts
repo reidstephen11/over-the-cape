@@ -10,17 +10,7 @@ import { GhostGap, GhostRecorder, loadGhost, minSec, saveGhost, type GhostTrace 
 import { GhostView } from '../render/ghostView';
 import { strandedPose } from '../sim/stranded';
 import {
-  Traffic,
-  createTrafficBody,
-  placeTrafficBody,
-  type OncomingCar,
-  trafficPlans,
-  type TrafficEvent,
-} from '../sim/traffic';
-import { poseOf, snapshotPose, type PosedBody } from '../sim/bodyPose';
-import {
   clockTime,
-  episodeOrder,
   episodes,
   type EpisodeDef,
   type EpisodeId,
@@ -54,27 +44,16 @@ import type { Autopilot } from '../sim/input/autopilot';
 import type { VehicleInput } from '../sim/input/vehicleInput';
 import type { PoiDef } from '../sim/world/mapTypes';
 import { poiApproach } from '../sim/world/poiApproach';
-import { headingOf, v3 } from '../sim/vehicle/math';
-import { anchorPoint } from '../sim/tools/anchors';
+import { headingOf } from '../sim/vehicle/math';
 import { Exploration } from '../sim/exploration';
 import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
 import { RutsView } from '../render/ruts';
-import { TrailerView } from '../render/trailerView';
-import { CargoDrumView } from '../render/cargoDrumView';
-import { canCouple, trailers, type TrailerTuning } from '../data/trailers';
-import { trailerMessage } from './trailerMessages';
-import {
-  applyCheckpoint,
-  checkpointAt,
-  deliveryArrived,
-  EpisodeRun,
-  startCheckpoint,
-  type Checkpoint,
-} from '../sim/episode';
-import { planDuration, planSurprises } from '../sim/world/surprisePlan';
-import { surpriseMessage } from './surpriseMessages';
+import type { TrailerTuning } from '../data/trailers';
+import { hitchSupplyTrailer, supplyDelivered } from '../sim/supplyRun';
+import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
+import { planSurprises } from '../sim/world/surprisePlan';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
 import { CrawlRuns, type CrawlBests, type CrawlRunEvent } from '../sim/crawlRuns';
 import { GateCount, footprintSize, type GateEvent } from '../sim/gateCount';
@@ -91,7 +70,6 @@ import { TouchControls, isTouchDevice } from '../ui/touchControls';
 import { touchTuning } from '../data/touch';
 import { PaperMap } from '../ui/paperMap';
 import { Fade, PauseMenu, showGearboxSetting, type PauseStatusCell } from '../ui/menus';
-import { controllers } from '../data/controllers';
 import { HistoryCard, ResultCard, type ResultButton } from '../ui/episodeCards';
 import { FreeCamera } from '../debug/freeCamera';
 import { DebugOverlay } from '../debug/overlay';
@@ -100,11 +78,14 @@ import { DevPanel } from '../debug/devPanel';
 import { AudioSystem } from '../audio/audioSystem';
 import { buildAudioFrame } from '../audio/frame';
 import { GameLoop } from './loop';
+import { wireSimFeedback } from './simFeedback';
+import { TrafficCars } from './trafficCars';
+import { AnchorPicker } from './anchorPicker';
+import { DeliveryViews } from './deliveryViews';
 import { ToolController } from './toolController';
 import { pendingUpdate } from './update';
-import { buildHudState, CourseHintCache } from './hudState';
+import { buildHudState, CourseHintCache, episodeHud } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
-import { damageMessage } from './damageMessages';
 import { installHook } from './testHook';
 import { Bench } from '../debug/bench';
 import { sectionTargetsMet, supplyRun, vehicleChallenges, type LockedVehicleId } from '../data/unlocks';
@@ -155,9 +136,8 @@ export class Game {
   readonly freeCam: FreeCamera;
   readonly chase: ChaseCamera;
   private readonly cameraDrag: CameraDrag;
-  private tapStart: { id: number; x: number; y: number; t: number } | null = null;
-  private readonly tapVec = new THREE.Vector3();
-  private readonly anchorTmp = v3();
+  /** Winch anchors in reach, the chooser on USE, and a tap on one to pick it. */
+  private readonly anchors: AnchorPicker;
   readonly overlay: DebugOverlay | null;
   private readonly debugTools: DebugTools | null;
   /** Test mode (`?dev`): weather, clock, place and vehicle set by hand; nothing is saved. */
@@ -170,11 +150,8 @@ export class Game {
   model: VehicleModel;
   /** Other people's bogged vehicles, as drawn. */
   private readonly stuckViews: StuckVehicleView[] = [];
-  /** The trailers drawn, by trailer id. */
-  private readonly trailerViews = new Map<string, TrailerView>();
-  private readonly drumViews = new Map<string, CargoDrumView>();
-  /** Seconds before the HUD can say again that the stockman is still bogged. */
-  private rescueNag = 0;
+  /** The trailers and loose drums drawn (the supply run, test mode's hitch). */
+  private readonly delivery: DeliveryViews;
   /** Which vehicle the player drives (saved). */
   vehicleId: VehicleId;
   /** The episode being played, and this run of it: clock, mission and how it ends. */
@@ -214,9 +191,8 @@ export class Game {
   private ghostGap: GhostGap | null = null;
   /** Seconds behind the ghost (negative: ahead). */
   private ghostBehind = 0;
-  readonly traffic: Traffic;
-  private readonly trafficCars = new Map<OncomingCar, { car: PosedBody; view: StuckVehicleView }>();
-  private readonly trafficLooks = new Map<string, VehicleId>();
+  /** Cars coming the other way on a narrow track, as simulated and drawn. */
+  private readonly trafficCars: TrafficCars;
   private churnNoted = false;
   private readonly ruts: RutsView;
   /** Stranded drivers winched out so far this run. */
@@ -254,9 +230,6 @@ export class Game {
   private readonly inputs = new Map<string, VehicleInput>();
   private frameCount = 0;
   private clock = 0;
-  private anchorCheck = 0;
-  private anchorInReach = false;
-  private anchorCount = 0;
   /** Layout checks: keep the swept and flooded warnings up, then put the car back. */
   private pinnedHazards: { swept?: boolean; flooded?: boolean } | null = null;
   private hazardSnapshot: {
@@ -315,8 +288,14 @@ export class Game {
       timedSections(setup.def.timedSections ?? [], world.features.tracks),
       setup.progress[setup.def.id]?.sectionBests ?? {},
     );
-    for (const t of setup.def.traffic ?? []) this.trafficLooks.set(t.name, t.look);
-    this.traffic = new Traffic(trafficPlans(setup.def.traffic ?? [], world.features.tracks));
+    this.trafficCars = new TrafficCars(
+      setup.def.traffic,
+      world.features.tracks,
+      sim,
+      view.scene,
+      (x, z) => world.terrain.heightAt(x, z),
+      (text, ms) => this.hud.toast(text, ms),
+    );
     this.gateCount = new GateCount(world.features.gates);
     this.input = new InputManager(window);
     this.input.setSteering(tuning.steering);
@@ -330,22 +309,26 @@ export class Game {
     sim.fuelScale = setup.def.fuelScale;
     applyCheckpoint(this.vehicle, this.checkpoint);
     if (this.checkpoint.delivery) sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
-    else if (this.episode.delivery || this.checkpoint.supply) {
-      const kind = tuning.hitch ? 'no5' : 'box6x4';
-      const trailer = sim.addTrailer('delivery', trailers[kind], LOCAL_VEHICLE);
-      trailer.loadDrums(this.episode.delivery?.drums ?? supplyRun.drums);
+    else if (this.checkpoint.supply) {
+      hitchSupplyTrailer(sim, tuning, LOCAL_VEHICLE);
       this.checkpoint.delivery = sim.deliveryState();
     }
-    this.syncDeliveryViews();
+    this.delivery = new DeliveryViews(
+      sim,
+      view.scene,
+      LOCAL_VEHICLE,
+      () => this.vehicle,
+      (text, ms) => this.hud.toast(text, ms),
+    );
+    this.delivery.sync();
 
     // Arriving at dusk or night, the headlights are already on.
     if (sim.env.lampBeams) this.vehicle.lights = 'low';
     this.model = new VehicleModel(tuning, sim.env.lampBeams);
     view.scene.add(this.model.root);
     this.finds = new Finds(world.map.finds ?? [], this.checkpoint.taken);
-    const rescue = setup.def.rescue;
     for (const s of sim.stuck.values()) {
-      const look = setup.def.stranded?.find((d) => d.id === s.def.id)?.look ?? rescue?.look ?? 'shortie';
+      const look = setup.def.stranded?.find((d) => d.id === s.def.id)?.look ?? 'shortie';
       const drawn = new StuckVehicleView(s, vehicles[look].tuning);
       drawn.model.root.name = `stuck-${s.def.id}`;
       this.stuckViews.push(drawn);
@@ -475,119 +458,15 @@ export class Game {
     });
 
     sim.events.on('tool', ({ event }) => this.onToolEvent(event));
-    sim.events.on('surprise', (e) => {
-      this.hud.toast(surpriseMessage(e), e.phase === 'started' ? 2600 : 4200);
-      if (e.phase !== 'started') return;
-      const plan = sim.surprises?.plans.find((p) => p.id === e.id);
-      this.audio.surprise(e.kind, plan ? planDuration(plan) : 2);
-    });
-    sim.events.on('trailer', (e) => {
-      const text = trailerMessage(e.event);
-      if (text) this.hud.toast(text, 2600);
-      if (
-        e.event.type === 'hitched' ||
-        e.event.type === 'unhitched' ||
-        e.event.type === 'jackknifed' ||
-        e.event.type === 'tipped'
-      )
-        this.audio.trailerEvent(e.event.type, sim.trailers.get(e.id)?.drums ?? 0);
-    });
-    sim.events.on(
-      'trailerBump',
-      (e) =>
-        e.vehicle === LOCAL_VEHICLE && this.audio.trailerBump(e.speed, sim.trailers.get(e.id)?.drums ?? 0),
-    );
     sim.events.on('rescued', ({ id }) => {
       const stranded = this.episode.stranded?.find((d) => d.id === id);
-      if (stranded) {
-        this.onStrandedFreed(stranded);
-        return;
-      }
-      this.run.rescued = true;
-      const r = this.episode.rescue;
-      if (r) {
-        this.hud.toast(`${r.name}: out of the bog`, 2600);
-        this.showHistory(r.freed);
-      }
-      this.audio.discovery();
+      if (stranded) this.onStrandedFreed(stranded);
     });
-    sim.events.on('rangeChanged', ({ range }) => {
-      this.hud.toast(range === 'low' ? 'Low range' : 'High range', 1400);
-      this.audio.drivetrainClunk('range');
+    wireSimFeedback(sim, this.hud, this.audio, {
+      vehicleId: LOCAL_VEHICLE,
+      vehicle: () => this.vehicle,
+      controller: () => this.settings.controller,
     });
-    sim.events.on('engine', ({ id, event }) => {
-      if (id !== LOCAL_VEHICLE) return;
-      if (event === 'outOfFuel') {
-        this.hud.toast(
-          this.vehicle.condition.jerryCans > 0
-            ? 'Out of fuel — pour in a jerry can from the tool menu'
-            : 'Out of fuel',
-          3600,
-        );
-        this.audio.engineEvent('stalled');
-        return;
-      }
-      if (event === 'clutchToStart') {
-        this.hud.toast('Clutch in or neutral to start', 2400);
-        return;
-      }
-      if (event === 'stalledLugged') {
-        this.hud.toast(`Stalled: press ${controllers[this.settings.controller].accelerate} to restart`, 3200);
-        this.audio.engineEvent('stalled');
-        return;
-      }
-      if (event !== 'starting')
-        this.hud.toast(event === 'stalled' ? 'Engine stalled — flooded' : 'Engine restarted');
-      this.audio.engineEvent(event);
-    });
-    sim.events.on('diffChanged', ({ axle, locked }) => {
-      this.hud.toast(
-        `${axle === 'front' ? 'Front' : 'Rear'} differential ${locked ? 'locked' : 'open'}`,
-        1600,
-      );
-      this.audio.drivetrainClunk(locked ? 'lockOn' : 'lockOff');
-    });
-    sim.events.on('parkBrakeChanged', ({ id, on }) => {
-      if (id !== LOCAL_VEHICLE) return;
-      this.hud.toast(on ? 'Handbrake on' : 'Handbrake off', 1200);
-      this.audio.parkBrake(on);
-    });
-    sim.events.on('lightsChanged', ({ id, mode }) => {
-      if (id !== LOCAL_VEHICLE) return;
-      this.hud.toast(
-        { off: 'Headlights off', low: 'Headlights: low beam', high: 'Headlights: high beam' }[mode],
-        1200,
-      );
-      this.audio.lightSwitch(mode === 'high');
-    });
-    sim.events.on('damage', (e) => {
-      if (e.id !== LOCAL_VEHICLE) return;
-      this.hud.toast(damageMessage(e, this.vehicle.tuning, this.sim.damage), 3200);
-      this.audio.damage(e.part, e.part === 'engine' && e.health <= 0);
-    });
-    sim.events.on('repaired', ({ id, kind }) => {
-      if (id !== LOCAL_VEHICLE) return;
-      const c = this.vehicle.condition;
-      this.hud.toast(
-        {
-          field: 'Field repair done',
-          spare: `Spare fitted (${c.spares} left)`,
-          plug: `Tyre plugged (${c.plugs} plug${c.plugs === 1 ? '' : 's'} left)`,
-          refuel: `20 L in the tank (${c.jerryCans} can${c.jerryCans === 1 ? '' : 's'} left)`,
-          camp: 'Repaired at camp',
-          pump: 'Tyres pumped back up for the gravel',
-        }[kind],
-        2000,
-      );
-      this.audio.drivetrainClunk('range');
-    });
-    sim.events.on('diffBlocked', () => this.hud.toast('Slow below 5 km/h to engage diff locks'));
-    sim.events.on('precisionChanged', ({ enabled }) =>
-      this.hud.toast(enabled ? 'Precision crawl — hold throttle for walking pace' : 'Precision crawl off'),
-    );
-    sim.events.on('wheelImpact', ({ id, speed }) => id === LOCAL_VEHICLE && this.audio.wheelImpact(speed));
-    sim.events.on('dent', ({ id, impact }) => id === LOCAL_VEHICLE && this.audio.dent(impact));
-    sim.events.on('bodyKnock', ({ id, impulse }) => id === LOCAL_VEHICLE && this.audio.bodyKnock(impulse));
 
     this.loop = new GameLoop({
       step: (dt) => this.step(dt),
@@ -609,16 +488,15 @@ export class Game {
     // Touching the view brings the touch controls back after a key or gamepad hid them.
     view.renderer.domElement.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'touch') this.input.usePointer('touch');
-      this.tapStart = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() };
     });
-    // A short tap that didn't drag the camera picks a winch anchor while choosing one.
-    view.renderer.domElement.addEventListener('pointerup', (e) => {
-      const s = this.tapStart;
-      this.tapStart = null;
-      if (!s || s.id !== e.pointerId || performance.now() - s.t > 500) return;
-      if (Math.hypot(e.clientX - s.x, e.clientY - s.y) > 12) return;
-      this.tapAnchor(e.clientX, e.clientY, e.pointerType === 'touch');
-    });
+    this.anchors = new AnchorPicker(
+      sim,
+      this.tool,
+      LOCAL_VEHICLE,
+      () => this.vehicle,
+      view.camera,
+      view.renderer.domElement,
+    );
     installHook(this);
     // Draw the paper map in the background so the first open is instant.
     setTimeout(() => void this.map.prepare(), 2500);
@@ -714,8 +592,6 @@ export class Game {
     // This run's surprises, from its seed: the same ones again after a restart from camp.
     if (def.surprises && params.get('surprises') !== 'off')
       sim.addSurprises(planSurprises(world, def.surprises, checkpoint.seed), checkpoint.surprises);
-    // Someone bogged on the way, still waiting unless they were out by the camp.
-    if (def.rescue) sim.addStuckVehicle(def.rescue, checkpoint.rescued);
     for (const d of def.stranded ?? []) {
       const track = world.map.tracks.find((t) => t.id === d.track);
       const points = track?.points.map(([x, z]) => [x, z] as const);
@@ -807,17 +683,17 @@ export class Game {
     this.save();
   }
 
-  /** Save, with the welcome screen to open on `episode` (this one unless given). */
-  save(episode: EpisodeId = this.episode.id): boolean {
+  /** Save, with the welcome screen to open on this episode. */
+  save(): boolean {
     // Test mode leaves the real save alone.
     if (this.dev) return true;
     const ok = writeSave({
       version: 1,
       settings: this.settings,
       vehicle: this.vehicleId,
-      episode,
+      episode: this.episode.id,
       episodes: this.progress,
-      replay: episode === this.episode.id ? this.replay : null,
+      replay: this.replay,
       crawlBests: this.crawlRuns.bests,
       packs: this.packs,
       unlocked: this.unlocked,
@@ -1018,15 +894,10 @@ export class Game {
       this.sim.surprises?.reset(this.checkpoint.surprises);
       this.strandedFreed = new Set(this.checkpoint.stranded);
       this.winched = this.checkpoint.winched === true;
-      for (const s of this.sim.stuck.values())
-        s.reset(
-          this.episode.stranded?.some((d) => d.id === s.def.id)
-            ? this.strandedFreed.has(s.def.id)
-            : this.checkpoint.rescued,
-        );
+      for (const s of this.sim.stuck.values()) s.reset(this.strandedFreed.has(s.def.id));
       applyCheckpoint(this.vehicle, this.checkpoint);
       if (this.checkpoint.delivery) this.sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
-      this.syncDeliveryViews();
+      this.delivery.sync();
       // What was taken after the camp is back where it was found.
       this.finds.reset(this.checkpoint.taken);
       this.findMarkers.show(this.finds.defs, this.finds.taken);
@@ -1035,7 +906,7 @@ export class Game {
       this.exploration.reset(this.checkpoint.discovered);
       this.exploration.lastCampsite = this.checkpoint.camp;
       this.sectionTimes.reset();
-      this.clearTraffic();
+      this.trafficCars.clear();
       this.seen = this.seenFrom(this.checkpoint, this.world);
       this.run.restart(this.checkpoint);
       this.ghostRecorder.rewind(this.checkpoint.elapsed);
@@ -1050,12 +921,9 @@ export class Game {
     this.sim.switchOffEngine(LOCAL_VEHICLE);
   }
 
-  /**
-   * Back to the welcome screen: save and reload without starting, on `episode` (the next one,
-   * after finishing) or this one.
-   */
-  async toMainMenu(episode: EpisodeId = this.episode.id): Promise<void> {
-    this.save(episode);
+  /** Back to the welcome screen: save and reload without starting. */
+  async toMainMenu(): Promise<void> {
+    this.save();
     await this.fade.run(() => {
       this.loop.paused = true;
       location.reload();
@@ -1104,75 +972,9 @@ export class Game {
     this.save();
   }
 
-  /**
-   * Test mode: hitch a trailer behind the car (the box trailer, or the Army's No. 5 behind a
-   * vehicle with a pintle hook), with this many 200 L drums of diesel in it, or take the
-   * trailer away (null).
-   */
+  /** Test mode: hitch a trailer with this many drums behind the car, or take it away (null). */
   devTrailer(drums: number | null, kind: TrailerTuning['id'] = 'box6x4'): void {
-    const tuning = trailers[kind];
-    if (drums !== null && !canCouple(tuning, this.vehicle.tuning)) {
-      this.hud.toast(`The ${tuning.name}'s ring needs a pintle hook: the Land Rover or the Unimog`, 3000);
-      return;
-    }
-    for (const id of [...this.sim.trailers.keys()]) {
-      this.sim.removeTrailer(id);
-      const view = this.trailerViews.get(id);
-      if (view) {
-        this.view.scene.remove(view.root);
-        view.dispose();
-      }
-      this.trailerViews.delete(id);
-    }
-    if (drums === null) return;
-    const t = this.sim.addTrailer(kind, tuning, LOCAL_VEHICLE);
-    t.loadDrums(drums);
-    const view = new TrailerView(t);
-    view.setDrums(t.drums);
-    this.trailerViews.set(t.id, view);
-    this.view.scene.add(view.root);
-  }
-
-  /** Spilled drums and restored trailers get their own views; retired physics bodies lose theirs. */
-  private syncDeliveryViews(): void {
-    for (const [id, view] of this.trailerViews) {
-      if (view.trailer === this.sim.trailers.get(id)) continue;
-      this.view.scene.remove(view.root);
-      view.dispose();
-      this.trailerViews.delete(id);
-    }
-    for (const [id, t] of this.sim.trailers) {
-      if (this.trailerViews.has(id)) continue;
-      const view = new TrailerView(t);
-      this.trailerViews.set(id, view);
-      this.view.scene.add(view.root);
-    }
-    for (const [id, view] of this.drumViews) {
-      if (view.drum === this.sim.looseDrums.get(id)) continue;
-      this.view.scene.remove(view.root);
-      view.dispose();
-      this.drumViews.delete(id);
-    }
-    for (const [id, d] of this.sim.looseDrums) {
-      if (this.drumViews.has(id)) continue;
-      const view = new CargoDrumView(d);
-      this.drumViews.set(id, view);
-      this.view.scene.add(view.root);
-    }
-  }
-
-  /** The nearest trailer standing unhitched, while the car isn't towing one: how far back it is. */
-  private trailerLeft(): { distance: number; tipped: boolean } | null {
-    if (this.sim.trailerOf(LOCAL_VEHICLE)) return null;
-    const p = this.vehicle.body.translation();
-    let best: { distance: number; tipped: boolean } | null = null;
-    for (const t of this.sim.trailers.values()) {
-      if (t.hitchedTo) continue;
-      const q = t.body.translation();
-      const distance = Math.hypot(q.x - p.x, q.z - p.z);
-      if (!best || distance < best.distance) best = { distance, tipped: t.tipped };
-    }
-    return best;
+    this.delivery.devTrailer(drums, kind);
   }
 
   teleportToPoi(p: PoiDef): void {
@@ -1252,7 +1054,7 @@ export class Game {
       ...trailer,
       t.winch.attached
         ? { id: 'detach', label: 'Detach winch', icon: 'detach', enabled: true }
-        : { id: 'winch', label: 'Winch', icon: 'winch', enabled: this.anchorInReach },
+        : { id: 'winch', label: 'Winch', icon: 'winch', enabled: this.anchors.inReach },
       {
         id: 'frontDiff',
         label: v.differentials.front ? 'Unlock front diff' : 'Lock front diff',
@@ -1479,13 +1281,8 @@ export class Game {
     this.save();
     this.audio.discovery();
     this.loop.paused = true;
-    const next = episodeOrder[episodeOrder.indexOf(this.episode.id) + 1];
     const buttons: ResultButton[] = [
-      {
-        id: 'menu',
-        label: next ? 'Next episode' : 'Main menu',
-        note: next ? episodes[next].title : 'Episodes',
-      },
+      { id: 'menu', label: 'Main menu', note: 'Episodes' },
       { id: 'drive', label: 'Keep driving', note: 'Look around the map' },
     ];
     this.result.open(
@@ -1496,7 +1293,7 @@ export class Game {
       [...scoreLines, ...this.runStats()],
       buttons,
       (id) => {
-        if (id === 'menu') void this.toMainMenu(next);
+        if (id === 'menu') void this.toMainMenu();
         else this.loop.paused = this.pause.isOpen || this.map.isOpen;
       },
     );
@@ -1559,38 +1356,6 @@ export class Game {
     );
   }
 
-  /** Open the anchor chooser for a USE press, when there is a choice to make. */
-  private offerAnchorChoice(): boolean {
-    const t = this.sim.toolsOf(LOCAL_VEHICLE);
-    if (t.winch.attached || t.planks.inReach(this.vehicle).length > 0) return false;
-    if (this.sim.hitchOption(LOCAL_VEHICLE)?.kind === 'hitch') return false;
-    if (this.sim.findAnchors(LOCAL_VEHICLE).length < 2) return false;
-    return this.tool.startWinchTarget();
-  }
-
-  /** A tap or click on the view while choosing an anchor: pick the one under it. */
-  private tapAnchor(clientX: number, clientY: number, touch: boolean): void {
-    const list = this.sim.toolsOf(LOCAL_VEHICLE).targeting;
-    if (this.tool.mode !== 'winchTarget' || !list) return;
-    const rect = this.view.renderer.domElement.getBoundingClientRect();
-    const reach = touch ? 64 : 40;
-    let best = -1;
-    let bestD = reach;
-    list.forEach((a, i) => {
-      const p = anchorPoint(a, this.anchorTmp);
-      this.tapVec.set(p.x, p.y + 0.3, p.z).project(this.view.camera);
-      if (this.tapVec.z > 1) return;
-      const x = rect.left + ((this.tapVec.x + 1) / 2) * rect.width;
-      const y = rect.top + ((1 - this.tapVec.y) / 2) * rect.height;
-      const d = Math.hypot(x - clientX, y - clientY);
-      if (d < bestD) {
-        bestD = d;
-        best = i;
-      }
-    });
-    if (best >= 0) this.tool.pick(best);
-  }
-
   cameraHeading(): number {
     this.view.camera.getWorldDirection(this.camDir);
     return headingOf(this.camDir.x, this.camDir.z);
@@ -1602,7 +1367,12 @@ export class Game {
     const inp = this.input.vehicleInput(dt);
     // USE / E with two or more anchors in reach opens the chooser instead of hooking the
     // best one straight away (v1.18). Planks and a trailer to hitch still come first.
-    if (inp.winchAttach && this.tool.mode === 'drive' && !this.toolMenu.isOpen && this.offerAnchorChoice()) {
+    if (
+      inp.winchAttach &&
+      this.tool.mode === 'drive' &&
+      !this.toolMenu.isOpen &&
+      this.anchors.offerChoice()
+    ) {
       inp.winchAttach = false;
       inp.interact = false;
     }
@@ -1621,7 +1391,7 @@ export class Game {
       inp.togglePrecision = false;
     }
     this.inputs.set(LOCAL_VEHICLE, inp);
-    for (const { car } of this.trafficCars.values()) snapshotPose(car);
+    this.trafficCars.snapshot();
     this.sim.step(this.inputs, dt);
     this.run.tick(dt);
     // History notes count down in simulated time: not while paused, and the same in the
@@ -1673,31 +1443,10 @@ export class Game {
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();
     if (this.checkpoint.supply && !this.unlocked.includes('perentie')) {
-      const camp = this.world.pois.find((q) => q.id === supplyRun.goal);
-      if (camp && [...this.sim.trailers.values()].some((t) => deliveryArrived(t, camp, supplyRun.drums)))
-        this.unlock('perentie');
+      if (supplyDelivered(this.sim.trailers.values(), this.world.pois)) this.unlock('perentie');
     }
     const goal = this.world.pois.find((q) => q.id === this.episode.goal);
-    const status = goal
-      ? this.run.check(this.vehicle, this.sim.damage, goal, this.sim.trailers.values())
-      : null;
-    // At the goal with the stockman still bogged: the job isn't done.
-    this.rescueNag -= dt;
-    if (
-      goal &&
-      (!this.run.rescued || !!this.episode.delivery) &&
-      this.run.status === 'driving' &&
-      this.rescueNag <= 0 &&
-      Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius
-    ) {
-      this.rescueNag = 8;
-      this.hud.toast(
-        this.episode.delivery
-          ? 'Park the upright trailer here with both drums aboard to make the delivery'
-          : 'Not without the stockman: go back and winch him out',
-        3000,
-      );
-    }
+    const status = goal ? this.run.check(this.vehicle, this.sim.damage, goal) : null;
     if (status === 'complete') this.onComplete();
     else if (status === 'failed') this.onFailed();
     const v = this.vehicle;
@@ -1712,13 +1461,12 @@ export class Game {
     if (run) this.onCrawlRun(run);
     const section = this.sectionTimes.update(p.x, p.z, dt);
     if (section) this.onSectionTime(section);
-    for (const e of this.traffic.update(dt, p)) this.onTraffic(e);
+    this.trafficCars.update(dt, p);
     if (!this.churnNoted && this.sim.churn.peak > 0.5) {
       this.churnNoted = true;
       this.hud.toast('The ground is cutting up under the wheels: spinning here makes it slipperier', 3200);
     }
-    for (const [plan, { car }] of this.trafficCars)
-      placeTrafficBody(car.body, plan, (x, z) => this.world.terrain.heightAt(x, z), false);
+    this.trafficCars.place();
     if (this.gateCount.total) {
       const f = v.forward();
       const flat = Math.hypot(f.x, f.z) || 1;
@@ -1778,38 +1526,6 @@ export class Game {
       this.audio.discovery();
     }
     return [`Unlocked: ${name}`];
-  }
-
-  private onTraffic(e: TrafficEvent): void {
-    const { car } = e;
-    if (e.type === 'spawned') {
-      const body = createTrafficBody(this.sim.R, this.sim.physics);
-      placeTrafficBody(body, car, (x, z) => this.world.terrain.heightAt(x, z), true);
-      const posed: PosedBody = { body, ...poseOf(body) };
-      const view = new StuckVehicleView(posed, vehicles[this.trafficLooks.get(car.name) ?? 'troopy'].tuning);
-      view.model.root.name = 'traffic';
-      this.view.scene.add(view.model.root);
-      this.trafficCars.set(car, { car: posed, view });
-      this.hud.toast(`${car.name} is coming the other way on this narrow track`, 3000);
-    } else if (e.type === 'waiting') {
-      this.hud.toast(`${car.name} has stopped for you: pull off to one side to let it past`, 3000);
-    } else if (e.type === 'moving' && car.s > 1) {
-      this.hud.toast(`${car.name} squeezes past with a wave`, 2200);
-    } else if (e.type === 'gone') this.removeTrafficCar(car);
-  }
-
-  private removeTrafficCar(car: OncomingCar): void {
-    const drawn = this.trafficCars.get(car);
-    if (!drawn) return;
-    this.sim.physics.world.removeRigidBody(drawn.car.body);
-    this.view.scene.remove(drawn.view.model.root);
-    this.trafficCars.delete(car);
-  }
-
-  /** Every oncoming car off the road and out of the scene, and the tracks ready to send one again. */
-  private clearTraffic(): void {
-    for (const car of [...this.trafficCars.keys()]) this.removeTrafficCar(car);
-    this.traffic.reset();
   }
 
   private onSectionTime(t: SectionTime): void {
@@ -1972,23 +1688,17 @@ export class Game {
     );
     const v = this.vehicle;
     const tools = this.sim.toolsOf(LOCAL_VEHICLE);
-    this.anchorCheck -= frameDt;
-    if (this.anchorCheck <= 0) {
-      this.anchorCheck = 0.4;
-      this.anchorCount = this.sim.findAnchors(LOCAL_VEHICLE).length;
-      this.anchorInReach = this.anchorCount > 0;
-    }
+    this.anchors.update(frameDt);
     // Everything with a physics body is drawn part way between the last two steps, so it
     // all glides with the car and the camera (paused, it stands where it is).
     const between = this.loop.paused ? 1 : alpha;
     this.model.update(v, between, frameDt);
-    this.syncDeliveryViews();
+    this.delivery.sync();
     for (const s of this.stuckViews) s.update(between);
-    for (const { view } of this.trafficCars.values()) view.update(between);
+    this.trafficCars.render(between);
     this.ghost?.update(this.run.elapsed);
     this.ruts.update(frameDt);
-    for (const t of this.trailerViews.values()) t.update(between);
-    for (const d of this.drumViews.values()) d.update(between);
+    this.delivery.render(between);
     this.model.applyCondition(v.condition);
     this.model.setPlanksOnRack(tools.planks.carried);
     this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock, between);
@@ -2054,8 +1764,8 @@ export class Game {
         tracks: this.world.features.tracks,
         trackDistanceAt: this.trackDistanceAt,
         hintCache: this.hintCache,
-        anchorInReach: this.anchorInReach,
-        anchorCount: this.anchorCount,
+        anchorInReach: this.anchors.inReach,
+        anchorCount: this.anchors.count,
         run: this.crawlRuns.run,
         gates: this.gateCount.total ? this.gateCount : null,
         repair: this.sim.repairOption(LOCAL_VEHICLE),
@@ -2063,24 +1773,8 @@ export class Game {
         find: this.findNearby(),
         hitch: this.sim.hitchOption(LOCAL_VEHICLE),
         trailer: this.sim.trailerOf(LOCAL_VEHICLE),
-        trailerLeft: this.trailerLeft(),
-        episode: {
-          title: `Episode ${this.episode.number} · ${this.episode.title}`,
-          mission: this.run.missionLine(),
-          clock: this.run.timed ? clockTime(this.run.hour) : '',
-          deadline: !Number.isFinite(this.run.hoursLeft())
-            ? ''
-            : this.run.hoursLeft() <= 0 && this.episode.deadline?.graceHours
-              ? `Dark · by ${clockTime(this.episode.deadline.hour + this.episode.deadline.graceHours)}`
-              : (this.episode.deadline?.label ?? ''),
-          urgent: this.run.hoursLeft() < 0.5,
-          hour: this.run.timed ? this.run.hour : null,
-          darkHour: this.run.timed ? (this.episode.deadline?.hour ?? null) : null,
-          finishHour:
-            this.run.timed && this.episode.deadline
-              ? this.episode.deadline.hour + (this.episode.deadline.graceHours ?? 0)
-              : null,
-        },
+        trailerLeft: this.delivery.trailerLeft(),
+        episode: episodeHud(this.run, this.episode),
         supplies: true,
       }),
     );

@@ -4,7 +4,6 @@ import type { Weather } from './environment';
 import type { WeatherTimeline } from './weatherTimeline';
 import { crebEpisode } from './episodes/creb';
 import type { SurpriseSetDef } from '../sim/world/surprisePlan';
-import type { StuckVehicleDef } from '../sim/stuckVehicle';
 import type { StrandedDef } from '../sim/stranded';
 import type { VehicleId } from './vehicle';
 
@@ -25,19 +24,6 @@ export interface EpisodeLoadout {
   spares: number;
   /** Tyre plugs in the repair kit. */
   plugs: number;
-}
-
-/**
- * Someone bogged on the way, to winch out before the episode can be finished: their
- * vehicle (src/sim/stuckVehicle.ts), how it looks, and what they say once they're free.
- */
-export interface RescueDef extends StuckVehicleDef {
-  /** Which of the game's vehicles it is drawn as. */
-  look: VehicleId;
-  /** The HUD's mission line until they are out. */
-  mission: string;
-  /** Shown as they come free. */
-  freed: { title: string; text: string };
 }
 
 /** Someone bogged off the track who'll give you something for winching them out (src/sim/stranded.ts). */
@@ -83,12 +69,6 @@ export interface EpisodeDef {
   traffic?: readonly { track: string; name: string; look: VehicleId }[];
   /** Drivers bogged off the track who don't have to be helped, but pay in kit if they are. */
   stranded?: readonly StrandedDriverDef[];
-  /** Someone to winch out of a bog on the way: the goal doesn't count until they're free. */
-  rescue?: RescueDef;
-  /** Park an upright trailer at the goal with this many delivery drums still aboard. */
-  delivery?: { drums: number };
-  /** The HUD's mission line once the rescue and the deadline are behind (the mission when absent). */
-  lastLeg?: string;
   /** Game seconds per real second while driving. */
   clockRate: number;
   /** Fuel burnt per litre the engine really uses (the map shortens the distance). */

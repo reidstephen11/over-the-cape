@@ -19,6 +19,8 @@ import { penaltyPoints, type CrawlRun } from '../sim/crawlRuns';
 import { rotate } from '../sim/vehicle/math';
 import type { ToolMode } from './toolController';
 import { isDamaged } from '../sim/vehicle/damage';
+import { clockTime, type EpisodeDef } from '../data/episodes';
+import type { EpisodeRun } from '../sim/episode';
 
 export interface HudInputs {
   vehicle: Vehicle;
@@ -67,6 +69,32 @@ export interface HudInputs {
     | null;
   /** Not towing: the nearest trailer standing unhitched, how far away (m) and whether it's over. */
   trailerLeft?: { distance: number; tipped: boolean } | null;
+}
+
+/**
+ * The HUD's episode block: the title and mission, the clock, the deadline line (the grace
+ * time once it is dark) and the hours the clock dial marks (moved out of `Game`, v1.52).
+ */
+export function episodeHud(
+  run: Pick<EpisodeRun, 'missionLine' | 'timed' | 'hour' | 'hoursLeft'>,
+  episode: Pick<EpisodeDef, 'number' | 'title' | 'deadline'>,
+): EpisodeHud {
+  const left = run.hoursLeft();
+  const d = episode.deadline;
+  return {
+    title: `Episode ${episode.number} · ${episode.title}`,
+    mission: run.missionLine(),
+    clock: run.timed ? clockTime(run.hour) : '',
+    deadline: !Number.isFinite(left)
+      ? ''
+      : left <= 0 && d?.graceHours
+        ? `Dark · by ${clockTime(d.hour + d.graceHours)}`
+        : (d?.label ?? ''),
+    urgent: left < 0.5,
+    hour: run.timed ? run.hour : null,
+    darkHour: run.timed ? (d?.hour ?? null) : null,
+    finishHour: run.timed && d ? d.hour + (d.graceHours ?? 0) : null,
+  };
 }
 
 /** The HUD's trailer line: what's on the back and how it's going, or where it was left. */

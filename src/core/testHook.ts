@@ -155,7 +155,6 @@ export interface GameHook {
     elapsed: number;
     camp: string;
     replay: { time: string; weather: string } | null;
-    rescued: boolean;
     mission: string;
   };
   /** Set the clock (hours); the light follows. */
@@ -407,7 +406,6 @@ export function installHook(game: Game): void {
       elapsed: g.run.elapsed,
       camp: g.checkpoint.camp,
       replay: g.replay,
-      rescued: g.run.rescued,
       mission: g.run.missionLine(),
     }),
     finds: () => [...g.finds.taken],

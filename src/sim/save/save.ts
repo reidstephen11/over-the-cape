@@ -200,8 +200,7 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     // Saves from before surprises: any fixed seed keeps a restart the same as the run.
     seed: Math.max(1, Math.floor(Math.abs(num(c.seed, 1)))),
     surprises: strings(c.surprises),
-    // Saves from before rescues: nobody had been pulled out.
-    rescued: c.rescued === true,
+    // `rescued` (the stockman of the removed Episode 3) is ignored in older saves.
     ...(Array.isArray(c.stranded) ? { stranded: strings(c.stranded) } : {}),
     ...(c.delivery ? { delivery: readDeliveryState(c.delivery) } : {}),
     ...(c.packed ? { packed: readLoad(c.packed) } : {}),

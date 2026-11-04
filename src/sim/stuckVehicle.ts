@@ -5,7 +5,7 @@ import { v3, type Quat, type Vec3 } from './vehicle/math';
 import { snapshotPose, type PosedBody } from './bodyPose';
 
 /**
- * Someone else's vehicle bogged to its axles, waiting for a winch (an episode's `rescue`).
+ * Someone else's vehicle bogged to its axles, waiting for a winch (an episode's `stranded` drivers).
  * It doesn't drive: it sits sunk in the mud until a winch line pulls on it harder than the
  * bog holds it, then comes out along the line, slowly, rising out of the mud as it comes.
  * Once it has come far enough it is free, and its driver keeps it where it stopped.

@@ -136,7 +136,7 @@ export class Simulation {
   readonly tools = new Map<string, VehicleTools>();
   /** This run's one-off events on the way (none unless the game adds them). */
   surprises: Surprises | null = null;
-  /** Other people's vehicles bogged and waiting for a winch (an episode's rescue), by id. */
+  /** Other people's vehicles bogged and waiting for a winch (an episode's stranded drivers), by id. */
   readonly stuck = new Map<string, StuckVehicle>();
   /** Clay and mud churned up by wheelspin over the run. */
   readonly churn = new ChurnMap();
