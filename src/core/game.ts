@@ -618,6 +618,15 @@ export class Game {
   }
 
   /**
+   * Start loading the physics engine (a 3 MB WebAssembly file) ahead of create(), from the
+   * title screen once this script has downloaded (v1.46). create() waits for the same load,
+   * and asks again if this one failed.
+   */
+  static preload(): void {
+    void loadRapier().catch(() => undefined);
+  }
+
+  /**
    * Load the chosen world and start. `audioContext` is created by the click that chose
    * it, so sound can start with the engine (browsers only allow that from a gesture).
    */
@@ -742,6 +751,18 @@ export class Game {
 
   get vehicle(): Vehicle {
     return this.sim.vehicles.get(LOCAL_VEHICLE) as Vehicle;
+  }
+
+  /**
+   * Pose the car and the camera as the first frame will, build the ground and trees round
+   * them, and compile every shader that frame needs, without blocking the page where the
+   * browser can compile in parallel (v1.46). The first frames after Drive then draw at once
+   * instead of stalling on dozens of shader compiles.
+   */
+  async precompile(): Promise<void> {
+    this.model.update(this.vehicle, 1, 0);
+    this.followVehicle(0);
+    await this.view.precompile();
   }
 
   start(): void {
@@ -1363,10 +1384,11 @@ export class Game {
     this.sim.setWeather(env, creekRise, flowScale);
     if (env.lampBeams === this.lampBeams) return;
     this.lampBeams = env.lampBeams;
-    this.view.scene.remove(this.model.root);
-    this.model.dispose();
-    this.model = new VehicleModel(this.vehicle.tuning, env.lampBeams);
-    this.view.scene.add(this.model.root);
+    // The same car gains (or loses) its beams' two spot lights, shown once every lit
+    // material's shader is ready for them (v1.46: dusk used to rebuild the car and stall).
+    const model = this.model;
+    const beams = model.setBeams(env.lampBeams);
+    if (beams) void this.view.showLights(beams.group, () => this.model === model && model.beams === beams);
     if (env.lampBeams && this.vehicle.lights === 'off') {
       this.vehicle.lights = 'low';
       this.hud.toast('Dusk — headlights on', 2200);
@@ -1958,21 +1980,7 @@ export class Game {
     this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock, between);
     this.view.particles.update(v, this.loop.paused ? 0 : frameDt);
     if (this.freeCamOn) this.freeCam.update(frameDt);
-    else if (!this.loop.paused) {
-      this.chase.toolView = this.tool.mode !== 'drive';
-      this.chase.towing = this.sim.trailerOf(LOCAL_VEHICLE) !== null;
-      const p = this.model.root.position;
-      this.tmpPos.copy(p);
-      const f = v.forward();
-      this.tmpFwd.set(f.x, f.y, f.z);
-      this.chase.update(frameDt, {
-        position: this.tmpPos,
-        forward: this.tmpFwd,
-        speed: v.speed,
-        slopeDeg: this.world.terrain.slopeDegAt(p.x, p.z),
-        rotation: this.model.root.quaternion,
-      });
-    }
+    else if (!this.loop.paused) this.followVehicle(frameDt);
     this.view.focus.copy(this.model.root.position);
     this.view.shelter.copy(this.model.root.matrixWorld);
     const t0 = performance.now();
@@ -2078,6 +2086,24 @@ export class Game {
     if (this.frameCount === 3 && window.__game) window.__game.ready = true;
     if (this.frameCount === 30 && new URLSearchParams(location.search).has('bench'))
       this.bench = new Bench(this);
+  }
+
+  /** The chase camera follows the car (each frame, and once before the first). */
+  private followVehicle(frameDt: number): void {
+    const v = this.vehicle;
+    this.chase.toolView = this.tool.mode !== 'drive';
+    this.chase.towing = this.sim.trailerOf(LOCAL_VEHICLE) !== null;
+    const p = this.model.root.position;
+    this.tmpPos.copy(p);
+    const f = v.forward();
+    this.tmpFwd.set(f.x, f.y, f.z);
+    this.chase.update(frameDt, {
+      position: this.tmpPos,
+      forward: this.tmpFwd,
+      speed: v.speed,
+      slopeDeg: this.world.terrain.slopeDegAt(p.x, p.z),
+      rotation: this.model.root.quaternion,
+    });
   }
 }
 

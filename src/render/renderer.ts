@@ -223,6 +223,53 @@ export class GameRenderer {
     this.particles.clear();
   }
 
+  /**
+   * Build the ground and trees round the camera and compile every shader the scene needs,
+   * in parallel where the browser offers it (KHR_parallel_shader_compile), so that the first
+   * frame after Drive does not stall on them (v1.46).
+   */
+  async precompile(): Promise<void> {
+    this.terrainMesh.update(this.camera.position, true);
+    this.vegetation.update(this.camera.position, 1);
+    this.props.update(1);
+    this.ruts.update(this.camera.position, 420);
+    this.lighting.follow(this.focus);
+    this.sky.update(this.camera);
+    this.firstFrame = false;
+    await this.renderer.compileAsync(this.scene, this.camera);
+    // One frame drawn under the loading screen: it links whatever a browser without the
+    // parallel compile left for first use, and the shadow map's own shaders.
+    this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Show `lights`, just added to the scene, without the stall of every lit material
+   * compiling again for the new number of lights (v1.46). The programs for the new count are
+   * compiled while the frames are still drawn without the lights (three.js counts only
+   * visible lights), and the lights show once those programs are linked. Returns false if
+   * `isCurrent` says the lights were replaced or taken away meanwhile.
+   */
+  async showLights(lights: THREE.Object3D, isCurrent: () => boolean): Promise<boolean> {
+    lights.visible = true;
+    const materials = this.renderer.compile(this.scene, this.camera);
+    const programs: { isReady(): boolean }[] = [];
+    for (const m of materials) {
+      const program = (this.renderer.properties.get(m) as { currentProgram?: { isReady(): boolean } })
+        .currentProgram;
+      if (program) programs.push(program);
+    }
+    lights.visible = false;
+    // Without the parallel compile extension isReady() is true at once and the first frame
+    // with the lights links them, as before.
+    while (programs.some((p) => !p.isReady())) {
+      await new Promise((r) => setTimeout(r, 16));
+      if (!isCurrent()) return false;
+    }
+    if (!isCurrent()) return false;
+    lights.visible = true;
+    return true;
+  }
+
   /** Draw a frame; `alpha` places moving bodies between physics steps (0 = before the last, 1 = after). */
   render(alpha = 1): void {
     const now = performance.now();

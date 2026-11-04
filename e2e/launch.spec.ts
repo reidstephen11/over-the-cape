@@ -9,6 +9,9 @@ test('the camp title opens to three main actions and fits desktop and phones', a
   page.on('request', (r) => {
     if (/\/src\/core\/game\.ts|\/assets\/game-/.test(r.url())) engineRequests.push(r.url());
   });
+  // The title never waits for the driving engine: held back here, the menus still work. It
+  // starts downloading in the background once the title is up (v1.46).
+  await page.route(/\/src\/core\/game\.ts|\/assets\/game-/, () => undefined);
   await lowGraphics(page);
   await page.goto('/?track=reopened');
   await expect(page.locator('[data-title-begin]')).toBeVisible();
@@ -30,7 +33,7 @@ test('the camp title opens to three main actions and fits desktop and phones', a
     expect(await page.locator('.welcome').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
     await shot(page, 'title', `menu-${viewport.width}`);
   }
-  expect(engineRequests).toEqual([]);
+  await expect.poll(() => engineRequests.length).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
 

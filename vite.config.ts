@@ -45,12 +45,37 @@ function dropUnprefixedManifestEntry(): Plugin {
   };
 }
 
+/**
+ * Rapier's compat package inlines its 3 MB WebAssembly as 4.1 MB of base64 inside the game's
+ * script, which the browser must download, parse and decode before it can compile any of it.
+ * The same package also ships the binary itself, and its init accepts a URL (fetched and
+ * compiled while it streams). For the browser build only, swap the inlined bytes for the
+ * file's URL, so Vite emits the .wasm as its own asset. Node (unit tests, scripts) keeps the
+ * package as it is (v1.46).
+ */
+function rapierWasmAsFile(): Plugin {
+  const inlined = /[A-Za-z_$][\w$]*\.toByteArray\("AGFzbQ[A-Za-z0-9+/=]*"\)\.buffer/;
+  return {
+    name: 'rapier-wasm-as-file',
+    apply: 'build',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!/@dimforge[\\/]rapier3d-compat[\\/]dist[\\/]rapier\.mjs$/.test(id)) return null;
+      const next = code.replace(inlined, '__rapierWasmUrl');
+      // A new Rapier that loads differently must not ship the base64 again unnoticed.
+      if (next === code) this.error("Rapier's inlined WebAssembly was not found: check rapierWasmAsFile()");
+      return { code: `import __rapierWasmUrl from './rapier_wasm3d_bg.wasm?url';\n${next}`, map: null };
+    },
+  };
+}
+
 // Relative base so the build works under the GitHub Pages project URL
 // (/over-the-cape/) and from any other static host or sub-folder.
 export default defineConfig({
   base: './',
   define: { __BUILD_LABEL__: JSON.stringify(buildLabel()) },
   plugins: [
+    rapierWasmAsFile(),
     VitePWA({
       // 'prompt': a new build waits until main.ts installs it (title screen or pause menu),
       // instead of reloading the page while someone is driving (v1.23).
@@ -95,7 +120,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest}'],
+        // wasm: Rapier's physics engine, a file of its own since v1.46 (about 3 MB, under the limit below).
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,webmanifest,wasm}'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         navigateFallback: `${PAGES_BASE}index.html`,

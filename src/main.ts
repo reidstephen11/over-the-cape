@@ -29,6 +29,38 @@ import { loadSave } from './sim/save/save';
 import { LoadingScreen } from './ui/loading';
 import { WelcomeScreen, type WelcomeChoice } from './ui/welcome';
 
+type GameModule = typeof import('./core/game');
+let engine: Promise<GameModule> | null = null;
+
+/**
+ * The driving engine: the game's script, then Rapier's physics. Asked for once; a failed
+ * download is forgotten so that pressing Drive tries again.
+ */
+function loadEngine(): Promise<GameModule> {
+  engine ??= import('./core/game').then(
+    (m) => {
+      m.Game.preload();
+      return m;
+    },
+    (err: unknown) => {
+      engine = null;
+      throw err;
+    },
+  );
+  return engine;
+}
+
+/**
+ * The title appears without the driving engine; it downloads once the title is up and the
+ * browser is idle, while the player reads the menus, so Drive has less to wait for (v1.46).
+ * A failure here is left for play() to meet and report.
+ */
+function prefetchEngine(): void {
+  const start = () => void loadEngine().catch(() => undefined);
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(start, { timeout: 3000 });
+  else setTimeout(start, 1500);
+}
+
 async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> {
   playing = true;
   const appEl = document.getElementById('app') as HTMLElement;
@@ -53,11 +85,14 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
   );
   if (choice.quickStart) loading.el.classList.add('continuing');
   try {
-    // The title appears without downloading or initialising the driving engine first.
-    const { Game } = await import('./core/game');
+    // Usually already downloaded on the title screen (prefetchEngine).
+    const { Game } = await loadEngine();
     const game = await Game.create(appEl, uiEl, choice, (p, label) => loading.set(p, label), audio);
     // The track's state for today is rolled from the run's seed, which the world build settles.
     if (!choice.replay) loading.trackCondition(game.condition);
+    // Every shader the first frames draw with, compiled now rather than in the first second.
+    loading.set(0.98, 'Preparing shaders');
+    await game.precompile();
     loading.set(1, 'Ready');
     if (!choice.quickStart) await loading.waitForDrive();
     loading.hide();
@@ -81,3 +116,4 @@ function boot(): void {
 }
 
 boot();
+prefetchEngine();

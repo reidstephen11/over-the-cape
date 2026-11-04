@@ -34,6 +34,8 @@ export interface GameHook {
     sceneMs: number;
     /** Terrain chunks drawn per detail level (0 = finest). */
     terrainLod: number[];
+    /** Shader programs compiled so far (v1.46: all of them before the first frame). */
+    programs: number;
   };
   heightAt(x: number, z: number): number;
   teleport(x: number, z: number, headingDeg: number): void;
@@ -244,6 +246,7 @@ export function installHook(game: Game): void {
       renderMs: g.loop.timings.render,
       sceneMs: g.sceneMs,
       terrainLod: g.view.terrainMesh.lodCounts(),
+      programs: g.view.renderer.info.programs?.length ?? 0,
     }),
     autopilot: (poiId, back = 300, speed = 8) => {
       if (!poiId) {
