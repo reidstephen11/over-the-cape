@@ -620,6 +620,34 @@ export const twoHSynthTuning: EngineSynthTuning = {
 };
 
 /**
+ * The MQ Patrol's SD33: a 3.3 L indirect-injection diesel six, smaller and busier than the
+ * 2H, with a harder knock at idle, a short exhaust under the short wheelbase to a tailpipe
+ * behind the left rear wheel, and a long, slow crank on its 24 V starter.
+ */
+export const sd33SynthTuning: EngineSynthTuning = {
+  ...twoHSynthTuning,
+  idleRpm: 650,
+  limiterRpm: 4100,
+  jitter: { idle: 0.14, load: 0.05, timingDeg: 3.5, lopeRpm: 12 },
+  exhaust: {
+    ...twoHSynthTuning.exhaust,
+    tailPipe: { length: 1.9, reflection: -0.32, dampingHz: 3200 },
+  },
+  valves: { hz: [1700, 2900], q: 4, gain: 0.85 },
+  starter: {
+    seconds: 1.6,
+    rpm: 150,
+    compressionDip: 0.5,
+    meshPerCrankTurn: 120,
+    toneHz: 720,
+    brushHz: 2100,
+    gain: 0.28,
+  },
+  catch: { seconds: 2.2, flareRpm: 1050, flareSeconds: 0.4, settleSeconds: 0.7 },
+  knock: { hz: [1050, 1900], q: 2.5, idle: 0.95, load: 0.3, gain: 3.5 },
+};
+
+/**
  * The GQ Patrol's TD42: a 4.2 L six-cylinder diesel with no turbo. Six cylinders fire
  * three times a crank turn, so it idles smoother and deeper than the Perentie's four,
  * with the same hard combustion knock, a gruff valve clatter and a long exhaust run
@@ -851,6 +879,7 @@ export const engineSynthTunings = {
   unimog: dieselSixSynthTuning,
   troopy: troopyDieselSynthTuning,
   hj60: twoHSynthTuning,
+  mq: sd33SynthTuning,
   patrol: td42SynthTuning,
   sooty80: {
     ...td42SynthTuning,
