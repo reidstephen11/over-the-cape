@@ -54,8 +54,8 @@ export const mqTuning: VehicleTuning = {
     { cx: 0, cy: 0.22, cz: 1.2, hx: 0.5, hy: 0.2, hz: 0.5 },
     { cx: 0, cy: 0.85, cz: 0.72, hx: 0.8, hy: 0.42, hz: 1.36 },
     { cx: 0, cy: 0.3, cz: 1.85, hx: 0.8, hy: 0.2, hz: 0.22 },
-    // The spare on the rear door.
-    { cx: 0.22, cy: 0.56, cz: 2.22, hx: 0.4, hy: 0.4, hz: 0.12 },
+    // The spare on its swing-away carrier behind the rear door (MQ_SPARE in mqGear.ts).
+    { cx: 0.22, cy: 0.56, cz: 2.37, hx: 0.4, hy: 0.4, hz: 0.15 },
     // Bull bar, the rear bar with its tow hitch, and the roof rack with its load.
     { cx: 0, cy: 0.2, cz: -2.0, hx: 0.9, hy: 0.3, hz: 0.14 },
     { cx: 0, cy: 0.0, cz: 2.22, hx: 0.88, hy: 0.075, hz: 0.07 },
