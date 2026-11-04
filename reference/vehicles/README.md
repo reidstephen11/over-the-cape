@@ -18,6 +18,7 @@ Each modelled vehicle has a folder. `SOURCES.md` in that folder names the real v
 | `lc79`     | LC79 V8                    | Toyota Land Cruiser 79 single cab with the 2024 front clip, then the game's lift, 37 inch tyres, tray and canopy | `landcruiser-79-2024/`                                      |
 | `sooty80`  | 80 Series — Sooty MkII     | Toyota Land Cruiser 80 Series wide-body wagon, 1990–97, split tailgate, built up like Shaun Whale's Sooty MkII   | `landcruiser-80-sooty/`                                     |
 | `hj60`     | 60 Series wagon            | Toyota Land Cruiser HJ60 standard-roof wagon, Australian 1985–86 Standard, 4.0 L 2H diesel, barn doors           | `landcruiser-60/`                                           |
+| `rangie`   | Range Rover two-door       | Early-1980s two-door Range Rover, Australian-delivered, 3.5 L V8, LT77 five-speed, black bumpers and pillars    | `range-rover-two-door/` (credits and URLs only; see its Gaps) |
 
 The trailers (`src/data/trailers.ts`, drawn in `src/render/trailerView.ts`) have folders too. The studio shows one with `?trailer=no5` (or `box6x4`), on its own or hitched behind `vehicle`; `npx vite-node scripts/studio-shots.ts /tmp/shots trailer:no5` photographs it.
 
@@ -31,6 +32,8 @@ Not modelled yet, so there is no folder. Collect photographs the same way before
 - A Suzuki Sierra, and a 1950s vehicle, were offered for later episodes and not chosen. Do not start either until the owner picks it.
 
 Since v1.09 the `sooty80` body is rebuilt from the photographs in `landcruiser-80-sooty/`. Its `SOURCES.md` also gives the studio camera that matches `side-left.jpg`, so the model's outline can be laid over the photo again after any change.
+
+The `rangie` (vX.YY) was built the same way from fourteen Commons photographs that could not be downloaded at full size from its container (Wikimedia throttled the address); `range-rover-two-door/SOURCES.md` credits them and `manifest.json` has their URLs, so the files can be added later.
 
 The `hj60` (v1.10) was built from `landcruiser-60/` in the same way. Its `SOURCES.md` gives the camera that matches `side-left-j60-mod-roof-tent.jpg`.
 

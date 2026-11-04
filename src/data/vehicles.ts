@@ -3,6 +3,7 @@ import { hiluxTuning } from './hilux';
 import { hj60Cabin, hj60Tuning } from './hj60';
 import { LC79_CAB_LIFT, lc79Tuning } from './lc79';
 import { patrolTuning } from './patrol';
+import { rangieCabin, rangieTuning } from './rangie';
 import { sooty80Cabin, sooty80Tuning } from './sooty80';
 import { perentieTuning } from './perentie';
 import { TROOPY_START_FUEL, troopyTuning } from './troopy';
@@ -217,6 +218,13 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     blurb: '1986 Camel Trophy Land Rover Ninety, 2.5 L diesel, five-speed, roof lamps, snorkel and winch.',
     cabin: camelCabin(),
   },
+  rangie: {
+    tuning: rangieTuning,
+    blurb:
+      'Early-1980s two-door Range Rover, 3.5 L V8, five-speed, full-time 4WD with a centre lock, coils, bull bar and rack.',
+    cameraScale: 1.05,
+    cabin: rangieCabin,
+  },
   perentie: {
     tuning: perentieTuning,
     blurb: 'Army Land Rover 110 soft top, 3.9 L Isuzu diesel, four-speed.',
@@ -361,6 +369,7 @@ export function vehicleLoadout(load: EpisodeLoadout, id: VehicleId): EpisodeLoad
 export const vehicleOrder: readonly VehicleId[] = [
   'shortie',
   'camel',
+  'rangie',
   'perentie',
   'hilux',
   'unimog',

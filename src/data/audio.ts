@@ -841,6 +841,43 @@ export const v8PetrolSynthTuning: EngineSynthTuning = {
   outputGain: 0.85,
 };
 
+/**
+ * The two-door Range Rover's 3.5 L Rover V8 on twin SU carburettors: the 40's petrol
+ * tuning with eight cylinders in two banks, each bank's four pulses down its own head pipe
+ * into a single system under the car, a softer, lower idle and a higher limiter.
+ */
+export const roverV8SynthTuning: EngineSynthTuning = {
+  ...engineSynthTuning,
+  idleRpm: 750,
+  limiterRpm: 5200,
+  firingOrder: [1, 8, 4, 3, 6, 5, 7, 2],
+  runners: {
+    delayMs: [0.35, 0.3, 0.1, 0.15, 0.1, 0.15, 0.35, 0.3],
+    strength: [0.97, 0.98, 1.03, 1.02, 1.03, 1.02, 0.96, 0.97],
+  },
+  pulse: { riseMs: [0.4, 0.18], decayMs: [1.5, 0.85], minRiseDeg: 2, minDecayDeg: 5, maxDecayDeg: 20 },
+  jitter: { idle: 0.08, load: 0.03, timingDeg: 2.5, lopeRpm: 10 },
+  exhaust: {
+    ...engineSynthTuning.exhaust,
+    headPipe: { length: 1.1, reflection: -0.33, dampingHz: 2500 },
+    muffler: { cutoffHz: 900, q: 0.6, boomHz: 75, boomQ: 1.2, boomDb: 4, leak: 0.2 },
+    tailPipe: { length: 1.6, reflection: -0.3, dampingHz: 3400 },
+  },
+  block: { cutoffHz: 150, gain: 0.32 },
+  valves: { hz: [2400, 4100], q: 8, gain: 1.8 },
+  starter: { ...engineSynthTuning.starter, seconds: 1.0, rpm: 180 },
+  catch: { seconds: 1.5, flareRpm: 1300, flareSeconds: 0.3, settleSeconds: 0.45 },
+  whine: { teeth: [37, 29], second: 0.5, harmonic: 0.2, shaftAm: 0.3, wobble: 0.15, gain: 0.04 },
+  banks: {
+    of: [0, 1, 0, 1, 0, 1, 0, 1],
+    headPipe: [
+      { length: 1.1, reflection: -0.33, dampingHz: 2500 },
+      { length: 1.3, reflection: -0.33, dampingHz: 2400 },
+    ],
+    gain: [1, 0.85],
+  },
+};
+
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
@@ -856,4 +893,5 @@ export const engineSynthTunings = {
     turbo: v8DieselSynthTuning.turbo,
   },
   lc79: v8DieselSynthTuning,
+  rangie: roverV8SynthTuning,
 } as const;
