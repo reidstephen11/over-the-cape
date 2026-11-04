@@ -41,6 +41,10 @@ export const vehicleChallenges: Record<LockedVehicleId, VehicleChallenge> = {
     task: 'Finish the CREB in the 40 Series',
     unlocked: 'The old 40 got you through. Its big brother, a 1986 HJ60 wagon, is yours.',
   },
+  mq: {
+    task: 'Finish the CREB in the GQ Patrol',
+    unlocked: 'The GQ’s owner keeps his old MQ hardtop in the shed. It’s yours for the Cape.',
+  },
   sooty80: {
     task: 'Beat 2:00 up Big Red, 2:00 up Bob’s Hill and 3:00 down the concrete',
     unlocked: 'All three sections on time. The modified 80 Series is yours.',

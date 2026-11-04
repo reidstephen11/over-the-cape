@@ -2,6 +2,7 @@ import { camelTuning } from './camel';
 import { hiluxTuning } from './hilux';
 import { hj60Cabin, hj60Tuning } from './hj60';
 import { LC79_CAB_LIFT, lc79Tuning } from './lc79';
+import { mqCabin, mqTuning } from './mq';
 import { patrolTuning } from './patrol';
 import { sooty80Cabin, sooty80Tuning } from './sooty80';
 import { perentieTuning } from './perentie';
@@ -306,6 +307,12 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     cameraScale: 1.08,
     cabin: hj60Cabin,
   },
+  mq: {
+    tuning: mqTuning,
+    blurb:
+      '1980s MQ Patrol short-wheelbase hardtop, 3.3 L SD33 diesel six, four-speed, leaf springs, bull bar and gutter rack.',
+    cabin: mqCabin,
+  },
   patrol: {
     tuning: patrolTuning,
     blurb: 'GQ Patrol wagon, 4.2 L TD42 diesel, five-speed, coil springs, bull bar, snorkel and roof rack.',
@@ -366,6 +373,7 @@ export const vehicleOrder: readonly VehicleId[] = [
   'unimog',
   'troopy',
   'hj60',
+  'mq',
   'patrol',
   'lc79',
   'sooty80',
