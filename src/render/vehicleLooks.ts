@@ -15,6 +15,8 @@ import { LC79_DRIVING_LAMPS, buildLc79Body, buildLc79Plank, buildLc79Wheel } fro
 import { buildVehicleBody as buildSooty80Body, buildRackPlank as buildSooty80Plank } from './sooty80Body';
 import { buildVehicleWheel as buildSooty80Wheel } from './sooty80Wheel';
 import { buildHj60Body, buildHj60Plank, buildHj60Wheel } from './hj60Body';
+import { UTE_NOSE, buildUte40Body, buildUte40Plank, buildUte40Wheel } from './ute40Body';
+import { NOSE as MQ_NOSE, buildMqBody, buildMqPlank, buildMqWheel } from './mqBody';
 import type { SuspensionLayout } from './vehicleSuspension';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
@@ -60,6 +62,21 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     paint: { roughness: 0.39, metalness: 0.14, clearcoat: 0.7, clearcoatRoughness: 0.24 },
     springs: 'leaf',
     lamps: { head: fortySeriesHeadlamps },
+  },
+  ute40: {
+    name: 'ute40-farm-ute',
+    body: buildUte40Body,
+    wheel: buildUte40Wheel,
+    plank: buildUte40Plank,
+    // Old white enamel gone chalky: little gloss left.
+    paint: { roughness: 0.55, metalness: 0.06, clearcoat: 0.2, clearcoatRoughness: 0.5 },
+    springs: 'leaf',
+    lamps: {
+      // The 40's headlamps, moved forward with the cab.
+      head: fortySeriesHeadlamps.map((p) => ({ ...p, z: UTE_NOSE - 0.02 })),
+      // The three spotlights on the bull bar's hoop come on with high beam.
+      roof: [-0.26, 0, 0.26].map((x) => ({ x, y: 1.02, z: UTE_NOSE - 0.125 })),
+    },
   },
   camel: {
     name: 'camel-trophy-land-rover-90',
@@ -130,6 +147,16 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     paint: { roughness: 0.42, metalness: 0.06, clearcoat: 0.45, clearcoatRoughness: 0.32 },
     springs: 'leaf',
     lamps: { head: [-0.625, 0.625].map((x) => ({ x, y: 0.385, z: -2.04 })) },
+  },
+  mq: {
+    name: 'mq-patrol-hardtop',
+    body: buildMqBody,
+    wheel: buildMqWheel,
+    plank: buildMqPlank,
+    // Solid single-stage enamel with some gloss left, as on the HJ60.
+    paint: { roughness: 0.42, metalness: 0.06, clearcoat: 0.45, clearcoatRoughness: 0.32 },
+    springs: 'leaf',
+    lamps: { head: [-0.6, 0.6].map((x) => ({ x, y: 0.35, z: MQ_NOSE + 0.016 })) },
   },
   troopy: {
     name: 'troop-carrier',

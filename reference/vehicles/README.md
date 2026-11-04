@@ -18,6 +18,8 @@ Each modelled vehicle has a folder. `SOURCES.md` in that folder names the real v
 | `lc79`     | LC79 V8                    | Toyota Land Cruiser 79 single cab with the 2024 front clip, then the game's lift, 37 inch tyres, tray and canopy | `landcruiser-79-2024/`                                      |
 | `sooty80`  | 80 Series — Sooty MkII     | Toyota Land Cruiser 80 Series wide-body wagon, 1990–97, split tailgate, built up like Shaun Whale's Sooty MkII   | `landcruiser-80-sooty/`                                     |
 | `hj60`     | 60 Series wagon            | Toyota Land Cruiser HJ60 standard-roof wagon, Australian 1985–86 Standard, 4.0 L 2H diesel, barn doors           | `landcruiser-60/`                                           |
+| `ute40`    | 40 Series ute              | The game's 40 Series cab on the HJ47's 2,950 mm chassis with a steel farm tray, built up like Shaun Whale's barn-find farm truck | `landcruiser-45-ute/` (no photos; the cab is `landcruiser-fj40/`) |
+| `mq`       | MQ Patrol hardtop          | Nissan Patrol 160 series (MQ), Australian 1980–83 short-wheelbase hardtop, round headlamps, 3.3 L SD33 diesel    | `nissan-mq-patrol/` (no photos committed; see its `SOURCES.md`) |
 
 The trailers (`src/data/trailers.ts`, drawn in `src/render/trailerView.ts`) have folders too. The studio shows one with `?trailer=no5` (or `box6x4`), on its own or hitched behind `vehicle`; `npx vite-node scripts/studio-shots.ts /tmp/shots trailer:no5` photographs it.
 
@@ -33,6 +35,8 @@ Not modelled yet, so there is no folder. Collect photographs the same way before
 Since v1.09 the `sooty80` body is rebuilt from the photographs in `landcruiser-80-sooty/`. Its `SOURCES.md` also gives the studio camera that matches `side-left.jpg`, so the model's outline can be laid over the photo again after any change.
 
 The `hj60` (v1.10) was built from `landcruiser-60/` in the same way. Its `SOURCES.md` gives the camera that matches `side-left-j60-mod-roof-tent.jpg`.
+
+The `mq` (v1.55) was built from ten Commons photographs listed in `nissan-mq-patrol/SOURCES.md` and `manifest.json`, which the container could not download at full size (Wikimedia answered every request for an original with HTTP 429), so none is committed yet. Download the originals from the manifest's URLs before the next pass on that body.
 
 ## Before changing a body
 

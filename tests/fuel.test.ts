@@ -27,12 +27,14 @@ describe('vehicle fuel', () => {
   // catch unit errors and inflated idle burn, without claiming a certified road cycle.
   const cases = [
     ['shortie', 14, 23],
+    ['ute40', 14, 26],
     ['camel', 7, 14],
     ['perentie', 8, 15],
     ['hilux', 9, 16],
     ['unimog', 20, 30],
     ['troopy', 11, 19],
     ['hj60', 10, 18],
+    ['mq', 9, 17],
     ['patrol', 10, 18],
     ['lc79', 13, 24],
     ['sooty80', 12, 24],

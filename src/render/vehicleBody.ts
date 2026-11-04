@@ -18,34 +18,34 @@ import { mirrorHead, stalk } from './mirrors';
 /** Half the 1.665 m width, over the front guards' flared lips. */
 export const HW = 0.832;
 /** Half-width of the cowl, doors, tub and hardtop sides, inside the guard flares. */
-const BW = 0.8;
+export const BW = 0.8;
 const AXLE = 1.15; // half the 2.3 m wheelbase the physics uses (2,285 mm published)
 const ARCH = 0.5; // rear wheel opening, round about the axle line
 const ARCH_Y = 0;
-const LOW = 0.28; // bottom edge of the doors and the tub sides
-const STEP = 0.18;
-const BELT = 0.74; // the tub's top edge, where the hardtop sits
-const WIN_LOW = 0.99;
-const WIN_TOP = 1.38;
-const CAP = 1.45; // lower edge of the white roof cap
+export const LOW = 0.28; // bottom edge of the doors and the tub sides
+export const STEP = 0.18;
+export const BELT = 0.74; // the tub's top edge, where the hardtop sits
+export const WIN_LOW = 0.99;
+export const WIN_TOP = 1.38;
+export const CAP = 1.45; // lower edge of the white roof cap
 /** Panels under the roof cap run up into it by this, so no seam shows below its edge. */
-const TUCK = CAP + 0.02;
+export const TUCK = CAP + 0.02;
 /** Top of the roof at its edges; it crowns 35 mm higher down the middle. */
 export const ROOF = 1.56;
 /** Front face of the grille panel. */
 export const NOSE = -1.68;
 export const TAIL = 1.9;
 const GRILLE_HW = 0.577;
-const COWL_Z = -0.5; // rear end of the bonnet and the guards
-const DOOR_Z = -0.3; // door front edge; the screen stands just ahead of it
-const DOOR_REAR = 0.5;
-const GUARD_TOP = 0.63;
-const GUARD_FRONT = -1.61;
-const GUARD_OUT = HW - 0.025; // the guard's face; its lip stands out to HW
-const LAMP_X = 0.427;
-const LAMP_Y = 0.515;
+export const COWL_Z = -0.5; // rear end of the bonnet and the guards
+export const DOOR_Z = -0.3; // door front edge; the screen stands just ahead of it
+export const DOOR_REAR = 0.5;
+export const GUARD_TOP = 0.63;
+export const GUARD_FRONT = -1.61;
+export const GUARD_OUT = HW - 0.025; // the guard's face; its lip stands out to HW
+export const LAMP_X = 0.427;
+export const LAMP_Y = 0.515;
 const TUB_R = 0.22; // the tub's rear corners, flush with the hardtop's
-const TOP_R = 0.22; // the hardtop's rounder rear corners, round the curved windows
+export const TOP_R = 0.22; // the hardtop's rounder rear corners, round the curved windows
 /** Top face of the flat bonnet. */
 export const BONNET_TOP = 0.835;
 
@@ -53,7 +53,7 @@ export const BONNET_TOP = 0.835;
 const bayHalf = (z: number) =>
   GRILLE_HW + (BW - 0.01 - GRILLE_HW) * THREE.MathUtils.clamp((z - NOSE) / (COWL_Z - NOSE), 0, 1);
 
-const steel = new THREE.Color('#93988F'),
+export const steel = new THREE.Color('#93988F'),
   chrome = new THREE.Color('#C9CCC6'),
   rubber = new THREE.Color('#252B28'),
   dark = new THREE.Color('#1C201E'),
@@ -67,6 +67,8 @@ const steel = new THREE.Color('#93988F'),
 export interface Livery {
   body: THREE.Color;
   roof: THREE.Color;
+  /** The bonnet's panels when they are not in the body colour (the farm ute's bare steel). */
+  bonnet?: THREE.Color;
 }
 
 export const standardLivery: Livery = {
@@ -84,7 +86,7 @@ type P =
  * without growing the outline; curved panels get smooth shading and sharp folds stay sharp.
  * Faces of the wheel arches (`arches`: z, y, r) are painted as the dark inner wheel well.
  */
-function sideProfile(
+export function sideProfile(
   b: VehicleBuilder,
   pts: P[],
   x0: number,
@@ -161,7 +163,7 @@ function sideProfile(
 }
 
 /** A plan-view outline (x, -z), extruded upwards from y0 to y1 with rounded edges. */
-function planProfile(
+export function planProfile(
   b: VehicleBuilder,
   shape: THREE.Shape,
   y0: number,
@@ -208,7 +210,7 @@ function planProfile(
 }
 
 /** Plan outline: the body's width, square-ish at the front and rounded at the back. */
-function plan(front: number, rear: number, half: number, rFront: number, rRear: number): THREE.Shape {
+export function plan(front: number, rear: number, half: number, rFront: number, rRear: number): THREE.Shape {
   const s = new THREE.Shape();
   s.moveTo(-half + rFront, -front);
   s.lineTo(half - rFront, -front);
@@ -305,9 +307,10 @@ function guardEdge(w: number): Vtx[] {
   });
 }
 
-function front(b: VehicleBuilder, livery: Livery): void {
+export function front(b: VehicleBuilder, livery: Livery): void {
   const body = livery.body,
-    cream = livery.roof;
+    cream = livery.roof,
+    bonnet = livery.bonnet ?? body;
   // Grille panel: a flat upright face between the guards, narrower than the body.
   const face = new THREE.Shape(
     rounded([
@@ -344,7 +347,7 @@ function front(b: VehicleBuilder, livery: Livery): void {
       [-1.5, 0.79],
     ],
     (z) => bayHalf(z) + 0.015,
-    body,
+    bonnet,
     Z.Front,
     0.03,
   );
@@ -358,7 +361,7 @@ function front(b: VehicleBuilder, livery: Livery): void {
       [-1.62, BONNET_TOP - 0.01],
     ],
     (z) => 0.33 + (0.1 * (z + 1.62)) / 1.06,
-    body,
+    bonnet,
     Z.Front,
     0.012,
   );
@@ -515,7 +518,7 @@ function front(b: VehicleBuilder, livery: Livery): void {
   }
 }
 
-function windscreen(b: VehicleBuilder, livery: Livery): void {
+export function windscreen(b: VehicleBuilder, livery: Livery): void {
   const body = livery.body;
   // One flat pane in a body-colour frame, leaning back a little, wipers parked at the bottom.
   const h = CAP - 0.865;
