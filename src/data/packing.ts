@@ -18,6 +18,7 @@ export const packLimits = { fuelStep: 10, minFuel: 10, jerryCans: 4, spares: 3, 
  */
 const kit: Record<VehicleId, { spareKg: number; roomKg: number }> = {
   shortie: { spareKg: 35, roomKg: 100 },
+  ute40: { spareKg: 35, roomKg: 250 },
   camel: { spareKg: 30, roomKg: 90 },
   perentie: { spareKg: 35, roomKg: 140 },
   hilux: { spareKg: 30, roomKg: 120 },
