@@ -20,7 +20,6 @@ import {
 import { poseOf, snapshotPose, type PosedBody } from '../sim/bodyPose';
 import {
   clockTime,
-  episodeOrder,
   episodes,
   type EpisodeDef,
   type EpisodeId,
@@ -64,15 +63,9 @@ import { RutsView } from '../render/ruts';
 import { TrailerView } from '../render/trailerView';
 import { CargoDrumView } from '../render/cargoDrumView';
 import { canCouple, trailers, type TrailerTuning } from '../data/trailers';
+import { hitchSupplyTrailer, supplyDelivered } from '../sim/supplyRun';
 import { trailerMessage } from './trailerMessages';
-import {
-  applyCheckpoint,
-  checkpointAt,
-  deliveryArrived,
-  EpisodeRun,
-  startCheckpoint,
-  type Checkpoint,
-} from '../sim/episode';
+import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
 import { planDuration, planSurprises } from '../sim/world/surprisePlan';
 import { surpriseMessage } from './surpriseMessages';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
@@ -173,8 +166,6 @@ export class Game {
   /** The trailers drawn, by trailer id. */
   private readonly trailerViews = new Map<string, TrailerView>();
   private readonly drumViews = new Map<string, CargoDrumView>();
-  /** Seconds before the HUD can say again that the stockman is still bogged. */
-  private rescueNag = 0;
   /** Which vehicle the player drives (saved). */
   vehicleId: VehicleId;
   /** The episode being played, and this run of it: clock, mission and how it ends. */
@@ -330,10 +321,8 @@ export class Game {
     sim.fuelScale = setup.def.fuelScale;
     applyCheckpoint(this.vehicle, this.checkpoint);
     if (this.checkpoint.delivery) sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
-    else if (this.episode.delivery || this.checkpoint.supply) {
-      const kind = tuning.hitch ? 'no5' : 'box6x4';
-      const trailer = sim.addTrailer('delivery', trailers[kind], LOCAL_VEHICLE);
-      trailer.loadDrums(this.episode.delivery?.drums ?? supplyRun.drums);
+    else if (this.checkpoint.supply) {
+      hitchSupplyTrailer(sim, tuning, LOCAL_VEHICLE);
       this.checkpoint.delivery = sim.deliveryState();
     }
     this.syncDeliveryViews();
@@ -343,9 +332,8 @@ export class Game {
     this.model = new VehicleModel(tuning, sim.env.lampBeams);
     view.scene.add(this.model.root);
     this.finds = new Finds(world.map.finds ?? [], this.checkpoint.taken);
-    const rescue = setup.def.rescue;
     for (const s of sim.stuck.values()) {
-      const look = setup.def.stranded?.find((d) => d.id === s.def.id)?.look ?? rescue?.look ?? 'shortie';
+      const look = setup.def.stranded?.find((d) => d.id === s.def.id)?.look ?? 'shortie';
       const drawn = new StuckVehicleView(s, vehicles[look].tuning);
       drawn.model.root.name = `stuck-${s.def.id}`;
       this.stuckViews.push(drawn);
@@ -499,17 +487,7 @@ export class Game {
     );
     sim.events.on('rescued', ({ id }) => {
       const stranded = this.episode.stranded?.find((d) => d.id === id);
-      if (stranded) {
-        this.onStrandedFreed(stranded);
-        return;
-      }
-      this.run.rescued = true;
-      const r = this.episode.rescue;
-      if (r) {
-        this.hud.toast(`${r.name}: out of the bog`, 2600);
-        this.showHistory(r.freed);
-      }
-      this.audio.discovery();
+      if (stranded) this.onStrandedFreed(stranded);
     });
     sim.events.on('rangeChanged', ({ range }) => {
       this.hud.toast(range === 'low' ? 'Low range' : 'High range', 1400);
@@ -714,8 +692,6 @@ export class Game {
     // This run's surprises, from its seed: the same ones again after a restart from camp.
     if (def.surprises && params.get('surprises') !== 'off')
       sim.addSurprises(planSurprises(world, def.surprises, checkpoint.seed), checkpoint.surprises);
-    // Someone bogged on the way, still waiting unless they were out by the camp.
-    if (def.rescue) sim.addStuckVehicle(def.rescue, checkpoint.rescued);
     for (const d of def.stranded ?? []) {
       const track = world.map.tracks.find((t) => t.id === d.track);
       const points = track?.points.map(([x, z]) => [x, z] as const);
@@ -807,17 +783,17 @@ export class Game {
     this.save();
   }
 
-  /** Save, with the welcome screen to open on `episode` (this one unless given). */
-  save(episode: EpisodeId = this.episode.id): boolean {
+  /** Save, with the welcome screen to open on this episode. */
+  save(): boolean {
     // Test mode leaves the real save alone.
     if (this.dev) return true;
     const ok = writeSave({
       version: 1,
       settings: this.settings,
       vehicle: this.vehicleId,
-      episode,
+      episode: this.episode.id,
       episodes: this.progress,
-      replay: episode === this.episode.id ? this.replay : null,
+      replay: this.replay,
       crawlBests: this.crawlRuns.bests,
       packs: this.packs,
       unlocked: this.unlocked,
@@ -1018,12 +994,7 @@ export class Game {
       this.sim.surprises?.reset(this.checkpoint.surprises);
       this.strandedFreed = new Set(this.checkpoint.stranded);
       this.winched = this.checkpoint.winched === true;
-      for (const s of this.sim.stuck.values())
-        s.reset(
-          this.episode.stranded?.some((d) => d.id === s.def.id)
-            ? this.strandedFreed.has(s.def.id)
-            : this.checkpoint.rescued,
-        );
+      for (const s of this.sim.stuck.values()) s.reset(this.strandedFreed.has(s.def.id));
       applyCheckpoint(this.vehicle, this.checkpoint);
       if (this.checkpoint.delivery) this.sim.restoreDelivery(this.checkpoint.delivery, LOCAL_VEHICLE);
       this.syncDeliveryViews();
@@ -1050,12 +1021,9 @@ export class Game {
     this.sim.switchOffEngine(LOCAL_VEHICLE);
   }
 
-  /**
-   * Back to the welcome screen: save and reload without starting, on `episode` (the next one,
-   * after finishing) or this one.
-   */
-  async toMainMenu(episode: EpisodeId = this.episode.id): Promise<void> {
-    this.save(episode);
+  /** Back to the welcome screen: save and reload without starting. */
+  async toMainMenu(): Promise<void> {
+    this.save();
     await this.fade.run(() => {
       this.loop.paused = true;
       location.reload();
@@ -1478,13 +1446,8 @@ export class Game {
     this.save();
     this.audio.discovery();
     this.loop.paused = true;
-    const next = episodeOrder[episodeOrder.indexOf(this.episode.id) + 1];
     const buttons: ResultButton[] = [
-      {
-        id: 'menu',
-        label: next ? 'Next episode' : 'Main menu',
-        note: next ? episodes[next].title : 'Episodes',
-      },
+      { id: 'menu', label: 'Main menu', note: 'Episodes' },
       { id: 'drive', label: 'Keep driving', note: 'Look around the map' },
     ];
     this.result.open(
@@ -1495,7 +1458,7 @@ export class Game {
       [...scoreLines, ...this.runStats()],
       buttons,
       (id) => {
-        if (id === 'menu') void this.toMainMenu(next);
+        if (id === 'menu') void this.toMainMenu();
         else this.loop.paused = this.pause.isOpen || this.map.isOpen;
       },
     );
@@ -1672,31 +1635,10 @@ export class Game {
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();
     if (this.checkpoint.supply && !this.unlocked.includes('perentie')) {
-      const camp = this.world.pois.find((q) => q.id === supplyRun.goal);
-      if (camp && [...this.sim.trailers.values()].some((t) => deliveryArrived(t, camp, supplyRun.drums)))
-        this.unlock('perentie');
+      if (supplyDelivered(this.sim.trailers.values(), this.world.pois)) this.unlock('perentie');
     }
     const goal = this.world.pois.find((q) => q.id === this.episode.goal);
-    const status = goal
-      ? this.run.check(this.vehicle, this.sim.damage, goal, this.sim.trailers.values())
-      : null;
-    // At the goal with the stockman still bogged: the job isn't done.
-    this.rescueNag -= dt;
-    if (
-      goal &&
-      (!this.run.rescued || !!this.episode.delivery) &&
-      this.run.status === 'driving' &&
-      this.rescueNag <= 0 &&
-      Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius
-    ) {
-      this.rescueNag = 8;
-      this.hud.toast(
-        this.episode.delivery
-          ? 'Park the upright trailer here with both drums aboard to make the delivery'
-          : 'Not without the stockman: go back and winch him out',
-        3000,
-      );
-    }
+    const status = goal ? this.run.check(this.vehicle, this.sim.damage, goal) : null;
     if (status === 'complete') this.onComplete();
     else if (status === 'failed') this.onFailed();
     const v = this.vehicle;

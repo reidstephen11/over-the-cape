@@ -7,7 +7,6 @@ import { vehicleLoadout } from '../data/vehicles';
 import type { TyreFault } from './vehicle/condition';
 import type { Vehicle } from './vehicle/vehicle';
 import type { PoiDef } from './world/mapTypes';
-import type { Trailer } from './trailer';
 import type { DeliveryState } from './trailerState';
 
 /**
@@ -33,8 +32,6 @@ export interface Checkpoint {
   seed: number;
   /** Surprises that had happened by the camp (they stay as they fell). */
   surprises: string[];
-  /** The episode's bogged vehicle had been winched out by the camp. */
-  rescued: boolean;
   /** Stranded drivers (`EpisodeDef.stranded`) winched out by the camp (absent in older saves). */
   stranded?: string[];
   /** Trailer poses, cargo and loose drums as they were at this camp (absent in older saves). */
@@ -64,8 +61,6 @@ export class EpisodeRun {
   elapsed: number;
   /** Where this run's surprises happen. */
   readonly seed: number;
-  /** The episode's bogged vehicle is out (true when there's none). */
-  rescued: boolean;
   /** The place the deadline holds until has been reached (false when it has none). */
   deadlineMet: boolean;
   /** Test mode: the clock stands still. */
@@ -79,7 +74,6 @@ export class EpisodeRun {
       hour: number;
       elapsed: number;
       seed?: number;
-      rescued?: boolean;
       discovered?: readonly string[];
     },
     /** The clock runs and the deadline applies (not when replaying with chosen conditions). */
@@ -88,7 +82,6 @@ export class EpisodeRun {
     this.hour = start.hour;
     this.elapsed = start.elapsed;
     this.seed = start.seed ?? 1;
-    this.rescued = !def.rescue || (start.rescued ?? false);
     this.deadlineMet = this.metBy(start.discovered ?? []);
   }
 
@@ -102,12 +95,11 @@ export class EpisodeRun {
     if (this.metBy([poiId])) this.deadlineMet = true;
   }
 
-  /** The HUD's mission line: the rescue first, then beating the deadline, then the last leg. */
+  /** The HUD's mission line: beating the deadline first, then the mission. */
   missionLine(): string {
     const d = this.def;
-    if (!this.rescued && d.rescue) return d.rescue.mission;
     if (d.deadline?.until && !this.deadlineMet && d.deadline.mission) return d.deadline.mission;
-    return d.lastLeg ?? d.mission;
+    return d.mission;
   }
 
   /** Advance the clock while driving (real seconds). */
@@ -129,15 +121,10 @@ export class EpisodeRun {
   }
 
   /** Check the goal and the ways the episode can end. Returns the new status when it changes. */
-  check(v: Vehicle, mode: DamageMode, goal: PoiDef, trailers: Iterable<Trailer> = []): EpisodeStatus | null {
+  check(v: Vehicle, mode: DamageMode, goal: PoiDef): EpisodeStatus | null {
     if (this.status !== 'driving') return null;
     const p = v.body.translation();
-    const delivery =
-      !this.def.delivery ||
-      (this.hoursLeft() > 0 &&
-        Math.abs(v.speed) < 0.5 &&
-        [...trailers].some((t) => deliveryArrived(t, goal, this.def.delivery!.drums)));
-    if (this.rescued && delivery && Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius) {
+    if (Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius) {
       this.status = 'complete';
       return this.status;
     }
@@ -154,7 +141,6 @@ export class EpisodeRun {
     this.reason = null;
     this.hour = c.hour;
     this.elapsed = c.elapsed;
-    this.rescued = !this.def.rescue || c.rescued;
     this.deadlineMet = this.metBy(c.discovered);
   }
 }
@@ -204,22 +190,9 @@ export function checkpointAt(
     taken: [...taken],
     seed: run.seed,
     surprises: [...surprises],
-    rescued: run.rescued && !!run.def.rescue,
     ...(delivery ? { delivery } : {}),
     ...(packed ? { packed } : {}),
   };
-}
-
-/** Parking the car alone, an empty trailer or a trailer on its side does not deliver anything. */
-export function deliveryArrived(t: Trailer, goal: PoiDef, drums: number): boolean {
-  const p = t.body.translation();
-  const speed = t.body.linvel();
-  return (
-    t.drums >= drums &&
-    t.tiltDeg() < 25 &&
-    Math.hypot(p.x - goal.x, p.z - goal.z) <= goal.radius &&
-    Math.hypot(speed.x, speed.y, speed.z) < 0.6
-  );
 }
 
 /** A fresh seed for a new run's surprises. */
@@ -273,7 +246,6 @@ export function startCheckpoint(
     taken: [],
     seed,
     surprises: [],
-    rescued: false,
     packed: { ...l },
   };
 }
