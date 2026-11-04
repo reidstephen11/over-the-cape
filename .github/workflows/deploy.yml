@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   checks:
-    name: Lint, type check and unit tests
+    name: Lint and type check
     runs-on: ubuntu-latest
     steps:
       # Only what the checks read. The 300 MB of reference photographs are never loaded
@@ -48,7 +48,31 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm test
+
+  # The unit tests on three runners at once, each taking a third of the files (v1.45),
+  # in a job of their own so they start beside lint and the type check, not after them.
+  tests:
+    name: Unit tests (${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            src
+            tests
+            scripts
+            public
+          sparse-checkout-cone-mode: true
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test -- --shard=${{ matrix.shard }}/3
 
   build:
     name: Build

@@ -30,6 +30,20 @@ export function pathFor(track: TrackInfo, back = false) {
   return pathAlong(track, () => 0, back);
 }
 
+/** Steepest rise or fall over `window` metres of centreline, in degrees. */
+export function steepest(track: TrackInfo, window = 12) {
+  let max = 0;
+  for (let k = 0; k < track.poly.count; k++) {
+    let j = k;
+    while (j + 1 < track.poly.count && track.poly.s[j] - track.poly.s[k] < window) j++;
+    const ds = track.poly.s[j] - track.poly.s[k];
+    if (ds < window * 0.8) continue;
+    const grade = Math.abs(Math.atan2(track.profile[j] - track.profile[k], ds)) * (180 / Math.PI);
+    if (grade > max) max = grade;
+  }
+  return max;
+}
+
 /**
  * Both lines of a fork as paths: from `lead` metres before the fork on the main track to
  * `tail` metres past where the lines meet again, along the main track ('main') or the
@@ -230,6 +244,57 @@ export function holdOnRollback(v: Vehicle, command: VehicleInput, rolling: { bac
   return rolling.back ? { ...command, throttle: 1, brake: 1, handbrake: true } : command;
 }
 
+/**
+ * How long a test drive that should fail waits without gaining ground before giving up (s).
+ * Long enough for a stall, a roll back and another go, and for the spinning wheels to dig in.
+ */
+export const GIVE_UP_AFTER = 20;
+
+/**
+ * Giving up a drive that has stopped getting anywhere, so a test that expects the car not to
+ * make it does not run out the whole clock (v1.45). The drive gives up once the car has gained
+ * no new ground along the path for `after` seconds, whether it has stopped, is spinning in
+ * place or is rolling back and trying again; time on the winch cable does not count.
+ */
+export class GiveUp {
+  /** Longest wait (s) that ended in new ground: under `after`, giving up changed nothing. */
+  longestPause = 0;
+  private readonly s: number[] = [0];
+  private i = 0;
+  private best = 0;
+  private idle = 0;
+
+  constructor(
+    private readonly path: ReadonlyArray<readonly [number, number]>,
+    private readonly after: number,
+  ) {
+    for (let k = 1; k < path.length; k++)
+      this.s.push(this.s[k - 1] + Math.hypot(path[k][0] - path[k - 1][0], path[k][1] - path[k - 1][1]));
+  }
+
+  /** Whether to give up, after this step. */
+  update(v: Vehicle, dt: number, winching = false): boolean {
+    const p = v.position;
+    let bestD = Infinity;
+    const from = this.i;
+    for (let k = Math.max(0, from - 40); k < Math.min(this.path.length, from + 40); k++) {
+      const d = Math.hypot(this.path[k][0] - p.x, this.path[k][1] - p.z);
+      if (d < bestD) {
+        bestD = d;
+        this.i = k;
+      }
+    }
+    const along = this.s[this.i];
+    if (along > this.best + 0.5) {
+      this.best = along;
+      this.longestPause = Math.max(this.longestPause, this.idle);
+      this.idle = 0;
+    } else if (winching) this.idle = 0;
+    else this.idle += dt;
+    return this.idle >= this.after;
+  }
+}
+
 /** Hands the event loop back to Vitest so its worker messages don't time out on long drives. */
 const yieldToRunner = () => new Promise((resolve) => setImmediate(resolve));
 
@@ -246,6 +311,8 @@ export async function runLeg(
   planks?: GullyDef,
   path?: ReadonlyArray<readonly [number, number]>,
   lookAhead = 0,
+  /** Stop once it has gained no ground for this long (s); 0 drives out the whole `limit`. */
+  giveUpAfter = 0,
 ) {
   const { sim, v, inputs } = s;
   const high = v.drivetrain.range === 'high';
@@ -255,6 +322,8 @@ export async function runLeg(
   const recovery = winch ? new WinchRecovery(sim, v, path) : null;
   const bridge = planks ? new PlankCrossing(sim, v, planks) : null;
   const rolling = { back: false };
+  const giveUp = giveUpAfter > 0 ? new GiveUp(path, giveUpAfter) : null;
+  let gaveUp = false;
   pilot.lowRange = !high;
   let tilt = 0,
     pitch = 0,
@@ -297,6 +366,10 @@ export async function runLeg(
     const near = trailProgress(track, v.position.x, v.position.z);
     // At a junction the vehicle begins behind this leg's finite centreline.
     if (near.along > 1 && near.along < track.poly.length - 1) deviation = Math.max(deviation, near.distance);
+    if (giveUp?.update(v, DT, sim.toolsOf(v.id).winch.attached)) {
+      gaveUp = true;
+      break;
+    }
   }
   return {
     done: pilot.done,
@@ -311,6 +384,10 @@ export async function runLeg(
     water,
     /** Times the winch pulled it out of a bog. */
     winched: recovery?.uses ?? 0,
+    /** Whether it stopped getting anywhere and gave up before `limit`. */
+    gaveUp,
+    /** Longest it sat without gaining ground before getting going again (s), with `giveUpAfter`. */
+    pause: giveUp?.longestPause ?? 0,
   };
 }
 
@@ -369,10 +446,11 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
     back = false,
     limit = 110,
     tuning: VehicleTuning = vehicleTuning,
+    giveUpAfter = 0,
   ) {
     const s = await scene(trackId, back, lockers, tuning);
     try {
-      return await runLeg(s, s.track, back, limit);
+      return await runLeg(s, s.track, back, limit, false, undefined, undefined, 0, giveUpAfter);
     } finally {
       s.sim.physics.free();
     }
@@ -395,6 +473,7 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       stopAt,
       planks,
       open = false,
+      giveUpAfter = 0,
     }: {
       speed?: number;
       limit?: number;
@@ -402,6 +481,8 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       planks?: GullyDef;
       /** Crawling, leave the diffs open. */
       open?: boolean;
+      /** Stop once it has gained no ground for this long (s); 0 drives out the whole `limit`. */
+      giveUpAfter?: number;
     } = {},
   ) {
     const sim = new Simulation(await loadRapier(), world, env);
@@ -431,6 +512,8 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       pilot.lowRange = crawl;
       const bridge = planks ? new PlankCrossing(sim, v, planks) : null;
       const rolling = { back: false };
+      const giveUp = giveUpAfter > 0 ? new GiveUp(path, giveUpAfter) : null;
+      let gaveUp = false;
       let [tilt, roll, deviation, time, stopped, swept, crept] = [0, 0, 0, 0, 0, 0, 0];
       for (let n = 0; time < limit; time += DT, n++) {
         if (n % 600 === 599) await yieldToRunner();
@@ -458,6 +541,10 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
         deviation = Math.max(deviation, near.distance);
         if (stopped > 0 && stopped < 20) crept = Math.max(crept, near.distance);
         swept = Math.max(swept, v.swept);
+        if (giveUp?.update(v, DT)) {
+          gaveUp = true;
+          break;
+        }
       }
       const c = v.condition;
       return {
@@ -476,6 +563,10 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
         /** How far off the line the current pushed it while it was held stopped (m). */
         crept,
         flooded: c.flood.stalled,
+        /** Whether it stopped getting anywhere and gave up before `limit`. */
+        gaveUp,
+        /** Longest it sat without gaining ground before getting going again (s), with `giveUpAfter`. */
+        pause: giveUp?.longestPause ?? 0,
       };
     } finally {
       sim.physics.free();
