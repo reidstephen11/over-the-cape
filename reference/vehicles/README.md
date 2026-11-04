@@ -18,6 +18,7 @@ Each modelled vehicle has a folder. `SOURCES.md` in that folder names the real v
 | `lc79`     | LC79 V8                    | Toyota Land Cruiser 79 single cab with the 2024 front clip, then the game's lift, 37 inch tyres, tray and canopy | `landcruiser-79-2024/`                                      |
 | `sooty80`  | 80 Series — Sooty MkII     | Toyota Land Cruiser 80 Series wide-body wagon, 1990–97, split tailgate, built up like Shaun Whale's Sooty MkII   | `landcruiser-80-sooty/`                                     |
 | `hj60`     | 60 Series wagon            | Toyota Land Cruiser HJ60 standard-roof wagon, Australian 1985–86 Standard, 4.0 L 2H diesel, barn doors           | `landcruiser-60/`                                           |
+| `ute40`    | 40 Series ute              | The game's 40 Series cab on the HJ47's 2,950 mm chassis with a steel farm tray, built up like Shaun Whale's barn-find farm truck | `landcruiser-45-ute/` (no photos; the cab is `landcruiser-fj40/`) |
 
 The trailers (`src/data/trailers.ts`, drawn in `src/render/trailerView.ts`) have folders too. The studio shows one with `?trailer=no5` (or `box6x4`), on its own or hitched behind `vehicle`; `npx vite-node scripts/studio-shots.ts /tmp/shots trailer:no5` photographs it.
 

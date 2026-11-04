@@ -7,6 +7,7 @@ import { sooty80Cabin, sooty80Tuning } from './sooty80';
 import { perentieTuning } from './perentie';
 import { TROOPY_START_FUEL, troopyTuning } from './troopy';
 import { unimogTuning } from './unimog';
+import { UTE_CAB_SHIFT, ute40Tuning } from './ute40';
 import type { EpisodeLoadout } from './episodes';
 import { vehicleTuning, type VehicleId, type VehicleTuning } from './vehicle';
 
@@ -66,8 +67,8 @@ export interface VehicleDef {
   extraLoad?: { fuel: number };
 }
 
-/** The short-wheelbase 4WD's cab, shared by its Camel Trophy version. */
-const shortieCabin: CabinLayout = {
+/** The short-wheelbase 4WD's cab, shared by its Camel Trophy version and the 40 Series ute. */
+export const shortieCabin: CabinLayout = {
   eye: { x: 0.38, y: 1.24, z: 0.44 },
   // Looking down a little shows the bonnet and the ground ahead.
   pitch: -0.12,
@@ -125,6 +126,23 @@ const seventyCabin: CabinLayout = {
     spokes: 4,
   },
 };
+
+/** A cab layout moved along the car by `dz`: every point moves with the cab. */
+function shifted(c: CabinLayout, dz: number): CabinLayout {
+  const along = (p: Point): Point => ({ ...p, z: p.z + dz });
+  return {
+    ...c,
+    eye: along(c.eye),
+    dialZ: c.dialZ + dz,
+    lamps: { ...c.lamps, z: c.lamps.z + dz },
+    handbrake: { ...c.handbrake, base: along(c.handbrake.base), tip: along(c.handbrake.tip) },
+    steeringWheel: {
+      ...c.steeringWheel,
+      centre: along(c.steeringWheel.centre),
+      columnBase: along(c.steeringWheel.columnBase),
+    },
+  };
+}
 
 /** A cab layout raised by `dy` (a body lift): every point moves up with the body. */
 function raised(c: CabinLayout, dy: number): CabinLayout {
@@ -211,6 +229,15 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     tuning: vehicleTuning,
     blurb: '1970s-style short-wheelbase 4WD, 4.2 L petrol six, three-speed automatic.',
     cabin: shortieCabin,
+  },
+  ute40: {
+    tuning: ute40Tuning,
+    blurb:
+      '40 Series farm ute on the HJ47’s long chassis: the same 4.2 L petrol six and automatic, a steel tray, bull bar, spotlights and snorkel.',
+    // A long ute with a headboard: stand a little further back.
+    cameraScale: 1.15,
+    // The 40's cab, moved forward with the front axle.
+    cabin: shifted(shortieCabin, UTE_CAB_SHIFT),
   },
   camel: {
     tuning: camelTuning,
@@ -360,6 +387,7 @@ export function vehicleLoadout(load: EpisodeLoadout, id: VehicleId): EpisodeLoad
 
 export const vehicleOrder: readonly VehicleId[] = [
   'shortie',
+  'ute40',
   'camel',
   'perentie',
   'hilux',
