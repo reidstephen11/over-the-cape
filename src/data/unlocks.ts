@@ -53,6 +53,10 @@ export const vehicleChallenges: Record<LockedVehicleId, VehicleChallenge> = {
     task: 'Beat 2:00 up Big Red, 2:00 up Bob’s Hill and 3:00 down the concrete',
     unlocked: 'All three sections on time. The modified 80 Series is yours.',
   },
+  rangie: {
+    task: 'Finish the CREB in the Camel Trophy Land Rover',
+    unlocked: 'The Camel got you through. A Lincoln Green two-door Range Rover is yours.',
+  },
   perentie: {
     task: 'Army supply run: tow two fuel drums to Wujal Wujal',
     unlocked: 'Both drums delivered to Wujal Wujal. The Army’s Perentie is yours.',
