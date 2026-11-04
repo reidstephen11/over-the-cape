@@ -35,7 +35,7 @@ Not modelled yet, so there is no folder. Collect photographs the same way before
 
 Since v1.09 the `sooty80` body is rebuilt from the photographs in `landcruiser-80-sooty/`. Its `SOURCES.md` also gives the studio camera that matches `side-left.jpg`, so the model's outline can be laid over the photo again after any change.
 
-The `rangie` (v1.56) was built the same way from fourteen Commons photographs that could not be downloaded at full size from its container (Wikimedia throttled the address); `range-rover-two-door/SOURCES.md` credits them and `manifest.json` has their URLs, so the files can be added later.
+The `rangie` (v1.57) was built the same way from fourteen Commons photographs that could not be downloaded at full size from its container (Wikimedia throttled the address); `range-rover-two-door/SOURCES.md` credits them and `manifest.json` has their URLs, so the files can be added later.
 
 The `hj60` (v1.10) was built from `landcruiser-60/` in the same way. Its `SOURCES.md` gives the camera that matches `side-left-j60-mod-roof-tent.jpg`.
 
