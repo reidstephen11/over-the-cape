@@ -1165,3 +1165,23 @@ A docs-only follow-up to v1.52 (Phase 6 of `docs/PLAN-efficiency.md`), which shi
 **Unit tests.** 767 of 767 passed locally after the first two moves (with the new `simFeedback` test), and CI's three unit-test shards passed on the merged v1.52.
 
 **Browser tests on v1.52.** 33 passed and 9 failed in 57 minutes. Eight of the failures are on ROADMAP's known list: `devMode:4`, `episode:15`, `launch:40`, `launch:147`, `m4-tools:15`, `night:4`, `touch:234` and `touch:280`. The ninth, `vehicles:13` (changing to the Land Rover from the pause menu), timed out waiting for the engine after the swap. Run alone it passed on v1.52 (1.8 minutes) and failed the same way on v1.51, so the extractions did not cause it. It predates them and is flaky, and it is now on ROADMAP's list with a likely cause: the test starts the engine while `restartFromCamp`'s fade is still running, and the fade ends by switching the engine off. `m5-ui:35`, on the list, passed.
+
+## v1.57: a real rock climb
+
+The owner, on the knoll's rock climb: "This isn't a rock climb. It is a couple of rocks on a track", and then "it should be like a hill climb made entirely of rocks." The line was 136 m of graded rock-coloured track with eight ledges and two loose rocks in its top 30 m; the scattered boulders beside it were decoration. With open diffs the short-wheelbase 40 got up it.
+
+**What real rock climbs have.** Trail write-ups of Australian hill climbs (Beer O'Clock Hill, Bob's Hill, One Tree Hill, The Boulders at Menai) and US rock-crawling trails (Bone Crusher, 7 Waterfalls, Noesser's Nasty Notch, Little MC) share a pattern: rock from bottom to top with nothing smooth between, stair-step ledges, an off-camber slab, a V-notch between rock walls where the wheels ride the sides, loose rock between the ledges, and the biggest ledge near the top.
+
+**The new line, bottom to top** (metres along it, all stones on the same track as before, in `src/data/episodes/crebKnoll.ts`):
+
+- **Broken granite, 5–30 m:** rows of low bedded rocks every 1.7 m, three then two across the track and staggered, 0.14–0.32 m proud, so every wheel climbs something and none runs clear.
+- **The staircase, 32–55 m:** a ledge every 3.5 m, 0.26–0.40 m, full width and split in turn, with two loose rocks on the treads.
+- **The off-camber slab, 58–70 m:** one 12 m whaleback across the track rolled 13° to the left.
+- **The V-notch, 72–80 m:** two 7 m whalebacks either side, 0.55–0.6 m high, sloping in 15°, so the wheels ride their flanks. A first try (0.75 m, 18°, 0.1 m closer) stopped the 40 Series ute even locked; this is the one that lets it through.
+- **Bedrock, 81–86 m:** low flat slabs (0.03–0.05 m) in two lanes, so no smooth track shows between the notch and the pitch.
+- **The pitch, 86–114 m:** the old split ledges, each 0.04 m taller, and four loose rocks; then **the crux** at 118 m, one full-width ledge 0.48 m high.
+- **Banks:** two rows of boulders along both sides from the loop to the summit, the inner at 2.7 m, the outer bigger at 3.9 m, so the line reads as a rock gully.
+
+Rubble placed between the notch and the pitch stopped the ute (its long wheelbase was still in the notch while its front met the rubble and the first ledge), so it was taken out. Flat slabs laid over the pitch's treads as well, so the whole top showed rock, stopped both 40s on the ledges even at 0.03 m thick (a slab edge in front of a riser makes it a double step), so the pitch keeps the bare rock surface between its ledges. A 0.55 m crux stopped the ute; 0.48 m lets it through. The scripted drives are sensitive to small changes, so the margins are not large.
+
+**Drives** (scripted, low range, crawl): the short-wheelbase 40 gets to the top with both lockers and stops at the notch with open diffs; the Troop Carrier and the 40 Series ute get to the top with both lockers. Before, the old line went with open diffs. `tests/crebKnoll.test.ts` now checks both. The note, the map label and the route hint describe the new line.
