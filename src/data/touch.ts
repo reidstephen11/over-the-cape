@@ -14,6 +14,20 @@ export function isTouchDriveScheme(v: unknown): v is TouchDriveScheme {
   return v === 'pedals' || v === 'stick';
 }
 
+/** Which side of the screen the joystick is on. The buttons take the other side. */
+export type TouchStickSide = 'left' | 'right';
+
+export const touchStickSides = ['left', 'right'] as const;
+export const defaultTouchStickSide: TouchStickSide = 'left';
+export const touchStickSideLabels: Record<TouchStickSide, string> = {
+  left: 'Left',
+  right: 'Right',
+};
+
+export function isTouchStickSide(v: unknown): v is TouchStickSide {
+  return v === 'left' || v === 'right';
+}
+
 /** On-screen touch controls for phones and tablets (SPEC §10). */
 export const touchTuning = {
   /** Joystick travel from centre to full lock, in CSS pixels. */

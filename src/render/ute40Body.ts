@@ -727,16 +727,18 @@ function tray(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   b.pop();
   b.rod(v(sx, DECK, sz), v(sx, DECK + width + 0.05, sz), 0.012, C.steel, M.Metal, Z.Rear);
   b.block(sx, DECK + width + 0.04, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Rear, 0.006);
-  // The first spare slung flat under the tray behind the rear axle, on a cradle.
+  // The first spare lying flat under the tray behind the rear axle, tucked up between the
+  // runners under the crossmembers (their underside is at 0.22) and held by a cradle bar
+  // and a bolt, as a farm tray carries it; its bottom sits level with the chassis rails.
   const uz = tuning.wheels[2].z + 0.78,
-    uy = -0.06 - width / 2 - 0.01;
+    uy = 0.22 - width / 2 - 0.012;
   b.push()
     .translate(0, uy, uz)
     .rotate(0, 0, Math.PI / 2);
   b.geometry(wheel.clone(), C.rubber);
   b.pop();
-  b.block(0, uy - width / 2 - 0.01, uz, 0.08, 0.02, 0.86, C.trim, M.Metal, Z.Rear);
-  b.rod(v(0, uy - width / 2 - 0.01, uz), v(0, 0.05, uz), 0.012, C.steel);
+  b.block(0, uy - width / 2 - 0.012, uz, 0.08, 0.02, 0.86, C.trim, M.Metal, Z.Rear);
+  b.rod(v(0, uy - width / 2 - 0.012, uz), v(0, 0.3, uz), 0.012, C.steel);
   // Rear bar under the tray with the tail lamps, the plate, shackles and the tow ball.
   const rz = TRAY_BACK + 0.06;
   b.block(0, 0.22, rz, 2 * TRAY_HW - 0.1, 0.1, 0.1, C.bar, M.Metal, Z.Rear, 0.012);

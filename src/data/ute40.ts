@@ -56,7 +56,7 @@ export const ute40Tuning: VehicleTuning = {
     // Bull bar, rear bar and the spare slung under the tray.
     { cx: 0, cy: 0.3, cz: -2.3, hx: 0.92, hy: 0.3, hz: 0.12 },
     { cx: 0, cy: 0.22, cz: 2.85, hx: 0.9, hy: 0.06, hz: 0.07 },
-    { cx: 0, cy: -0.22, cz: 2.25, hx: 0.4, hy: 0.11, hz: 0.4 },
+    { cx: 0, cy: 0.1, cz: 2.25, hx: 0.4, hy: 0.11, hz: 0.4 },
   ],
   bodyKnockImpulse: 140,
   antiRoll: { front: 8500, rear: 6000 },

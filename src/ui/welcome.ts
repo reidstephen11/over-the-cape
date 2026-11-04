@@ -8,7 +8,14 @@ import { timeLabels, timesOfDay, weatherLabels, weathers, type TimeOfDay } from 
 import { clockTime, episodeOrder, episodes, type EpisodeId } from '../data/episodes';
 import { maps } from '../data/maps';
 import { offeredQualities, shownQuality } from '../data/quality';
-import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
+import {
+  touchDriveLabels,
+  touchDriveSchemes,
+  touchStickSideLabels,
+  touchStickSides,
+  type TouchDriveScheme,
+  type TouchStickSide,
+} from '../data/touch';
 import { vehicleLoadout, vehicleOrder, vehicles } from '../data/vehicles';
 import { isLockedVehicle, supplyRun, vehicleChallenges, vehicleOpen } from '../data/unlocks';
 import type { EpisodeLoadout } from '../data/episodes';
@@ -32,6 +39,7 @@ type Group =
   | 'back'
   | 'controller'
   | 'touchDrive'
+  | 'touchSide'
   | 'quality'
   | 'volume'
   | 'units'
@@ -224,6 +232,7 @@ export class WelcomeScreen {
           )
           .join('')}</div></section>
         <section class="title-setting phone-driving-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
+        <section class="title-setting phone-driving-setting"><h3>Joystick side</h3><div class="welcome-options seg">${touchStickSides.map((c) => setting('touchSide', c, touchStickSideLabels[c], this.settings.touchStickSide === c)).join('')}</div></section>
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
@@ -236,7 +245,17 @@ export class WelcomeScreen {
         <p class="title-settings-version" title="Build ${BUILD_LABEL}">${GAME_VERSION}</p>
       </div><p class="title-input-hint">${hint}</p>`;
       this.setRows(
-        ['back', 'quality', 'touchDrive', 'volume', 'controller', 'units', 'hudStyle', 'gearbox'],
+        [
+          'back',
+          'quality',
+          'touchDrive',
+          'touchSide',
+          'volume',
+          'controller',
+          'units',
+          'hudStyle',
+          'gearbox',
+        ],
         focusGroup ?? 'back',
       );
       return;
@@ -423,6 +442,8 @@ export class WelcomeScreen {
         return v === this.settings.controller;
       case 'touchDrive':
         return v === this.settings.touchDrive;
+      case 'touchSide':
+        return v === this.settings.touchStickSide;
       case 'quality':
         return v === shownQuality(this.settings.quality, isTouchDevice());
       case 'units':
@@ -474,12 +495,14 @@ export class WelcomeScreen {
       group === 'units' ||
       group === 'controller' ||
       group === 'touchDrive' ||
+      group === 'touchSide' ||
       group === 'hudStyle' ||
       group === 'gearbox'
     ) {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
       else if (group === 'controller') this.settings.controller = value as ControllerType;
       else if (group === 'touchDrive') this.settings.touchDrive = value as TouchDriveScheme;
+      else if (group === 'touchSide') this.settings.touchStickSide = value as TouchStickSide;
       else if (group === 'gearbox') this.settings.gearbox = value as GearboxSetting;
       else if (group === 'hudStyle') {
         this.settings.hudStyle = value as HudStyle;

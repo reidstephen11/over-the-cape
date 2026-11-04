@@ -36,7 +36,7 @@ Since v1.09 the `sooty80` body is rebuilt from the photographs in `landcruiser-8
 
 The `hj60` (v1.10) was built from `landcruiser-60/` in the same way. Its `SOURCES.md` gives the camera that matches `side-left-j60-mod-roof-tent.jpg`.
 
-The `mq` (v1.54) was built from ten Commons photographs listed in `nissan-mq-patrol/SOURCES.md` and `manifest.json`, which the container could not download at full size (Wikimedia answered every request for an original with HTTP 429), so none is committed yet. Download the originals from the manifest's URLs before the next pass on that body.
+The `mq` (v1.55) was built from ten Commons photographs listed in `nissan-mq-patrol/SOURCES.md` and `manifest.json`, which the container could not download at full size (Wikimedia answered every request for an original with HTTP 429), so none is committed yet. Download the originals from the manifest's URLs before the next pass on that body.
 
 ## Before changing a body
 

@@ -272,6 +272,39 @@ test.describe('phone', () => {
     await f.lift(1);
     expect(errors).toEqual([]);
   });
+
+  test('Joystick side swaps the stick and the buttons, and the stick still steers', async ({ page }) => {
+    test.setTimeout(900_000);
+    const errors = collectErrors(page);
+    await lowGraphics(page);
+    await page.goto('/?surprises=off&track=reopened');
+    await waitReady(page);
+    const centreX = async (sel: string) => {
+      const b = await page.locator(sel).first().boundingBox();
+      return b!.x + b!.width / 2;
+    };
+    const width = page.viewportSize()!.width;
+    expect(await centreX('.touch-stick-base')).toBeLessThan(width / 2);
+    expect(await centreX('[data-tap="handbrake"]')).toBeGreaterThan(width / 2);
+
+    await page.evaluate(() => window.__game!.setTouchStickSide('right'));
+    await expect(page.locator('.touch-controls')).toHaveClass(/stick-right/);
+    expect(await centreX('.touch-stick-base')).toBeGreaterThan(width / 2);
+    expect(await centreX('[data-tap="handbrake"]')).toBeLessThan(width / 2);
+    await shot(page, 'touch', 'stick-right');
+
+    const f = await fingers(page);
+    await f.press(1, '.touch-stick-base');
+    await f.move(1, '.touch-stick-base', 0, -80);
+    await waitSim(page, 1);
+    expect((await page.evaluate(() => window.__game!.vehicle())).throttle).toBeGreaterThan(0.5);
+    await f.lift(1);
+
+    await page.evaluate(() => window.__game!.setTouchStickSide('left'));
+    await expect(page.locator('.touch-controls')).not.toHaveClass(/stick-right/);
+    expect(await centreX('.touch-stick-base')).toBeLessThan(width / 2);
+    expect(errors).toEqual([]);
+  });
 });
 
 test.describe('phone on the CREB', () => {

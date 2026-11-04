@@ -2,7 +2,14 @@ import { controllers, controllerTypes, type ControllerType } from '../data/contr
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import { controlsTable, touchControlsTable } from '../data/controls';
 import { isTouchDevice } from './touchControls';
-import { touchDriveLabels, touchDriveSchemes, type TouchDriveScheme } from '../data/touch';
+import {
+  touchDriveLabels,
+  touchDriveSchemes,
+  touchStickSideLabels,
+  touchStickSides,
+  type TouchDriveScheme,
+  type TouchStickSide,
+} from '../data/touch';
 import type { Settings } from '../sim/save/save';
 import type { VehicleId } from '../data/vehicle';
 import { vehicleOrder, vehicles } from '../data/vehicles';
@@ -234,6 +241,7 @@ export class PauseMenu {
       card.innerHTML = `<h2>Settings</h2>
         <div class="setting-row">Graphics<div class="seg">${offeredQualities(isTouchDevice()).map(q).join('')}</div></div>
         <div class="setting-row controller-setting phone-driving-setting">Phone driving<div class="seg">${touchDriveSchemes.map((c) => `<button data-focus data-touch-drive="${c}" class="${s.touchDrive === c ? 'on' : ''}" aria-pressed="${s.touchDrive === c}">${touchDriveLabels[c]}</button>`).join('')}</div></div>
+        <div class="setting-row controller-setting phone-driving-setting">Joystick side<div class="seg">${touchStickSides.map((c) => `<button data-focus data-touch-side="${c}" class="${s.touchStickSide === c ? 'on' : ''}" aria-pressed="${s.touchStickSide === c}">${touchStickSideLabels[c]}</button>`).join('')}</div></div>
         ${slider('masterVolume', 'Master volume')}
         ${slider('engineVolume', 'Engine volume')}
         ${slider('ambienceVolume', 'Ambience volume')}
@@ -262,6 +270,7 @@ export class PauseMenu {
       const table = this.touch
         ? `<thead><tr><th>Action</th><th>Touch</th></tr></thead><tbody>${touchControlsTable(
             this.settings.touchDrive,
+            this.settings.touchStickSide,
           )
             .map(([a, t]) => `<tr><td>${a}</td><td>${t}</td></tr>`)
             .join('')}</tbody>`
@@ -321,6 +330,10 @@ export class PauseMenu {
     } else if (t.dataset.touchDrive) {
       this.settings.touchDrive = t.dataset.touchDrive as TouchDriveScheme;
       this.actions.changeSettings({ touchDrive: this.settings.touchDrive });
+      this.show('settings');
+    } else if (t.dataset.touchSide) {
+      this.settings.touchStickSide = t.dataset.touchSide as TouchStickSide;
+      this.actions.changeSettings({ touchStickSide: this.settings.touchStickSide });
       this.show('settings');
     } else if (t.dataset.frameRate) {
       this.settings.frameRate = t.dataset.frameRate === 'screen' ? 'screen' : '60';
