@@ -1,6 +1,6 @@
 /**
  * Small parts drawn the same way on several bodies: stroke lettering, the white number plate
- * and the pressed-steel jerry can. Each copy was moved here unchanged (v1.57), so the bodies
+ * and the pressed-steel jerry can. Each copy was moved here unchanged (v1.58), so the bodies
  * build the same triangles as before.
  */
 import * as THREE from 'three';

@@ -16,7 +16,7 @@ All seven phases have shipped. What is still open went to `docs/ROADMAP.md` ("Pe
 - **Phase 4, frame rate (v1.49):** render capped at 60 Hz (setting to draw every refresh), cover cull 0.42 → 0.05 ms, meadow and HUD-hint costs cut. Left: the props split (measured, not worth it), tree-geometry duplication, the wheel ray count, the traffic-car build in the step, terrain in a Worker.
 - **Phase 5, dead code and docs (v1.51):** 126 lines of dead episode code out, DECISIONS halved (pre-v1.00 to `docs/decisions/v0.md`), README's checklist cut to ten versions. Left: nothing.
 - **Phase 6, `game.ts` (v1.52, PR #164; browser results in v1.56, PR #168):** `game.ts` 2,073 → 1,820 lines; `simFeedback.ts`, `trafficCars.ts`, `anchorPicker.ts`, `deliveryViews.ts` and `episodeHud()` in `hudState.ts`, with 12 new unit tests. Left: the eight long-standing e2e failures and the flaky `vehicles:13`, listed in ROADMAP.
-- **Phase 7, vehicle bodies (v1.57):** `src/render/bodyKit.ts` (one glyph table, `strokeText`, `numberPlate`, `armyPlate`, `jerryCan`); 309 lines out of six body files for 270 in the kit; every vehicle's body builds byte-identical geometry and identical triangle counts. Left: the pixel-grid lettering (Hilux, 40, HJ60, Sooty) and the troopy, camel and unimog jerry cans differ in shape and stay their own.
+- **Phase 7, vehicle bodies (v1.58):** `src/render/bodyKit.ts` (one glyph table, `strokeText`, `numberPlate`, `armyPlate`, `jerryCan`); 309 lines out of six body files for 270 in the kit; every vehicle's body builds byte-identical geometry and identical triangle counts. Left: the pixel-grid lettering (Hilux, 40, HJ60, Sooty) and the troopy, camel and unimog jerry cans differ in shape and stay their own.
 
 ## What was found
 

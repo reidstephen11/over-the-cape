@@ -3,12 +3,14 @@ import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { knollBogs, knollPois } from '../src/data/episodes/crebKnoll';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
+import { ute40Tuning } from '../src/data/ute40';
+import { vehicleTuning } from '../src/data/vehicle';
 import { driver, steepest } from './helpers/drive';
 import { crebWorld } from './world';
 
 /** The knoll play area between Daintree Village and the river (v1.47). */
 const world = crebWorld();
-const { trackOf } = driver(world);
+const { drive, trackOf } = driver(world);
 const t = world.terrain;
 const LINES = [
   'knoll-rock-climb',
@@ -153,4 +155,13 @@ describe('the knoll play area', () => {
     );
     expect(ruts.filter((e) => e.depth < 0).length).toBe(holes.length);
   });
+
+  it('needs both lockers on the rock climb, and the short and long 40s get up it locked (v1.57)', async () => {
+    const open = await drive('knoll-rock-climb', 'open', false, 200, vehicleTuning);
+    expect(open.done, 'open diffs').toBe(false);
+    for (const tuning of [vehicleTuning, ute40Tuning]) {
+      const r = await drive('knoll-rock-climb', 'both', false, 200, tuning);
+      expect(r.done, `${tuning.name} stopped ${r.remaining.toFixed(1)} m from the top`).toBe(true);
+    }
+  }, 300_000);
 });

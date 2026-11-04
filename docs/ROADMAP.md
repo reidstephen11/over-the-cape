@@ -25,7 +25,7 @@ For players who like 4WD challenges and realistic driving. v1.35 added the manua
 
 # Performance follow-ups
 
-Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.57). Measure each first, with `?bench`, `?debug` and `window.__game.breakdown()` on the owner's phone and desktop, and ship it only if the numbers improve.
+Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.58). Measure each first, with `?bench`, `?debug` and `window.__game.breakdown()` on the owner's phone and desktop, and ship it only if the numbers improve.
 
 - **Tree tiles copy all 42 tree geometries each** (`src/render/vegetation.ts`); sharing them would save memory and upload time.
 - **Nine footprint rays per wheel** (`src/sim/vehicle/wheelContacts.ts`); fewer may hold the same contact.
