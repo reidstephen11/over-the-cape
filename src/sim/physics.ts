@@ -10,9 +10,19 @@ export type Rapier = typeof RAPIER;
 
 let loading: Promise<Rapier> | null = null;
 
-/** Load the Rapier WASM module once (works in browsers and in Node for tests). */
+/**
+ * Load the Rapier WASM module once (works in browsers and in Node for tests). The browser
+ * build fetches it as a file of its own (vite.config.ts); since v1.46 that can start on the
+ * title screen, so a failed download is forgotten and the next call tries again.
+ */
 export function loadRapier(): Promise<Rapier> {
-  loading ??= RAPIER.init().then(() => RAPIER);
+  loading ??= RAPIER.init().then(
+    () => RAPIER,
+    (err: unknown) => {
+      loading = null;
+      throw err;
+    },
+  );
   return loading;
 }
 

@@ -7,7 +7,7 @@ import { hash2 } from '../sim/world/rng';
 import { pal } from './colors';
 import { patchFog } from './fog';
 import { BodyZone, groupVehicleMaterials } from './vehicleGeometry';
-import { vehicleLooks } from './vehicleLooks';
+import { vehicleLooks, type VehicleLook } from './vehicleLooks';
 import { vehicles } from '../data/vehicles';
 import { VehicleSuspension } from './vehicleSuspension';
 import { VehicleInstruments } from './vehicleInstruments';
@@ -35,8 +35,10 @@ export class VehicleModel {
   /** The dials' markings: lit with the headlights, each in its own colour. */
   private readonly dialMarksMaterial: THREE.MeshStandardMaterial;
   private readonly roofLampMaterial: THREE.MeshStandardMaterial;
-  /** The lamps' light on the ground, at dusk and night only. */
-  readonly beams: HeadlightBeams | null;
+  /** The lamps' light on the ground, made the first time it is dark (setBeams). */
+  private beamLights: HeadlightBeams | null = null;
+  private readonly lamps: VehicleLook['lamps'];
+  private readonly frontZ: number;
   private readonly glass: THREE.MeshPhysicalMaterial;
   private readonly wheelGeo: THREE.BufferGeometry;
   private readonly basePos: Float32Array;
@@ -124,8 +126,9 @@ export class VehicleModel {
     this.bodyGroup.add(this.body);
     this.root.add(this.bodyGroup);
     geometry.computeBoundingBox();
-    this.beams = beams ? new HeadlightBeams(look.lamps, geometry.boundingBox!.min.z) : null;
-    if (this.beams) this.bodyGroup.add(this.beams.group);
+    this.lamps = look.lamps;
+    this.frontZ = geometry.boundingBox!.min.z;
+    if (beams) this.setBeams(true);
     this.basePos = Float32Array.from(geometry.getAttribute('position').array);
     this.baseCol = Float32Array.from(geometry.getAttribute('color').array);
     this.baseNormals = Float32Array.from(geometry.getAttribute('normal').array);
@@ -300,6 +303,27 @@ export class VehicleModel {
       for (const m of Array.isArray(o.material) ? o.material : [o.material]) materials.add(m);
     });
     for (const m of materials) m.dispose();
+  }
+
+  /** The lamps' light on the ground while it is dark (dusk and night), or null by day. */
+  get beams(): HeadlightBeams | null {
+    return this.beamLights?.group.parent === this.bodyGroup ? this.beamLights : null;
+  }
+
+  /**
+   * Add the lamps' light on the ground (dusk and night) or take it away, on this same model
+   * (v1.46: dusk used to build the whole car again). The two spot lights are only in the
+   * scene while it is dark, so daylight frames don't light every pixel for lamps that are
+   * off; the caller warms the shaders for them first (GameRenderer.showLights).
+   */
+  setBeams(on: boolean): HeadlightBeams | null {
+    if (!on) {
+      this.beamLights?.group.removeFromParent();
+      return null;
+    }
+    this.beamLights ??= new HeadlightBeams(this.lamps, this.frontZ);
+    this.bodyGroup.add(this.beamLights.group);
+    return this.beamLights;
   }
 
   /** From the driver's seat the tinted glass would fill the view; leave the windows clear. */

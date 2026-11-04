@@ -8,7 +8,7 @@ It is built on the code of [4WD Simulator](https://github.com/reidstephen11/4wd-
 
 ## Play
 
-**Online:** https://reidstephen11.github.io/over-the-cape/ (deployed from `main` by GitHub Actions). On Android Chrome, Install app / Add to Home screen opens it as a standalone app (v0.82). A new version downloads in the background; it takes over on the title screen, and during a drive it waits for **Pause → Restart for the new version** (v1.23), so a deploy never reloads the page mid-drive.
+**Online:** https://reidstephen11.github.io/over-the-cape/ (deployed from `main` by GitHub Actions). On Android Chrome, Install app / Add to Home screen opens it as a standalone app (v0.82). A new version downloads in the background; it takes over on the title screen, and during a drive it waits for **Pause → Restart for the new version** (v1.23), so a deploy never reloads the page mid-drive. The service worker keeps every file, including the physics engine's WebAssembly (a file of its own since v1.46), so after one visit the game also starts offline.
 
 **Locally** (Node 20 or newer):
 
@@ -235,6 +235,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v1.46 a quicker start:** the loading screen shows v1.46. From the title, go to New Journey and press Drive: does the briefing reach its Drive button sooner than before, especially on mobile data (the engine now downloads while you are on the title, and the physics is a file of its own)? The last loading step reads "Preparing shaders". After the second Drive, is the first second smooth, with no freeze or stutter as the scene first appears? Drive on to dusk (about 5:30 pm): the headlights come on with a toast; is there no hitch or pause when they do, and do the beams light the ground a moment later? Open the installed app with the phone offline after this update has loaded once: does it still start and drive?
 - [ ] **v1.45 quicker unit tests (nothing to drive):** the loading screen shows v1.45 and the game is otherwise unchanged. On GitHub, the Actions run for this version should show a "Lint and type check" job beside three "Unit tests (1/3)", "(2/3)" and "(3/3)" jobs that start together, all green, with the slowest test job finishing in a few minutes rather than the old ten or so. The deploy still waits only for the build.
 - [ ] **v1.44 a trimmed workflow (nothing to drive):** the loading screen shows v1.44 and the game is otherwise unchanged. If you run it locally: `npm run lint` and `npm run build` should be noticeably quicker than before (about half), and `npm run typecheck` is the new full type check. On GitHub, the Actions run for this version should show the checkout steps finishing in seconds rather than pulling the photographs.
 - [ ] **v1.43 the 40 Series bonnet is clear:** the loading screen shows v1.43. Pick the short-wheelbase 4WD and sit in the driver's seat: is the bonnet clear, with the road visible ahead, where a spare wheel used to sit in the middle of the windscreen? Walk round: the spare now lies flat on the roof rack, over the recovery boards and beside the canvas roll, and the other spare is still on the left rear door. Does the roof spare float, stick out through the rails, or cut into the boards, the roll or the toolbox? Does the car still drive as before?
