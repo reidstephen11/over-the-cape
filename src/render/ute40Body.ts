@@ -31,6 +31,7 @@ import {
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 import { buildVehicleWheel } from './vehicleWheel';
+import { mountSpare, spareSidewall } from './spares';
 
 // The 40 Series ute: the game's 40 Series cab on the HJ47's long chassis with a steel farm
 // tray. The cab is drawn by the 40's own code in the 40's frame (`src/render/vehicleBody.ts`,
@@ -439,7 +440,8 @@ function chassis(b: VehicleBuilder): void {
       Z.Trim,
     );
   }
-  for (const z of [-1.51 + fz, -0.55 + fz, 0.3, 1.0, 2.05, 2.75])
+  // The crossmember ahead of the under-tray spare sits clear of it (at 2.05 it ran through it).
+  for (const z of [-1.51 + fz, -0.55 + fz, 0.3, 1.0, 1.8, 2.75])
     b.block(0, 0.02, z, z < -1.5 ? 0.6 : 0.86, 0.09, 0.09, C.trim, M.Metal, Z.Trim);
   b.block(
     0,
@@ -720,23 +722,16 @@ function tray(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   const sx = 0.42,
     sz = TRAY_BACK - 0.52;
   b.tag = Z.Rear;
-  b.push()
-    .translate(sx, DECK + width / 2 + 0.005, sz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
-  b.rod(v(sx, DECK, sz), v(sx, DECK + width + 0.05, sz), 0.012, C.steel, M.Metal, Z.Rear);
-  b.block(sx, DECK + width + 0.04, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Rear, 0.006);
+  const sy = DECK + spareSidewall(wheel) + 0.004;
+  mountSpare(b, wheel, { x: sx, y: sy, z: sz }, 'up', C.rubber);
+  b.rod(v(sx, DECK, sz), v(sx, sy + width / 2 + 0.045, sz), 0.012, C.steel, M.Metal, Z.Rear);
+  b.block(sx, sy + width / 2 + 0.035, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Rear, 0.006);
   // The first spare lying flat under the tray behind the rear axle, tucked up between the
   // runners under the crossmembers (their underside is at 0.22) and held by a cradle bar
   // and a bolt, as a farm tray carries it; its bottom sits level with the chassis rails.
   const uz = tuning.wheels[2].z + 0.78,
     uy = 0.22 - width / 2 - 0.012;
-  b.push()
-    .translate(0, uy, uz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: uy, z: uz }, 'down', C.rubber);
   b.block(0, uy - width / 2 - 0.012, uz, 0.08, 0.02, 0.86, C.trim, M.Metal, Z.Rear);
   b.rod(v(0, uy - width / 2 - 0.012, uz), v(0, 0.3, uz), 0.012, C.steel);
   // Rear bar under the tray with the tail lamps, the plate, shackles and the tow ball.

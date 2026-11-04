@@ -16,6 +16,7 @@ import {
 import { mirrorHead, stalk } from './mirrors';
 import { armyPlate, jerryCan } from './bodyKit';
 import { extrudeX, extrudeZ, sideShape, rounded, type Vtx } from './bodyShapes';
+import { mountSpare, spareSidewall } from './spares';
 
 /**
  * Land Rover 110 "Perentie" General Service soft top in Australian Army green, with an
@@ -562,14 +563,12 @@ function tailgateTools(b: VehicleBuilder): void {
 function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   const z = -1.42,
     base = crownAt(0) + 0.04,
-    top = base + tuning.wheelWidth;
+    // The tyre's sidewall rests on the plate, 4 mm clear.
+    hubY = base + spareSidewall(wheel) + 0.004,
+    top = hubY + tuning.wheelWidth / 2;
   b.block(0, crownAt(0) + 0.02, z, 0.36, 0.04, 0.36, black, M.Metal, Z.Front, 0.01);
   b.tag = Z.Front;
-  b.push()
-    .translate(0, base + tuning.wheelWidth / 2, z)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: hubY, z }, 'up', black);
   b.rod({ x: 0, y: base, z }, { x: 0, y: top + 0.05, z }, 0.014, steel, M.Metal, Z.Front);
   b.block(0, top + 0.012, z, 0.26, 0.02, 0.06, black, M.Metal, Z.Front, 0.006);
   b.rod({ x: -0.07, y: top + 0.05, z }, { x: 0.07, y: top + 0.05, z }, 0.01, steel, M.Metal, Z.Front);
@@ -641,11 +640,7 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.pop();
   // The Perentie's own spare wheel, slung flat in a cradle under the rear floor.
   b.tag = Z.Rear;
-  b.push()
-    .translate(0, 0.03, 1.85)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: 0.03, z: 1.85 }, 'down', black);
   for (const x of [-0.2, 0.2]) b.block(x, -0.09, 1.85, 0.05, 0.03, 0.84, galv, M.Paint, Z.Trim);
   for (const z of [1.43, 2.27]) b.block(0, -0.075, z, 0.99, 0.04, 0.035, galv, M.Paint, Z.Trim);
   // Pintle hook and trailer socket for the No. 5 trailer, and the rear plate.

@@ -80,6 +80,31 @@ studio.view(0, 40, 0.01, 0, 0, 0, 8); // top
 
 Do this before the change and after it. A change that looks fine in a three-quarter hero shot can still be 200 mm too narrow, which a side-by-side with the photograph shows immediately.
 
+### Close-ups of every part added or moved
+
+The standard set is too far away to show a part through a panel. For every part you added or moved (a spare, a rack, a bar, a snorkel, a tray, a carrier), also photograph it close up from behind, from the side and from low down, then open each render and look at that part. Check, for each:
+
+- **What holds it.** It is attached to something you can see (a bracket, a carrier, a clamp, a rail), not floating.
+- **Nothing goes through it.** No panel, bar, rail, crossmember, box or another part passes into it, and it passes into nothing.
+- **Which way it faces.** A spare on a door or carrier shows its face from behind, not its tread; one on a rack or under the floor lies flat.
+- **The ground.** Its lowest point is well above the ground (the ground is one wheel radius below the hubs).
+
+Then write in the version's notes, for each part, where it is attached and which way it faces.
+
+Camera positions that work (`studio.view(x, y, z, lookX, lookY, lookZ, fov)`, vehicle frame, z back):
+
+```js
+studio.view(1.6, 0.9, 4.2, 0, 0.5, 2.0, 40); // rear quarter close-up (aim at the part)
+studio.view(2.6, 0.7, 2.7, 0.3, 0.7, 2.75, 28); // side-on at the tail: a door spare's gap to the door
+studio.view(1.6, -0.35, 4.0, 0, 0.1, 2.2, 40); // low rear: under-floor spares, bars, the ground
+studio.view(1.6, 2.5, 3.4, 0.3, 1.55, 1.9, 35); // above a rack, looking down at its load
+studio.view(0, 1.2, -0.2, 0, 0.9, 2.0, 60); // in the cabin, looking back
+```
+
+`scripts/studio-shots.ts` takes the standard set; `scripts/studio-closeups.ts` takes named close-ups, for example `npx vite-node scripts/studio-closeups.ts /tmp/close mq http://localhost:5173/ rear:1.6,0.9,4.2,0,0.5,2.0,40 low:1.6,-0.35,4.0,0,0.1,2.2,40`. A spare wheel is placed with `mountSpare()` in `src/render/spares.ts`, and `tests/spares.test.ts` builds every vehicle and checks each spare's axle, its clearance from the body it is mounted against and from the ground. A failure there is a defect in the model: move the part, do not loosen the test. The renders still have to be read: the test knows only spares.
+
+Last, hand the render paths (and nothing else) to a reviewer subagent, as `CLAUDE.md` says under "Modelling a vehicle", and act on what it finds.
+
 ## Record what you compared
 
 In the version's section of `docs/DECISIONS.md`, name the photographs you compared, which dimension moved, and what still disagrees. When a measurement in the model changes, update the "in the current model" column of that vehicle's `SOURCES.md` so the next pass is not comparing against a stale number.

@@ -6,6 +6,7 @@ import { ROUND_BEND, cleanGeometry, continuousTube } from './bodyRefinement';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { hj60Colors as C } from './hj60Paint';
 import { NOSE, ROOF_EDGE, TAIL, wAt } from './hj60Body';
+import { mountSpare, spareSidewall } from './spares';
 
 // What the game adds to the factory 60: a period steel bull bar with a winch, a steel rear
 // bar with a tow ball, a gutter-mounted roof rack carrying the second spare and the planks,
@@ -154,15 +155,12 @@ function underside(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: Vehic
   b.geometry(new THREE.CylinderGeometry(0.07, 0.07, 0.42, 12), C.steel.clone().multiplyScalar(0.6));
   b.pop();
   // The first spare, slung flat under the back on its cradle as the factory carried it,
-  // below the frame rails (bottom at -0.105) and the two rear crossmembers.
+  // below the frame rails (bottom at -0.105) and the two rear crossmembers, high enough that
+  // its lowest hub cap is 0.156 m off the ground.
   const sz = 2.06,
-    sy = -0.105 - tuning.wheelWidth / 2 - 0.01;
+    sy = -0.105 - tuning.wheelWidth / 2;
   b.tag = Z.Rear;
-  b.push()
-    .translate(0, sy, sz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: sy, z: sz }, 'down', C.rubber);
   b.block(0, sy - tuning.wheelWidth / 2 - 0.01, sz, 0.08, 0.02, 0.86, frame, M.Metal, Z.Rear);
   b.rod(v(0, sy - tuning.wheelWidth / 2 - 0.01, sz), v(0, 0.05, sz), 0.012, C.steel);
 }
@@ -203,13 +201,18 @@ function rack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   const sx = 0.32,
     sz = back - 0.46;
   b.tag = Z.Roof;
-  b.push()
-    .translate(sx, DECK + 0.01 + tuning.wheelWidth / 2, sz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), C.rubber);
-  b.pop();
-  b.rod(v(sx, DECK + 0.01, sz), v(sx, DECK + tuning.wheelWidth + 0.05, sz), 0.012, C.steel, M.Metal, Z.Roof);
-  b.block(sx, DECK + tuning.wheelWidth + 0.04, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Roof, 0.006);
+  // The tyre's sidewall rests on the slats (their top at DECK + 0.01), 4 mm clear.
+  const sy = DECK + 0.01 + spareSidewall(wheel) + 0.004;
+  mountSpare(b, wheel, { x: sx, y: sy, z: sz }, 'up', C.rubber);
+  b.rod(
+    v(sx, DECK + 0.01, sz),
+    v(sx, sy + tuning.wheelWidth / 2 + 0.04, sz),
+    0.012,
+    C.steel,
+    M.Metal,
+    Z.Roof,
+  );
+  b.block(sx, sy + tuning.wheelWidth / 2 + 0.03, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Roof, 0.006);
   b.block(0.33, DECK + 0.12, 0.38, 0.6, 0.22, 0.74, new THREE.Color('#7A7457'), M.Fabric, Z.Roof, 0.05);
   for (const z of [0.18, 0.58])
     b.block(0.33, DECK + 0.12, z, 0.62, 0.235, 0.035, C.rubber, M.Rubber, Z.Roof, 0.01);

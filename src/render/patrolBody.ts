@@ -20,6 +20,7 @@ import {
   type Vtx,
 } from './bodyShapes';
 import { mirrorHead } from './mirrors';
+import { mountSpare, spareSidewall } from './spares';
 
 /** Panels as `extrudePanel`, with an 18 mm crown on the bonnet top and the thin side skins split finer, so the bow pressed into the sides at the end of `buildPatrolBody` bends them smoothly. */
 function extrudeX(
@@ -751,15 +752,11 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
   b.block(0, y - 0.02, 1.34, 0.2, 0.012, 0.045, black, M.Rubber, Z.Roof);
   for (const x of [-0.094, 0.094]) b.block(x, y + 0.1815, 1.34, 0.012, 0.415, 0.045, black, M.Rubber, Z.Roof);
   // The second spare lies flat at the front of the rack, between the boards, strapped down.
-  const sy = y + 0.014 + tuning.wheelWidth * 0.53,
+  const sy = y + 0.014 + spareSidewall(wheel) + 0.004,
     sz = 0.32,
     strapY = sy + tuning.wheelWidth * 0.53 + 0.006;
   b.tag = Z.Roof;
-  b.push()
-    .translate(0, sy, sz)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: 0, y: sy, z: sz }, 'up', black);
   b.block(0, strapY, sz, 0.8, 0.008, 0.05, black, M.Rubber, Z.Roof);
   for (const side of [-1, 1])
     b.rod(v(side * 0.4, strapY, sz), v(side * 0.43, y, sz), 0.012, black, M.Rubber, Z.Roof);
@@ -871,11 +868,7 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   plateText(b, 'GQ-060', 0.42, 0.24, z + 0.02, 1);
   // The spare on its carrier on the wider door, with a black cover plate over the hub.
   b.tag = Z.Rear;
-  b.push()
-    .translate(-0.27, 0.5, z + 0.16)
-    .rotate(0, Math.PI / 2, 0);
-  b.geometry(wheel.clone(), black);
-  b.pop();
+  mountSpare(b, wheel, { x: -0.27, y: 0.5, z: z + 0.16 }, 'back', black, { reversed: true });
   b.block(-0.27, 0.5, z + 0.04, 0.3, 0.3, 0.06, bar, M.Metal, Z.Rear, 0.02);
 }
 

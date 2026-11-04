@@ -47,7 +47,7 @@ export const ARCH = { halfLen: 0.62, top: 0.66, centreY: 0.06 };
 export const TRAY = { front: -0.58, back: 3.45, side: 1.15, floor: 0.7, top: 1.18 };
 
 /** The spare, lying flat on its carrier under the tray's front on the right (its centre). */
-export const UNDER_SPARE = { x: 0.64, y: 0.0, z: -0.44 };
+export const UNDER_SPARE = { x: 0.66, y: -0.14, z: -0.44 };
 
 /** The second spare on its carrier on the left dropside (its centre). */
 export const UNIMOG_SIDE_SPARE = { x: -1.39, y: 0.95, z: 0.85 };

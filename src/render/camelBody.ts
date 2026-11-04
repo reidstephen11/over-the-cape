@@ -8,6 +8,7 @@ import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 import { mirrorHead } from './mirrors';
 import { letter, camel } from './camelMarkings';
 import { GLYPHS, strokeText } from './bodyKit';
+import { mountSpare } from './spares';
 
 /**
  * The 1986 Camel Trophy Land Rover Ninety, as the Australian event ran it: a left-hand-drive
@@ -852,19 +853,12 @@ function spares(b: VehicleBuilder, t: VehicleTuning, w: THREE.BufferGeometry) {
   const rear = { x: 0.12, y: 0.78, z: TAIL + 0.255 };
   b.block(rear.x, rear.y, TAIL + 0.04, 0.27, 0.25, 0.06, black, M.Metal, Z.Rear, 0.006);
   b.rod(v(rear.x, rear.y, TAIL + 0.04), v(rear.x, rear.y, rear.z - 0.09), 0.043, black, M.Metal, Z.Rear);
-  b.push()
-    .translate(rear.x, rear.y, rear.z)
-    .rotate(0, -Math.PI / 2, 0);
-  b.geometry(w.clone(), rubber);
-  b.pop();
+  mountSpare(b, w, { x: rear.x, y: rear.y, z: rear.z }, 'back', rubber);
   const cy = 0.743 + t.wheelWidth / 2 + 0.075,
     z = -1.31;
-  b.block(0, 0.785, z, 0.34, 0.09, 0.34, black, M.Metal, Z.Front, 0.008);
-  b.push()
-    .translate(0, cy, z)
-    .rotate(0, 0, Math.PI / 2);
-  b.geometry(w.clone(), rubber);
-  b.pop();
+  // The mounting block stays under the rim's centre: at 0.34 m square its corners were in the tyre.
+  b.block(0, 0.785, z, 0.28, 0.09, 0.28, black, M.Metal, Z.Front, 0.008);
+  mountSpare(b, w, { x: 0, y: cy, z }, 'up', rubber);
   const top = cy + t.wheelWidth / 2 + 0.045;
   b.rod(v(0, 0.8, z), v(0, top + 0.04, z), 0.014, steel, M.Metal, Z.Front);
   b.block(0, top, z, 0.22, 0.018, 0.055, black, M.Metal, Z.Front, 0.004);
