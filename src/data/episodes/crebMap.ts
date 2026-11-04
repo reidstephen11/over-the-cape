@@ -27,6 +27,16 @@ import {
 } from './crebStretches';
 import { crebFindFlats, crebFindPois, crebFindProps, crebFinds, crebFindTracks } from './crebFinds';
 import { crebForkPois, crebForkProps, crebForkTracks, littleAnnanBars } from './crebForks';
+import {
+  knollAnchors,
+  knollBogs,
+  knollClearings,
+  knollFlats,
+  knollHills,
+  knollPois,
+  knollProps,
+  knollTracks,
+} from './crebKnoll';
 
 /**
  * Episode 1, the CREB Track: from Daintree Village across the Daintree River, through the
@@ -255,6 +265,8 @@ const baseTracks: TrackDef[] = [
   ...crebFindTracks,
   // The forks: other lines past the deep bog, the concrete and the Little Annan's ford.
   ...crebForkTracks,
+  // The knoll play area between the village and the river (crebKnoll.ts).
+  ...knollTracks,
 ];
 // Each stretch's own obstacles and mud (crebStretches.ts).
 const tracks = baseTracks.map((t) => ({ ...t, ...stretchTracks[t.id] }));
@@ -558,6 +570,7 @@ export const crebMap: MapDef = {
     { id: 'helenvale-hill', x: 260, z: -2150, radius: 300, height: 30, shape: 'dome' },
     { id: 'annan-rise', x: -280, z: -2250, radius: 260, height: 26, shape: 'dome' },
     ...stretchHills,
+    ...knollHills,
   ],
   ridges: [],
   flats: [
@@ -567,6 +580,7 @@ export const crebMap: MapDef = {
     { id: 'roaring-meg-camp', x: -23, z: 661, radius: 12, blend: 14 },
     { id: 'lions-den', x: 100, z: -2560, radius: 22, blend: 16 },
     ...crebFindFlats,
+    ...knollFlats,
   ],
   creeks: [
     {
@@ -686,7 +700,7 @@ export const crebMap: MapDef = {
     { id: 'wujal-falls-rock', kind: 'rock', x: -160, z: -669, radius: 30, ragged: 0.6 },
     { id: 'village-dirt', kind: 'dirt', x: -56, z: 2636, radius: 8, ragged: 0.5 },
   ],
-  bogs: crebRoadBogs,
+  bogs: [...crebRoadBogs, ...knollBogs],
   gullies: [crebWashout],
   pois: [
     {
@@ -810,6 +824,7 @@ export const crebMap: MapDef = {
     ...stretchPois,
     ...crebFindPois,
     ...crebForkPois,
+    ...knollPois,
   ],
   props: [
     { kind: 'signpost', x: -46, z: 2612, headingDeg: 180, text: 'CREB Track' },
@@ -830,6 +845,7 @@ export const crebMap: MapDef = {
     ...stretchProps,
     ...crebFindProps,
     ...crebForkProps,
+    ...knollProps,
   ],
   finds: crebFinds,
   boulders: [
@@ -866,6 +882,7 @@ export const crebMap: MapDef = {
     { x: 28.19, z: 1214.94, radius: 0.9, sink: 0.4, anchor: true },
     { x: 15.39, z: 1176.63, radius: 0.9, sink: 0.4, anchor: true },
     { x: 2.54, z: 1154.63, radius: 0.9, sink: 0.4, anchor: true },
+    ...knollAnchors,
   ],
   tors: [],
   fallenTrees: [{ id: 'fallen-tree', x: -5, z: 1048, headingDeg: 50, length: 11, radius: 0.4, mass: 700 }],
@@ -894,6 +911,7 @@ export const crebMap: MapDef = {
       { x: 81, z: -662, radius: 22 },
       { x: 100, z: -2560, radius: 40 },
       { x: -110, z: -1500, radius: 40 },
+      ...knollClearings,
     ],
   },
   palette: {
