@@ -1218,4 +1218,4 @@ The seventh and last phase of `docs/PLAN-efficiency.md`. Nothing in the game loo
 
 **Lines.** 309 lines out of six body files, 270 in `bodyKit.ts` (most of it the glyph table, which Prettier writes one segment per line), so 39 fewer in all; the point is that a plate, a badge or a can is now changed in one place.
 
-**Tests.** The unit suite passed before merging (94 files, 787 tests, 472 s). The browser tests were not run: no page or HUD changed.
+**Tests.** The unit suite passed before merging, on the tree merged with v1.58 (95 files, 795 tests, 475 s). The browser tests were not run: no page or HUD changed.
