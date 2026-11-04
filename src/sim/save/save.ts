@@ -1,5 +1,12 @@
 import { defaultController, isControllerType, type ControllerType } from '../../data/controllers';
-import { defaultTouchDrive, isTouchDriveScheme, type TouchDriveScheme } from '../../data/touch';
+import {
+  defaultTouchDrive,
+  defaultTouchStickSide,
+  isTouchDriveScheme,
+  isTouchStickSide,
+  type TouchDriveScheme,
+  type TouchStickSide,
+} from '../../data/touch';
 import { defaultHudStyle, isHudStyle, type HudStyle } from '../../data/hudStyles';
 import { SAVE_KEY } from '../../core/config';
 import type { CrawlBests } from '../crawlRuns';
@@ -24,6 +31,8 @@ export interface Settings {
   damage: DamageMode;
   /** How the on-screen stick drives on a phone. Missing on older saves: pedals. */
   touchDrive: TouchDriveScheme;
+  /** Which side the on-screen joystick is on. Missing on older saves: left. */
+  touchStickSide: TouchStickSide;
   /** How the HUD and the menus look. Missing on older saves: the dash cluster. */
   hudStyle: HudStyle;
   /**
@@ -81,6 +90,7 @@ export const defaultSettings: Settings = {
   units: 'kmh',
   damage: 'mild',
   touchDrive: defaultTouchDrive,
+  touchStickSide: defaultTouchStickSide,
   hudStyle: defaultHudStyle,
   gearbox: 'automatic',
   frameRate: '60',
@@ -132,6 +142,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
         units: st.units === 'mph' ? 'mph' : 'kmh',
         damage: isDamageMode(st.damage) ? st.damage : defaultSettings.damage,
         touchDrive: isTouchDriveScheme(st.touchDrive) ? st.touchDrive : defaultTouchDrive,
+        touchStickSide: isTouchStickSide(st.touchStickSide) ? st.touchStickSide : defaultTouchStickSide,
         hudStyle: isHudStyle(st.hudStyle) ? st.hudStyle : defaultHudStyle,
         gearbox: isGearboxSetting(st.gearbox)
           ? st.gearbox

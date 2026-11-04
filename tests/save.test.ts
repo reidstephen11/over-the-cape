@@ -17,6 +17,11 @@ describe('exploration and saving', () => {
     writeSave(saveData({ settings: { ...defaultSettings, touchDrive: 'pedals' } }), s);
     expect(loadSave(s)!.settings.touchDrive).toBe('pedals');
     expect(defaultSettings.touchDrive).toBe('stick');
+    expect(defaultSettings.touchStickSide).toBe('left');
+    writeSave(saveData({ settings: { ...defaultSettings, touchStickSide: 'right' } }), s);
+    expect(loadSave(s)!.settings.touchStickSide).toBe('right');
+    s.setItem('overthecape.save.v1', JSON.stringify({ version: 1, settings: { touchStickSide: 'up' } }));
+    expect(loadSave(s)!.settings.touchStickSide).toBe('left');
     for (const controller of [undefined, null, 'unknown', '__proto__']) {
       s.setItem(
         'overthecape.save.v1',

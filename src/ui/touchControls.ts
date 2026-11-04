@@ -1,5 +1,5 @@
 import type { Action } from '../data/controls';
-import type { TouchDriveScheme } from '../data/touch';
+import type { TouchDriveScheme, TouchStickSide } from '../data/touch';
 import type { InputManager } from '../sim/input/inputManager';
 import { TouchStick } from '../sim/input/touchStick';
 import type { ToolMode } from '../core/toolController';
@@ -178,6 +178,16 @@ export class TouchControls {
         if (b.dataset.hold === 'accelerate' || b.dataset.hold === 'brake') this.release(b);
       }
     }
+    this.measure();
+  }
+
+  /**
+   * Left (default) or Right. On the right the stick and the buttons trade places; the body
+   * class moves the HUD prompts that sit above the buttons to match.
+   */
+  setStickSide(side: TouchStickSide): void {
+    this.el.classList.toggle('stick-right', side === 'right');
+    document.body.classList.toggle('touch-swap', side === 'right');
     this.measure();
   }
 
