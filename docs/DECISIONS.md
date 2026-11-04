@@ -2393,10 +2393,17 @@ The owner asked for the stretch before the Daintree River to be a place to warm 
 - _The drop_: the ground is pinned at the lip and drops about 2.3 m in the next 2.5 m (about 45° over the 1 m grid), with a band of rock across the lip standing 0.7 m higher, so the nose goes over a face of about 3 m. It is a `ridge` stone with its riser on the downhill side, the crawl band's rock step turned round. A shallow mud hole lies at the foot. The short-wheelbase 4WD crawls off it in low range, pitching nose-down to 63°, and drives out.
 - _Steep descent_: straight down the north face, about 30° at the top, with the Ironbark park's erosion ruts.
 - _Axle twisters_: fourteen holes, 0.5 m deep, under alternate wheels with a 0.3 m mound beside each, as in the Ironbark park's harder line. Dug level across (`camber: 0.1`), so the twist is the holes' and not the hillside's.
-- _Bog trench_: cut 1.4 m below the ground with banks at 1.6 rise per metre, and four deep bogs end to end over about 50 m. The banks are well over 1.5 m above the bog floor, so `creb.test.ts`'s "no track runs in a trench" check skips this one track. `crebKnoll.test.ts` checks its walls instead.
+- _Bog trench_: cut 1.4 m below the ground with banks at 1.6 rise per metre, and four deep bogs end to end over about 50 m (deepened in v1.48). The banks are well over 1.5 m above the bog floor, so `creb.test.ts`'s "no track runs in a trench" check skips this one track. `crebKnoll.test.ts` checks its walls instead.
 
 **Junctions are pinned.** Each line's end on the loop is pinned to the loop's graded height there (`joinLoop`, measured). Unpinned, a line graded about half a metre above the loop left a narrow ridge across it where they met, and the autopilot stalled on the one below the steep descent. `crebKnoll.test.ts` checks the profiles agree and the loop has no hump at each junction.
 
 **Checked by driving** in the wet with the autopilot, low range and both lockers: the short-wheelbase 4WD round the loop and along every line (the bog trench with one winch to a marked rock on its bank, since `map.bogs` plant no trees), and the Troop Carrier on the rock climb, switchbacks, side slope and drop.
 
 **Not a forced route.** None of the lines is on the route, the timed sections or the scoring. The arrival notes in `creb.ts` say what each wants.
+
+## v1.48: the bog trench's bogs made deep enough
+
+v1.47's unit tests found one failure after it shipped: `creb.test.ts` holds every hand-placed bog on the map to the road bogs' rule, deep (sticky black soil) and more than 0.6 m, with a marked winch rock within 16 m, because `map.bogs` plant no trees of their own. Two of the bog trench's four bogs were 0.45 and 0.55 m, and its marked rocks stood ahead of the bogs rather than beside them.
+
+- The trench's bogs are now 0.62, 0.66, 0.72 and 0.64 m, and its four marked rocks stand on the bank beside each bog, alternating sides. The short-wheelbase 4WD still gets through in the wet with low range and both lockers, now with two pulls on the winch instead of one.
+- The mud hole below the drop stays a shallow splash (0.35 m, not sticky): a winch bog straight after a 3 m drop would be unfair. The test skips that one by id, with a note.
