@@ -238,6 +238,7 @@ export class PauseMenu {
         ${slider('engineVolume', 'Engine volume')}
         ${slider('ambienceVolume', 'Ambience volume')}
         <div class="setting-row controller-setting">Controller type<div class="seg">${controllerTypes.map((c) => `<button data-focus data-controller="${c}" class="${s.controller === c ? 'on' : ''}" aria-pressed="${s.controller === c}">${controllers[c].label}</button>`).join('')}</div></div>
+        <div class="setting-row frame-rate-setting">Frame rate<div class="seg"><button data-focus data-frame-rate="60" class="${s.frameRate === '60' ? 'on' : ''}" aria-pressed="${s.frameRate === '60'}">60</button><button data-focus data-frame-rate="screen" class="${s.frameRate === 'screen' ? 'on' : ''}" aria-pressed="${s.frameRate === 'screen'}">Screen</button></div></div>
         <div class="setting-row">Units<div class="seg"><button data-focus data-units="kmh" class="${s.units === 'kmh' ? 'on' : ''}">km/h</button><button data-focus data-units="mph" class="${s.units === 'mph' ? 'on' : ''}">mph</button></div></div>
         <div class="setting-row">HUD style<div class="seg">${pickableHudStyles.map((h) => `<button data-focus data-hud-style="${h}" class="${s.hudStyle === h ? 'on' : ''}" aria-pressed="${s.hudStyle === h}">${hudStyleLabels[h]}</button>`).join('')}</div></div>
         <div class="setting-row">Damage<div class="seg">${damageModes
@@ -320,6 +321,10 @@ export class PauseMenu {
     } else if (t.dataset.touchDrive) {
       this.settings.touchDrive = t.dataset.touchDrive as TouchDriveScheme;
       this.actions.changeSettings({ touchDrive: this.settings.touchDrive });
+      this.show('settings');
+    } else if (t.dataset.frameRate) {
+      this.settings.frameRate = t.dataset.frameRate === 'screen' ? 'screen' : '60';
+      this.actions.changeSettings({ frameRate: this.settings.frameRate });
       this.show('settings');
     } else if (t.dataset.units) {
       this.settings.units = t.dataset.units as Settings['units'];

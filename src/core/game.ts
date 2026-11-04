@@ -102,7 +102,7 @@ import { buildAudioFrame } from '../audio/frame';
 import { GameLoop } from './loop';
 import { ToolController } from './toolController';
 import { pendingUpdate } from './update';
-import { buildHudState } from './hudState';
+import { buildHudState, CourseHintCache } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
 import { damageMessage } from './damageMessages';
 import { installHook } from './testHook';
@@ -241,6 +241,12 @@ export class Game {
   autopilot: Autopilot | null = null;
   /** The phone test (`?bench`), once it starts. */
   private bench: Bench | null = null;
+  /** The course hint's track search, a few times a second (v1.49). */
+  private readonly hintCache = new CourseHintCache();
+  private readonly trackDistanceAt = (x: number, z: number): number =>
+    this.world.features.trackDistance[this.world.terrain.index(x, z)];
+  /** `?bench` times every refresh, so it runs without the frame cap. */
+  private readonly benchMode = new URLSearchParams(location.search).has('bench');
   /** Main-thread time spent in three.js rendering per frame (ms, smoothed). */
   sceneMs = 0;
   /** Called when settings change (audio hooks in here). */
@@ -587,6 +593,7 @@ export class Game {
       step: (dt) => this.step(dt),
       render: (alpha, frameDt) => this.renderFrame(alpha, frameDt),
     });
+    this.applyFrameRate();
     this.cameraDrag = new CameraDrag(
       view.renderer.domElement,
       () => !this.freeCamOn && !this.loop.paused && !this.toolMenu.isOpen,
@@ -866,6 +873,11 @@ export class Game {
     }
   }
 
+  /** The frame cap (v1.49): on unless Settings says Screen, and off for the phone test. */
+  private applyFrameRate(): void {
+    this.loop.capFrameRate = this.settings.frameRate !== 'screen' && !this.benchMode;
+  }
+
   changeSettings(s: Partial<Settings>): void {
     const prevQuality = this.settings.quality;
     this.settings = { ...this.settings, ...s };
@@ -881,6 +893,7 @@ export class Game {
     this.input.setTouchDrive(this.settings.touchDrive);
     this.touch.setDriveScheme(this.settings.touchDrive);
     this.audio.setSettings(this.settings);
+    this.applyFrameRate();
     this.onSettings?.(this.settings);
     this.save();
   }
@@ -2038,6 +2051,8 @@ export class Game {
         crawlCourses: this.world.map.crawlCourses,
         crawlTrails: this.world.map.crawlTrails,
         tracks: this.world.features.tracks,
+        trackDistanceAt: this.trackDistanceAt,
+        hintCache: this.hintCache,
         anchorInReach: this.anchorInReach,
         anchorCount: this.anchorCount,
         run: this.crawlRuns.run,
@@ -2084,8 +2099,7 @@ export class Game {
     this.input.consumeUi();
     this.frameCount++;
     if (this.frameCount === 3 && window.__game) window.__game.ready = true;
-    if (this.frameCount === 30 && new URLSearchParams(location.search).has('bench'))
-      this.bench = new Bench(this);
+    if (this.frameCount === 30 && this.benchMode) this.bench = new Bench(this);
   }
 
   /** The chase camera follows the car (each frame, and once before the first). */

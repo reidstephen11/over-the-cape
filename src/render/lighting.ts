@@ -3,6 +3,9 @@ import type { EnvironmentConfig } from '../data/environment';
 import type { QualityPreset } from '../data/quality';
 import { sunDirection } from './sky';
 
+const ORIGIN = new THREE.Vector3(0, 0, 0);
+const UP = new THREE.Vector3(0, 1, 0);
+
 /**
  * Sun and hemisphere light (SPEC §4). The sun's shadow camera follows a focus point
  * (the vehicle) and snaps to shadow-map texels so shadows don't shimmer.
@@ -61,11 +64,7 @@ export class Lighting {
   /** Centre the shadow area on `focus`. */
   follow(focus: THREE.Vector3): void {
     // Snap the focus to whole shadow texels in light space.
-    this.lightSpace.lookAt(
-      new THREE.Vector3(0, 0, 0),
-      this.sunDir.clone().negate(),
-      new THREE.Vector3(0, 1, 0),
-    );
+    this.lightSpace.lookAt(ORIGIN, this.tmp.copy(this.sunDir).negate(), UP);
     this.invLightSpace.copy(this.lightSpace).invert();
     const texel = (this.extent * 2) / this.mapSize;
     this.tmp.copy(focus).applyMatrix4(this.invLightSpace);

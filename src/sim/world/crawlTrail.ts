@@ -15,12 +15,15 @@ export function trailPoint(track: TrackInfo, at: number, lateral = 0) {
   };
 }
 
+const scratch = { d: 0, t: 0, side: 0 };
+
 export function trailProgress(track: TrackInfo, x: number, z: number) {
   const p = track.poly;
   let distance = Infinity,
     along = 0;
+  const hit = scratch;
   for (let i = 0; i < p.count - 1; i++) {
-    const hit = segmentDistance(x, z, p.xs[i], p.zs[i], p.xs[i + 1], p.zs[i + 1]);
+    segmentDistance(x, z, p.xs[i], p.zs[i], p.xs[i + 1], p.zs[i + 1], hit);
     if (hit.d < distance) {
       distance = hit.d;
       along = p.s[i] + (p.s[i + 1] - p.s[i]) * hit.t;

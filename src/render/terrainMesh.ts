@@ -117,6 +117,8 @@ interface Node {
   maxY: number;
   mesh: THREE.Mesh | null;
   lastUsed: number;
+  /** The four (or one) nodes a level down, found the first time they're asked for. */
+  kids: Node[] | null;
 }
 
 /**
@@ -125,6 +127,8 @@ interface Node {
  * levels are built on demand (a few per frame) and cached. A node only splits once
  * all its children are built, so there are never holes. Skirts hide level cracks.
  */
+const byDistance = (a: { d: number }, b: { d: number }) => a.d - b.d;
+
 export class TerrainMesh {
   readonly group = new THREE.Group();
   readonly material: THREE.MeshStandardMaterial;
@@ -143,7 +147,8 @@ export class TerrainMesh {
   private readonly roots: Node[] = [];
   private lodDistances: readonly number[] = [96, 230, 520];
   private frame = 0;
-  private readonly visible = new Set<Node>();
+  /** The nodes drawn this frame (an array: clearing a Set allocates a new table each time). */
+  private readonly visible: Node[] = [];
   /**
    * Main-thread time (ms) for on-demand node builds per frame. One node is always built
    * when one is needed; more only while under this.
@@ -278,23 +283,25 @@ export class TerrainMesh {
       maxY,
       mesh: null,
       lastUsed: 0,
+      kids: null,
     };
     this.nodes.set(key, n);
     return n;
   }
 
   private children(n: Node): Node[] {
-    if (n.level === 0) return [];
+    if (n.kids) return n.kids;
+    if (n.level === 0) return (n.kids = []);
     const childLevel = n.level - 1;
     const cs = LEVELS[childLevel].size;
     const size = LEVELS[n.level].size;
-    if (cs === size) return [this.node(childLevel, n.ix, n.iz)];
-    return [
+    if (cs === size) return (n.kids = [this.node(childLevel, n.ix, n.iz)]);
+    return (n.kids = [
       this.node(childLevel, n.ix, n.iz),
       this.node(childLevel, n.ix + cs, n.iz),
       this.node(childLevel, n.ix, n.iz + cs),
       this.node(childLevel, n.ix + cs, n.iz + cs),
-    ];
+    ]);
   }
 
   private distance(n: Node, eye: THREE.Vector3): number {
@@ -319,31 +326,23 @@ export class TerrainMesh {
     n.mesh = mesh;
   }
 
+  // Kept between frames so the walk below allocates nothing once the ground is built (v1.49).
+  private readonly want: Node[] = [];
+  private readonly requests: { n: Node; d: number }[] = [];
+  /** A build left a level over its cache limit with nothing it could free yet. */
+  private overLimit = false;
+
   /** Update which nodes are drawn for an eye position. `all` builds everything needed now. */
   update(eye: THREE.Vector3, all = false): void {
     this.frame++;
     const start = performance.now();
     let built = 0;
-    const want: Node[] = [];
-    const requests: { n: Node; d: number }[] = [];
-    const visit = (n: Node) => {
-      // Mark every node on the way down as used, not only the drawn ones, so the parents
-      // of the detailed chunks around the eye are never evicted (that made them thrash).
-      n.lastUsed = this.frame;
-      const d = this.distance(n, eye);
-      if (n.level > 0 && d < this.lodDistances[n.level - 1]) {
-        const kids = this.children(n);
-        const missing = kids.filter((k) => !k.mesh);
-        if (missing.length === 0) {
-          for (const k of kids) visit(k);
-          return;
-        }
-        for (const k of missing) requests.push({ n: k, d });
-      }
-      want.push(n);
-    };
-    for (const r of this.roots) visit(r);
-    requests.sort((a, b) => a.d - b.d);
+    const want = this.want;
+    const requests = this.requests;
+    want.length = 0;
+    requests.length = 0;
+    for (const r of this.roots) this.visit(r, eye);
+    if (requests.length > 1) requests.sort(byDistance);
     for (const r of requests) {
       if (!all && built > 0 && performance.now() - start > this.buildMs) break;
       if (!r.n.mesh) {
@@ -356,27 +355,51 @@ export class TerrainMesh {
       return;
     }
     for (const n of this.visible) if (n.mesh) n.mesh.visible = false;
-    this.visible.clear();
+    this.visible.length = 0;
     for (const n of want) {
       if (!n.mesh) continue;
       n.mesh.visible = true;
       n.lastUsed = this.frame;
-      this.visible.add(n);
+      this.visible.push(n);
     }
-    this.evict();
+    // The cache only grows by a build, so only a build (or one that left it over) can need it.
+    if (built > 0 || this.overLimit) this.evict();
+  }
+
+  private visit(n: Node, eye: THREE.Vector3): void {
+    // Mark every node on the way down as used, not only the drawn ones, so the parents
+    // of the detailed chunks around the eye are never evicted (that made them thrash).
+    n.lastUsed = this.frame;
+    const d = this.distance(n, eye);
+    if (n.level > 0 && d < this.lodDistances[n.level - 1]) {
+      const kids = this.children(n);
+      let missing = 0;
+      for (const k of kids) if (!k.mesh) missing++;
+      if (missing === 0) {
+        for (const k of kids) this.visit(k, eye);
+        return;
+      }
+      for (const k of kids) if (!k.mesh) this.requests.push({ n: k, d });
+    }
+    this.want.push(n);
   }
 
   private evict(): void {
+    this.overLimit = false;
     for (let level = 0; level <= 1; level++) {
       const built = [...this.nodes.values()].filter((n) => n.level === level && n.mesh);
       if (built.length <= this.cacheLimit[level]) continue;
       built.sort((a, b) => a.lastUsed - b.lastUsed);
+      let left = built.length;
       for (const n of built.slice(0, built.length - this.cacheLimit[level])) {
-        if (this.visible.has(n) || n.lastUsed === this.frame || !n.mesh) continue;
+        // Drawn nodes were all used this frame.
+        if (n.lastUsed === this.frame || !n.mesh) continue;
         this.group.remove(n.mesh);
         n.mesh.geometry.dispose();
         n.mesh = null;
+        left--;
       }
+      if (left > this.cacheLimit[level]) this.overLimit = true;
     }
   }
 

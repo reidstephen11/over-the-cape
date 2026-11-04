@@ -456,6 +456,10 @@ export class Vegetation {
   private readonly treeIds: number[];
   private readonly treeLod: Uint8Array;
   private readonly cover: THREE.BatchedMesh;
+  /** Each ground-cover instance's world bounding sphere (x, y, z, radius by instance id). */
+  private coverSpheres: Float32Array;
+  /** Each cover geometry's own bounding sphere: radius, centre height and centre off its axis. */
+  private readonly coverBounds: { r: number; y: number; off: number }[] = [];
   private readonly coverGeo: number[] = [];
   private readonly coverTiles = new Map<string, number[]>();
   private lodTimer = 0;
@@ -630,10 +634,18 @@ export class Vegetation {
     this.cover.name = 'ground-cover';
     this.cover.castShadow = false;
     this.cover.receiveShadow = true;
-    // Rebuilt around the camera, so three's per-instance culling stays; the depth sort of
-    // up to 23,000 opaque instances every draw doesn't.
+    // No depth sort of up to 23,000 opaque instances every draw. Culled from spheres written
+    // as each tile is filled (v1.49), not three's own per-instance culling, which rebuilt
+    // every instance's sphere from its matrix each draw.
     this.cover.sortObjects = false;
-    for (const g of coverGeos) this.coverGeo.push(this.cover.addGeometry(g));
+    for (const g of coverGeos) {
+      this.coverGeo.push(this.cover.addGeometry(g));
+      g.computeBoundingSphere();
+      const c = g.boundingSphere!.center;
+      this.coverBounds.push({ r: g.boundingSphere!.radius, y: c.y, off: Math.hypot(c.x, c.z) });
+    }
+    this.coverSpheres = new Float32Array(this.cover.maxInstanceCount * 4);
+    cullTreesBySphere(this.cover, this.coverSpheres);
     this.group.add(this.cover);
   }
 
@@ -643,6 +655,9 @@ export class Vegetation {
     for (const ids of this.coverTiles.values()) for (const id of ids) this.cover.deleteInstance(id);
     this.coverTiles.clear();
     this.cover.setInstanceCount(coverCapacity(q));
+    if (this.coverSpheres.length < this.cover.maxInstanceCount * 4)
+      this.coverSpheres = new Float32Array(this.cover.maxInstanceCount * 4);
+    cullTreesBySphere(this.cover, this.coverSpheres);
   }
 
   update(eye: THREE.Vector3, dt: number): void {
@@ -749,16 +764,22 @@ export class Vegetation {
       if (!shrub && forest && r2 < 0.6) continue;
       if (shrub && this.nearSpawn(x, z)) continue;
       if (this.cover.instanceCount >= this.cover.maxInstanceCount) break;
-      const geo = shrub ? this.coverGeo[3 + Math.floor(r2 * 2)] : this.coverGeo[Math.floor(r2 * 3)];
-      const id = this.cover.addInstance(geo);
+      const kind = shrub ? 3 + Math.floor(r2 * 2) : Math.floor(r2 * 3);
+      const id = this.cover.addInstance(this.coverGeo[kind]);
       const s = shrub ? 0.8 + r3 * 0.9 : 0.7 + r3 * 0.6;
+      const sy = s * (0.8 + r2 * 0.4);
+      const y = t.heightAt(x, z) - 0.05;
       this.tmpQ.setFromEuler(this.tmpE.set(0, r3 * Math.PI * 2, 0));
-      this.tmpM.compose(
-        this.tmpV.set(x, t.heightAt(x, z) - 0.05, z),
-        this.tmpQ,
-        this.tmpS.set(s, s * (0.8 + r2 * 0.4), s),
-      );
+      this.tmpM.compose(this.tmpV.set(x, y, z), this.tmpQ, this.tmpS.set(s, sy, s));
       this.cover.setMatrixAt(id, this.tmpM);
+      // The geometry's sphere, moved and scaled (by the larger scale, so it still holds), kept
+      // on the instance's axis and grown by how far off it the centre was, so any turn fits.
+      const bounds = this.coverBounds[kind];
+      const sp = this.coverSpheres;
+      sp[id * 4] = x;
+      sp[id * 4 + 1] = y + bounds.y * sy;
+      sp[id * 4 + 2] = z;
+      sp[id * 4 + 3] = bounds.r * Math.max(s, sy) + bounds.off * s;
       const k2 = 0.9 + r1 * 0.2;
       this.cover.setColorAt(id, this.tmpC.setRGB(k2, k2, k2));
       ids.push(id);

@@ -33,6 +33,13 @@ export interface HudInputs {
   crawlCourses?: readonly CrawlCourseDef[];
   crawlTrails?: readonly CrawlTrailDef[];
   tracks?: readonly TrackInfo[];
+  /**
+   * Distance (m) from (x, z) to the nearest track's edge, from the map's 1 m grid: the course
+   * hint's track search is skipped when the car is well off every track.
+   */
+  trackDistanceAt?: (x: number, z: number) => number;
+  /** Keeps the course hint's track search to a few times a second (none: every call). */
+  hintCache?: CourseHintCache;
   /** Is there a winch anchor in reach (checked a few times a second)? */
   anchorInReach: boolean;
   /** How many anchors are in reach: with two or more, USE opens the chooser. */
@@ -97,6 +104,63 @@ const jobText: Record<RepairKind, [string, string]> = {
 };
 
 /** Build what the HUD shows this frame, including context prompts (SPEC §9). */
+interface NearTrack {
+  track: TrackInfo;
+  distance: number;
+  along: number;
+}
+
+/** The crawl trail and the route-hint track nearest the car, as of the last search. */
+interface HintSearch {
+  trail: (NearTrack & { trail: CrawlTrailDef }) | null;
+  link: NearTrack | null;
+}
+
+/** How long the course hint's track search is reused (ms): five searches a second. */
+const HINT_SEARCH_MS = 200;
+/**
+ * Further than this from every track's edge on the 1 m grid (m), no hint can show: a hint
+ * needs the car within 1 m of the edge, and the grid sample can be 0.7 m off the car and
+ * rounded by 0.5 m.
+ */
+const HINT_TRACK_REACH = 3;
+
+/**
+ * The course hint's search of every crawl trail's and route hint's 1 m polyline was the HUD's
+ * costliest work each frame (v1.49): the Bloomfield track alone has 2,300 points. This keeps
+ * one search for HINT_SEARCH_MS.
+ */
+export class CourseHintCache {
+  private at = -Infinity;
+  last: HintSearch = { trail: null, link: null };
+
+  /** True (and restarts the wait) when the last search is old enough to repeat. */
+  due(now: number): boolean {
+    if (now - this.at < HINT_SEARCH_MS) return false;
+    this.at = now;
+    return true;
+  }
+}
+
+/** The nearest crawl trail (or its bypass) and route-hint track to (x, z). */
+export function searchHintTracks(i: HudInputs, x: number, z: number): HintSearch {
+  const out: HintSearch = { trail: null, link: null };
+  if (i.trackDistanceAt && i.trackDistanceAt(x, z) > HINT_TRACK_REACH) return out;
+  const tracks = i.tracks ?? [];
+  for (const trail of i.crawlTrails ?? [])
+    for (const track of tracks) {
+      if (track.def.id !== trail.trackId && track.def.id !== trail.bypassTrackId) continue;
+      const hit = trailProgress(track, x, z);
+      if (!out.trail || hit.distance < out.trail.distance) out.trail = { trail, track, ...hit };
+    }
+  for (const track of tracks) {
+    if (!track.def.routeHint) continue;
+    const hit = trailProgress(track, x, z);
+    if (!out.link || hit.distance < out.link.distance) out.link = { track, ...hit };
+  }
+  return out;
+}
+
 export function buildHudState(i: HudInputs): HudState {
   const g = glyphsFor(i.device, i.controller, i.touchDrive ?? defaultTouchDrive);
   const kb = i.device === 'keyboard';
@@ -240,16 +304,20 @@ export function buildHudState(i: HudInputs): HudState {
       break;
     }
 
-  if (!courseHint && i.mode === 'drive') {
+  let hintTracks: HintSearch | null = null;
+  if (i.mode === 'drive') {
+    const cache = i.hintCache;
+    if (!cache) hintTracks = searchHintTracks(i, p.x, p.z);
+    else {
+      if (cache.due(performance.now())) cache.last = searchHintTracks(i, p.x, p.z);
+      hintTracks = cache.last;
+    }
+  }
+
+  if (!courseHint && hintTracks) {
     // The nearest crawl trail, so where one obstacle ends and the next begins the hint
     // follows the one the car is on.
-    const near = (i.crawlTrails ?? [])
-      .flatMap((trail) =>
-        (i.tracks ?? [])
-          .filter((t) => t.def.id === trail.trackId || t.def.id === trail.bypassTrackId)
-          .map((track) => ({ trail, track, ...trailProgress(track, p.x, p.z) })),
-      )
-      .sort((a, b) => a.distance - b.distance)[0];
+    const near = hintTracks.trail;
     if (near && near.distance <= near.track.def.width / 2 + 1) {
       const trail = near.trail;
       const bypass = near.track.def.id === trail.bypassTrackId;
@@ -271,11 +339,8 @@ export function buildHudState(i: HudInputs): HudState {
     }
   }
 
-  if (!courseHint && i.mode === 'drive') {
-    const link = (i.tracks ?? [])
-      .filter((t) => t.def.routeHint)
-      .map((track) => ({ track, ...trailProgress(track, p.x, p.z) }))
-      .sort((a, b) => a.distance - b.distance)[0];
+  if (!courseHint && hintTracks) {
+    const link = hintTracks.link;
     if (link && link.distance < link.track.def.width / 2 + 1)
       courseHint = {
         title: link.track.def.name ?? '4WD Challenge Loop',

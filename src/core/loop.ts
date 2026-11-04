@@ -7,12 +7,25 @@ export interface LoopCallbacks {
   render(alpha: number, frameDt: number): void;
 }
 
-/** Main-thread time per frame (ms), smoothed. */
+/** Main-thread time per drawn frame (ms), smoothed. */
 export interface LoopTimings {
   sim: number;
   render: number;
   steps: number;
 }
+
+/**
+ * With the cap on, a screen refresh that ran no physics step is drawn only once this long has
+ * passed since the last drawn frame (ms): just under a 60 Hz frame, so a 60 Hz screen draws
+ * every refresh and a 120 Hz one about every other.
+ */
+export const MIN_DRAW_MS = 15;
+/**
+ * A refresh that did run a step is drawn once this long has passed (ms). Above a 120 Hz frame,
+ * so two steps on neighbouring refreshes (the clock's phase drifting) still draw once; below a
+ * 90 Hz frame, so a 90 Hz screen, which steps on two refreshes in three, draws every step.
+ */
+export const MIN_STEP_DRAW_MS = 9.5;
 
 /**
  * Fixed 60 Hz simulation step with interpolated rendering (SPEC §3 core/).
@@ -27,9 +40,19 @@ export class GameLoop {
    * steps every frame, whatever the frame took (0 = keep to the clock).
    */
   fixedSteps = 0;
+  /**
+   * Draw at most about as often as the physics steps (v1.49). A 120 Hz phone otherwise drew
+   * every frame twice per step, colour and shadow pass both, for a picture that moved only by
+   * interpolation, and ran hot. Off ("Frame rate: Screen") draws on every refresh.
+   */
+  capFrameRate = true;
   readonly timings: LoopTimings = { sim: 0, render: 0, steps: 0 };
   private acc = 0;
   private last = 0;
+  private lastDraw = 0;
+  /** Simulation time and steps since the last drawn frame. */
+  private simMs = 0;
+  private stepsSinceDraw = 0;
   private raf = 0;
   private running = false;
 
@@ -39,6 +62,7 @@ export class GameLoop {
     if (this.running) return;
     this.running = true;
     this.last = performance.now();
+    this.lastDraw = this.last;
     this.raf = requestAnimationFrame(this.frame);
   }
 
@@ -68,11 +92,25 @@ export class GameLoop {
       if (steps === MAX_STEPS_PER_FRAME) this.acc = 0;
     }
     const t1 = performance.now();
-    this.cb.render(this.paused ? 1 : this.acc / PHYSICS_DT, frameDt);
+    this.simMs += t1 - t0;
+    this.stepsSinceDraw += steps;
+    // Tests driving fixed steps and a paused game (the menus still animate) draw every refresh.
+    if (
+      this.capFrameRate &&
+      !this.paused &&
+      this.fixedSteps === 0 &&
+      now - this.lastDraw < (steps > 0 ? MIN_STEP_DRAW_MS : MIN_DRAW_MS)
+    )
+      return;
+    const drawDt = Math.min(0.25, Math.max(0, (now - this.lastDraw) / 1000));
+    this.lastDraw = now;
+    this.cb.render(this.paused ? 1 : this.acc / PHYSICS_DT, drawDt);
     const t2 = performance.now();
     const k = 0.1;
-    this.timings.sim += (t1 - t0 - this.timings.sim) * k;
+    this.timings.sim += (this.simMs - this.timings.sim) * k;
     this.timings.render += (t2 - t1 - this.timings.render) * k;
-    this.timings.steps += (steps - this.timings.steps) * k;
+    this.timings.steps += (this.stepsSinceDraw - this.timings.steps) * k;
+    this.simMs = 0;
+    this.stepsSinceDraw = 0;
   };
 }

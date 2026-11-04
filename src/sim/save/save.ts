@@ -32,7 +32,14 @@ export interface Settings {
    * v1.35-v1.36 with "Manual with clutch" ('clutch') loads as Manual.
    */
   gearbox: GearboxSetting;
+  /**
+   * How often the picture is drawn: '60' caps it at the physics rate (the default, v1.49), and
+   * 'screen' draws on every refresh of a faster screen. Missing on older saves: '60'.
+   */
+  frameRate: FrameRateSetting;
 }
+
+export type FrameRateSetting = '60' | 'screen';
 
 /** How far you've got in one episode. */
 export interface EpisodeProgress {
@@ -76,6 +83,7 @@ export const defaultSettings: Settings = {
   touchDrive: defaultTouchDrive,
   hudStyle: defaultHudStyle,
   gearbox: 'automatic',
+  frameRate: '60',
 };
 
 /** Minimal storage interface so tests can pass a fake. */
@@ -130,6 +138,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
           : st.gearbox === 'clutch'
             ? 'manual'
             : defaultSettings.gearbox,
+        frameRate: st.frameRate === 'screen' ? 'screen' : '60',
       },
       vehicle: isVehicleId(data.vehicle) ? data.vehicle : 'shortie',
       episode: isEpisodeId(data.episode) ? data.episode : episodeOrder[0],

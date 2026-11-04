@@ -53,6 +53,8 @@ export class ChaseCamera {
   private readonly look = new THREE.Vector3();
   private readonly tmp = new THREE.Vector3();
   private readonly dir = new THREE.Vector3();
+  private readonly desired = new THREE.Vector3();
+  private readonly camPos = new THREE.Vector3();
   private slopeSmoothed = 0;
   private speedSmoothed = 0;
   /** Smoothed height of the look target. */
@@ -213,7 +215,7 @@ export class ChaseCamera {
     // Never let the smoothed target fall far behind (big drops, jack, teleports).
     this.targetY = THREE.MathUtils.clamp(this.targetY, t.position.y - 0.6, t.position.y + 0.6);
     this.look.y = this.targetY + profile.targetHeight * scale;
-    const desired = new THREE.Vector3().copy(this.look).addScaledVector(back, radius * Math.cos(elevation));
+    const desired = this.desired.copy(this.look).addScaledVector(back, radius * Math.cos(elevation));
     desired.y += radius * Math.sin(elevation);
 
     const first = !this.initialised;
@@ -224,7 +226,7 @@ export class ChaseCamera {
 
     // Keep the view line clear: push the camera towards the target if anything is in the
     // way (straight away), then ease back out once it clears so it doesn't pop.
-    const camPos = this.pos.clone();
+    const camPos = this.camPos.copy(this.pos);
     this.dir.copy(camPos).sub(this.look);
     const full = this.dir.length();
     if (full > 1e-3) {
