@@ -55,9 +55,9 @@ export const mqTuning: VehicleTuning = {
     { cx: 0, cy: 0.85, cz: 0.72, hx: 0.8, hy: 0.42, hz: 1.36 },
     { cx: 0, cy: 0.3, cz: 1.85, hx: 0.8, hy: 0.2, hz: 0.22 },
     // The spare on the rear door.
-    { cx: 0.2, cy: 0.5, cz: 2.2, hx: 0.4, hy: 0.4, hz: 0.12 },
+    { cx: 0.22, cy: 0.56, cz: 2.22, hx: 0.4, hy: 0.4, hz: 0.12 },
     // Bull bar, the rear bar with its tow hitch, and the roof rack with its load.
-    { cx: 0, cy: 0.25, cz: -2.12, hx: 0.9, hy: 0.3, hz: 0.2 },
+    { cx: 0, cy: 0.2, cz: -2.0, hx: 0.9, hy: 0.3, hz: 0.14 },
     { cx: 0, cy: 0.0, cz: 2.22, hx: 0.88, hy: 0.075, hz: 0.07 },
     { cx: 0, cy: 1.5, cz: 0.95, hx: 0.72, hy: 0.16, hz: 1.05 },
   ],
@@ -99,6 +99,7 @@ export const mqTuning: VehicleTuning = {
   // Automatic mode's coupling: the game changes gear itself and this stands in for the clutch.
   converter: { capacity: 80, stallRatio: 1.25, couplingPoint: 0.8 },
   gearbox: {
+    kind: 'manual',
     // The four-speed (enthusiast figures, unverified).
     ratios: [3.592, 2.246, 1.415, 1.0],
     reverse: 3.657,
@@ -148,7 +149,7 @@ export const mqTuning: VehicleTuning = {
   // The air cleaner sits on top of the engine behind the grille, drawing from under the bonnet.
   intakeHeight: 0.9,
   intake: { x: 0.45, y: 0.9 - R - 0.12, z: -1.5 },
-  winchMount: { x: 0, y: 0.1, z: -2.3 },
+  winchMount: { x: 0, y: 0.04, z: -2.16 },
   towPoint: { x: 0, y: 0.0, z: 2.36 },
 };
 

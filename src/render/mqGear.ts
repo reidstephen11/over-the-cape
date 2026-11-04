@@ -50,8 +50,8 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: numbe
 function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   const face = tuning.winchMount.z + 0.04,
     back = NOSE - 0.02,
-    low = 0.02,
-    top = 0.26;
+    low = -0.1,
+    top = 0.1;
   const outline = new THREE.Shape();
   outline.moveTo(-0.62, -face);
   outline.lineTo(0.62, -face);
@@ -74,30 +74,34 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   b.push().translate(0, low + 0.01, 0);
   b.geometry(pan, C.bar);
   b.pop();
-  for (const y of [0.08, 0.2]) b.block(0, y, face - 0.004, 1.22, 0.012, 0.01, C.bar, M.Metal, Z.Front, 0.004);
-  for (const x of [-0.42, 0.42]) b.block(x, 0.04, back + 0.08, 0.08, 0.12, 0.2, C.bar, M.Metal, Z.Trim, 0.01);
+  for (const y of [-0.04, 0.06])
+    b.block(0, y, face - 0.004, 1.22, 0.012, 0.01, C.bar, M.Metal, Z.Front, 0.004);
+  for (const x of [-0.42, 0.42])
+    b.block(x, -0.04, back + 0.08, 0.08, 0.12, 0.2, C.bar, M.Metal, Z.Trim, 0.01);
   // Centre hoop and side loops, bent from one size of tube.
   const zt = NOSE - 0.1;
-  tube(b, [v(-0.28, top, zt - 0.03), v(-0.28, 0.62, zt), v(0.28, 0.62, zt), v(0.28, top, zt - 0.03)], 0.03);
+  tube(b, [v(-0.28, top, zt - 0.03), v(-0.28, 0.6, zt), v(0.28, 0.6, zt), v(0.28, top, zt - 0.03)], 0.03);
   for (const side of [-1, 1])
     tube(
       b,
       [
-        v(side * 0.85, top, back - 0.08),
-        v(side * 0.83, 0.55, zt + 0.02),
-        v(side * 0.68, 0.58, zt),
-        v(side * 0.28, 0.58, zt),
+        v(side * 0.85, top, back - 0.06),
+        v(side * 0.83, 0.53, zt + 0.02),
+        v(side * 0.68, 0.56, zt),
+        v(side * 0.28, 0.56, zt),
       ],
       0.026,
     );
-  b.rod(v(-0.28, 0.43, zt - 0.015), v(0.28, 0.43, zt - 0.015), 0.022, C.bar, M.Metal, Z.Front);
-  // Winch on the pan: drum, motor on the left end, gearbox on the right, roller fairlead.
+  b.rod(v(-0.28, 0.4, zt - 0.015), v(0.28, 0.4, zt - 0.015), 0.022, C.bar, M.Metal, Z.Front);
+  // Winch in its cradle on the pan: drum, motor on the left end, gearbox on the right,
+  // roller fairlead in the pan's face.
   const wz = (face + back) / 2;
-  b.rod(v(-0.2, top - 0.03, wz), v(0.2, top - 0.03, wz), 0.06, C.bar, M.Metal, Z.Front);
+  b.rod(v(-0.2, top + 0.05, wz), v(0.2, top + 0.05, wz), 0.06, C.bar, M.Metal, Z.Front);
   for (let i = 0; i < 12; i++)
-    b.ring(-0.14 + i * 0.025, top - 0.03, wz, 0.058, 0.005, C.steel, M.Metal, 'x', Z.Front);
-  b.rod(v(-0.36, top - 0.03, wz), v(-0.21, top - 0.03, wz), 0.055, C.bar, M.Metal, Z.Front);
-  b.block(0.24, top - 0.03, wz, 0.08, 0.15, 0.15, C.rubber, M.Rubber, Z.Front, 0.015);
+    b.ring(-0.14 + i * 0.025, top + 0.05, wz, 0.058, 0.005, C.steel, M.Metal, 'x', Z.Front);
+  b.rod(v(-0.36, top + 0.05, wz), v(-0.21, top + 0.05, wz), 0.055, C.bar, M.Metal, Z.Front);
+  b.block(0.24, top + 0.05, wz, 0.08, 0.15, 0.15, C.rubber, M.Rubber, Z.Front, 0.015);
+  b.block(0, top + 0.01, wz, 0.5, 0.03, 0.2, C.bar, M.Metal, Z.Front, 0.006);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.022, 0.2, 0.09, 0.03, C.steel, M.Metal, Z.Front, 0.006);
   for (const y of [m.y - 0.03, m.y + 0.03])
@@ -106,7 +110,7 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.rod(v(x, m.y - 0.045, face - 0.035), v(x, m.y + 0.045, face - 0.035), 0.014, C.steel, M.Metal, Z.Front);
   b.ring(m.x, m.y, face - 0.05, 0.022, 0.007, C.red, M.Paint, 'z', Z.Front);
   for (const side of [-1, 1]) shackle(b, side * 0.58, low - 0.02, face + 0.06, -1);
-  plate(b, -0.42, 0.14, face - 0.016, -1);
+  plate(b, -0.42, 0.0, face - 0.016, -1);
 }
 
 /** Steel rear bar across the back with a step, recovery points and the tow ball. */
@@ -130,15 +134,16 @@ function rearBar(b: VehicleBuilder, tuning: VehicleTuning): void {
 /** The swing-away spare carrier on the rear door, hinged on the right post. */
 function doorSpare(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: VehicleTuning): void {
   const hx = 0.74,
-    sx = 0.14,
+    sx = 0.22,
     sy = 0.56;
   const w = tuning.wheelWidth;
   // Hinge post, the arm across the door and the bracket behind the wheel.
   b.rod(v(hx, 0.12, TAIL + 0.07), v(hx, 1.0, TAIL + 0.07), 0.022, C.bar, M.Metal, Z.Rear);
-  for (const y of [0.16, 0.96]) b.block(hx - 0.02, y, TAIL + 0.04, 0.08, 0.05, 0.06, C.bar, M.Metal, Z.Rear, 0.008);
+  for (const y of [0.16, 0.96])
+    b.block(hx - 0.02, y, TAIL + 0.04, 0.08, 0.05, 0.06, C.bar, M.Metal, Z.Rear, 0.008);
   b.block((hx + sx) / 2, sy, TAIL + 0.07, hx - sx + 0.1, 0.06, 0.04, C.bar, M.Metal, Z.Rear, 0.008);
   b.block(sx, sy, TAIL + 0.09, 0.3, 0.3, 0.04, C.bar, M.Metal, Z.Rear, 0.01);
-  b.block(-0.62, sy, TAIL + 0.04, 0.05, 0.08, 0.05, C.bar, M.Metal, Z.Rear, 0.008);
+  b.block(-0.2, sy, TAIL + 0.04, 0.05, 0.08, 0.05, C.bar, M.Metal, Z.Rear, 0.008);
   b.tag = Z.Rear;
   b.push().translate(sx, sy, TAIL + 0.11 + w / 2);
   b.geometry(wheel.clone(), C.rubber);
@@ -182,7 +187,14 @@ function rack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   for (const side of [-1, 1]) {
     for (const z of [0.0, 0.7, 1.4, back - 0.06]) {
       b.block(side * gutter, ROOF_EDGE + 0.02, z, 0.03, 0.05, 0.07, C.bar, M.Metal, Z.Roof, 0.006);
-      b.rod(v(side * gutter, ROOF_EDGE + 0.03, z), v(side * hx, DECK - 0.02, z), 0.014, C.bar, M.Metal, Z.Roof);
+      b.rod(
+        v(side * gutter, ROOF_EDGE + 0.03, z),
+        v(side * hx, DECK - 0.02, z),
+        0.014,
+        C.bar,
+        M.Metal,
+        Z.Roof,
+      );
     }
     b.rod(v(side * hx, DECK - 0.02, front), v(side * hx, DECK - 0.02, back), 0.018, C.bar, M.Metal, Z.Roof);
     b.rod(v(side * hx, rail, front + 0.06), v(side * hx, rail, back - 0.06), 0.015, C.bar, M.Metal, Z.Roof);
@@ -216,7 +228,8 @@ function rack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   b.rod(v(sx, DECK + 0.01, sz), v(sx, DECK + tuning.wheelWidth + 0.05, sz), 0.012, C.steel, M.Metal, Z.Roof);
   b.block(sx, DECK + tuning.wheelWidth + 0.04, sz, 0.22, 0.02, 0.05, C.bar, M.Metal, Z.Roof, 0.006);
   b.block(0.3, DECK + 0.12, 0.3, 0.56, 0.22, 0.7, new THREE.Color('#6E6B4E'), M.Fabric, Z.Roof, 0.05);
-  for (const z of [0.12, 0.5]) b.block(0.3, DECK + 0.12, z, 0.58, 0.235, 0.035, C.rubber, M.Rubber, Z.Roof, 0.01);
+  for (const z of [0.12, 0.5])
+    b.block(0.3, DECK + 0.12, z, 0.58, 0.235, 0.035, C.rubber, M.Rubber, Z.Roof, 0.01);
   b.block(0.3, DECK + 0.09, 0.98, 0.56, 0.16, 0.4, C.bar.clone().multiplyScalar(1.6), M.Metal, Z.Roof, 0.012);
   // Whip aerial on the left guard by the screen.
   b.block(-0.76, 0.62, -0.8, 0.05, 0.03, 0.05, C.rubber, M.Rubber, Z.Front);
@@ -240,10 +253,21 @@ export function buildMqPlank(index: number): THREE.BufferGeometry {
     y = DECK + 0.037;
   b.block(x, y, z, 0.29, 0.05, 1.9, wood, M.Fabric, Z.Roof);
   for (let i = 0; i < 4; i++)
-    b.block(x - 0.11 + i * 0.073, y + 0.026, z, 0.004, 0.003, 1.84, wood.clone().multiplyScalar(0.74), M.Fabric, Z.Roof);
+    b.block(
+      x - 0.11 + i * 0.073,
+      y + 0.026,
+      z,
+      0.004,
+      0.003,
+      1.84,
+      wood.clone().multiplyScalar(0.74),
+      M.Fabric,
+      Z.Roof,
+    );
   for (const zz of [0.15, 1.65]) {
     b.block(x, y + 0.03, zz, 0.3, 0.012, 0.045, C.rubber, M.Rubber, Z.Roof);
-    for (const side of [-1, 1]) b.block(x + side * 0.152, y - 0.01, zz, 0.012, 0.08, 0.045, C.rubber, M.Rubber, Z.Roof);
+    for (const side of [-1, 1])
+      b.block(x + side * 0.152, y - 0.01, zz, 0.012, 0.08, 0.045, C.rubber, M.Rubber, Z.Roof);
     b.block(x + 0.12, y + 0.04, zz, 0.035, 0.012, 0.055, C.steel, M.Metal, Z.Roof);
   }
   return cleanGeometry(b.build());
@@ -288,7 +312,11 @@ export function buildMqWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   const circle = (cx: number, cy: number, rr: number, n: number) =>
     Array.from(
       { length: n },
-      (_, i) => new THREE.Vector2(cx + rr * Math.cos((i * Math.PI * 2) / n), cy + rr * Math.sin((i * Math.PI * 2) / n)),
+      (_, i) =>
+        new THREE.Vector2(
+          cx + rr * Math.cos((i * Math.PI * 2) / n),
+          cy + rr * Math.sin((i * Math.PI * 2) / n),
+        ),
     );
   for (const side of [-1, 1]) {
     b.ring(side * w * 0.5, 0, 0, r * 0.76, 0.004, tyre.clone().multiplyScalar(1.4), M.Rubber, 'x');
@@ -326,7 +354,17 @@ export function buildMqWheel(tuning: VehicleTuning): THREE.BufferGeometry {
       .rotate(0, 0, -Math.PI / 2);
     b.geometry(new THREE.CylinderGeometry(0.048, 0.056, 0.05, 12), C.steel.clone().multiplyScalar(0.92));
     b.pop();
-    b.block(side * (w * 0.5 + 0.041), 0, 0, 0.006, 0.05, 0.012, C.steel.clone().multiplyScalar(0.7), M.Metal, Z.Trim);
+    b.block(
+      side * (w * 0.5 + 0.041),
+      0,
+      0,
+      0.006,
+      0.05,
+      0.012,
+      C.steel.clone().multiplyScalar(0.7),
+      M.Metal,
+      Z.Trim,
+    );
   }
   return cleanGeometry(b.build());
 }

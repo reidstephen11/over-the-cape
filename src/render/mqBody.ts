@@ -202,18 +202,33 @@ function wordAcross(
 ): void {
   const gap = 0.3;
   const total = [...word].reduce((s, c) => s + strokeWidth(c), 0) + gap * (word.length - 1);
-  // Reads left to right from where it faces: the reader's left is +x in front, -x behind.
+  // Reads left to right from where it faces: a reader in front has +x on their left and
+  // reads towards -x; a reader behind reads towards +x.
   let u = -total / 2;
   for (const c of word) {
     for (const [a0, v0, a1, v1] of strokes(c)) {
-      const cx = x - facing * (u + (a0 + a1) / 2) * h;
-      b.block(cx, y + ((v0 + v1) / 2 - 0.5) * h, z, (a1 - a0) * h, (v1 - v0) * h, depth, color, slot as typeof b.slot, zone);
+      const cx = x + facing * (u + (a0 + a1) / 2) * h;
+      b.block(
+        cx,
+        y + ((v0 + v1) / 2 - 0.5) * h,
+        z,
+        (a1 - a0) * h,
+        (v1 - v0) * h,
+        depth,
+        color,
+        slot as typeof b.slot,
+        zone,
+      );
     }
     u += strokeWidth(c) + gap;
   }
 }
 
-/** A word in stroke capitals of height h laid along a body side, from z0 reading towards z1. */
+/**
+ * A word in stroke capitals of height h laid along a body side, from z0 reading towards z1.
+ * A reader on the right side has the front on their right, so reads towards -z; on the left
+ * side towards +z.
+ */
 function wordAlong(
   b: VehicleBuilder,
   side: number,
@@ -284,7 +299,14 @@ function frontClip(b: VehicleBuilder): void {
       M.Rubber,
       Z.Front,
     );
-  b.rod({ x: -0.71, y: BELT + 0.0015, z: -0.7 }, { x: 0.71, y: BELT + 0.0015, z: -0.7 }, 0.0028, C.rubber, M.Rubber, Z.Front);
+  b.rod(
+    { x: -0.71, y: BELT + 0.0015, z: -0.7 },
+    { x: 0.71, y: BELT + 0.0015, z: -0.7 },
+    0.0028,
+    C.rubber,
+    M.Rubber,
+    Z.Front,
+  );
   for (const x of [-0.19, 0.19])
     b.block(x, BELT + 0.004, -1.26, 0.09, 0.008, 1.0, C.paint, M.Paint, Z.Front, 0.004);
   // Cowl between the bonnet and the screen, with its ventilation slots.
@@ -299,7 +321,8 @@ function frontClip(b: VehicleBuilder): void {
   b.block(0, 0.335, NOSE + 0.045, 0.78, 0.3, 0.02, C.well, M.Rubber, Z.Front);
   for (let i = 0; i < 7; i++)
     b.block(0, 0.2 + i * 0.045, NOSE + 0.006, 0.78, 0.014, 0.03, C.grille, M.Rubber, Z.Front, 0.004);
-  for (const x of [-0.27, 0.27]) b.block(x, 0.335, NOSE + 0.008, 0.012, 0.3, 0.03, C.grille, M.Rubber, Z.Front);
+  for (const x of [-0.27, 0.27])
+    b.block(x, 0.335, NOSE + 0.008, 0.012, 0.3, 0.03, C.grille, M.Rubber, Z.Front);
   wordAcross(b, 'NISSAN', 0, 0.36, NOSE - 0.006, 0.062, -1, C.chrome, M.Metal, Z.Front);
   b.block(0, 0.36, NOSE - 0.001, 0.47, 0.085, 0.004, C.grille, M.Rubber, Z.Front, 0.004);
   for (const side of [-1, 1]) {
@@ -311,12 +334,9 @@ function frontClip(b: VehicleBuilder): void {
     // Side repeater on the guard, and the LAND... no: the PATROL badge sits on the door.
     b.block(side * (WS + 0.004), 0.46, -1.62, 0.01, 0.03, 0.08, C.amber, M.Amber, Z.Front, 0.004);
   }
-  for (const x of [-0.3, 0, 0.3]) b.block(x, 0.05, NOSE + 0.012, 0.22, 0.045, 0.02, C.well, M.Rubber, Z.Front, 0.004);
-  // The steel bumper, a black channel with its ends turned back round the corners.
-  b.block(0, -0.02, NOSE - 0.07, 1.66, 0.13, 0.08, C.bar, M.Metal, Z.Front, 0.012);
-  for (const side of [-1, 1])
-    b.block(side * 0.81, -0.02, NOSE + 0.02, 0.04, 0.13, 0.18, C.bar, M.Metal, Z.Front, 0.01);
-  b.block(0, 0.035, NOSE - 0.1, 1.5, 0.012, 0.03, C.steel, M.Metal, Z.Front, 0.003);
+  for (const x of [-0.3, 0, 0.3])
+    b.block(x, 0.05, NOSE + 0.012, 0.22, 0.045, 0.02, C.well, M.Rubber, Z.Front, 0.004);
+  // The factory steel bumper is gone: the bull bar's pan (mqGear.ts) sits in its place.
 }
 
 function windscreen(b: VehicleBuilder): void {
@@ -367,13 +387,7 @@ function sides(b: VehicleBuilder): void {
     skin(
       b,
       side,
-      [
-        [FRONT_DOOR, LOW],
-        ...REAR_OPENING,
-        [REAR, LOW],
-        [REAR, BELT],
-        [FRONT_DOOR, BELT],
-      ],
+      [[FRONT_DOOR, LOW], ...REAR_OPENING, [REAR, LOW], [REAR, BELT], [FRONT_DOOR, BELT]],
       [],
       Z.Sides,
     );
@@ -412,7 +426,18 @@ function sides(b: VehicleBuilder): void {
       Z.Sides,
     );
     // The hardtop's seam at the B-pillar: a raised strip where the top meets the body.
-    b.block(side * (WS + 0.004), (BELT + ROOF_EDGE) / 2 + 0.02, TOP_FRONT, 0.012, ROOF_EDGE - BELT - 0.02, 0.05, C.paint, M.Paint, Z.Sides, 0.004);
+    b.block(
+      side * (WS + 0.004),
+      (BELT + ROOF_EDGE) / 2 + 0.02,
+      TOP_FRONT,
+      0.012,
+      ROOF_EDGE - BELT - 0.02,
+      0.05,
+      C.paint,
+      M.Paint,
+      Z.Sides,
+      0.004,
+    );
 
     // Pressed lips round both wheel openings, standing proud of the side.
     for (const opening of [FRONT_OPENING, REAR_OPENING]) {
@@ -484,7 +509,7 @@ function sides(b: VehicleBuilder): void {
     b.block(side * (WS + 0.0005), 0.5, 0.3, 0.004, 0.045, 0.15, C.rubber, M.Rubber, Z.Sides, 0.002);
     b.block(side * (WS + 0.008), 0.504, 0.3, 0.014, 0.026, 0.13, C.chrome, M.Metal, Z.Sides, 0.007);
     b.ring(side * (WS + 0.002), 0.44, 0.33, 0.011, 0.003, C.chrome, M.Metal, 'y', Z.Sides);
-    wordAlong(b, side, 'PATROL', side > 0 ? -0.5 : -0.22, side > 0 ? -0.22 : -0.5, 0.555, 0.03, C.chrome);
+    wordAlong(b, side, 'PATROL', side > 0 ? -0.22 : -0.5, side > 0 ? -0.5 : -0.22, 0.555, 0.03, C.chrome);
 
     // Door mirror on a stalk from the door's front edge.
     b.block(side * (WS + 0.008), 0.72, -0.5, 0.018, 0.05, 0.1, C.rubber, M.Rubber, Z.Sides, 0.008);
@@ -520,7 +545,8 @@ function sides(b: VehicleBuilder): void {
       0.01,
       [[AXLE, -0.12]],
     );
-    for (const z of [-0.66, 1.7]) b.block(side * 0.7, -0.13, z, 0.22, 0.3, 0.01, C.rubber, M.Rubber, Z.Trim, 0.004);
+    for (const z of [-0.66, 1.7])
+      b.block(side * 0.7, -0.13, z, 0.22, 0.3, 0.01, C.rubber, M.Rubber, Z.Trim, 0.004);
   }
 }
 
@@ -553,20 +579,33 @@ function rear(b: VehicleBuilder): void {
   const lowY = 0.1,
     topY = ROOF_EDGE - 0.03;
   const line = (x0: number, y0: number, x1: number, y1: number) =>
-    b.rod({ x: x0, y: y0, z: TAIL + 0.0008 }, { x: x1, y: y1, z: TAIL + 0.0008 }, 0.003, C.rubber, M.Rubber, Z.Rear);
+    b.rod(
+      { x: x0, y: y0, z: TAIL + 0.0008 },
+      { x: x1, y: y1, z: TAIL + 0.0008 },
+      0.003,
+      C.rubber,
+      M.Rubber,
+      Z.Rear,
+    );
   line(-DOOR_X, lowY, DOOR_X, lowY);
   line(-DOOR_X, topY, DOOR_X, topY);
   line(-DOOR_X, lowY, -DOOR_X, topY);
   line(DOOR_X, lowY, DOOR_X, topY);
   for (const y of [0.3, 1.0]) {
     b.block(DOOR_X + 0.01, y, TAIL + 0.01, 0.03, 0.08, 0.02, C.paint, M.Paint, Z.Rear, 0.006);
-    b.rod({ x: DOOR_X + 0.01, y: y - 0.04, z: TAIL + 0.022 }, { x: DOOR_X + 0.01, y: y + 0.04, z: TAIL + 0.022 }, 0.009, C.steel);
+    b.rod(
+      { x: DOOR_X + 0.01, y: y - 0.04, z: TAIL + 0.022 },
+      { x: DOOR_X + 0.01, y: y + 0.04, z: TAIL + 0.022 },
+      0.009,
+      C.steel,
+    );
   }
-  // Handle and lock left of the middle; the NISSAN PATROL 4WD badge on the right.
-  b.block(-0.2, 0.62, TAIL + 0.012, 0.11, 0.03, 0.02, C.chrome, M.Metal, Z.Rear, 0.008);
-  b.ring(-0.2, 0.55, TAIL + 0.003, 0.011, 0.003, C.chrome, M.Metal, 'z', Z.Rear);
-  wordAcross(b, 'NISSAN', 0.48, 0.6, TAIL + 0.004, 0.028, 1, C.chrome, M.Metal, Z.Rear, 0.004);
-  wordAcross(b, 'PATROL', 0.48, 0.555, TAIL + 0.004, 0.036, 1, C.chrome, M.Metal, Z.Rear, 0.004);
+  // Handle and lock on the left, clear of the spare carrier; the NISSAN PATROL badge under
+  // them, and the plate below that.
+  b.block(-0.47, 0.66, TAIL + 0.012, 0.11, 0.03, 0.02, C.chrome, M.Metal, Z.Rear, 0.008);
+  b.ring(-0.34, 0.66, TAIL + 0.003, 0.011, 0.003, C.chrome, M.Metal, 'z', Z.Rear);
+  wordAcross(b, 'NISSAN', -0.48, 0.555, TAIL + 0.004, 0.026, 1, C.chrome, M.Metal, Z.Rear, 0.004);
+  wordAcross(b, 'PATROL', -0.48, 0.505, TAIL + 0.004, 0.034, 1, C.chrome, M.Metal, Z.Rear, 0.004);
   // Upright tail lamps on the corners: amber, red, clear.
   for (const side of [-1, 1]) {
     const lx = side * 0.73;
@@ -578,10 +617,10 @@ function rear(b: VehicleBuilder): void {
     ] as const)
       b.block(lx, (y0 + y1) / 2, TAIL + 0.008, 0.1, y1 - y0 - 0.006, 0.01, color, slot, Z.Rear, 0.003);
   }
-  // Number plate in the middle of the door below the handle.
-  b.block(-0.2, 0.36, TAIL + 0.004, 0.372, 0.134, 0.008, new THREE.Color('#E8C935'), M.Paint, Z.Rear, 0.006);
+  // Number plate low on the left of the door.
+  b.block(-0.47, 0.33, TAIL + 0.004, 0.372, 0.134, 0.008, new THREE.Color('#E8C935'), M.Paint, Z.Rear, 0.006);
   for (let i = 0; i < 6; i++)
-    b.block(-0.34 + i * 0.056, 0.36, TAIL + 0.009, 0.03, 0.062, 0.004, C.rubber, M.Rubber, Z.Rear);
+    b.block(-0.61 + i * 0.056, 0.33, TAIL + 0.009, 0.03, 0.062, 0.004, C.rubber, M.Rubber, Z.Rear);
   // The steel rear bumper with its step tread, and the painted panel under the door.
   b.block(0, LOW + 0.015, TAIL - 0.02, 1.6, 0.07, 0.06, C.paint, M.Paint, Z.Rear, 0.012);
 }
@@ -602,7 +641,15 @@ function plan(front: number, back: number, w: number, rf: number, rr: number): T
 }
 
 /** A roof panel from `front` to `back`, its top at `top`, crowned a little down the middle. */
-function roofPanel(b: VehicleBuilder, front: number, back: number, top: number, rf: number, rr: number, crown: number): void {
+function roofPanel(
+  b: VehicleBuilder,
+  front: number,
+  back: number,
+  top: number,
+  rf: number,
+  rr: number,
+  crown: number,
+): void {
   const y0 = ROOF_EDGE - 0.01,
     bevel = 0.025;
   const w = WS + 0.004;
@@ -626,7 +673,11 @@ function roofPanel(b: VehicleBuilder, front: number, back: number, top: number, 
     const x = pos.getX(i),
       t = THREE.MathUtils.clamp((pos.getY(i) + bevel) / (top - crown - y0), 0, 1);
     pos.setY(i, pos.getY(i) + t * crown * Math.max(0, 1 - (x / w) ** 2));
-    n.set(norm.getX(i) + ((t * 2 * crown * x) / (w * w)) * norm.getY(i), norm.getY(i), norm.getZ(i)).normalize();
+    n.set(
+      norm.getX(i) + ((t * 2 * crown * x) / (w * w)) * norm.getY(i),
+      norm.getY(i),
+      norm.getZ(i),
+    ).normalize();
     norm.setXYZ(i, n.x, n.y, n.z);
   }
   b.slot = M.Paint;
@@ -643,8 +694,30 @@ function roof(b: VehicleBuilder): void {
   roofPanel(b, TOP_FRONT, TAIL + 0.004, TOP_ROOF, 0.03, RC + 0.006, 0.025);
   for (const side of [-1, 1]) {
     const x = side * (WS + 0.012);
-    b.block(x, ROOF_EDGE + 0.004, (A_TOP.z + TOP_FRONT) / 2, 0.016, 0.024, TOP_FRONT - A_TOP.z, C.paint, M.Paint, Z.Roof, 0.006);
-    b.block(x, ROOF_EDGE + 0.008, (TOP_FRONT + TAIL - RC - 0.03) / 2, 0.016, 0.03, TAIL - RC - 0.03 - TOP_FRONT, C.paint, M.Paint, Z.Roof, 0.006);
+    b.block(
+      x,
+      ROOF_EDGE + 0.004,
+      (A_TOP.z + TOP_FRONT) / 2,
+      0.016,
+      0.024,
+      TOP_FRONT - A_TOP.z,
+      C.paint,
+      M.Paint,
+      Z.Roof,
+      0.006,
+    );
+    b.block(
+      x,
+      ROOF_EDGE + 0.008,
+      (TOP_FRONT + TAIL - RC - 0.03) / 2,
+      0.016,
+      0.03,
+      TAIL - RC - 0.03 - TOP_FRONT,
+      C.paint,
+      M.Paint,
+      Z.Roof,
+      0.006,
+    );
   }
   // The hardtop's front lip over the cab roof.
   b.block(0, ROOF + 0.008, TOP_FRONT + 0.02, 2 * WS - 0.02, 0.03, 0.05, C.paint, M.Paint, Z.Roof, 0.01);
@@ -670,7 +743,17 @@ function stripes(b: VehicleBuilder): void {
         for (let k = 0; k < n; k++) {
           const a = z0 + ((z1 - z0) * k) / n,
             c = z0 + ((z1 - z0) * (k + 1)) / n;
-          b.block(side * (WS + 0.0015), (y0 + y1) / 2, (a + c) / 2, 0.001, y1 - y0, c - a, C.stripe, M.Paint, Z.Sides);
+          b.block(
+            side * (WS + 0.0015),
+            (y0 + y1) / 2,
+            (a + c) / 2,
+            0.001,
+            y1 - y0,
+            c - a,
+            C.stripe,
+            M.Paint,
+            Z.Sides,
+          );
         }
       }
 }

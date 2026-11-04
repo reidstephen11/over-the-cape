@@ -76,7 +76,12 @@ export function addMqInterior(b: VehicleBuilder, redlineRpm: number): void {
     const x = side * 0.765;
     b.block(x, 0.33, -0.09, 0.02, 0.56, 1.0, C.trim, M.Fabric, Z.Trim, 0.01);
     b.block(x - side * 0.03, 0.5, -0.04, 0.05, 0.035, 0.26, C.vinyl, M.Rubber, Z.Trim, 0.012);
-    b.rod({ x: x - side * 0.014, y: 0.56, z: -0.48 }, { x: x - side * 0.05, y: 0.56, z: -0.48 }, 0.007, metal);
+    b.rod(
+      { x: x - side * 0.014, y: 0.56, z: -0.48 },
+      { x: x - side * 0.05, y: 0.56, z: -0.48 },
+      0.007,
+      metal,
+    );
     b.rod({ x: x - side * 0.05, y: 0.56, z: -0.48 }, { x: x - side * 0.05, y: 0.49, z: -0.44 }, 0.006, metal);
     b.block(x - side * 0.016, 0.6, 0.3, 0.012, 0.025, 0.08, C.chrome, M.Metal, Z.Trim, 0.005);
     // Trim along the load space behind the bench, over the wheel box.
