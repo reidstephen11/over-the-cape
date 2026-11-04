@@ -7,6 +7,7 @@ import { addTroopyInterior } from './troopyInterior';
 import { lc79Colors } from './lc79Paint';
 import { extrudeX, extrudeZ, frontPane, inset, rounded, sidePane, sideShape, type Vtx } from './bodyShapes';
 import { mirrorHead } from './mirrors';
+import { GLYPHS, PLATE_WHITE, numberPlate, strokeText } from './bodyKit';
 import { cleanGeometry, continuousTube, subdivideSurface } from './bodyRefinement';
 
 /**
@@ -27,7 +28,6 @@ const red = new THREE.Color('#B3271F'),
   amber = new THREE.Color('#E5992F'),
   lens = new THREE.Color('#E6E4D2');
 const glass = new THREE.Color('#9FB6B3'),
-  plateWhite = new THREE.Color('#E9E7DD'),
   plateInk = new THREE.Color('#1F3D6B');
 
 const DY = LC79_CAB_LIFT;
@@ -445,38 +445,27 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
       }
     }
   b.block(0, gy, F - 0.023, 0.63, 0.087, 0.012, black, M.Rubber, Z.Front, 0.006);
-  const letters: Record<string, number[][]> = {
-    T: [
-      [0, 1, 1, 1],
-      [0.5, 1, 0.5, 0],
-    ],
-    O: [
-      [0, 0, 0, 1],
-      [0, 1, 1, 1],
-      [1, 1, 1, 0],
-      [1, 0, 0, 0],
-    ],
-    Y: [
-      [0, 1, 0.5, 0.5],
-      [1, 1, 0.5, 0.5],
-      [0.5, 0.5, 0.5, 0],
-    ],
-    A: [
-      [0, 0, 0.5, 1],
-      [0.5, 1, 1, 0],
-      [0.22, 0.42, 0.78, 0.42],
-    ],
-  };
-  [...'TOYOTA'].forEach((ch, i) => {
-    for (const [x0, y0, x1, y1] of letters[ch])
-      b.rod(
-        v(0.284 - i * 0.098 - x0 * 0.07, gy - 0.025 + y0 * 0.05, F - 0.033),
-        v(0.284 - i * 0.098 - x1 * 0.07, gy - 0.025 + y1 * 0.05, F - 0.033),
-        0.004,
-        plateWhite,
-        M.Metal,
-        Z.Front,
-      );
+  // TOYOTA in stroke capitals; this grille's A has a slightly shorter crossbar.
+  strokeText(b, 'TOYOTA', {
+    x: 0.284,
+    y: gy - 0.025,
+    z: F - 0.033,
+    dir: -1,
+    w: 0.07,
+    h: 0.05,
+    pitch: 0.098,
+    radius: 0.004,
+    colour: PLATE_WHITE,
+    slot: M.Metal,
+    zone: Z.Front,
+    glyphs: {
+      ...GLYPHS,
+      A: [
+        [0, 0, 0.5, 1],
+        [0.5, 1, 1, 0],
+        [0.22, 0.42, 0.78, 0.42],
+      ],
+    },
   });
   for (const side of [-1, 1]) {
     headlamp(b, side * 0.58, gy);
@@ -607,63 +596,6 @@ function flares(b: VehicleBuilder): void {
   }
 }
 
-/** White plate with blue lettering (the plate faces -z before `facing` turns it). */
-const GLYPHS: Record<string, number[][]> = {
-  V: [
-    [0, 1, 0.5, 0],
-    [0.5, 0, 1, 1],
-  ],
-  D: [
-    [0, 0, 0, 1],
-    [0, 1, 0.7, 1],
-    [0.7, 1, 1, 0.7],
-    [1, 0.7, 1, 0.3],
-    [1, 0.3, 0.7, 0],
-    [0.7, 0, 0, 0],
-  ],
-  J: [
-    [1, 1, 1, 0],
-    [1, 0, 0, 0],
-    [0, 0, 0, 0.3],
-  ],
-  '7': [
-    [0, 1, 1, 1],
-    [1, 1, 0.3, 0],
-  ],
-  '9': [
-    [1, 0.5, 0, 0.5],
-    [0, 0.5, 0, 1],
-    [0, 1, 1, 1],
-    [1, 1, 1, 0],
-    [1, 0, 0, 0],
-  ],
-  '-': [[0.15, 0.5, 0.85, 0.5]],
-};
-
-function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: 1 | -1): void {
-  b.push()
-    .translate(x, y, z)
-    .rotate(0, facing > 0 ? Math.PI : 0, 0);
-  b.block(0, 0, 0, 0.36, 0.12, 0.012, plateWhite, M.Lamp, Z.Trim, 0.006);
-  const text = 'VDJ-79';
-  const w = 0.032,
-    h = 0.058,
-    pitch = 0.05;
-  for (let i = 0; i < text.length; i++) {
-    const x0 = (i - (text.length - 1) / 2) * pitch;
-    for (const [ax, ay, bx, by] of GLYPHS[text[i]])
-      b.rod(
-        { x: -(x0 + (ax - 0.5) * w), y: (ay - 0.5) * h, z: -0.009 },
-        { x: -(x0 + (bx - 0.5) * w), y: (by - 0.5) * h, z: -0.009 },
-        0.0034,
-        plateInk,
-        M.Rubber,
-        Z.Trim,
-      );
-  }
-  b.pop();
-}
-
 /** A round driving lamp facing forward: black can, chrome rim and lens. */
 function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: number): void {
   b.slot = M.Metal;
@@ -778,7 +710,7 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.block(x, 0.06, face + 0.02, 0.07, 0.08, 0.06, steel, M.Metal, Z.Trim);
     b.ring(x, 0.02, face - 0.01, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
   }
-  plate(b, 0.0, 0.18, face - 0.008, -1);
+  numberPlate(b, 0.0, 0.18, face - 0.008, -1, 'VDJ-79', plateInk);
   // Whip aerial on the bar's right wing.
   b.rod(v(0.9, top + 0.02, zc + 0.14), v(0.92, top + 1.3, zc + 0.2), 0.004, black, M.Rubber, Z.Roof);
 }
@@ -904,7 +836,7 @@ function tray(b: VehicleBuilder): void {
   b.geometry(new THREE.SphereGeometry(0.03, 12, 8), steel);
   b.pop();
   for (const side of [-1, 1]) b.ring(side * 0.62, 0.04, back + 0.1, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
-  plate(b, 0.68, 0.14, back + 0.084, 1);
+  numberPlate(b, 0.68, 0.14, back + 0.084, 1, 'VDJ-79', plateInk);
 }
 
 /** A spare wheel standing with its face to the back, or lying flat. */
