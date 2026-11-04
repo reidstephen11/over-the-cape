@@ -2,7 +2,7 @@
 
 The owner finds Episodes 2–4 boring and easy and wants the game to focus on Episode 1, the CREB Track. v0.64 added a scored finish (medal, score out of 1000, best score and time). Build the rest one update at a time, in this order. Wildlife was considered and turned down.
 
-1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. Trailers stay in test mode only; removing their code is the owner's call.
+1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. The trailer code stays: the Army supply run (v1.06, a Start option on the welcome screen) tows one and unlocks the Perentie, and test mode can hitch one.
 2. ~~**Section times.**~~ Done in v0.65.
 3. ~~**Ghost car.**~~ Done in v1.00 (`src/sim/ghost.ts`): the quickest finish follows you as a pale car; the pause menu shows the gap. Still open: a live gap on the driving HUD and a setting to hide it.
 4. **Changing track conditions.** Clay churned up by wheelspin done in v0.70 (`src/sim/world/churn.ts`), drawn as ruts in v0.71. Still to do: each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
@@ -36,7 +36,7 @@ For players who like 4WD challenges and realistic driving. v1.35 added the manua
 - Optional, not requested: Episode 2 supply side trips and diary entries for Episodes 1–2.
 - CREB follow-up, shared code: append `map.bogs` to `features.mudHoles` so authored bogs get winch trees and puddles without a hand-placed boulder. A per-track crown rut would save episodes from authoring erosion coordinates by hand.
 
-Episode 4 (the Frenchmans diesel delivery with a trailer) was removed in v0.73. The trailers, hitching, HUD, sound, delivery goal, water forces, spilled drums, trailer punctures and cargo checkpoint state remain in the code and in test mode.
+Episode 4 (the Frenchmans diesel delivery with a trailer) was removed in v0.73. The trailers, hitching, HUD, sound, delivery goal, water forces, spilled drums, trailer punctures and cargo checkpoint state remain in the code, used by the Army supply run (v1.06) and by test mode.
 
 - Roll torque with the true steered axle: `addRollTorque` still uses the mirrored axle direction for steered wheels (about half the physical roll torque at full lock) because `rollTorqueScale` and the §6.2 roll checks were tuned with it; switching to `steeredAxle` rolled the car in a full-lock turn while towing (v1.25). Retune the roll per vehicle with the true axle, then re-check the trailer tests.
 - Pothole pinching on the paddock road: since the footprint rays sample along the wheel's true rolling direction (v1.19) neither vehicle cuts a tyre at 47 km/h over the clear stretches, and the "pinches tyres on the paddock road taken fast" test fails. Decide from a play test whether the potholes should pinch more often, then tune `damageTuning.tyre` and the test together.
