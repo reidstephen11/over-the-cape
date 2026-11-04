@@ -1706,6 +1706,29 @@ table.controls td {
   display: flex;
 }
 
+/* Joystick on the right: the stick and the buttons trade sides (Settings > Joystick side). */
+.touch-controls.stick-right .touch-stick {
+  left: auto;
+  right: max(12px, env(safe-area-inset-right));
+}
+
+.touch-controls.stick-right .touch-right {
+  right: auto;
+  left: max(12px, env(safe-area-inset-left));
+  align-items: flex-start;
+}
+
+/* The prompts sit above the buttons, so they follow them to the left. */
+body.touch-swap.touch-mode .prompts {
+  left: max(12px, env(safe-area-inset-left));
+  right: auto;
+  align-items: flex-start;
+}
+
+body.touch-swap.touch-mode .prompt {
+  text-align: left;
+}
+
 /* The HUD moves out of the way of the thumbs. */
 .touch-mode .status {
   top: max(60px, calc(env(safe-area-inset-top) + 50px));
@@ -2905,6 +2928,16 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   top: auto;
   transform: scale(0.48);
   transform-origin: bottom right;
+}
+
+/* Held sideways the crawl gauges sit above the buttons too; upright they stay at the top right. */
+@media (orientation: landscape) {
+  body.touch-swap.touch-mode .crawl-gauges,
+  body.touch-swap.touch-mode .hud.cockpit .crawl-gauges {
+    right: auto;
+    left: max(8px, env(safe-area-inset-left));
+    transform-origin: bottom left;
+  }
 }
 
 @media (orientation: portrait) {

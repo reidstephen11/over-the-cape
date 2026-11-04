@@ -10,7 +10,7 @@ import type { Game } from './game';
 import type { CameraPreset } from '../data/camera';
 import type { VehicleId } from '../data/vehicle';
 import type { HeadlightMode } from '../data/headlights';
-import type { TouchDriveScheme } from '../data/touch';
+import type { TouchDriveScheme, TouchStickSide } from '../data/touch';
 
 const LOCAL = 'player-1';
 
@@ -131,6 +131,7 @@ export interface GameHook {
   quality(): 'low' | 'medium' | 'high';
   setTouchDrive(scheme: TouchDriveScheme): void;
   touchDrive(): TouchDriveScheme;
+  setTouchStickSide(side: TouchStickSide): void;
   /** Is the park brake on? */
   parkBrake(): boolean;
   /** Draw calls and triangles per top-level scene group (renders the scene once per group). */
@@ -268,6 +269,7 @@ export function installHook(game: Game): void {
     quality: () => g.settings.quality,
     setTouchDrive: (scheme) => g.changeSettings({ touchDrive: scheme }),
     touchDrive: () => g.settings.touchDrive,
+    setTouchStickSide: (side) => g.changeSettings({ touchStickSide: side }),
     parkBrake: () => g.vehicle.parkBrake,
     breakdown: () => {
       const r = g.view.renderer;

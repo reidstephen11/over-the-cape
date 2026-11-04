@@ -374,6 +374,7 @@ export class Game {
     this.touch = new TouchControls(uiRoot, this.input);
     this.input.setTouchDrive(settings.touchDrive);
     this.touch.setDriveScheme(settings.touchDrive);
+    this.touch.setStickSide(settings.touchStickSide);
     if (isTouchDevice()) this.input.usePointer('touch');
     this.map = new PaperMap(uiRoot, world);
     this.map.onClose = () => this.closeMap();
@@ -768,6 +769,7 @@ export class Game {
     this.hud.setControllerType(this.settings.controller);
     this.input.setTouchDrive(this.settings.touchDrive);
     this.touch.setDriveScheme(this.settings.touchDrive);
+    this.touch.setStickSide(this.settings.touchStickSide);
     this.audio.setSettings(this.settings);
     this.applyFrameRate();
     this.onSettings?.(this.settings);

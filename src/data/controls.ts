@@ -1,5 +1,10 @@
 import { controllers, defaultController, type ControllerType } from './controllers';
-import { defaultTouchDrive, type TouchDriveScheme } from './touch';
+import {
+  defaultTouchDrive,
+  defaultTouchStickSide,
+  type TouchDriveScheme,
+  type TouchStickSide,
+} from './touch';
 
 /** Controls (SPEC §10). Key codes are KeyboardEvent.code; pad indices follow the W3C standard mapping. */
 export type Action =
@@ -253,20 +258,25 @@ export function controlsTable(
 /** Action → touch control, for the Controls page on phones and tablets (README "Phones and tablets"). */
 export function touchControlsTable(
   scheme: TouchDriveScheme = defaultTouchDrive,
+  side: TouchStickSide = defaultTouchStickSide,
 ): ReadonlyArray<readonly [string, string]> {
+  const [stickSide, buttonSide] = side === 'right' ? ['right', 'left'] : ['left', 'right'];
   const drive: readonly [string, string] =
     scheme === 'stick'
       ? [
           'Accelerate / brake and reverse',
           'Joystick forward / back (part way for part throttle; back when stopped to reverse)',
         ]
-      : ['Accelerate / brake and reverse', 'GAS / BRAKE, bottom right (hold BRAKE when stopped to reverse)'];
+      : [
+          'Accelerate / brake and reverse',
+          `GAS / BRAKE, bottom ${buttonSide} (hold BRAKE when stopped to reverse)`,
+        ];
   return [
     [
       'Steer',
       scheme === 'stick'
         ? 'Joystick left / right (push part way for part lock)'
-        : 'Joystick, bottom left (push part way for part lock)',
+        : `Joystick, bottom ${stickSide} (push part way for part lock)`,
     ],
     drive,
     ['Handbrake on / off', 'HAND'],
