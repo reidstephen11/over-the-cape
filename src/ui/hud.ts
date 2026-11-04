@@ -405,12 +405,14 @@ export class Hud {
       this.gateEl.classList.toggle('missed', s.gates.missed > 0 || s.gates.flags > 0);
     }
     if (s.run) {
-      this.runEl.querySelector('strong')!.textContent = s.run.name;
-      this.runEl.querySelector('.crawl-run-time')!.textContent = clock(s.run.seconds);
-      this.runEl.querySelector('.crawl-run-points')!.textContent =
-        s.run.points === 0 ? 'clean' : `${s.run.points} pt${s.run.points === 1 ? '' : 's'}`;
+      setText(this.runEl.querySelector('strong')!, s.run.name);
+      setText(this.runEl.querySelector('.crawl-run-time')!, clock(s.run.seconds));
+      setText(
+        this.runEl.querySelector('.crawl-run-points')!,
+        s.run.points === 0 ? 'clean' : `${s.run.points} pt${s.run.points === 1 ? '' : 's'}`,
+      );
     }
-    this.rangeEl.textContent = s.range === 'high' ? 'H' : 'L';
+    setText(this.rangeEl, s.range === 'high' ? 'H' : 'L');
     // Speed and gear, unless the crawl gauges already show them (the dash does in the driver's seat).
     this.status.classList.toggle('with-speed', !showGauges);
     const speed = formatSpeed(s.gauges.speedKmh, this.units);
@@ -423,8 +425,9 @@ export class Hud {
     this.drawDamage(s.damage);
     const active = [s.frontLocked, s.rearLocked, s.precisionCrawl];
     this.driveButtons.forEach((button, index) => {
-      button.setAttribute('aria-pressed', String(active[index]));
-      if (index < 2) button.textContent = `${index === 0 ? 'F' : 'R'} ${active[index] ? 'LOCK' : 'OPEN'}`;
+      const pressed = String(active[index]);
+      if (button.getAttribute('aria-pressed') !== pressed) button.setAttribute('aria-pressed', pressed);
+      if (index < 2) setText(button, `${index === 0 ? 'F' : 'R'} ${active[index] ? 'LOCK' : 'OPEN'}`);
     });
     this.courseHint.classList.toggle('hidden', !s.courseHint);
     const hintTitle = s.courseHint?.title ?? '';
@@ -434,18 +437,19 @@ export class Hud {
     }
     this.courseHint.classList.toggle('brief', performance.now() < this.hintRevealUntil);
     if (s.courseHint) {
-      this.courseHint.querySelector('strong')!.textContent = s.courseHint.title;
-      this.courseHint.querySelector('span')!.textContent = s.courseHint.text;
-      this.courseHint.querySelector('small')!.textContent = s.courseHint.controls;
+      setText(this.courseHint.querySelector('strong')!, s.courseHint.title);
+      setText(this.courseHint.querySelector('span')!, s.courseHint.text);
+      setText(this.courseHint.querySelector('small')!, s.courseHint.controls);
     }
-    this.planksEl.textContent = `${s.planksCarried}/${s.planksTotal}`;
+    setText(this.planksEl, `${s.planksCarried}/${s.planksTotal}`);
     this.drawMission(s.episode);
     this.drawSupplies(s.supplies);
     this.drawTrailer(s.trailer ?? null);
     this.winchEl.classList.toggle('shown', s.winchAttached);
     this.engineEl.classList.toggle('shown', s.engine > 0);
     this.engineEl.classList.toggle('stalled', s.engine === 2);
-    this.status.dataset.engine = String(s.engine);
+    const engine = String(s.engine);
+    if (this.status.dataset.engine !== engine) this.status.dataset.engine = engine;
     // Warnings leave the banner stack on a phone; what you can do (winch, handbrake) stays.
     const prompts = touch ? s.prompts.filter((p) => p.keys !== '!') : s.prompts;
     const key = `${touch ? 't' : 'd'}:${prompts.map((p) => `${p.keys}|${p.text}|${p.progress?.toFixed(2) ?? ''}`).join('#')}`;
@@ -820,4 +824,9 @@ export function lampsFor(s: HudState): Lamp[] {
   else if (t?.state === 'towing' && t.overloaded)
     out.push({ id: 'trailer', text: 'OVERLOAD', tone: 'amber', title: 'Trailer overloaded' });
   return out;
+}
+
+/** Set an element's text only when it changed: an equal write still dirties the page's layout. */
+function setText(el: Element, text: string): void {
+  if (el.textContent !== text) el.textContent = text;
 }

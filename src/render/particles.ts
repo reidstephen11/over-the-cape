@@ -44,6 +44,12 @@ class Pool {
   private readonly p = new THREE.Vector3();
   private readonly c = new THREE.Color();
 
+  /** The per-particle arrays, three and one numbers a particle, for `kill` to move. */
+  private readonly vec3s: Float32Array[];
+  private readonly scalars: Float32Array[];
+  /** Instances uploaded last frame: an empty pool uploads nothing once it has said so. */
+  private uploaded = -1;
+
   constructor(o: PoolOptions) {
     const n = o.max;
     this.mesh = new THREE.InstancedMesh(o.geometry, o.material, n);
@@ -62,6 +68,8 @@ class Pool {
     this.color = new Float32Array(n * 3);
     this.color1 = new Float32Array(n * 3);
     this.floor = new Float32Array(n);
+    this.vec3s = [this.pos, this.vel, this.color, this.color1];
+    this.scalars = [this.age, this.life, this.size, this.size1, this.spin, this.floor];
     if (o.opacity) {
       this.opacityAttr = new THREE.InstancedBufferAttribute(new Float32Array(n), 1);
       this.opacityAttr.setUsage(THREE.DynamicDrawUsage);
@@ -115,11 +123,14 @@ class Pool {
   private kill(i: number): void {
     const j = --this.count;
     if (i === j) return;
-    const copy = (a: Float32Array, k: number) => {
-      for (let d = 0; d < k; d++) a[i * k + d] = a[j * k + d];
-    };
-    for (const a of [this.pos, this.vel, this.color, this.color1]) copy(a, 3);
-    for (const a of [this.age, this.life, this.size, this.size1, this.spin, this.floor]) copy(a, 1);
+    const i3 = i * 3;
+    const j3 = j * 3;
+    for (const a of this.vec3s) {
+      a[i3] = a[j3];
+      a[i3 + 1] = a[j3 + 1];
+      a[i3 + 2] = a[j3 + 2];
+    }
+    for (const a of this.scalars) a[i] = a[j];
   }
 
   /**
@@ -175,9 +186,12 @@ class Pool {
       if (this.opacityAttr && fade) this.opacityAttr.setX(i, fade(t));
     }
     this.mesh.count = this.count;
-    this.mesh.instanceMatrix.needsUpdate = true;
-    if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
-    if (this.opacityAttr) this.opacityAttr.needsUpdate = true;
+    // Upload only the live particles (v1.49); nothing at all while the pool stays empty.
+    if (this.count === 0 && this.uploaded === 0) return;
+    this.uploaded = this.count;
+    upload(this.mesh.instanceMatrix, this.count, 16);
+    if (this.mesh.instanceColor) upload(this.mesh.instanceColor, this.count, 3);
+    if (this.opacityAttr) upload(this.opacityAttr, this.count, 1);
   }
 
   clear(): void {
@@ -185,6 +199,20 @@ class Pool {
     this.mesh.count = 0;
   }
 }
+
+/** Mark the first `count` items of an instance attribute for upload. */
+function upload(attr: THREE.BufferAttribute, count: number, size: number): void {
+  attr.clearUpdateRanges();
+  if (count > 0) attr.addUpdateRange(0, count * size);
+  attr.needsUpdate = true;
+}
+
+// Each pool's size and fade over its particles' lives (0..1), made once rather than every frame.
+const dustShape = (t: number) => Math.min(1, t * 5) * (1 - t * t * 0.5);
+const dustFade = (t: number) => P.dust.opacity * Math.min(1, t * 6) * (1 - t) * (1 - t);
+const chunkShape = (t: number) => 1 - t * t;
+const wakeShape = () => 1;
+const wakeFade = (t: number) => P.wake.opacity * Math.min(1, t * 8) * (1 - t) ** 1.5;
 
 /**
  * Lambert material whose instances carry their own opacity. A `soft` one also fades
@@ -313,25 +341,9 @@ export class Particles {
     if (dt <= 0) return;
     dt = Math.min(dt, 0.1);
     if (this.rateScale > 0) this.emit(v, dt);
-    this.dust.update(
-      dt,
-      -P.dust.rise,
-      P.dust.drag,
-      (t) => Math.min(1, t * 5) * (1 - t * t * 0.5),
-      (t) => P.dust.opacity * Math.min(1, t * 6) * (1 - t) * (1 - t),
-      false,
-      false,
-    );
-    this.chunks.update(dt, P.gravity, 0.4, (t) => 1 - t * t, null, false, true);
-    this.wakes.update(
-      dt,
-      0,
-      0,
-      () => 1,
-      (t) => P.wake.opacity * Math.min(1, t * 8) * (1 - t) ** 1.5,
-      true,
-      false,
-    );
+    this.dust.update(dt, -P.dust.rise, P.dust.drag, dustShape, dustFade, false, false);
+    this.chunks.update(dt, P.gravity, 0.4, chunkShape, null, false, true);
+    this.wakes.update(dt, 0, 0, wakeShape, wakeFade, true, false);
   }
 
   private emit(v: Vehicle, dt: number): void {

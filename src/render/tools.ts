@@ -26,6 +26,7 @@ export class ToolsView {
   private readonly plankMat: THREE.MeshLambertMaterial;
   private readonly ghostMat: THREE.MeshBasicMaterial;
   private readonly planks = new Map<number, THREE.Mesh>();
+  private readonly livePlanks = new Set<number>();
   private readonly ghosts: THREE.Mesh[] = [];
   private readonly highlight: THREE.Mesh;
   /** Fainter rings on the other anchors in reach while choosing one. */
@@ -193,7 +194,8 @@ export class ToolsView {
   }
 
   private updatePlanks(tools: VehicleTools, alpha: number): void {
-    const live = new Set<number>();
+    const live = this.livePlanks;
+    live.clear();
     for (const pl of tools.planks.placed) {
       live.add(pl.id);
       let m = this.planks.get(pl.id);
