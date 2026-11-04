@@ -3,8 +3,8 @@ import { camelTuning } from '../src/data/camel';
 import { environmentAt, lateAfternoon } from '../src/data/environment';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
-import { hiluxTuning } from '../src/data/hilux';
 import { perentieTuning } from '../src/data/perentie';
+import { hiluxTuning } from '../src/data/hilux';
 import { troopyTuning } from '../src/data/troopy';
 import { patrolTuning } from '../src/data/patrol';
 import { lc79Tuning } from '../src/data/lc79';
@@ -16,16 +16,16 @@ import { emptyInput } from '../src/sim/input/vehicleInput';
 import { loadRapier } from '../src/sim/physics';
 import { Simulation } from '../src/sim/sim';
 import { NO_WATER } from '../src/sim/world/terrain';
-import { buildWorld } from '../src/sim/world/world';
 import { SurfaceId } from '../src/data/surfaces';
 import { addPuddles } from '../src/sim/world/puddles';
 import { winchTuning } from '../src/data/tools';
-import { crebWashout } from '../src/data/episodes/crebStretches';
 import { Autopilot } from '../src/sim/input/autopilot';
 import { Exploration } from '../src/sim/exploration';
-import { DT, driveLeg, driver, pathAlong, runLeg } from './helpers/drive';
+import { DT, driveLeg, driver, GIVE_UP_AFTER, pathAlong, runLeg } from './helpers/drive';
 
-const world = buildWorld(crebMap);
+import { crebWorld } from './world';
+
+const world = crebWorld();
 const wet = environmentAt(crebEpisode.startHour, crebEpisode.weather);
 const { trackOf, scene } = driver(world, wet);
 const dry = driver(world, lateAfternoon);
@@ -377,19 +377,28 @@ describe('Episode 1: the CREB Track', () => {
     for (const b of holes)
       expect(world.terrain.surfaceAt(b.x, b.z), b.id).toBe(b.deep ? SurfaceId.BlackSoil : SurfaceId.Mud);
     // The rain fills most of them (those on a slope drain at their low end), hiding the mud.
-    const after = buildWorld(crebMap);
-    addPuddles(after, wet);
-    const deepest = (b: (typeof holes)[number]) => {
-      let d = 0;
-      for (let dz = -4; dz <= 4; dz++)
-        for (let dx = -4; dx <= 4; dx++) d = Math.max(d, after.terrain.waterDepthAt(b.x + dx, b.z + dz));
-      return d;
-    };
-    // The saddle holds water. The long stretch below camp sits on a grade and drains.
-    // Authored road bogs are not filled here: puddles only see generated mud holes.
-    const deepWater = after.features.mudHoles.filter((b) => b.deep).map((b) => deepest(b));
-    expect(deepWater.length).toBeGreaterThan(0);
-    expect(deepWater.every((d) => d > 0.3)).toBe(true);
+    // Puddles change the ground in place, so this fills the shared world and puts it back after
+    // (until v1.45 it built a second world).
+    const t = world.terrain;
+    const [water, surface, tint] = [t.water.slice(), t.surface.slice(), t.tint.slice()];
+    try {
+      addPuddles(world, wet);
+      const deepest = (b: (typeof holes)[number]) => {
+        let d = 0;
+        for (let dz = -4; dz <= 4; dz++)
+          for (let dx = -4; dx <= 4; dx++) d = Math.max(d, t.waterDepthAt(b.x + dx, b.z + dz));
+        return d;
+      };
+      // The saddle holds water. The long stretch below camp sits on a grade and drains.
+      // Authored road bogs are not filled here: puddles only see generated mud holes.
+      const deepWater = world.features.mudHoles.filter((b) => b.deep).map((b) => deepest(b));
+      expect(deepWater.length).toBeGreaterThan(0);
+      expect(deepWater.every((d) => d > 0.3)).toBe(true);
+    } finally {
+      t.water.set(water);
+      t.surface.set(surface);
+      t.tint.set(tint);
+    }
   });
 
   it('makes deep bogs of the hollows, lays long boggy stretches, and plants a tree to winch from by each', () => {
@@ -496,7 +505,7 @@ describe('Episode 1: the CREB Track', () => {
   it('stops the Camel Trophy Ninety on Big Red in high range in the dry', async () => {
     const s = await dry.scene('big-red', false, 'high', camelTuning);
     try {
-      const r = await runLeg(s, s.track, false, 90);
+      const r = await runLeg(s, s.track, false, 90, false, undefined, undefined, 0, GIVE_UP_AFTER);
       expect(r.done).toBe(false);
       expect(r.remaining).toBeGreaterThan(60);
     } finally {
@@ -597,81 +606,9 @@ describe('Episode 1: the CREB Track', () => {
     expect(high.remaining).toBeGreaterThan(60);
   }, 300_000);
 
-  it('stops high range and open diffs on its wet clay climbs', async () => {
-    for (const id of ['big-red', 'bobs-hill'])
-      for (const tuning of [
-        vehicleTuning,
-        perentieTuning,
-        hiluxTuning,
-        troopyTuning,
-        patrolTuning,
-        lc79Tuning,
-      ])
-        for (const lockers of ['high', 'open'] as const) {
-          const s = await scene(id, false, lockers, tuning);
-          try {
-            const r = await runLeg(s, s.track, false, 150);
-            expect(r.done, `${id}, ${tuning.name}, ${lockers}`).toBe(false);
-          } finally {
-            s.sim.physics.free();
-          }
-        }
-  }, 900_000);
-
-  const legs: [string, 'both' | 'high', number][] = [
-    ['daintree-crossing', 'both', 150],
-    ['big-red', 'both', 300],
-    ['big-red-bypass', 'both', 400],
-    ['creb-ridge', 'both', 700],
-    ['roaring-meg-climb', 'both', 300],
-    ['bobs-hill', 'both', 200],
-    ['concrete-descent', 'both', 300],
-    ['donovans-creek', 'both', 200],
-  ];
-  for (const [id, lockers, limit] of legs)
-    it(`drives ${id} in the wet in the short-wheelbase 4WD`, async () => {
-      const s = await scene(id, false, lockers, vehicleTuning);
-      try {
-        // Bogged in a deep bog, it winches out to a tree ahead; it bridges the ridge's washout.
-        const planks = id === 'creb-ridge' ? crebWashout : undefined;
-        const r = await driveLeg(s, s.track, false, limit, true, planks);
-        // The rock ledge out of Roaring Meg pitches the car up to 43°.
-        expect(r.tilt).toBeLessThan(id === 'roaring-meg-climb' ? 45 : 42);
-        expect(s.v.condition.flood.stalled).toBe(false);
-      } finally {
-        s.sim.physics.free();
-      }
-    }, 300_000);
-
-  it('stops the Unimog in high range on its wet clay climbs, and on Big Red with open diffs', async () => {
-    for (const [id, lockers] of [
-      ['big-red', 'high'],
-      ['big-red', 'open'],
-      ['bobs-hill', 'high'],
-    ] as const) {
-      const s = await scene(id, false, lockers, unimogTuning);
-      try {
-        const r = await runLeg(s, s.track, false, 150);
-        expect(r.done, `${id}, ${lockers}`).toBe(false);
-      } finally {
-        s.sim.physics.free();
-      }
-    }
-  }, 900_000);
-
-  it("climbs Bob's Hill in the wet in the Unimog in low range with open diffs, with a pull or two on the winch, where the others need both lockers", async () => {
-    const s = await scene('bobs-hill', false, 'open', unimogTuning);
-    try {
-      // The pinches cut up under it (v0.70's churn) and it winches to a tree.
-      const r = await driveLeg(s, s.track, false, 200, true);
-      expect(r.winched).toBeLessThanOrEqual(2);
-    } finally {
-      s.sim.physics.free();
-    }
-  }, 300_000);
-
+  // The other vehicles up Big Red (Bob's Hill is in crebLegs.test.ts).
   for (const tuning of [perentieTuning, hiluxTuning, unimogTuning, troopyTuning, patrolTuning, lc79Tuning])
-    for (const id of ['big-red', 'bobs-hill'])
+    for (const id of ['big-red'])
       it(`drives ${id} in the wet in the ${tuning.name}`, async () => {
         const s = await scene(id, false, 'both', tuning);
         try {
