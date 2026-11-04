@@ -1158,7 +1158,15 @@ Steef asked for a couple more period vehicles and left the choice to me. The fir
 - **Wiring.** `mq` in the vehicle id, order (before the GQ), looks, packing (40 kg spares, 110 kg of room), unlocks and the finish check in `game.ts`; `tests/mq.test.ts` covers the geometry, the cab, the unlock and the driving checks. The whole vehicle is 62,700 triangles.
 - **The ute's under-tray spare, fixed.** v1.53 hung the 40 Series ute's first spare below the chassis rails, where it showed under the rear bar almost on the ground. It now lies flat under the deck between the tray's runners, below the crossmembers, with its bottom level with the chassis rails and 0.5 m off the ground, and its collision box moved up with it.
 
-## v1.56: the Range Rover two-door
+## v1.56: browser test results for the game.ts extractions
+
+A docs-only follow-up to v1.52 (Phase 6 of `docs/PLAN-efficiency.md`), which shipped before its browser tests finished, as CLAUDE.md allows. Nothing in the game changes, so README's "What to test" gets no entry (as with v1.44).
+
+**Unit tests.** 767 of 767 passed locally after the first two moves (with the new `simFeedback` test), and CI's three unit-test shards passed on the merged v1.52.
+
+**Browser tests on v1.52.** 33 passed and 9 failed in 57 minutes. Eight of the failures are on ROADMAP's known list: `devMode:4`, `episode:15`, `launch:40`, `launch:147`, `m4-tools:15`, `night:4`, `touch:234` and `touch:280`. The ninth, `vehicles:13` (changing to the Land Rover from the pause menu), timed out waiting for the engine after the swap. Run alone it passed on v1.52 (1.8 minutes) and failed the same way on v1.51, so the extractions did not cause it. It predates them and is flaky, and it is now on ROADMAP's list with a likely cause: the test starts the engine while `restartFromCamp`'s fade is still running, and the fade ends by switching the engine off. `m5-ui:35`, on the list, passed.
+
+## v1.57: the Range Rover two-door
 
 The owner asked for a couple more period vehicles, in keeping with the game, and left the choice open. The first is an Australian-delivered early-1980s two-door Range Rover (`rangie`): the original two-door body with the black grille, bumpers and floating-roof pillars of the 1981–84 cars, the 3.5 L Rover V8 on carburettors, the LT77 five-speed with the LT230 transfer (full-time four-wheel drive with a centre diff lock), coils at both ends, in Lincoln Green with a tan cabin, with a tubular roo bar and winch, two driving lamps on the bar, a towbar, a gutter rack and a second spare added for the game. It unlocks by **finishing the CREB in the Camel Trophy Land Rover**, the other starter vehicle, as the 60 unlocks from the 40.
 
