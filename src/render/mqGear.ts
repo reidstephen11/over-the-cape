@@ -9,7 +9,7 @@ import { NOSE, ROOF_EDGE, TAIL, WS } from './mqBody';
 
 // What the game adds to the factory MQ: a period steel bull bar with a winch, a steel rear
 // bar with a tow ball, a gutter-mounted roof rack carrying the second spare and the planks,
-// and the first spare on a swing-away carrier on the rear door.
+// and the first spare on a swing-away carrier bolted to the rear bar, behind the rear door.
 
 type V = { x: number; y: number; z: number };
 const v = (x: number, y: number, z: number): V => ({ x, y, z });
@@ -131,24 +131,78 @@ function rearBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   b.pop();
 }
 
-/** The swing-away spare carrier on the rear door, hinged on the right post. */
-function doorSpare(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: VehicleTuning): void {
-  const hx = 0.74,
-    sx = 0.22,
-    sy = 0.56;
-  const w = tuning.wheelWidth;
-  // Hinge post, the arm across the door and the bracket behind the wheel.
-  b.rod(v(hx, 0.12, TAIL + 0.07), v(hx, 1.0, TAIL + 0.07), 0.022, C.bar, M.Metal, Z.Rear);
-  for (const y of [0.16, 0.96])
-    b.block(hx - 0.02, y, TAIL + 0.04, 0.08, 0.05, 0.06, C.bar, M.Metal, Z.Rear, 0.008);
-  b.block((hx + sx) / 2, sy, TAIL + 0.07, hx - sx + 0.1, 0.06, 0.04, C.bar, M.Metal, Z.Rear, 0.008);
-  b.block(sx, sy, TAIL + 0.09, 0.3, 0.3, 0.04, C.bar, M.Metal, Z.Rear, 0.01);
-  b.block(-0.2, sy, TAIL + 0.04, 0.05, 0.08, 0.05, C.bar, M.Metal, Z.Rear, 0.008);
+/**
+ * Where the first spare's hub sits: behind the right half of the rear door, its inner hub cap
+ * standing 0.12 m off the door skin so the tyre clears the door, the window and the tail lamps.
+ * z is TAIL + 0.27 (mqBody.ts imports this file, so TAIL cannot be read here when it loads).
+ */
+export const MQ_SPARE = { x: 0.22, y: 0.56, z: 2.35 };
+
+/**
+ * The first spare on a swing-away carrier, as the MQ hardtop carried it: the carrier is
+ * bolted to the rear bar, not the door. A stout post stands on the bar's right end with the
+ * carrier's frame hung on it by two knuckles; the frame carries a plate with the wheel studs
+ * behind the hub and latches to a pin on the bar left of the tow ball, so it swings open to
+ * the right before the door does. Nothing of it touches the door skin.
+ */
+function doorSpare(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
+  const { x: sx, y: sy, z: sz } = MQ_SPARE;
+  /** The frame's tubes run 70 mm off the door skin, clear of its hinges and handle. */
+  const fz = TAIL + 0.07,
+    post = 0.82,
+    barTop = 0.07,
+    latch = -0.2;
+  // Hinge post on a foot plate bolted to the bar's end, outboard of the right tail lamp,
+  // with a cap on top.
+  b.block(post - 0.01, barTop + 0.01, fz, 0.12, 0.02, 0.11, C.bar, M.Metal, Z.Rear, 0.006);
+  b.rod(v(post, barTop + 0.02, fz), v(post, 0.64, fz), 0.024, C.bar, M.Metal, Z.Rear);
+  b.block(post, 0.645, fz, 0.06, 0.012, 0.06, C.bar, M.Metal, Z.Rear, 0.004);
+  // The frame: two knuckles round the post, an upper arm and a lower brace to the wheel
+  // plate, and the latch arm on to the bar. The arm passes over the right tail lamp and the
+  // brace under it, so neither crosses the lenses.
+  const low = 0.115;
+  b.rod(v(post, low - 0.02, fz), v(post, low + 0.02, fz), 0.034, C.bar, M.Metal, Z.Rear);
+  b.rod(v(post, 0.515, fz), v(post, 0.605, fz), 0.034, C.bar, M.Metal, Z.Rear);
+  const plateL = sx - 0.12,
+    plateR = sx + 0.12;
+  b.rod(v(post - 0.03, 0.56, fz), v(plateR - 0.01, 0.56, fz), 0.022, C.bar, M.Metal, Z.Rear);
+  b.chain(
+    [v(post - 0.03, low, fz), v(0.6, low, fz), v(plateR - 0.01, sy - 0.1, fz)],
+    0.022,
+    C.bar,
+    M.Metal,
+    Z.Rear,
+  );
+  b.rod(v(plateL + 0.01, sy - 0.1, fz), v(latch, 0.2, fz), 0.022, C.bar, M.Metal, Z.Rear);
+  // The wheel plate: a cross brace on the frame and a backing plate the hub sits against.
+  b.block(sx, sy, fz, 0.26, 0.26, 0.044, C.bar, M.Metal, Z.Rear, 0.01);
+  const backFace = sz - 0.149; // inner end of the wheel's hub cap
+  b.block(
+    sx,
+    sy,
+    (fz + backFace) / 2 + 0.0015,
+    0.2,
+    0.2,
+    backFace - fz + 0.003,
+    C.bar,
+    M.Metal,
+    Z.Rear,
+    0.008,
+  );
+  // The latch on the bar: a post with a pin, the arm's tongue over it and a spring catch.
+  b.block(latch, barTop + 0.065, fz, 0.05, 0.13, 0.05, C.bar, M.Metal, Z.Rear, 0.006);
+  b.block(latch, 0.2, fz, 0.07, 0.03, 0.07, C.bar, M.Metal, Z.Rear, 0.006);
+  b.rod(v(latch, 0.18, fz), v(latch, 0.25, fz), 0.009, C.steel, M.Metal, Z.Rear);
+  b.rod(v(latch - 0.04, 0.215, fz), v(latch + 0.04, 0.215, fz), 0.007, C.steel, M.Metal, Z.Rear);
   b.tag = Z.Rear;
-  b.push().translate(sx, sy, TAIL + 0.11 + w / 2);
+  b.push()
+    .translate(sx, sy, sz)
+    .rotate(0, -Math.PI / 2, 0);
   b.geometry(wheel.clone(), C.rubber);
   b.pop();
-  b.rod(v(sx, sy, TAIL + 0.1), v(sx, sy, TAIL + 0.14 + w), 0.012, C.steel);
+  // The centre stud through the hub, and its wing nut past the outer hub cap.
+  b.rod(v(sx, sy, backFace), v(sx, sy, sz + 0.175), 0.012, C.steel, M.Metal, Z.Rear);
+  b.block(sx, sy, sz + 0.165, 0.09, 0.024, 0.016, C.steel, M.Metal, Z.Rear, 0.004);
 }
 
 function underside(b: VehicleBuilder): void {
@@ -239,7 +293,7 @@ function rack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
 export function addMqGear(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   bullBar(b, tuning);
   rearBar(b, tuning);
-  doorSpare(b, wheel, tuning);
+  doorSpare(b, wheel);
   underside(b);
   rack(b, tuning, wheel);
 }
