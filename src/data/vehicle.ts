@@ -184,6 +184,7 @@ export type VehicleId =
   | 'unimog'
   | 'troopy'
   | 'hj60'
+  | 'mq'
   | 'patrol'
   | 'lc79'
   | 'sooty80';

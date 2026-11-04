@@ -1270,6 +1270,7 @@ export class Game {
       ...(this.winched ? [] : this.unlock('unimog', false)),
       ...(this.vehicleId === 'shortie' ? this.unlock('hj60', false) : []),
       ...(this.vehicleId === 'hilux' ? this.unlock('ute40', false) : []),
+      ...(this.vehicleId === 'patrol' ? this.unlock('mq', false) : []),
     ];
     this.progress[this.episode.id] = {
       completed: true,
