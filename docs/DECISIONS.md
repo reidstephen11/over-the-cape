@@ -2432,3 +2432,19 @@ The fourth phase of `docs/PLAN-efficiency.md`. Nothing about driving changes; th
 **Left out: splitting the props mesh by 256 m cell.** The merged mesh of every marker post, ledge, washout wall, granite stone and bridge timber is 10,986 triangles (11,146 in the whole props group), about 22,700 a frame with its shadow pass, against 810,000–1,113,000 for the whole frame at the three places measured (Daintree Village start, the Bloomfield forest, Roaring Meg) on Medium. Splitting it could save at most about 2% of the triangles, for 5–15 more draw calls in each pass, so it stays one mesh.
 
 **Measured in the browser** (SwiftShader, Medium, `window.__game.stats()` and `breakdown()`), before → after: start 465 calls / 1,113,165 triangles → 466 / 1,113,283; Bloomfield forest 262 / 810,737 → 261 / 810,849; Roaring Meg 266 / 821,689 → 265 / 821,341. The draw is unchanged, as it should be: the wins are the second draw a 120 Hz phone no longer makes and main-thread time and garbage, not triangles.
+
+## v1.49: signs at both ends of the knoll's lines
+
+The owner kept arriving at the wrong end of one-way lines in the knoll play area: v1.47 signed only each line's start. Each line now has a sign at both ends (`endSign` at end 1 as well as end 0, in `crebKnoll.ts`). The start names the line and, where it has one, its direction; the far end says which way it goes:
+
+| line          | start                 | far end                    |
+| ------------- | --------------------- | -------------------------- |
+| Rock climb    | Rock climb — up, hard | Rock climb — up only       |
+| Switchbacks   | Switchbacks — up      | Switchbacks — either way   |
+| Side slope    | Side slope            | Side slope — either way    |
+| The drop      | The drop — down, hard | The drop — down only       |
+| Steep descent | Steep descent — down  | Steep descent — down only  |
+| Axle twisters | Axle twisters         | Axle twisters — either way |
+| Bog trench    | Bog trench — winch    | Bog trench — either way    |
+
+The rock climb, the drop and the steep descent are marked one way because the ledges, the lip and 30° of wet clay are not meant to be driven the other way. The rest can be driven both ways. `crebKnoll.test.ts` now checks for a sign within 14 m of each end.

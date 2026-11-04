@@ -512,16 +512,23 @@ const graded: GradedLine[] = [
 ];
 const lineOf = (id: string) => lines.find((l) => l.id === id)!.line;
 
-/** A sign at each line's entrance, and a pointer to the play area from the village road. */
+/**
+ * A sign at both ends of each line: the start names it, and the far end says which way it
+ * goes, so a player arriving there knows whether it is a way through (v1.49).
+ */
+const bothEnds = (id: string, start: string, far: string): PropDef[] => [
+  endSign(lineOf(id), 0, start, graded),
+  endSign(lineOf(id), 1, far, graded),
+];
 export const knollProps: PropDef[] = [
   endSign(lineOf('knoll-loop'), 0, 'Knoll play area', graded),
-  endSign(lineOf('knoll-rock-climb'), 0, 'Rock climb — hard', graded),
-  endSign(lineOf('knoll-switchbacks'), 0, 'Switchbacks', graded),
-  endSign(lineOf('knoll-side-slope'), 0, 'Side slope', graded),
-  endSign(lineOf('knoll-drop'), 0, 'The drop — hard', graded),
-  endSign(lineOf('knoll-steep-descent'), 0, 'Steep descent', graded),
-  endSign(lineOf('knoll-axle-twisters'), 0, 'Axle twisters', graded),
-  endSign(lineOf('knoll-bog-trench'), 0, 'Bog trench — winch', graded),
+  ...bothEnds('knoll-rock-climb', 'Rock climb — up, hard', 'Rock climb — up only'),
+  ...bothEnds('knoll-switchbacks', 'Switchbacks — up', 'Switchbacks — either way'),
+  ...bothEnds('knoll-side-slope', 'Side slope', 'Side slope — either way'),
+  ...bothEnds('knoll-drop', 'The drop — down, hard', 'The drop — down only'),
+  ...bothEnds('knoll-steep-descent', 'Steep descent — down', 'Steep descent — down only'),
+  ...bothEnds('knoll-axle-twisters', 'Axle twisters', 'Axle twisters — either way'),
+  ...bothEnds('knoll-bog-trench', 'Bog trench — winch', 'Bog trench — either way'),
 ];
 
 /**
