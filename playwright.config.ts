@@ -18,7 +18,9 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: 'npm run build && npm run preview',
+    // vite build alone: the full type check is `npm run typecheck`, not something to repeat
+    // before every browser run (v1.44).
+    command: 'npx vite build && npm run preview',
     url: 'http://localhost:4173',
     reuseExistingServer: true,
     timeout: 180_000,

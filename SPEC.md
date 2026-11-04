@@ -18,11 +18,13 @@ Its feel is inspired by Over The Hill: simple but good-looking graphics, and a t
 | Supplies | Each episode starts with a load set by the story: fuel, 20 L jerry cans, spare wheels, tyre plugs. A vehicle can carry extras on top (from v0.14, the Troop Carrier's full sub-tank and second spare). Finds on the map, at the end of side tracks off the main line, can add to it, each once. Nothing carries over between episodes. |
 | Conditions | The story sets the time of day and weather; the clock runs and the sun moves. A finished episode can be replayed in conditions you choose, with the clock stopped and no deadline. |
 | Vehicles | The three from 4WD Simulator: the short-wheelbase 4WD (40 Series style), the Camel Trophy 4WD and the Army Land Rover 110 Perentie; from v0.10 the 1979–83 Hilux single cab; from v0.11 the Army Unimog UL1700L truck; from v0.14 the 1990s LandCruiser 75 Series Troop Carrier; and from v0.19 the GQ Patrol. A modern 4WD comes later. |
-| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.14: the Troop Carrier. v0.17: Episode 2, the Old Coach Road. v0.22: the LC79 V8. v0.23: Episode 3, Lakefield (winching someone else out, a deadline that holds until a crossing). v0.46–49: trailers and towing in test mode. v0.50: Episode 4, delivering fuel drums across Frenchmans Track. Towing another vehicle comes later. |
+| Releases | v0.01: the episode system, fuel and spares, and Episode 1. v0.05: running water and rough tracks. v0.10: the Hilux. v0.11: the Unimog. v0.14: the Troop Carrier. v0.17: Episode 2, the Old Coach Road. v0.22: the LC79 V8. v0.23: Episode 3, Lakefield (winching someone else out, a deadline that holds until a crossing). v0.46–49: trailers and towing in test mode. v0.50: Episode 4, delivering fuel drums across Frenchmans Track. **v0.73 removed Episodes 2–4**: the game is the CREB Track alone (docs/ROADMAP.md), and the trailer lives on in the Army supply run (v1.06). Towing another vehicle comes later. |
 | Look | The game's current look, made more realistic (§5a). Not photo-real or highly detailed; vehicle bodies with accurate shapes come first. |
 | Platform | Browser, desktop and touch. Three.js, Rapier, TypeScript, Vite; the world, vehicles and sound are generated in code, with an approved camp artwork for the title. |
 
 ## 2. Episodes
+
+Episodes 2–4 below were built and then removed in v0.73, when the owner chose to make the CREB Track the whole game. Their rows stay as the record of what was built; `rescue` and `lastLeg` in §2a went with them. Episodes 5–7 remain planned.
 
 | # | Episode | Route | Core mission (planned) |
 |---|---|---|---|

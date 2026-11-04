@@ -19,13 +19,14 @@ npm run dev        # then open http://localhost:5173
 
 **On Batocera** (x86-64): `bash batocera/deploy.sh [host]` builds the game and installs it as a Ports entry over SSH (default host `batocera-nuc.local`). Run it again after an update; saves are kept. Use the Batocera exit hotkey to quit.
 
-| Script             | What it does                                        |
-| ------------------ | --------------------------------------------------- |
-| `npm run build`    | Type-checks and builds the static site into `dist/` |
-| `npm run preview`  | Serves `dist/` at http://localhost:4173             |
-| `npm run lint`     | ESLint and Prettier check                           |
-| `npm test`         | Unit and headless physics tests (Vitest)            |
-| `npm run test:e2e` | Browser tests (Playwright; builds first)            |
+| Script              | What it does                                                                    |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `npm run build`     | Type-checks and builds the static site into `dist/`                             |
+| `npm run preview`   | Serves `dist/` at http://localhost:4173                                         |
+| `npm run lint`      | ESLint and Prettier check                                                       |
+| `npm test`          | Unit and headless physics tests (Vitest)                                        |
+| `npm run typecheck` | Type-check everything, tests and scripts included (the build checks only `src`) |
+| `npm run test:e2e`  | Browser tests (Playwright; builds first)                                        |
 
 The game opens at a riverside camp at dusk. **Press any button** (or **Tap to begin**) brings up **Continue**, **New Journey** and **Settings**, with quiet camp ambience. **Continue** loads your saved camp and starts driving without another briefing confirmation. **New Journey** opens episode selection; **Vehicle & difficulty** also contains replay conditions for finished episodes. Choosing a new journey does not delete the saved camp while you browse. **Settings** offers graphics, master volume, controller type, phone driving, speed units, HUD style and, while a controller is connected on a computer, the gearbox (Automatic or Manual, v1.35), preserving your progress.
 
@@ -234,6 +235,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 ## What to test
 
+- [ ] **v1.44 a trimmed workflow (nothing to drive):** the loading screen shows v1.44 and the game is otherwise unchanged. If you run it locally: `npm run lint` and `npm run build` should be noticeably quicker than before (about half), and `npm run typecheck` is the new full type check. On GitHub, the Actions run for this version should show the checkout steps finishing in seconds rather than pulling the photographs.
 - [ ] **v1.43 the 40 Series bonnet is clear:** the loading screen shows v1.43. Pick the short-wheelbase 4WD and sit in the driver's seat: is the bonnet clear, with the road visible ahead, where a spare wheel used to sit in the middle of the windscreen? Walk round: the spare now lies flat on the roof rack, over the recovery boards and beside the canvas roll, and the other spare is still on the left rear door. Does the roof spare float, stick out through the rails, or cut into the boards, the roll or the toolbox? Does the car still drive as before?
 - [ ] **v1.42 Roaring Meg and Helenvale in real rock:** the loading screen shows v1.42. Climbing out of Roaring Meg's gorge, is the ledge now three bites of rock with a lip to each rather than a smooth ramp? Try it with the diffs open: does it stop you part way, and do both lockers get you up? On the Helenvale knoll, is the granite a staircase of ledges up the hill, with the loose rocks still on the treads under one wheel and then the other? Does the line you pick matter on both, and does rushing either in high range still cut a tyre?
 - [ ] **v1.41 the 80 Series reference (nothing to drive):** reference notes only — the game is unchanged, so there is nothing to test by driving. If you have photographs of the real Sooty MkII that you own or may redistribute, they would unblock correcting the body against it; without them the model stays a build-inspired draft.
@@ -429,8 +431,8 @@ scripts/   route-check (track grades, heights and creek levels), track-profile (
            photographs it; tri-count prints each vehicle's triangle counts); and the labs from 4WD Simulator
 tests/     Vitest unit and headless physics tests (tests/fixtures/maps holds 4WD Simulator's maps as test worlds)
 e2e/       Playwright browser tests
-docs/      DECISIONS.md (choices made along the way), HISTORY.md (sources for the history in the game) and
-           NEXT.md (notes for the next job: trailers and towing)
+docs/      DECISIONS.md (choices made along the way), HISTORY.md (sources for the history in the game),
+           ROADMAP.md (what comes next) and PLAN-efficiency.md (the improvement plan being worked through)
 reference/ photographs and published dimensions for each modelled vehicle (not loaded by the game).
   vehicles/  Read reference/vehicles/README.md before changing a body
 ```

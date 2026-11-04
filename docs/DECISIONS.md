@@ -2314,3 +2314,17 @@ The second spare on the short-wheelbase 4WD lay flat on the bonnet, clamped thro
 **What did not move.** The body, the door spare (still on the left rear door, as `rear-34-left.jpg` and `rear-34-orange-1977.jpg` show), the jerry can, the boards, the roll, the toolbox, the bull bar and the collision boxes. The bonnet spare was already outside those boxes; this one is too. It is drawn only.
 
 Compared in the studio before and after, from the driver's seat, the front, the front-left and above. The bonnet is clear, the spare is inside the rack rails, and it does not meet the boards, the roll, the toolbox or the roof.
+
+## v1.44: the workflow, trimmed
+
+The first phase of `docs/PLAN-efficiency.md`. Nothing in the game changes; what changes is how long it takes to check and ship one.
+
+**Prettier walked the photographs.** `prettier --check .` took 23 s, and 8 s of that was spent under `reference/` and `research/` on 18 small Markdown and JSON files, because it has to list every directory to find them. They are reference material, not code; `reference`, `research` and `batocera` are now in `.prettierignore`. Lint fell from 53 s to 28 s here.
+
+**The build type-checked the tests.** `npm run build` ran `tsc --noEmit` over `tsconfig.json`, which includes `tests`, `e2e` and `scripts`: 1,196 files, none of which ship. The build now checks `tsconfig.app.json` (`src` and `vite.config.ts` only), and the full check is `npm run typecheck`, which CI runs beside lint. `incremental` is on for both, with their build info under `node_modules/.cache`, so a second local run takes about 2 s. The build fell from 29 s to 17 s. The Playwright server command uses `vite build` alone for the same reason.
+
+**CI pulled 314 MB twice a run.** The repository pack is 314 MB and 313 MB of it is the reference photographs, which nothing in the code, the tests or the build reads (the only mentions in `src/` are doc comments pointing at them). Both jobs in `deploy.yml` now use a sparse checkout: `src`, `tests`, `e2e`, `scripts` and `public` for the checks, `src` and `public` for the build. Cone mode keeps the root files (configs, `index.html`, `package.json`) in either case.
+
+**Docs that said the wrong thing.** The roadmap said trailers stay in test mode only. They do not: the Army supply run (v1.06) tows one and unlocks the Perentie, so the trailer code is not dead and the roadmap now says so. The README's layout listed a `docs/NEXT.md` that does not exist. SPEC.md still presented Episodes 2–4 as the game; a note under §1 and §2 records their removal in v0.73.
+
+**What was not done.** The photographs themselves stay full size in history; shrinking them is a separate decision for the owner, since they are the vehicle reference. Phase 2 (the unit tests) follows.
