@@ -800,7 +800,8 @@ export function buildUte40Plank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   const wood = pal('barkOchre');
   const x = index === 0 ? -0.72 : -0.4,
-    z = (TRAY_FRONT + TRAY_BACK) / 2 + 0.1,
+    // Centre the 2.2 m boards in the 2.4 m tray so their ends clear both walls.
+    z = (TRAY_FRONT + TRAY_BACK) / 2,
     y = DECK + 0.0275;
   b.block(x, y, z, 0.3, 0.055, 2.2, wood, M.Fabric, Z.Rear);
   for (let i = 0; i < 4; i++)

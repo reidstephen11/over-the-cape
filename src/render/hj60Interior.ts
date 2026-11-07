@@ -25,7 +25,8 @@ export function addHj60Interior(b: VehicleBuilder, redlineRpm: number): void {
   b.block(0, floor + 0.08, -0.62, 1.64, 0.16, 0.06, mat, M.Rubber, Z.Trim, 0.02);
   // Dash: a steel lower panel, a padded top under the screen and the instrument hood.
   b.block(0, 0.68, -0.52, 1.64, 0.22, 0.14, dash, M.Paint, Z.Trim, 0.02);
-  b.block(0, 0.79, -0.49, 1.66, 0.05, 0.2, C.vinyl, M.Rubber, Z.Trim, 0.022);
+  // The pad ends behind the binnacle; its old lip crossed the dial faces from the seat.
+  b.block(0, 0.79, -0.56, 1.66, 0.05, 0.12, C.vinyl, M.Rubber, Z.Trim, 0.022);
   b.block(0.47, 0.75, -0.445, 0.56, 0.22, 0.06, mat, M.Rubber, Z.Trim, 0.015);
   b.block(0.47, 0.865, -0.425, 0.58, 0.035, 0.12, C.vinyl, M.Rubber, Z.Trim, 0.015);
   addDialFaces(b, cabin, redlineRpm);

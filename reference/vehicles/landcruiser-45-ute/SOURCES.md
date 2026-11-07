@@ -24,3 +24,7 @@ Game id: `ute40`. Body: `src/render/ute40Body.ts` (the cab back, roof, tray, bul
 ## Gaps
 
 No committed photograph of any 45/47 ute. No published length, height or kerb mass for the HJ47 cab-chassis was found that could be cited; the published figures above are the J40 wheelbase and the 40's own body figures. The owner's pictures show the right side and the front; the back of the tray, the tailgate and the under-tray spare are guesses from how such trays are built.
+
+## v1.62 inspection
+
+v1.62 visual review: both recovery boards moved 0.10 m forward, centred lengthways on the left of the deck (z 0.50–2.70), so their ends clear the headboard and tailgate. Tray and cab dimensions and both spare mounts are unchanged. The tray remains an estimate from the owner's pictures, not a new factory match.

@@ -25,7 +25,8 @@ export function addMqInterior(b: VehicleBuilder, redlineRpm: number): void {
   b.block(0, floor + 0.08, -0.66, 1.54, 0.16, 0.06, mat, M.Rubber, Z.Trim, 0.02);
   // Dash: a painted steel panel under the screen with a padded top and the instrument hood.
   b.block(0, 0.72, -0.57, 1.54, 0.2, 0.12, dash, M.Paint, Z.Trim, 0.02);
-  b.block(0, 0.83, -0.55, 1.56, 0.04, 0.16, C.vinyl, M.Rubber, Z.Trim, 0.02);
+  // Keep the padded top behind the cluster so it cannot cross the dial faces.
+  b.block(0, 0.83, -0.62, 1.56, 0.04, 0.12, C.vinyl, M.Rubber, Z.Trim, 0.02);
   b.block(0.47, 0.78, -0.535, 0.5, 0.2, 0.06, mat, M.Rubber, Z.Trim, 0.015);
   b.block(0.47, 0.895, -0.515, 0.52, 0.03, 0.1, C.vinyl, M.Rubber, Z.Trim, 0.015);
   addDialFaces(b, cabin, redlineRpm);
@@ -91,5 +92,6 @@ export function addMqInterior(b: VehicleBuilder, redlineRpm: number): void {
   // Sun visors, the mirror and the headlining under the roof.
   for (const x of [-0.4, 0.4]) b.block(x, 1.19, -0.4, 0.36, 0.012, 0.13, C.vinyl, M.Fabric, Z.Trim, 0.005);
   b.block(0, 1.16, -0.42, 0.2, 0.05, 0.015, mat, M.Rubber, Z.Trim, 0.012);
+  b.rod({ x: 0, y: 1.18, z: -0.42 }, { x: 0, y: 1.206, z: -0.42 }, 0.007, mat, M.Rubber, Z.Trim);
   b.block(0, 1.206, 0.78, 1.5, 0.008, 2.5, lining, M.Fabric, Z.Trim);
 }

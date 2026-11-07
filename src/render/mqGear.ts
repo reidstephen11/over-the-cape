@@ -238,14 +238,11 @@ function rack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   for (const side of [-1, 1]) {
     for (const z of [0.0, 0.7, 1.4, back - 0.06]) {
       b.block(side * gutter, ROOF_EDGE + 0.02, z, 0.03, 0.05, 0.07, C.bar, M.Metal, Z.Roof, 0.006);
-      b.rod(
-        v(side * gutter, ROOF_EDGE + 0.03, z),
-        v(side * hx, DECK - 0.02, z),
-        0.014,
-        C.bar,
-        M.Metal,
-        Z.Roof,
-      );
+      // Rise outside the roof shoulder before turning in to the rack. A diagonal from
+      // the low gutter disappeared inside the thick roof, leaving two detached stubs.
+      const knee = v(side * gutter, DECK - 0.02, z);
+      b.rod(v(side * gutter, ROOF_EDGE + 0.03, z), knee, 0.014, C.bar, M.Metal, Z.Roof);
+      b.rod(knee, v(side * hx, DECK - 0.02, z), 0.014, C.bar, M.Metal, Z.Roof);
     }
     b.rod(v(side * hx, DECK - 0.02, front), v(side * hx, DECK - 0.02, back), 0.018, C.bar, M.Metal, Z.Roof);
     b.rod(v(side * hx, rail, front + 0.06), v(side * hx, rail, back - 0.06), 0.015, C.bar, M.Metal, Z.Roof);

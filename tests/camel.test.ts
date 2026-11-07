@@ -1,5 +1,5 @@
 import { saveData } from './helpers/saves';
-import { Color } from 'three';
+import { Color, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { camelTuning } from '../src/data/camel';
 import { SurfaceId } from '../src/data/surfaces';
@@ -67,6 +67,18 @@ describe('Camel Trophy Land Rover 90', () => {
     expect(yellow).toBeGreaterThan(5000);
     expect(ink).toBeGreaterThan(1000);
     expect(nearIntake).toBeGreaterThan(20);
+    // The rear corners must remain closed between the lamp stacks and upper quarters.
+    const material = new MeshBasicMaterial({ side: DoubleSide });
+    const shell = new Mesh(geometry, material);
+    shell.updateMatrixWorld();
+    for (const side of [-1, 1])
+      for (const y of [0.53, 0.68, 0.75]) {
+        const ray = new Raycaster(new Vector3(side * 0.78, y, 2), new Vector3(0, 0, -1), 0, 0.3);
+        const hit = ray.intersectObject(shell)[0];
+        expect(hit).toBeDefined();
+        expect(hit.point.z).toBeGreaterThan(1.77);
+      }
+    material.dispose();
     model.dispose();
     plain.dispose();
   });
