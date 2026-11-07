@@ -309,9 +309,28 @@ export class AudioSystem {
   }
 
   /** Transfer-case range change or an air locker engaging / releasing. */
-  drivetrainClunk(kind: 'range' | 'lockOn' | 'lockOff'): void {
+  drivetrainClunk(kind: 'range' | 'lockOn' | 'lockOff' | 'windup'): void {
     const g = this.live();
-    if (g) clunk(g.ctx, g.fxBus, g.noise, kind);
+    if (!g) return;
+    if (kind === 'windup') {
+      const osc = g.ctx.createOscillator();
+      const gain = g.ctx.createGain();
+      const now = g.ctx.currentTime;
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(145, now);
+      osc.frequency.exponentialRampToValueAtTime(48, now + 0.55);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.035, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc.connect(gain);
+      gain.connect(g.fxBus);
+      osc.start(now);
+      osc.stop(now + 0.65);
+      osc.onended = () => {
+        osc.disconnect();
+        gain.disconnect();
+      };
+    } else clunk(g.ctx, g.fxBus, g.noise, kind);
   }
 
   /** The handbrake ratchets on or clunks off. */

@@ -14,6 +14,7 @@ const MOUNT_Y = 0.32;
 
 export const perentieTuning: VehicleTuning = {
   id: 'perentie',
+  transfer: 'fullTime',
   name: 'Land Rover 110 Perentie',
   // About 2.15 t with crew and gear; the diesel and bull bar put a little more on the front.
   // The centre of mass is about 0.78 m off the ground: it rolls over in a full-lock turn

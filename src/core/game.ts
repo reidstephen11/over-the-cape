@@ -1052,6 +1052,32 @@ export class Game {
         ? [{ id: 'unhitch', label: 'Unhitch the trailer', icon: 'detach', enabled: true }]
         : [];
     return [
+      {
+        id: 'transfer',
+        label: `Transfer: ${v.transfer.mode} (change)`,
+        icon: 'feature',
+        enabled: !v.rangeShiftReason(),
+      },
+      ...(v.tuning.transfer === 'fullTime'
+        ? [
+            {
+              id: 'centre',
+              label: v.transfer.centreLocked ? 'Unlock centre diff' : 'Lock centre diff',
+              icon: 'feature' as const,
+              enabled: v.transfer.centreLocked || Math.abs(v.speed) < 0.5,
+            },
+          ]
+        : v.tuning.autoHubs
+          ? []
+          : [
+              {
+                id: 'hubs',
+                label: v.transfer.hubsLocked ? 'Unlock front hubs (20 s)' : 'Lock front hubs (20 s)',
+                icon: 'feature' as const,
+                enabled:
+                  v.transfer.mode === '2H' && Math.abs(v.speed) < 0.5 && v.tiltDeg() <= 30 && !t.repair,
+              },
+            ]),
       ...cargo,
       ...trailer,
       t.winch.attached
@@ -1097,9 +1123,14 @@ export class Game {
       {
         id: 'repair',
         label: fix
-          ? { field: 'Field repair', spare: 'Fit a spare', plug: 'Plug the tyre', refuel: '', pump: '' }[
-              fix.kind
-            ]
+          ? {
+              field: 'Field repair',
+              spare: 'Fit a spare',
+              plug: 'Plug the tyre',
+              refuel: '',
+              pump: '',
+              hubs: '',
+            }[fix.kind]
           : 'Nothing to repair',
         icon: 'wrench',
         // Needed but not possible here: picking it says why (stop first, spare used...).
@@ -1109,7 +1140,15 @@ export class Game {
   }
 
   private pickTool(id: string): void {
-    if (id === 'secureLoad')
+    if (id === 'transfer') this.input.requestDriveAction('range');
+    else if (id === 'centre') {
+      if (this.vehicle.toggleCentre()) {
+        this.hud.toast(this.vehicle.transfer.centreLocked ? 'Centre diff locked' : 'Centre diff open');
+        this.audio.drivetrainClunk(this.vehicle.transfer.centreLocked ? 'lockOn' : 'lockOff');
+      } else this.hud.toast('Stop before locking the centre diff');
+    } else if (id === 'hubs') {
+      if (!this.sim.startHubs(LOCAL_VEHICLE)) this.hud.toast('Select 2H and stop on level ground first');
+    } else if (id === 'secureLoad')
       this.hud.toast(
         this.sim.secureTrailerLoad(LOCAL_VEHICLE)
           ? 'Load straps tightened'
@@ -1740,6 +1779,7 @@ export class Game {
         this.freeCamOn,
       mode: this.tool.mode,
       lowRange: v.drivetrain.range === 'low',
+      transferMode: v.transfer.mode,
       parkBrake: v.parkBrake,
       frontLocked: v.differentials.front,
       rearLocked: v.differentials.rear,

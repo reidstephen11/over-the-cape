@@ -81,14 +81,27 @@ export class Autopilot {
     else this.stuckTime = Math.max(0, this.stuckTime - dt);
     const wantLow = this.lowRange || this.stuckTime > 2;
     const climbing = this.holdLowOnClimbs && fy / Math.hypot(fx, fy, fz) > 0.08;
+    // Leaving low cycles through 2H on part-time cars. Reconnect 4H before driving
+    // on; the scripted driver always uses four-wheel drive, as its routes assume.
+    if (v.transfer.mode === '2H' && !v.rangeShiftReason()) {
+      inp.toggleRange = true;
+      this.rangeCooldown = 0;
+      return inp;
+    }
     if (
       this.rangeCooldown <= 0 &&
       wantLow !== (v.drivetrain.range === 'low') &&
       Math.abs(v.speed) < 5 &&
       (wantLow || !climbing)
     ) {
-      inp.toggleRange = true;
-      this.rangeCooldown = 3;
+      if (Math.abs(v.speed) > 0.5) {
+        inp.throttle = 0;
+        inp.brake = 0;
+        inp.handbrake = true;
+      } else {
+        inp.toggleRange = true;
+        this.rangeCooldown = 3;
+      }
     }
     return inp;
   }

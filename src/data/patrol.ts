@@ -14,6 +14,7 @@ const MOUNT_Y = 0.32;
 
 export const patrolTuning: VehicleTuning = {
   id: 'patrol',
+  transfer: 'partTime',
   name: 'GQ Patrol',
   // About 2.4 t with two people, fuel, a bull bar, winch and roof rack. The centre of
   // mass sits about 0.8 m up: high, but the wide track keeps it on its wheels in a

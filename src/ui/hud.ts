@@ -108,6 +108,7 @@ export interface HudState {
   heading: number;
   pois: CompassPoi[];
   range: 'high' | 'low';
+  transfer?: { mode: string; hubsLocked: boolean; centreLocked: boolean; fullTime: boolean; windup: number };
   frontLocked: boolean;
   rearLocked: boolean;
   precisionCrawl: boolean;
@@ -412,7 +413,7 @@ export class Hud {
         s.run.points === 0 ? 'clean' : `${s.run.points} pt${s.run.points === 1 ? '' : 's'}`,
       );
     }
-    setText(this.rangeEl, s.range === 'high' ? 'H' : 'L');
+    setText(this.rangeEl, s.transfer?.mode ?? (s.range === 'high' ? 'H' : 'L'));
     // Speed and gear, unless the crawl gauges already show them (the dash does in the driver's seat).
     this.status.classList.toggle('with-speed', !showGauges);
     const speed = formatSpeed(s.gauges.speedKmh, this.units);
@@ -731,6 +732,22 @@ const corner = (front: boolean, left: boolean) => `${front ? 'F' : 'R'}${left ? 
  */
 export function lampsFor(s: HudState): Lamp[] {
   const out: Lamp[] = [];
+  if (s.transfer?.fullTime && s.transfer.centreLocked)
+    out.push({ id: 'centre', text: 'C LOCK', tone: 'amber', title: 'Centre diff locked' });
+  if (s.transfer && !s.transfer.fullTime && !s.transfer.hubsLocked)
+    out.push({
+      id: 'hubs',
+      text: 'HUBS FREE',
+      tone: 'amber',
+      title: 'Front hubs unlocked: select 2H and lock them to use 4WD',
+    });
+  if (s.transfer && s.transfer.windup >= 0.5)
+    out.push({
+      id: 'windup',
+      text: 'WIND-UP',
+      tone: 'red',
+      title: 'Driveline strain: use 2H or unlock the centre diff on firm ground',
+    });
   if (s.range === 'low') out.push({ id: 'low', text: 'LOW', tone: 'amber', title: 'Low range' });
   if (s.frontLocked) out.push({ id: 'flock', text: 'F LOCK', tone: 'amber', title: 'Front diff locked' });
   if (s.rearLocked) out.push({ id: 'rlock', text: 'R LOCK', tone: 'amber', title: 'Rear diff locked' });

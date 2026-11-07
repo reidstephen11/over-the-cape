@@ -110,14 +110,14 @@ describe('sim feedback wiring', () => {
 
   it('range, diffs, handbrake and lights toast and clunk', () => {
     const { sim, toasts, sounds } = wired();
-    sim.events.emit('rangeChanged', { id: ME, range: 'low' });
+    sim.events.emit('transferChanged', { id: ME, mode: '4L' });
     sim.events.emit('diffChanged', { id: ME, axle: 'rear', locked: true });
     sim.events.emit('parkBrakeChanged', { id: ME, on: false });
     sim.events.emit('lightsChanged', { id: ME, mode: 'high' });
     sim.events.emit('diffBlocked', { id: ME, axle: 'front' });
     sim.events.emit('precisionChanged', { id: ME, enabled: false });
     expect(toasts.map(([t]) => t)).toEqual([
-      'Low range',
+      'Transfer case: 4L',
       'Rear differential locked',
       'Handbrake off',
       'Headlights: high beam',

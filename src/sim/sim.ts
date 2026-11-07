@@ -57,6 +57,9 @@ export { FALLEN_TREE_STUBS, type DynamicObject } from './surprises';
 export interface SimEvents extends Record<string, unknown> {
   vehicleSpawned: { id: string };
   rangeChanged: { id: string; range: 'high' | 'low' };
+  transferChanged: { id: string; mode: string };
+  transferBlocked: { id: string; reason: string };
+  windup: { id: string };
   diffChanged: { id: string; axle: 'front' | 'rear'; locked: boolean };
   diffBlocked: { id: string; axle: 'front' | 'rear' };
   precisionChanged: { id: string; enabled: boolean };
@@ -102,6 +105,7 @@ export interface SimState {
     linvel: { x: number; y: number; z: number };
     angvel: { x: number; y: number; z: number };
     range: 'high' | 'low';
+    transfer: import('./vehicle/transferCase').TransferState;
     gear: number;
     differentials: { front: boolean; rear: boolean };
     precisionCrawl: boolean;
@@ -707,12 +711,19 @@ export class Simulation {
         input = { ...input, handbrake: true };
       tools.updateFreeRoll(v, input);
       const before = v.drivetrain.range;
+      const transferBefore = v.transfer.mode;
+      const strainBefore = v.transfer.windup;
       const frontBefore = v.differentials.front;
       const rearBefore = v.differentials.rear;
       const precisionBefore = v.precisionCrawl;
       const parkBefore = v.parkBrake;
       const lightsBefore = v.lights;
       v.step(input, dt);
+      if (v.transfer.mode !== transferBefore)
+        this.events.emit('transferChanged', { id, mode: v.transfer.mode });
+      else if (input.toggleRange)
+        this.events.emit('transferBlocked', { id, reason: v.rangeShiftReason() ?? 'Cannot shift now' });
+      if (strainBefore < 0.5 && v.transfer.windup >= 0.5) this.events.emit('windup', { id });
       if (v.parkBrake !== parkBefore) this.events.emit('parkBrakeChanged', { id, on: v.parkBrake });
       if (v.lights !== lightsBefore) this.events.emit('lightsChanged', { id, mode: v.lights });
       if (v.drivetrain.range !== before) this.events.emit('rangeChanged', { id, range: v.drivetrain.range });
@@ -1038,6 +1049,21 @@ export class Simulation {
     return { kind, possible: true };
   }
 
+  startHubs(id: string): boolean {
+    const v = this.vehicleOf(id);
+    const tools = this.toolsOf(id);
+    if (
+      v.tuning.transfer !== 'partTime' ||
+      v.tuning.autoHubs ||
+      v.transfer.mode !== '2H' ||
+      tools.repair ||
+      !this.canWork(v, 'hubs').possible
+    )
+      return false;
+    tools.repair = { kind: 'hubs', remaining: 20, total: 20 };
+    return true;
+  }
+
   /** Pump let-down tyres back up with the compressor: a roadside job like a repair. */
   startPump(id: string): boolean {
     const v = this.vehicleOf(id);
@@ -1060,6 +1086,7 @@ export class Simulation {
       plug: R.plugSeconds,
       refuel: R.refuelSeconds,
       pump: R.pumpSeconds,
+      hubs: 20,
     }[option.kind];
     tools.repair = { kind: option.kind, remaining: total, total };
     return true;
@@ -1074,6 +1101,7 @@ export class Simulation {
     const c = v.condition;
     if (job.kind === 'field') repairAll(c);
     else if (job.kind === 'pump') c.lowPressure = false;
+    else if (job.kind === 'hubs') v.transfer.hubsLocked = !v.transfer.hubsLocked;
     else if (job.kind === 'refuel') {
       if (c.jerryCans === 0) return;
       c.jerryCans--;
@@ -1183,6 +1211,7 @@ export class Simulation {
           linvel: { x: lv.x, y: lv.y, z: lv.z },
           angvel: { x: av.x, y: av.y, z: av.z },
           range: v.drivetrain.range,
+          transfer: { ...v.transfer },
           gear: v.drivetrain.gear,
           differentials: { ...v.differentials },
           precisionCrawl: v.precisionCrawl,

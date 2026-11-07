@@ -16,6 +16,7 @@ export interface TouchControlsState {
   covered: boolean;
   mode: ToolMode;
   lowRange: boolean;
+  transferMode?: string;
   parkBrake: boolean;
   frontLocked: boolean;
   rearLocked: boolean;
@@ -212,6 +213,9 @@ export class TouchControls {
     const key = JSON.stringify(s);
     if (key === this.lastKey) return;
     this.lastKey = key;
+    const rangeButton = this.el.querySelector('[data-tap="range"]')!;
+    rangeButton.textContent = s.transferMode ?? 'LOW';
+    rangeButton.setAttribute('aria-label', `Change transfer case (${s.transferMode ?? 'range'})`);
     const tool = s.mode !== 'drive';
     this.el.classList.toggle('tool-mode', tool);
     for (const b of this.el.querySelectorAll<HTMLElement>('[data-state]'))

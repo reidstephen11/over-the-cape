@@ -20,6 +20,8 @@ export const LC79_CAB_LIFT = 0.1;
 
 export const lc79Tuning: VehicleTuning = {
   id: 'lc79',
+  transfer: 'partTime',
+  autoHubs: true,
   name: 'LC79 V8',
   // About 2.4 t empty; with two aboard, the bar, winch, tray, canopy, water, gear and a
   // full tank about 3 t. The lift and the big tyres put the centre of mass about 0.86 m

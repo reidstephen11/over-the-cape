@@ -8,6 +8,7 @@ import type { TyreFault } from './vehicle/condition';
 import type { Vehicle } from './vehicle/vehicle';
 import type { PoiDef } from './world/mapTypes';
 import type { DeliveryState } from './trailerState';
+import { createTransferState, type TransferState } from './vehicle/transferCase';
 
 /**
  * Where an episode restarts from: the last camp reached, the clock when you got there,
@@ -15,6 +16,7 @@ import type { DeliveryState } from './trailerState';
  */
 export interface Checkpoint {
   camp: string;
+  transfer?: Omit<TransferState, 'windup'> & { vehicle: VehicleId };
   hour: number;
   /** Real seconds of driving so far. */
   elapsed: number;
@@ -180,6 +182,12 @@ export function checkpointAt(
     camp,
     hour: run.hour,
     elapsed: run.elapsed,
+    transfer: {
+      vehicle: v.tuning.id,
+      mode: v.transfer.mode,
+      hubsLocked: v.transfer.hubsLocked,
+      centreLocked: v.transfer.centreLocked,
+    },
     fuel: c.fuel,
     jerryCans: c.jerryCans,
     spares: c.spares,
@@ -203,6 +211,15 @@ export function newRunSeed(): number {
 /** Put a vehicle's load and tyres back as a checkpoint (or the episode's start) had them. */
 export function applyCheckpoint(v: Vehicle, c: Checkpoint): void {
   const k = v.condition;
+  Object.assign(v.transfer, createTransferState());
+  if (c.transfer?.vehicle === v.tuning.id) {
+    v.transfer.mode = c.transfer.mode;
+    v.transfer.hubsLocked = c.transfer.hubsLocked;
+    v.transfer.centreLocked = c.transfer.centreLocked;
+  }
+  if (v.tuning.transfer === 'fullTime' && v.transfer.mode === '2H') v.transfer.mode = '4H';
+  if (v.tuning.transfer === 'partTime' && v.transfer.mode !== '2H') v.transfer.hubsLocked = true;
+  v.drivetrain.range = v.transfer.mode === '4L' ? 'low' : 'high';
   k.fuel = Math.min(c.fuel, v.tuning.engine.fuel.tankLitres);
   k.jerryCans = c.jerryCans;
   k.spares = c.spares;

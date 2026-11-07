@@ -11,6 +11,7 @@ import type { CabinLayout } from './vehicles';
 export const sooty80Tuning: VehicleTuning = {
   ...patrolTuning,
   id: 'sooty80',
+  transfer: 'fullTime',
   name: '80 Series — Sooty MkII',
   mass: 2800,
   com: { x: 0, y: 0.24, z: -0.06 },

@@ -5,7 +5,7 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. The trailer code stays: the Army supply run (v1.06, a Start option on the welcome screen) tows one and unlocks the Perentie, and test mode can hitch one.
 2. ~~**Section times.**~~ Done in v0.65.
 3. ~~**Ghost car.**~~ Done in v1.00 (`src/sim/ghost.ts`): the quickest finish follows you as a pale car; the pause menu shows the gap. Still open: a live gap on the driving HUD and a setting to hide it.
-4. **Changing track conditions.** Clay churned up by wheelspin done in v0.70 (`src/sim/world/churn.ts`), drawn as ruts in v0.71. Still to do: each new run rolls dry, wet or just-reopened from the run seed. Scale bog depth, creek depth and current, and clay grip with it, and say which in the briefing. Restarting from a camp keeps the same roll.
+4. ~~**Changing track conditions.**~~ Done: each run rolls dry, wet or just-reopened from the seed; bogs, creeks, current and grip scale with it, the briefing names it, and a camp restart keeps the roll. Clay churn and its visible ruts are also implemented.
 5. ~~**Engine strain.**~~ Heat done in v0.67; the bow wave in deep crossings taken too fast in v0.70.
 6. ~~**Tyre pressures.**~~ Done in v0.67; the timed compressor in v0.70.
 7. **Other traffic.** ~~Oncoming 4WDs on narrow sections that you pull over for~~ (done in v0.69, `src/sim/traffic.ts`). Stranded drivers to winch out for fuel or plugs done in v0.71 (`src/sim/stranded.ts`).
@@ -15,7 +15,7 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 
 For players who like 4WD challenges and realistic driving. v1.35 added the manual gearbox (controller only). Its "Manual with clutch" option (○/B as the clutch) was shelved in v1.37, because a controller button is a poor clutch; it returns once steering-wheel and pedal support (item 3) gives it a real pedal. Next, one update at a time:
 
-1. **Transfer case.** Per vehicle `transfer: 'partTime' | 'fullTime'`: part-time with 2H/4H/4L and free-wheeling hubs (40, 60, Hilux, Troopy, Patrol, LC79); full-time with a centre diff lock (80 Series, Perentie and Camel; the Unimog full-time). L cycles 2H → 4H (on the move, hubs locked) → 4L (stopped). Hubs lock from the tool menu, stopped, about 20 s; auto hubs on the LC79. 2H: no front drive (the per-axle split goes to the rear only), slightly lower rolling drag and fuel, tail-happy on gravel. Part-time 4H/4L or the centre lock on rock or concrete winds the driveline up: steering effort and tyre scrub in tight turns, a creak, tyre wear; a 2H/4H/4L HUD lamp. The autopilot and the tests default to 4H with the hubs locked so nothing tuned moves.
+1. ~~**Transfer case.**~~ Done in v1.63: part-time 2H/4H/4L, manual/automatic hubs, full-time centre lock, wind-up, HUD and touch status, and camp persistence. Starts in 4H with hubs and centre locked, retaining the existing route tuning. Next: scored gate courses.
 2. **Scored gate courses on the CREB**, using the existing `crawlCourse` and `gateCount` system (gates, touches and a score for the hard climbs).
 3. **Steering-wheel and pedal mapping**, with rumble, a clutch pedal (bringing back "Manual with clutch"), and field-of-view and sensitivity settings.
 4. **Tyre pressure in psi and more recovery gear:** a snatch block, a tree protector, a rear recovery point and a shovel.
