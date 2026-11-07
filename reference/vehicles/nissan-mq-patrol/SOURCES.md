@@ -55,3 +55,7 @@ The pictures the model was built from, to be downloaded to these names (see Gaps
 | `rear-34-right-hardtop-germany.jpg`              | rear three-quarter, right  | A German hardtop with a snorkel: the roof and the rear quarter from the right.                                            | [Commons](https://commons.wikimedia.org/wiki/File:Nissan_Patrol_140956.jpg)                                            | Trop86                                      | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0)       | 2698×2215 |
 
 `manifest.json` repeats this table in machine-readable form with each original's URL.
+
+## v1.62 inspection
+
+v1.62 visual review: the rack supports now rise outside the roof shoulder from the gutter clamps before turning in to the deck, instead of disappearing inside the roof. The interior mirror gains a stem to the headlining, and the padded dash top moves 0.07 m towards the screen and becomes 0.12 m deep, clearing the gauges. Overall dimensions, deck height and both spare mounts are unchanged. These are fit corrections to estimated/game-added parts; no additional photograph was available.

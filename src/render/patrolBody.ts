@@ -754,12 +754,14 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
   // The second spare lies flat at the front of the rack, between the boards, strapped down.
   const sy = y + 0.014 + spareSidewall(wheel) + 0.004,
     sz = 0.32,
+    // Run the strap beside the raised hub cap rather than through it.
+    strapZ = sz + 0.16,
     strapY = sy + tuning.wheelWidth * 0.53 + 0.006;
   b.tag = Z.Roof;
   mountSpare(b, wheel, { x: 0, y: sy, z: sz }, 'up', black);
-  b.block(0, strapY, sz, 0.8, 0.008, 0.05, black, M.Rubber, Z.Roof);
+  b.block(0, strapY, strapZ, 0.8, 0.008, 0.05, black, M.Rubber, Z.Roof);
   for (const side of [-1, 1])
-    b.rod(v(side * 0.4, strapY, sz), v(side * 0.43, y, sz), 0.012, black, M.Rubber, Z.Roof);
+    b.rod(v(side * 0.4, strapY, strapZ), v(side * 0.43, y, strapZ), 0.012, black, M.Rubber, Z.Roof);
 }
 
 function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {

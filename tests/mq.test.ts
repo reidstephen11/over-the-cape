@@ -73,6 +73,16 @@ describe('MQ Patrol hardtop', () => {
         expect(hit).toBeDefined();
         expect(hit.point.z).toBeLessThan(cabin.dialZ + 0.015);
         expect(hit.point.z).toBeGreaterThan(cabin.dialZ - 0.01);
+        // Check from the actual seat as well: a dash lip can miss a horizontal ray
+        // while hiding the upper half of the face from the driver's higher viewpoint.
+        for (const dx of [-0.4, 0.4]) {
+          const eye = new Vector3(cabin.eye.x, cabin.eye.y, cabin.eye.z);
+          const face = new Vector3(dial.x + dx * dial.radius, cabin.dialY, cabin.dialZ);
+          const sight = new Raycaster(eye, face.clone().sub(eye).normalize(), 0, eye.distanceTo(face) + 0.02);
+          const seen = sight.intersectObject(shell)[0];
+          expect(seen).toBeDefined();
+          expect(seen.point.distanceTo(face)).toBeLessThan(0.015);
+        }
       }
       material.dispose();
       for (const attribute of Object.values(model.body.geometry.attributes))

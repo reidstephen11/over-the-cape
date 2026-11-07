@@ -64,13 +64,13 @@ describe('40 Series ute', () => {
         expect(hit.point.y).toBeGreaterThan(DECK - 0.05);
         expect(hit.point.y).toBeLessThan(DECK + 0.5);
       }
-      // The planks lie on the deck.
+      // The planks lie on the deck and clear the inside faces of both tray walls.
       for (const plank of model.rackPlanks.children) {
         (plank as Mesh).geometry.computeBoundingBox();
         const bb = (plank as Mesh).geometry.boundingBox!;
         expect(bb.min.y).toBeGreaterThan(DECK - 0.03);
-        expect(bb.min.z).toBeGreaterThan(TRAY_FRONT);
-        expect(bb.max.z).toBeLessThan(TRAY_BACK);
+        expect(bb.min.z).toBeGreaterThan(TRAY_FRONT + 0.04);
+        expect(bb.max.z).toBeLessThan(TRAY_BACK - 0.04);
       }
       const cabin = vehicles.ute40.cabin;
       expect(cabin.dialZ).toBeLessThan(vehicles.shortie.cabin.dialZ);

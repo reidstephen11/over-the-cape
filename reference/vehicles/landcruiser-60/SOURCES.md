@@ -61,3 +61,7 @@ Keep this list with the files. CC BY and CC BY-SA require credit to the author, 
 | `side-right-34-60-1984-mod.jpg`                    | side, right, from ahead    | A red 1984 60 4.2 with decals, a roof rack and a bar.                                                                                  | [Commons](<https://commons.wikimedia.org/wiki/File:1984_Toyota_Land_Cruiser_60_4.2_(53034251390).jpg>)                                 | Rutger van der Maar                            | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0)       | 2048×1448 |
 
 All sixteen are the originals Commons serves. `manifest.json` repeats this table in machine-readable form.
+
+## v1.62 inspection
+
+v1.62 visual review: the padded dashboard top moves 0.07 m towards the windscreen and is 0.12 m deep, clearing the dial faces from the driver's seat. Body dimensions, instruments and spare mounts are unchanged. The cabin remains estimated, as described under Gaps.

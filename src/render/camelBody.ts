@@ -335,7 +335,19 @@ function rearBody(b: VehicleBuilder) {
     b.block(x, 1.11, (z1 + TAIL) / 2, 0.039, 0.61, TAIL - z1 + 0.025, paint, M.Paint, Z.Rear, 0.008);
     for (const z of [0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.7])
       b.block(side * (SIDE + 0.012), 0.746, z, 0.005, 0.006, 0.006, steel, M.Metal, Z.Sides, 0.002);
-    b.block(side * 0.69, 0.27, TAIL + 0.005, 0.29, 0.41, 0.045, paint, M.Paint, Z.Rear, 0.005);
+    // Close the rear corner up to the waist, behind all three lamps.
+    b.block(
+      side * 0.69,
+      (SILL + WAIST) / 2,
+      TAIL + 0.005,
+      0.29,
+      WAIST - SILL,
+      0.045,
+      paint,
+      M.Paint,
+      Z.Rear,
+      0.005,
+    );
   }
   // Single side-hinged rear station-wagon door with a window.
   b.block(0, 0.425, TAIL - 0.012, 1.05, 0.71, 0.036, paint, M.Paint, Z.Rear, 0.008);

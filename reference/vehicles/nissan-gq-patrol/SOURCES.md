@@ -42,3 +42,7 @@ Keep this list with the files. CC BY and CC BY-SA require credit to the author, 
 | `rear-34-1997.jpg`       | rear three-quarter        | 1997 GQ II RX wagon, rear three-quarter.                                                    | [Commons](<https://commons.wikimedia.org/wiki/File:1995-1997_Nissan_Patrol_(GQ_II)_RX_wagon_02.jpg>)         | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 2720×1712 |
 | `front-34-4.2.jpg`       | front three-quarter       | Y60 4.2 litre diesel (SGL-D), the TD42 family, front three-quarter.                         | [Commons](https://commons.wikimedia.org/wiki/File:Nissan_Patrol_Y60_4.2_SGL-D_Passion_Red_01.jpg)            | Ethan Llamas | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)    | 4206×2804 |
 | `rear-34-4.2.jpg`        | rear three-quarter        | Same 4.2 litre diesel Y60, rear three-quarter.                                              | [Commons](https://commons.wikimedia.org/wiki/File:Nissan_Patrol_Y60_4.2_SGL-D_Passion_Red_02.jpg)            | Ethan Llamas | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0)    | 3240×2160 |
+
+## v1.62 inspection
+
+v1.62 visual review: the roof spare's strap and its two ties move 0.16 m rearwards across the wheel to clear its raised hub cap, still fastening to the rack. Body dimensions and both spare positions are unchanged. The rack and restraint remain additions for the game, absent from the stock photographs.

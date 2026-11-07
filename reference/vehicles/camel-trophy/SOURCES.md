@@ -27,3 +27,7 @@ Wikimedia Commons did not have a freely reusable set of the 1986 Ninetys. The fr
 ## What to compare
 
 Studio shot: `scripts/studio/?vehicle=camel`. The snorkel head is the intake, about 2 m off the ground (`src/data/camel.ts`).
+
+## v1.62 inspection
+
+v1.62 visual review: the rear corner skins behind the lamp stacks now continue from the sill to the waist (y 0.07–0.78), closing the previously missing band above the lower panels. Body dimensions and both spare mounts are unchanged. The lack of a period Ninety photo set above still applies.
