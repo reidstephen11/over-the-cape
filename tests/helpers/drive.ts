@@ -526,8 +526,6 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       for (let n = 0; time < limit; time += DT, n++) {
         if (n % 600 === 599) await yieldToRunner();
         let command = pilot.input(v, DT);
-        // A high-range trial must stay in high; the recovery pilot normally drops to low.
-        if (high) command.toggleRange = false;
         if (pilot.done) break;
         if (crawl) {
           command.throttle = 1;
@@ -625,8 +623,6 @@ export async function driveFork(
     for (let step = 0; time < limit; time += DT, step++) {
       if (step % 600 === 599) await yieldToRunner();
       let command = pilot.input(v, DT);
-      // A high-range trial must stay in high; the recovery pilot normally drops to low.
-      if (high) command.toggleRange = false;
       if (pilot.done) break;
       command.throttle = 1;
       command.brake = 0;

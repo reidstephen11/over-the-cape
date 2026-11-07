@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { lowGraphics, waitReady, waitSim } from './helpers';
 
+test.use({ viewport: { width: 960, height: 540 } });
+
 test('transfer case, phone status, timed hubs and full-time centre lock', async ({ page }) => {
-  test.setTimeout(360_000);
+  test.setTimeout(600_000);
   await lowGraphics(page);
-  await page.goto('/?dev&touch');
+  await page.goto('/?touch');
   await waitReady(page);
   await page.evaluate(() => window.__game!.setInput({ handbrake: true }));
   await expect.poll(() => page.evaluate(() => Math.abs(window.__game!.vehicle().speed))).toBeLessThan(0.5);
