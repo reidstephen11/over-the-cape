@@ -336,6 +336,8 @@ export async function runLeg(
   for (let step = 0; time < limit; time += DT, step++) {
     if (step % 600 === 599) await yieldToRunner();
     let command = pilot.input(v, DT);
+    // A high-range trial must stay in high; the recovery pilot normally drops to low.
+    if (high) command.toggleRange = false;
     if (pilot.done) break;
     if (!high) {
       command.throttle = 1;
@@ -428,7 +430,10 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
     const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
     for (let i = 0; i < 90; i++) sim.step(inputs, DT);
     if (lockers !== 'high') {
-      v.toggleRange();
+      // This fixture starts in low; it is not testing a driver shifting while rolling.
+      v.drivetrain.range = 'low';
+      v.transfer.mode = '4L';
+      v.drivetrain.shiftTimer = Math.max(v.drivetrain.shiftTimer, 0.5);
       v.precisionCrawl = true;
     }
     const s: Scene = {
@@ -499,7 +504,10 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       for (let i = 0; i < 90; i++) sim.step(inputs, DT);
       const crawl = mode === 'crawl';
       if (crawl) {
-        v.toggleRange();
+        // This fixture starts in low; it is not testing a driver shifting while rolling.
+        v.drivetrain.range = 'low';
+        v.transfer.mode = '4L';
+        v.drivetrain.shiftTimer = Math.max(v.drivetrain.shiftTimer, 0.5);
         v.precisionCrawl = true;
       }
       const path: [number, number][] = [];
@@ -518,6 +526,8 @@ export function driver(world: World, env: EnvironmentConfig = lateAfternoon) {
       for (let n = 0; time < limit; time += DT, n++) {
         if (n % 600 === 599) await yieldToRunner();
         let command = pilot.input(v, DT);
+        // A high-range trial must stay in high; the recovery pilot normally drops to low.
+        if (high) command.toggleRange = false;
         if (pilot.done) break;
         if (crawl) {
           command.throttle = 1;
@@ -598,7 +608,10 @@ export async function driveFork(
     const v = sim.addVehicle('p', sim.poseAt(x0, z0, heading, tuning.wheelRadius), tuning);
     const inputs = new Map([['p', { ...emptyInput(), brake: 1, handbrake: true }]]);
     for (let i = 0; i < 90; i++) sim.step(inputs, DT);
-    v.toggleRange();
+    // This fixture starts in low; it is not testing a driver shifting while rolling.
+    v.drivetrain.range = 'low';
+    v.transfer.mode = '4L';
+    v.drivetrain.shiftTimer = Math.max(v.drivetrain.shiftTimer, 0.5);
     v.precisionCrawl = true;
     const pilot = new Autopilot(path, 1.2);
     pilot.lowRange = true;
@@ -612,6 +625,8 @@ export async function driveFork(
     for (let step = 0; time < limit; time += DT, step++) {
       if (step % 600 === 599) await yieldToRunner();
       let command = pilot.input(v, DT);
+      // A high-range trial must stay in high; the recovery pilot normally drops to low.
+      if (high) command.toggleRange = false;
       if (pilot.done) break;
       command.throttle = 1;
       command.brake = 0;

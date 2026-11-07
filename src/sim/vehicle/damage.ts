@@ -77,8 +77,13 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     else if (intact && w.contact && sharp > 0 && v.rand() < (sharp * sharpPerKm(v, w)) / 1000)
       cut(i, 'puncture', 'sharp');
     // Spinning hard on rock wears through the tread.
-    else if (intact && w.contact && w.surface === SurfaceId.Rock && w.spin > D.tyre.abrasionSpin) {
-      c.abrasion[i] += w.spin * dt;
+    else if (intact && w.contact && (w.surface === SurfaceId.Rock || w.surface === SurfaceId.Wood)) {
+      const scrub =
+        v.transfer.windup *
+        Math.min(1, Math.abs(v.speed) / 2) *
+        Math.min(1, Math.abs(v.wheels[0].steer) / 0.4) *
+        0.2;
+      c.abrasion[i] += ((w.spin > D.tyre.abrasionSpin ? w.spin : 0) + scrub) * dt;
       if (c.abrasion[i] > D.tyre.abrasionSeconds) cut(i, 'puncture', 'spin');
     }
     const fault = c.tyreFault[i];

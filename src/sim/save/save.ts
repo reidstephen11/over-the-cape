@@ -195,6 +195,20 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     [0, 1, 2, 3].map((i) => (Array.isArray(arr) && ok(arr[i]) ? arr[i] : fallback));
   return {
     camp: c.camp,
+    ...(c.transfer &&
+    isVehicleId(c.transfer.vehicle) &&
+    ['2H', '4H', '4L'].includes(c.transfer.mode) &&
+    typeof c.transfer.hubsLocked === 'boolean' &&
+    typeof c.transfer.centreLocked === 'boolean'
+      ? {
+          transfer: {
+            vehicle: c.transfer.vehicle,
+            mode: c.transfer.mode,
+            hubsLocked: c.transfer.hubsLocked,
+            centreLocked: c.transfer.centreLocked,
+          },
+        }
+      : {}),
     hour: num(c.hour, 12),
     elapsed: Math.max(0, num(c.elapsed)),
     fuel: Math.max(0, num(c.fuel)),

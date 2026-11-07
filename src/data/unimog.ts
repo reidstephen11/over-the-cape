@@ -15,6 +15,7 @@ const MOUNT_Y = 0.32;
 
 export const unimogTuning: VehicleTuning = {
   id: 'unimog',
+  transfer: 'fullTime',
   name: 'Unimog UL1700L',
   // About 6.0 t empty; with two aboard, the winch, fuel and gear about 6.4 t, the tray
   // empty. The engine sits behind the front axle, so a little over half is on it. With

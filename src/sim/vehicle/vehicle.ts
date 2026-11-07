@@ -37,6 +37,14 @@ import { mulberry32 } from '../world/rng';
 import { type Quat, type Vec3, dot, headingToYaw, rotate, v3, yawQuat } from './math';
 import { WheelContacts } from './wheelContacts';
 import { axleDriveCapacity } from './differential';
+import {
+  createTransferState,
+  frontDriven,
+  shiftTransfer,
+  transferShiftReason,
+  transferDrive,
+  updateWindup,
+} from './transferCase';
 
 /** How readily each surface lets a stuck wheel spin (visual, dirt and sound only). */
 const LOOSENESS: Partial<Record<SurfaceId, number>> = {
@@ -116,6 +124,7 @@ export class Vehicle {
   readonly controller: RAPIER.DynamicRayCastVehicleController;
   readonly colliders: RAPIER.Collider[] = [];
   readonly drivetrain = createDrivetrainState();
+  readonly transfer = createTransferState();
   readonly condition = createCondition();
   /**
    * What the packing weighs against the standard load the tuned mass carries (null: no
@@ -430,10 +439,24 @@ export class Vehicle {
     }
   }
 
+  rangeShiftReason(): string | null {
+    return transferShiftReason(this.tuning, this.transfer, this.speed);
+  }
+
+  toggleCentre(): boolean {
+    if (this.tuning.transfer !== 'fullTime' || (!this.transfer.centreLocked && Math.abs(this.speed) > 0.5))
+      return false;
+    this.transfer.centreLocked = !this.transfer.centreLocked;
+    if (!this.transfer.centreLocked) this.transfer.windup = 0;
+    return true;
+  }
+
   toggleRange(): boolean {
-    if (Math.abs(this.speed) > 20 / 3.6) return false;
+    // Direct range assignments in headless labs remain supported.
+    if (this.drivetrain.range === 'low') this.transfer.mode = '4L';
+    if (!shiftTransfer(this.tuning, this.transfer, this.speed)) return false;
     const d = this.drivetrain;
-    d.range = d.range === 'high' ? 'low' : 'high';
+    d.range = this.transfer.mode === '4L' ? 'low' : 'high';
     d.shiftTimer = Math.max(d.shiftTimer, 0.5);
     // In the manual settings the player keeps the gear they picked.
     if (this.manualGearbox) return true;
@@ -673,13 +696,19 @@ export class Vehicle {
     }
 
     // Open axles are limited by the weak tyre; locked axles can use both tyres' grip.
-    const perAxle = drive / 2;
+    const axleCaps = [
+      axleDriveCapacity(this.caps[0], this.caps[1], this.differentials.front, t.openDiffLeak),
+      axleDriveCapacity(this.caps[2], this.caps[3], this.differentials.rear, t.openDiffLeak),
+    ];
+    const axleRequests = transferDrive(t, this.transfer, drive, axleCaps[0], axleCaps[1]);
+    updateWindup(t, this.transfer, this.wheels, this.speed, input.steer, dt);
     // With the engine stopped (empty tank, cranking, flooded) the pedal turns nothing.
     const driving = this.drivetrain.engineRunning ? throttle : 0;
     for (const [i, j] of [
       [0, 1],
       [2, 3],
     ]) {
+      const perAxle = axleRequests[i < 2 ? 0 : 1];
       const a = this.caps[i];
       const bb = this.caps[j];
       const locked = this.differentials[t.wheels[i].front ? 'front' : 'rear'];
@@ -694,7 +723,12 @@ export class Vehicle {
         let spin = want > 1 && driving > 0.05 ? Math.max(0, 1 - got / want) : 0;
         // Bogged down on loose ground with the throttle in: the wheels dig and spin.
         const w = this.wheels[k];
-        if (w.contact && driving > 0.3 && Math.abs(this.speed) < 1.2) {
+        if (
+          (i >= 2 || frontDriven(t, this.transfer)) &&
+          w.contact &&
+          driving > 0.3 &&
+          Math.abs(this.speed) < 1.2
+        ) {
           const loose = LOOSENESS[w.surface] ?? 0;
           spin = Math.max(spin, loose * driving * (1 - Math.abs(this.speed) / 1.2));
         }
@@ -729,7 +763,7 @@ export class Vehicle {
     for (let i = 0; i < 4; i++) {
       const front = t.wheels[i].front;
       let bf = (brake * t.brakeForce * (front ? t.brakeFrontBias : 1 - t.brakeFrontBias)) / 2;
-      bf += (engineBrake + hold) / 4;
+      bf += hold / 4 + (frontDriven(t, this.transfer) ? engineBrake / 4 : front ? 0 : engineBrake / 2);
       const w = this.wheels[i];
       const grounded = w.contact && w.load > 0;
       const moving = Math.abs(this.speed) > tyreLock.minSpeed;
@@ -771,6 +805,7 @@ export class Vehicle {
     const angle =
       Math.max(-1, Math.min(1, input.steer)) *
         maxA *
+        (1 - this.transfer.windup * 0.22) *
         (this.differentials.front ? t.crawling.frontLockSteering : 1) +
       toe;
     const wb = Math.abs(t.wheels[0].z - t.wheels[2].z);
@@ -863,6 +898,11 @@ export class Vehicle {
           true,
         );
     }
+    if (this.transfer.mode === '2H') {
+      rr *= 0.97;
+      this.drivetrain.fuelRate *= 0.98;
+    }
+    rr += this.mass * 9.81 * 0.025 * this.transfer.windup * Math.abs(input.steer);
     let fx = -fwd.x * rr * sv;
     let fy = -fwd.y * rr * sv;
     let fz = -fwd.z * rr * sv;

@@ -351,7 +351,8 @@ body:has(.dev-panel) .debug-panel:not(.dev-panel) {
   font-family: var(--font-hand);
   font-size: 26px;
   line-height: 1;
-  width: 32px;
+  min-width: 40px;
+  padding-inline: 3px;
   height: 32px;
   display: grid;
   place-items: center;

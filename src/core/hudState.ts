@@ -129,6 +129,7 @@ const jobText: Record<RepairKind, [string, string]> = {
   plug: ['Plugging the tyre', 'Plug the tyre (tool menu)'],
   refuel: ['Pouring in a jerry can', 'Pour in a jerry can (tool menu)'],
   pump: ['Pumping the tyres up', 'Pump the tyres up (tool menu)'],
+  hubs: ['Working the front hubs', 'Lock or unlock the hubs (tool menu)'],
 };
 
 /** Build what the HUD shows this frame, including context prompts (SPEC §9). */
@@ -415,6 +416,7 @@ export function buildHudState(i: HudInputs): HudState {
     heading: i.cameraHeading,
     pois,
     range: v.drivetrain.range,
+    transfer: { ...v.transfer, fullTime: v.tuning.transfer === 'fullTime' },
     frontLocked: v.differentials.front,
     rearLocked: v.differentials.rear,
     precisionCrawl: v.precisionCrawl,

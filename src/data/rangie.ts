@@ -17,6 +17,7 @@ const MOUNT_Y = 0.32;
 
 export const rangieTuning: VehicleTuning = {
   id: 'rangie',
+  transfer: 'fullTime',
   name: 'Range Rover two-door',
   // About 1.76 t at the kerb; with two aboard, a full tank, the bull bar and winch, the rack,
   // a second spare and the gear about 2.15 t. A low, wide car: its centre of mass sits about

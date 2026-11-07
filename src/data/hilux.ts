@@ -17,6 +17,7 @@ const MOUNT_Y = 0.32;
 
 export const hiluxTuning: VehicleTuning = {
   id: 'hilux',
+  transfer: 'partTime',
   name: 'Hilux single cab',
   // About 1.43 t empty; with two aboard, the bull bar, winch, rack and gear about 1.65 t.
   // The engine sits over the front axle and the tub is light, so about 57% is on the front.

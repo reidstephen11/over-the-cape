@@ -13,6 +13,9 @@ export interface WheelLayout {
 export interface VehicleTuning {
   /** Key in the vehicle list (src/data/vehicles.ts); picks the model, cabin and engine sound. */
   id: VehicleId;
+  transfer: 'partTime' | 'fullTime';
+  /** Automatic front hubs (otherwise a stopped roadside job). */
+  autoHubs?: boolean;
   name: string;
   mass: number;
   /** Centre of mass (local). */
@@ -203,6 +206,7 @@ const SUSPENSION_LIFT = 0.12;
 
 export const vehicleTuning: VehicleTuning = {
   id: 'shortie',
+  transfer: 'partTime',
   name: 'Short-wheelbase 4WD',
   mass: 1600,
   // Retain the existing centre-of-mass height above ground with the taller suspension.

@@ -17,6 +17,7 @@ const MOUNT_Y = 0.32;
 
 export const mqTuning: VehicleTuning = {
   id: 'mq',
+  transfer: 'partTime',
   name: 'MQ Patrol hardtop',
   // About 1.8 t at the kerb; with two aboard, a full tank, the bull bar and winch, the rack,
   // a second spare and the gear about 2.15 t. Short and tall: the centre of mass sits about

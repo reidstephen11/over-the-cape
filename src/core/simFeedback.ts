@@ -70,9 +70,18 @@ export function wireSimFeedback(
     'trailerBump',
     (e) => e.vehicle === local && audio.trailerBump(e.speed, sim.trailers.get(e.id)?.drums ?? 0),
   );
-  sim.events.on('rangeChanged', ({ range }) => {
-    hud.toast(range === 'low' ? 'Low range' : 'High range', 1400);
+  sim.events.on('transferChanged', ({ id, mode }) => {
+    if (id !== local) return;
+    hud.toast(`Transfer case: ${mode}`, 1800);
     audio.drivetrainClunk('range');
+  });
+  sim.events.on('transferBlocked', ({ id, reason }) => {
+    if (id === local) hud.toast(reason, 2600);
+  });
+  sim.events.on('windup', ({ id }) => {
+    if (id !== local) return;
+    hud.toast('Driveline winding up: select 2H or unlock the centre diff on firm ground', 4200);
+    audio.drivetrainClunk('windup');
   });
   sim.events.on('engine', ({ id, event }) => {
     if (id !== local) return;
@@ -132,6 +141,7 @@ export function wireSimFeedback(
         refuel: `20 L in the tank (${c.jerryCans} can${c.jerryCans === 1 ? '' : 's'} left)`,
         camp: 'Repaired at camp',
         pump: 'Tyres pumped back up for the gravel',
+        hubs: 'Front hubs changed',
       }[kind],
       2000,
     );

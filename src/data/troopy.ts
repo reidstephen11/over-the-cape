@@ -23,6 +23,7 @@ export const TROOPY_START_FUEL = 60;
 
 export const troopyTuning: VehicleTuning = {
   id: 'troopy',
+  transfer: 'partTime',
   name: 'Troop Carrier',
   // About 2.2 t empty; with two aboard, both tanks, the bull bar, winch, roof rack, a
   // second spare and the gear about 2.75 t. The roof rack and its load sit 2 m up, so the

@@ -18,6 +18,7 @@ const MOUNT_Y = 0.32;
 export const camelTuning: VehicleTuning = {
   ...perentieTuning,
   id: 'camel',
+  transfer: 'fullTime',
   name: 'Camel Trophy Land Rover 90',
   // About 1.9 t with the cage, rack, two spares, jerry cans and crew.
   mass: 1900,

@@ -63,6 +63,7 @@ export interface GameHook {
     z: number;
     speed: number;
     range: string;
+    transfer: import('../sim/vehicle/transferCase').TransferState;
     tilt: number;
     heading: number;
     frontLocked: boolean;
@@ -519,6 +520,7 @@ export function installHook(game: Game): void {
         z: p.z,
         speed: v.speed,
         range: v.drivetrain.range,
+        transfer: { ...v.transfer },
         tilt: v.tiltDeg(),
         heading: ((Math.atan2(f.x, -f.z) * 180) / Math.PI + 360) % 360,
         frontLocked: v.differentials.front,

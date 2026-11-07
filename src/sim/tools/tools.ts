@@ -17,7 +17,7 @@ export type ToolEvent =
   | { type: 'noAnchor' };
 
 /** Roadside jobs from the tool menu. */
-export type RepairKind = 'field' | 'spare' | 'plug' | 'refuel' | 'pump';
+export type RepairKind = 'field' | 'spare' | 'plug' | 'refuel' | 'pump' | 'hubs';
 
 /** A repair under way at the roadside: the car stays put until it's done. */
 export interface RepairJob {

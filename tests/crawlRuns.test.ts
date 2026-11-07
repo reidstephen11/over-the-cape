@@ -102,7 +102,10 @@ describe('scored crawl runs', () => {
     });
     const inputs = new Map([['p', emptyInput()]]);
     for (let i = 0; i < 30; i++) sim.step(inputs, DT);
-    v.toggleRange();
+    // Begin the scored crawl in low, independent of settling speed on this slope.
+    v.drivetrain.range = 'low';
+    v.transfer.mode = '4L';
+    v.drivetrain.shiftTimer = Math.max(v.drivetrain.shiftTimer, 0.5);
     v.precisionCrawl = true;
     const path = Array.from({ length: Math.ceil(track.poly.length / 0.5) + 1 }, (_, i) => {
       const q = trailPoint(track, Math.min(track.poly.length, i * 0.5));

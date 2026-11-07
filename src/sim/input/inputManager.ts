@@ -81,7 +81,7 @@ export class InputManager {
     this.deviceListeners.push(fn);
   }
 
-  requestDriveAction(action: 'frontDiff' | 'rearDiff' | 'precision' | 'lights'): void {
+  requestDriveAction(action: 'range' | 'frontDiff' | 'rearDiff' | 'precision' | 'lights'): void {
     this.vehicleEdges.add(action);
   }
 

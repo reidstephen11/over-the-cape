@@ -18,6 +18,7 @@ const MOUNT_Y = 0.32;
 
 export const hj60Tuning: VehicleTuning = {
   id: 'hj60',
+  transfer: 'partTime',
   name: '60 Series wagon',
   // About 2.0 t at the kerb; with two aboard, a full tank, the bull bar, the gutter rack, a
   // second spare and the gear about 2.4 t. Lower than the Troop Carrier and the rack rides
