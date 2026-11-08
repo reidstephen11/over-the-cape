@@ -21,7 +21,12 @@ export class WheelContacts {
     }));
   }
 
-  update(body: RAPIER.RigidBody, controller: RAPIER.DynamicRayCastVehicleController, filter: number): void {
+  update(
+    body: RAPIER.RigidBody,
+    controller: RAPIER.DynamicRayCastVehicleController,
+    filter: number,
+    wheelX: readonly number[],
+  ): void {
     const t = this.tuning;
     const p = body.translation();
     const q = body.rotation();
@@ -29,6 +34,11 @@ export class WheelContacts {
     for (let i = 0; i < t.wheels.length; i++) {
       const w = t.wheels[i];
       const steer = controller.wheelSteering(i) ?? 0;
+      // The probe can stay on the authored wheel line while that line is inside the
+      // cambered tyre's tread. Only move it when the rolling beam pulls the tread away.
+      // This avoids shifting a tuned rock/pothole contact by a few millimetres each step.
+      const halfTread = t.wheelWidth / 2;
+      const contactX = Math.max(wheelX[i] - halfTread, Math.min(wheelX[i] + halfTread, w.x));
       // Along the wheel's rolling direction: (0, 0, 1) turned by the steering angle about +y.
       const sx = Math.sin(steer);
       const sz = Math.cos(steer);
@@ -36,7 +46,13 @@ export class WheelContacts {
       let offset = 0;
       let rise = 0;
       for (const sample of this.samples) {
-        rotate(q, w.x + sx * sample.offset, w.y + sample.rise, w.z + sz * sample.offset, this.ray.origin);
+        rotate(
+          q,
+          contactX + sx * sample.offset,
+          w.y + sample.rise,
+          w.z + sz * sample.offset,
+          this.ray.origin,
+        );
         this.ray.origin.x += p.x;
         this.ray.origin.y += p.y;
         this.ray.origin.z += p.z;
@@ -62,7 +78,7 @@ export class WheelContacts {
         }
       }
       // The profile rise keeps suspension length measured at the hub rather than the sample.
-      this.local.x = w.x + sx * offset;
+      this.local.x = contactX + sx * offset;
       this.local.y = w.y + rise;
       this.local.z = w.z + sz * offset;
       controller.setWheelChassisConnectionPointCs(i, this.local);

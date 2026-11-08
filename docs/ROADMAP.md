@@ -21,7 +21,7 @@ For players who like 4WD challenges and realistic driving. v1.35 added the manua
 4. **Tyre pressure in psi and more recovery gear:** a snatch block, a tree protector, a rear recovery point and a shovel.
 5. **Rendered mirrors and head motion** in the driver's seat.
 6. **Shift buttons on phones**, so the manual gearbox works with touch.
-7. **Solid-axle articulation** (high risk: it touches the suspension the whole game is tuned on).
+7. **Solid-axle articulation.** First stage in v1.65: fixed-length axle geometry, shared tyre camber and moving spring/link attachments. The existing massless raycast suspension and low-range flex tuning remain; separate unsprung axle bodies and their suspension/handling retune are still open.
 
 # Performance follow-ups
 
@@ -36,6 +36,8 @@ Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.59). Measure ea
 - **Unit-test shards are uneven** (about 545, 600 and 225 s of test time, v1.45), because Vitest shards by a hash of the path; a sequencer balanced by duration would need timings kept between CI runs.
 
 # Other follow-up work
+
+- **More side quests and interesting discoveries off the beaten track on the CREB.** Add reasons to explore side tracks and unmarked places: optional recoveries, hidden camps, abandoned equipment, local stories and worthwhile supplies. Give each detour a distinct find or small task and a reason to return to the main journey.
 
 - Episodes 5–7: Telegraph Track South, Telegraph Track North and The Tip (SPEC.md §2).
 - A later delivery mission towing another vehicle.
@@ -52,3 +54,5 @@ Episode 4 (the Frenchmans diesel delivery with a trailer) was removed in v0.73. 
 
 - Roll torque with the true steered axle: `addRollTorque` still uses the mirrored axle direction for steered wheels (about half the physical roll torque at full lock) because `rollTorqueScale` and the §6.2 roll checks were tuned with it; switching to `steeredAxle` rolled the car in a full-lock turn while towing (v1.25). Retune the roll per vehicle with the true axle, then re-check the trailer tests.
 - Pothole pinching on the paddock road: since the footprint rays sample along the wheel's true rolling direction (v1.19) neither vehicle cuts a tyre at 47 km/h over the clear stretches, and the "pinches tyres on the paddock road taken fast" test fails. Decide from a play test whether the potholes should pinch more often, then tune `damageTuning.tyre` and the test together.
+
+- **Body clearance through full suspension travel.** v1.65 removes the ute crossmember, MQ inner trim and Range Rover load-floor/seat intersections at moderate articulation, with tyre-volume regression checks. Before adding unsprung axle bodies, check every vehicle’s full-bump and full-steering envelope and tune body clearance and travel together; shortening the ute’s travel alone stopped its knoll rock climb.

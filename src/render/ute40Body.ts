@@ -576,7 +576,10 @@ function tray(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   for (const side of [-1, 1]) b.block(side * 0.43, 0.16, mid, 0.08, 0.12, len - 0.1, C.trim, M.Metal, Z.Trim);
   for (let i = 0; i <= 6; i++) {
     const z = TRAY_FRONT + 0.05 + ((len - 0.1) * i) / 6;
-    b.block(0, 0.29, z, 2 * TRAY_HW - 0.06, 0.14, 0.06, C.tray, M.Metal, Z.Rear, 0.006);
+    // Crossmembers above the rear tyres end at the chassis runners, leaving bump room.
+    const rearZ = tuning.wheels.find((w) => !w.front)!.z;
+    const crossWidth = Math.abs(z - rearZ) < tuning.wheelRadius + 0.05 ? 1.0 : 2 * TRAY_HW - 0.06;
+    b.block(0, 0.29, z, crossWidth, 0.14, 0.06, C.tray, M.Metal, Z.Rear, 0.006);
   }
   for (const side of [-1, 1])
     b.block(side * (TRAY_HW - 0.04), 0.29, mid, 0.08, 0.14, len, C.tray, M.Metal, Z.Rear, 0.006);

@@ -47,8 +47,7 @@ export class GhostView {
     this.model.root.position.set(p.x, p.y, p.z);
     this.model.root.quaternion.set(p.qx, p.qy, p.qz, p.qw);
     const w = this.tuning.wheels;
-    for (let i = 0; i < 4; i++) this.model.wheels[i].pivot.position.y = w[i].y - p.suspension;
-    this.model.suspension.update(this.model.wheels.map((x) => x.pivot.position.y));
+    this.model.poseWheels(w.map((wheel) => wheel.y - p.suspension));
   }
 
   set visible(on: boolean) {

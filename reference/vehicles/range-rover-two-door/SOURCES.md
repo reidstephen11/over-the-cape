@@ -61,3 +61,7 @@ The files the model was matched against, named as they would be committed. CC BY
 | `front-34-left-1979-cream.jpg`         | `1979 Land Rover Range Rover 3.5 V8 (52825537940).jpg`      | front three-quarter, left   | A 1979 car, stock, beside a four-door: the proportions of the two bodies side by side.                              | [Commons](<https://commons.wikimedia.org/wiki/File:1979_Land_Rover_Range_Rover_3.5_V8_(52825537940).jpg>)                        | Rutger van der Maar                         | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0)       | 2048×1448 |
 
 `manifest.json` repeats this table in machine-readable form with the original URLs.
+
+## v1.65 articulation clearance
+
+The load floor is 1.0 m wide between z 0.8 and 1.8, between the rear wheelhouses, and resumes its previous full width behind them. The rear seat plinth is also 1.0 m wide, its top supports a cushion 0.03 m higher than before, and lower side trim starts above the wheelhouse roof at y 0.42. The seat still faces forward; the floor and trim remain attached to the body. These remove interior surfaces that crossed a cambered rear tyre. Exterior dimensions, wheel openings and the spare mount are unchanged. This is an internal fit correction, not a new claim from the unavailable reference originals.
