@@ -128,6 +128,14 @@ export interface GameHook {
    */
   autopilot(poiId: string | null, back?: number, speed?: number): void;
   autopilotState(): { active: boolean; done: boolean; remaining: number };
+  /** Physically drive the gate course; does not set any score or progress. */
+  driveGateCourse(): boolean;
+  gateCourse(): {
+    active: boolean;
+    next: number;
+    score: number;
+    best: { points: number; seconds: number } | null;
+  } | null;
   setQuality(level: 'low' | 'medium' | 'high'): void;
   quality(): 'low' | 'medium' | 'high';
   setTouchDrive(scheme: TouchDriveScheme): void;
@@ -267,6 +275,56 @@ export function installHook(game: Game): void {
       g.view.snap();
       g.autopilot = new Autopilot(path, speed);
     },
+    gateCourse: () =>
+      g.scoredGates
+        ? {
+            active: g.scoredGates.active,
+            next: g.scoredGates.gates.next,
+            score: g.scoredGates.hud()?.course.score ?? 0,
+            best: g.scoredGates.best(g.vehicleId) ?? null,
+          }
+        : null,
+    driveGateCourse: () => {
+      const course = g.scoredGates;
+      const track = g.world.features.tracks.find((t) => t.def.id === course?.def.trackId);
+      if (!course || !track) return false;
+      course.cancel();
+      const p = trailPoint(track, 0);
+      g.vehicle.teleport(g.sim.poseAt(p.x, p.z, p.headingDeg, g.vehicle.tuning.wheelRadius));
+      g.vehicle.transfer.mode = '4L';
+      g.vehicle.transfer.hubsLocked = true;
+      g.vehicle.transfer.centreLocked = true;
+      g.vehicle.drivetrain.range = 'low';
+      g.vehicle.differentials.front = g.vehicle.differentials.rear = true;
+      g.vehicle.precisionCrawl = true;
+      g.vehicle.parkBrake = false;
+      const path = Array.from({ length: Math.ceil(track.poly.length) + 1 }, (_, i) => {
+        const q = trailPoint(track, Math.min(i, track.poly.length));
+        return [q.x, q.z] as [number, number];
+      });
+      g.autopilot = new Autopilot(path, 0.7);
+      g.autopilot.lowRange = g.autopilot.holdLowOnClimbs = true;
+      const pilot = g.autopilot;
+      const steer = pilot.input.bind(pilot);
+      let rollback = false;
+      pilot.input = (v, dt) => {
+        const cmd = steer(v, dt);
+        if (!pilot.done) {
+          cmd.throttle = 1;
+          cmd.brake = 0;
+        }
+        if (v.speed < -0.3) rollback = true;
+        else if (v.speed > -0.05) rollback = false;
+        if (rollback) {
+          cmd.throttle = cmd.brake = 1;
+          cmd.handbrake = true;
+        }
+        return cmd;
+      };
+      g.chase.reset();
+      g.view.snap();
+      return true;
+    },
     setQuality: (level) => g.changeSettings({ quality: level }),
     quality: () => g.settings.quality,
     setTouchDrive: (scheme) => g.changeSettings({ touchDrive: scheme }),
@@ -322,6 +380,7 @@ export function installHook(game: Game): void {
     triggerSurprise: (id) => g.sim.surprises?.trigger(id),
     teleport: (x, z, h) => {
       g.crawlRuns.cancel();
+      g.scoredGates?.cancel();
       g.vehicle.teleport(g.sim.poseAt(x, z, h, g.vehicle.tuning.wheelRadius));
       g.chase.reset();
       g.view.snap();

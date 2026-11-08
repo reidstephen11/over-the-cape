@@ -402,6 +402,7 @@ export class Hud {
     this.runEl.classList.toggle('hidden', !s.run);
     // The gate count sits where a scored run's clock goes; the run takes the place while it lasts.
     this.gateEl.classList.toggle('hidden', !s.gates || !!s.run);
+    this.gateEl.classList.toggle('scored-course', !!s.gates?.course);
     if (s.gates) {
       const text = gateText(s.gates);
       if (this.gateEl.textContent !== text) this.gateEl.textContent = text;
@@ -617,7 +618,7 @@ export class Hud {
   }
 
   /** Result card for a scored crawl run. */
-  runResult(title: string, name: string, detail: string): void {
+  runResult(title: string, name: string, detail: string, milliseconds = 5000): void {
     const el = document.createElement('div');
     el.className = 'discovery-card run-card paper';
     el.innerHTML = `<div><div class="discovery-label"></div><div class="discovery-name"></div><div class="run-detail"></div></div>`;
@@ -626,12 +627,14 @@ export class Hud {
     (el.querySelector('.run-detail') as HTMLElement).textContent = detail;
     this.discovery.innerHTML = '';
     this.discovery.appendChild(el);
-    setTimeout(() => el.classList.add('out'), 5000);
-    setTimeout(() => el.remove(), 5700);
+    setTimeout(() => el.classList.add('out'), milliseconds);
+    setTimeout(() => el.remove(), milliseconds + 700);
   }
 
   /** "Discovered: …" paper card that unfolds in the top right corner. */
   discovered(name: string, kind: PoiIcon): void {
+    // A new location must not replace a result before the driver can read it.
+    if (this.discovery.querySelector('.run-card:not(.out)')) return;
     const el = document.createElement('div');
     el.className = 'discovery-card found paper';
     el.innerHTML = `<div class="discovery-icon">${icons[kind]}</div><div><div class="discovery-label">Discovered</div><div class="discovery-name"></div></div>`;
@@ -649,6 +652,7 @@ export interface GateState {
   passed: number;
   missed: number;
   flags: number;
+  course?: { name: string; score: number; seconds: number };
 }
 
 function alertElement(item: RailItem): HTMLElement {
@@ -676,6 +680,8 @@ function flagsText(flags: number): string {
  * once the lap is done.
  */
 export function gateText(g: GateState): string {
+  if (g.course)
+    return `${g.course.name} · Gate ${Math.min(g.total, g.next)} / ${g.total} · ${g.course.score} / 1000 · ${clock(g.course.seconds)}`;
   const flags = g.flags ? ` · ${flagsText(g.flags)}` : '';
   if (g.next > g.total) return `Lap done: ${g.passed} / ${g.total} gates${flags}`;
   const missed = g.missed ? ` · ${g.missed} missed` : '';

@@ -417,6 +417,7 @@ export function buildHudState(i: HudInputs): HudState {
           passed: i.gates.passed,
           missed: i.gates.missed,
           flags: i.gates.flags,
+          course: i.gates.course,
         }
       : null,
     run: i.run ? { name: i.run.trail.name, seconds: i.run.seconds, points: penaltyPoints(i.run) } : null,

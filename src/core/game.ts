@@ -59,6 +59,7 @@ import { planSurprises } from '../sim/world/surprisePlan';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
 import { CrawlRuns, type CrawlBests, type CrawlRunEvent } from '../sim/crawlRuns';
 import { GateCount, footprintSize, type GateEvent } from '../sim/gateCount';
+import { ScoredGates, gateScore, type ScoredGateEvent } from '../sim/scoredGates';
 import { clock, gateLapDetail } from '../ui/hud';
 import type { ToolEvent } from '../sim/tools/tools';
 import { GameRenderer } from '../render/renderer';
@@ -206,6 +207,7 @@ export class Game {
   private winched = false;
   /** Gates driven on a gate trail (Crawler Creek). */
   readonly gateCount: GateCount;
+  readonly scoredGates: ScoredGates | null;
   readonly hud: Hud;
   readonly toolMenu: ToolMenu;
   readonly touch: TouchControls;
@@ -300,6 +302,12 @@ export class Game {
       (text, ms) => this.hud.toast(text, ms),
     );
     this.gateCount = new GateCount(world.features.gates);
+    const gateCourse = world.map.gateCourse;
+    const gateTrack = world.features.tracks.find((t) => t.def.id === gateCourse?.trackId);
+    this.scoredGates =
+      gateCourse && gateTrack
+        ? new ScoredGates(gateCourse, this.gateCount, gateTrack, this.crawlRuns.bests)
+        : null;
     this.input = new InputManager(window);
     this.input.setSteering(tuning.steering);
     this.audio = new AudioSystem(settings, window, audioContext);
@@ -874,6 +882,13 @@ export class Game {
       });
     }
     const flats = c.tyres.filter((t) => t <= 0.05).length;
+    const gateBest = this.scoredGates?.best(this.vehicleId);
+    if (gateBest)
+      cells.push({
+        label: 'Rock climb best',
+        value: `${gateScore(gateBest.points)} / 1000`,
+        note: `${clock(gateBest.seconds)} · ${vehicles[this.vehicleId].tuning.name}`,
+      });
     const leaking = c.tyres.filter((t, i) => t > 0.05 && (t < 0.97 || c.tyreFault[i] !== 'none')).length;
     cells.push({
       label: 'Tyres',
@@ -922,6 +937,7 @@ export class Game {
       this.noteHour = this.run.hour;
       this.updateEnvironment(true);
       this.crawlRuns.cancel();
+      this.scoredGates?.cancel();
       this.chase.reset();
       this.view.snap();
       this.loop.paused = this.pause.isOpen || this.map.isOpen;
@@ -962,6 +978,7 @@ export class Game {
     const def = vehicles[id];
     this.tool.cancel();
     this.crawlRuns.cancel();
+    this.scoredGates?.cancel();
     this.sim.replaceVehicle(LOCAL_VEHICLE, def.tuning);
     this.vehicle.packing = packWeights(this.episode.loadout, id);
     this.sim.switchOffEngine(LOCAL_VEHICLE);
@@ -987,6 +1004,7 @@ export class Game {
 
   teleportToPoi(p: PoiDef): void {
     this.crawlRuns.cancel();
+    this.scoredGates?.cancel();
     const r = p.reset ?? { x: p.x, z: p.z + 12, headingDeg: 0 };
     this.vehicle.teleport(this.sim.poseAt(r.x, r.z, r.headingDeg, this.vehicle.tuning.wheelRadius));
     this.sim.bringTrailer(LOCAL_VEHICLE);
@@ -1604,7 +1622,21 @@ export class Game {
       const f = v.forward();
       const flat = Math.hypot(f.x, f.z) || 1;
       const car = { fx: f.x / flat, fz: f.z / flat, ...footprintSize(v.tuning) };
-      for (const e of this.gateCount.update(p.x, p.z, car)) this.onGate(e);
+      if (this.scoredGates) {
+        if (this.run.status !== 'driving') this.scoredGates.cancel();
+        else
+          for (const e of this.scoredGates.update({
+            x: p.x,
+            z: p.z,
+            car,
+            vehicle: this.vehicleId,
+            tilt: v.tiltDeg(),
+            knock: v.bodyContact.knock > 0,
+            winch: this.sim.toolsOf(LOCAL_VEHICLE).winch.attached,
+            dt,
+          }))
+            this.onScoredGate(e);
+      } else for (const e of this.gateCount.update(p.x, p.z, car)) this.onGate(e);
     }
   }
 
@@ -1625,6 +1657,29 @@ export class Game {
         gateLapDetail(e.missed, e.flags),
       );
       this.audio.discovery();
+    }
+  }
+
+  private onScoredGate(e: ScoredGateEvent): void {
+    if (e.type === 'gate') this.onGate(e.event);
+    else if (e.type === 'started')
+      this.hud.toast('Rock climb started · 1000 points · keep the flags clear', 3000);
+    else if (e.type === 'failed')
+      this.hud.toast(`Rock climb abandoned: ${e.reason}. Return to gate 1 to retry`, 3200);
+    else {
+      const r = e.result;
+      this.hud.runResult(
+        r.missed
+          ? 'Rock climb · gates missed'
+          : e.best
+            ? 'Rock climb · Personal best'
+            : 'Rock climb complete',
+        `${r.score} / 1000 · ${clock(r.seconds)}`,
+        `${r.flags} flags · ${r.missed} missed · ${r.reverses} reverses · ${r.knocks} knocks · ${r.winches} winches`,
+        15000,
+      );
+      this.audio.discovery();
+      if (e.best) this.save();
     }
   }
 
@@ -1909,7 +1964,7 @@ export class Game {
         anchorInReach: this.anchors.inReach,
         anchorCount: this.anchors.count,
         run: this.crawlRuns.run,
-        gates: this.gateCount.total ? this.gateCount : null,
+        gates: this.scoredGates ? this.scoredGates.hud() : this.gateCount.total ? this.gateCount : null,
         repair: this.sim.repairOption(LOCAL_VEHICLE),
         refuel: this.sim.refuelOption(LOCAL_VEHICLE),
         find: this.findNearby(),
