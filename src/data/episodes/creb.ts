@@ -1,5 +1,6 @@
 import type { EpisodeDef } from '../episodes';
 import { crebSurprises } from './crebSurprises';
+import { crebSideTrips } from './crebSideTrips';
 import { crebStorm } from './crebWeather';
 
 /**
@@ -35,6 +36,7 @@ export const crebEpisode: EpisodeDef = {
   loadout: { fuel: 50, jerryCans: 1, spares: 2, plugs: 3 },
   // After the wet, dead trees come down and cuttings shed rocks: where, each run decides.
   surprises: crebSurprises,
+  sideTrips: crebSideTrips,
   timedSections: ['big-red', 'bobs-hill', 'concrete-descent'],
   traffic: [
     { track: 'creb-ridge', name: 'A Troopy', look: 'troopy' },
@@ -79,6 +81,7 @@ export const crebEpisode: EpisodeDef = {
     },
   ],
   briefing: [
+    'Optional side trips: return a lost logbook from the old line camp to Wujal Wujal, follow an old survey sketch beyond the linesman’s hut, or fill a scrapbook at the falls and lookout. Pause → Trip journal has directions and rewards. Stop at each task for three seconds; the afternoon clock keeps running.',
     'The CREB Track runs north from the Daintree River through World Heritage rainforest to Wujal Wujal on the Bloomfield River. The Cairns Regional Electricity Board — the CREB — cut it as the service track for the power line to Cooktown. The line has since moved further inland, and the track is left to four-wheel drives.',
     'It only opens once the wet season is over and the damage has been repaired, and heavy rain can close it again. How you find it depends on the day: dried out hard, just reopened and greasy, or still letting go of the wet.',
     'The road out of the village is an orientation over a spur of the range. The signs take the controls one at a time: low range on the ramp up onto a bench, precision crawl over the band of rock on it, the diff locks on the pinch to the top, then the winch in the bog in the hollow before the river. After that the track stops being a lesson.',
@@ -86,6 +89,10 @@ export const crebEpisode: EpisodeDef = {
     'Cross the Daintree River, climb the range on the old powerline track, come down to the Bloomfield River at Wujal Wujal and follow the Bloomfield Track north to the Lions Den Hotel. Get there before dark.',
   ],
   notes: {
+    'last-pole-clearing': {
+      title: 'Last pole clearing',
+      text: 'The old line ends here in the game: a leaning pole, a survey board and a clearing just wide enough to turn round. The wire is long gone. Mark the sketch, then take it back to the survey box at the hut. This side trip is fictional, on the game’s shortened map.',
+    },
     'daintree-village': {
       title: 'Daintree Village',
       text: 'George Elphinstone Dalrymple named the Daintree River in December 1873, after the geologist Richard Daintree, who never came here. Dalrymple reported stands of red cedar, and timber cutters followed, floating logs down the river to the coast. By 1888 the cedar was nearly gone and the trade had collapsed. The village grew up as the cutters’ base.',

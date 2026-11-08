@@ -27,6 +27,7 @@ export const propDims = {
 } as const;
 
 const shapes: Record<PropKind, PropShape[]> = {
+  noticeBox: [{ type: 'box', x: 0, y: 0.45, z: 0, hx: 0.5, hy: 0.45, hz: 0.35 }],
   // Upright; a leaning pole's lower part, the bit a vehicle can hit, is close enough.
   powerPole: [{ type: 'cylinder', x: 0, y: 1.5, z: 0, r: 0.13, hh: 1.5, sides: 7 }],
   hut: [{ type: 'box', x: 0, y: 1.95, z: 0, hx: 3, hy: 1.95, hz: 2.3 }],

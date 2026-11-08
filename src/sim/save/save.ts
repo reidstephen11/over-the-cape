@@ -226,6 +226,7 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
     seed: Math.max(1, Math.floor(Math.abs(num(c.seed, 1)))),
     surprises: strings(c.surprises),
     // `rescued` (the stockman of the removed Episode 3) is ignored in older saves.
+    ...(Array.isArray(c.sideTrips) ? { sideTrips: strings(c.sideTrips) } : {}),
     ...(Array.isArray(c.stranded) ? { stranded: strings(c.stranded) } : {}),
     ...(c.delivery ? { delivery: readDeliveryState(c.delivery) } : {}),
     ...(c.packed ? { packed: readLoad(c.packed) } : {}),

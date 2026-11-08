@@ -58,6 +58,7 @@ export interface HudInputs {
   episode?: EpisodeHud | null;
   /** Something to load nearby (src/sim/finds.ts), and whether it is in reach. */
   find?: { name: string; inReach: boolean } | null;
+  sideTrip?: { text: string; progress: number } | null;
   /** Show the fuel gauge and supplies (an episode is under way). */
   supplies?: boolean;
   /** A trailer to hitch or unhitch, and whether it can be done now. */
@@ -269,6 +270,8 @@ export function buildHudState(i: HudInputs): HudState {
             ? 'Start the engine (clutch in, or neutral)'
             : 'Start the engine',
       });
+    if (i.sideTrip && !t.repair)
+      prompts.push({ keys: 'Stop', text: i.sideTrip.text, progress: i.sideTrip.progress });
     if (i.find && !t.repair)
       prompts.push({
         keys: i.find.inReach ? 'Stop' : '!',

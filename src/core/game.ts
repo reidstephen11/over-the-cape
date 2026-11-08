@@ -46,6 +46,7 @@ import type { PoiDef } from '../sim/world/mapTypes';
 import { poiApproach } from '../sim/world/poiApproach';
 import { headingOf } from '../sim/vehicle/math';
 import { Exploration } from '../sim/exploration';
+import { SideTrips } from '../sim/sideTrips';
 import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
@@ -180,6 +181,7 @@ export class Game {
   readonly exploration: Exploration;
   /** Things to load off the main line, and what's been taken since the start. */
   readonly finds: Finds;
+  readonly sideTrips: SideTrips;
   private readonly findMarkers: FindMarkers;
   /** Optional scored runs on the crawl trails. */
   readonly crawlRuns: CrawlRuns;
@@ -326,6 +328,7 @@ export class Game {
     if (sim.env.lampBeams) this.vehicle.lights = 'low';
     this.model = new VehicleModel(tuning, sim.env.lampBeams);
     view.scene.add(this.model.root);
+    this.sideTrips = new SideTrips(setup.def.sideTrips ?? [], world.pois, this.checkpoint.sideTrips);
     this.finds = new Finds(world.map.finds ?? [], this.checkpoint.taken);
     for (const s of sim.stuck.values()) {
       const look = setup.def.stranded?.find((d) => d.id === s.def.id)?.look ?? 'shortie';
@@ -831,6 +834,7 @@ export class Game {
   openPause(): void {
     const camp = this.world.pois.find((p) => p.id === this.exploration.lastCampsite);
     this.pause.setStatus(this.pauseStatus());
+    this.pause.setTrips(this.sideTrips.journal());
     this.pause.open(camp?.name ?? '', this.input.activeDevice === 'touch');
     this.loop.paused = true;
   }
@@ -902,6 +906,7 @@ export class Game {
       this.delivery.sync();
       // What was taken after the camp is back where it was found.
       this.finds.reset(this.checkpoint.taken);
+      this.sideTrips.reset(this.checkpoint.sideTrips ?? []);
       this.findMarkers.show(this.finds.defs, this.finds.taken);
       // Places found and sections timed after the camp are new again, and any car coming
       // the other way is gone: the track sends one afresh.
@@ -1270,6 +1275,9 @@ export class Game {
       `${minutes} minute${minutes === 1 ? '' : 's'} of driving`,
       ...(this.run.timed ? [`Arrived ${clockTime(this.run.hour)}`] : []),
       `${Math.round(c.fuel)} L in the tank, ${c.jerryCans} jerry can${c.jerryCans === 1 ? '' : 's'}`,
+      ...this.sideTrips.defs
+        .filter((trip) => this.sideTrips.complete(trip))
+        .map((trip) => `Side trip: ${trip.name} · complete`),
       `${c.spares} spare${c.spares === 1 ? '' : 's'} and ${c.plugs} plug${c.plugs === 1 ? '' : 's'} left`,
     ];
   }
@@ -1465,11 +1473,47 @@ export class Game {
       this.audio.discovery();
       if (this.finds.taken.size === this.finds.defs.length) this.unlock('troopy');
     }
-    if (found.campsite && found.campsite !== this.episode.goal && this.run.status === 'driving') {
+    const velocity = this.vehicle.body.linvel();
+    const tripEvent =
+      this.run.status === 'driving'
+        ? this.sideTrips.update(
+            dt,
+            p.x,
+            p.z,
+            Math.hypot(velocity.x, velocity.y, velocity.z) < 0.6 &&
+              this.vehicle.tiltDeg() < 35 &&
+              Math.abs(p.y - this.world.terrain.heightAt(p.x, p.z)) < 3,
+          )
+        : null;
+    if (tripEvent) {
+      const { trip, stop, complete } = tripEvent;
+      if (complete) {
+        this.vehicle.condition.jerryCans += trip.reward.jerryCans ?? 0;
+        this.vehicle.condition.plugs += trip.reward.plugs ?? 0;
+      }
+      this.showHistory({
+        title: complete ? `${trip.name} · complete` : trip.name,
+        text: complete
+          ? trip.finished
+          : `${stop.entry ?? `${stop.task}: done.`} ${
+              this.sideTrips
+                .journal()
+                .find((entry) => entry.name === trip.name)
+                ?.stops.find((s) => s.available)?.directions ?? 'Choose another stop in the trip journal.'
+            }`,
+      });
+      this.audio.discovery();
+    }
+    // A handover takes longer than entering camp. Save its reward and stop together.
+    const tripCamp =
+      tripEvent &&
+      this.world.pois.find((q) => q.kind === 'campsite' && Math.hypot(q.x - p.x, q.z - p.z) <= q.radius)?.id;
+    const reachedCamp = found.campsite || tripCamp;
+    if (reachedCamp && reachedCamp !== this.episode.goal && this.run.status === 'driving') {
       const supply = this.checkpoint.supply;
-      const camp = this.world.pois.find((q) => q.id === found.campsite);
+      const camp = this.world.pois.find((q) => q.id === reachedCamp);
       this.checkpoint = checkpointAt(
-        found.campsite,
+        reachedCamp,
         this.run,
         this.vehicle,
         this.exploration.discovered,
@@ -1479,6 +1523,7 @@ export class Game {
         this.checkpoint.packed,
       );
       if (this.episode.stranded) this.checkpoint.stranded = [...this.strandedFreed];
+      this.checkpoint.sideTrips = [...this.sideTrips.done];
       this.checkpoint.seen = this.seen.encode();
       if (supply) this.checkpoint.supply = true;
       if (this.winched) this.checkpoint.winched = true;
@@ -1815,6 +1860,7 @@ export class Game {
         repair: this.sim.repairOption(LOCAL_VEHICLE),
         refuel: this.sim.refuelOption(LOCAL_VEHICLE),
         find: this.findNearby(),
+        sideTrip: this.run.status === 'driving' ? this.sideTrips.prompt(v.position.x, v.position.z) : null,
         hitch: this.sim.hitchOption(LOCAL_VEHICLE),
         trailer: this.sim.trailerOf(LOCAL_VEHICLE),
         trailerLeft: this.delivery.trailerLeft(),

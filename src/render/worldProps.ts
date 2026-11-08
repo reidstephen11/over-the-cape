@@ -17,6 +17,22 @@ const timber = () => pal('barkPale').clone().lerp(pal('barkOchre'), 0.35).multip
 const rust = () => pal('dirtDark').clone().lerp(pal('mud'), 0.3);
 const iron = () => pal('rockDark').clone().lerp(pal('dirtDark'), 0.35);
 
+/** A weatherproof roadside returns / survey box, with a paper label under its lid. */
+function noticeBox(b: MeshBuilder): void {
+  b.push().translate(0, 0.42, 0);
+  b.box(1, 0.84, 0.7, timber());
+  b.pop();
+  b.push().translate(0, 0.88, 0);
+  b.box(1.08, 0.08, 0.78, iron());
+  b.pop();
+  b.push().translate(0, 0.64, -0.356);
+  b.box(0.48, 0.22, 0.016, new THREE.Color('#E8D8B4'));
+  b.pop();
+  b.push().translate(0, 0.43, -0.37);
+  b.box(0.12, 0.12, 0.04, iron());
+  b.pop();
+}
+
 function hut(b: MeshBuilder): void {
   const d = propDims.hut;
   const rand = mulberry32(11);
@@ -404,6 +420,7 @@ const builders: Record<PropDef['kind'], (b: MeshBuilder) => void> = {
   waterTank,
   fireRing,
   logSeat,
+  noticeBox,
   signpost,
   fireTower,
   oldUte,

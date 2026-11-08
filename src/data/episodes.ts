@@ -5,6 +5,7 @@ import type { WeatherTimeline } from './weatherTimeline';
 import { crebEpisode } from './episodes/creb';
 import type { SurpriseSetDef } from '../sim/world/surprisePlan';
 import type { StrandedDef } from '../sim/stranded';
+import type { SideTripDef } from '../sim/sideTrips';
 import type { VehicleId } from './vehicle';
 
 /**
@@ -71,6 +72,8 @@ export interface EpisodeDef {
   stranded?: readonly StrandedDriverDef[];
   /** Game seconds per real second while driving. */
   clockRate: number;
+  /** Optional jobs and sightseeing stops, tracked independently of the main mission. */
+  sideTrips?: readonly SideTripDef[];
   /** Fuel burnt per litre the engine really uses (the map shortens the distance). */
   fuelScale: number;
   loadout: EpisodeLoadout;

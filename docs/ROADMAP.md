@@ -37,7 +37,7 @@ Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.59). Measure ea
 
 # Other follow-up work
 
-- **More side quests and interesting discoveries off the beaten track on the CREB.** Add reasons to explore side tracks and unmarked places: optional recoveries, hidden camps, abandoned equipment, local stories and worthwhile supplies. Give each detour a distinct find or small task and a reason to return to the main journey.
+- **More side quests and interesting discoveries off the beaten track on the CREB.** First set in v1.66: the lost-logbook delivery, the last-pole survey with a new clearing beyond the linesman’s hut, and a three-stop falls/lookout scrapbook. Pause → Trip journal tracks directions, observations and camp-saved progress. Still open: more optional recoveries, hidden camps and abandoned equipment, with distinct tasks and worthwhile rewards.
 
 - Episodes 5–7: Telegraph Track South, Telegraph Track North and The Tip (SPEC.md §2).
 - A later delivery mission towing another vehicle.

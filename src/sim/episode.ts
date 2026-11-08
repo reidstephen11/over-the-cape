@@ -36,6 +36,8 @@ export interface Checkpoint {
   surprises: string[];
   /** Stranded drivers (`EpisodeDef.stranded`) winched out by the camp (absent in older saves). */
   stranded?: string[];
+  /** Completed optional side-trip stops at this camp. Absent in older saves. */
+  sideTrips?: string[];
   /** Trailer poses, cargo and loose drums as they were at this camp (absent in older saves). */
   delivery?: DeliveryState;
   /** What the run set out with (absent in saves from before packing: the standard load). */

@@ -162,6 +162,7 @@ export interface GameHook {
   /** Set the clock (hours); the light follows. */
   /** Ids of the finds loaded so far this run. */
   finds(): string[];
+  sideTrips(): { done: string[]; completed: string[] };
   /** Restart from the last camp, as the pause menu does. */
   restartFromCamp(): Promise<void>;
   setHour(hour: number): void;
@@ -412,6 +413,10 @@ export function installHook(game: Game): void {
       mission: g.run.missionLine(),
     }),
     finds: () => [...g.finds.taken],
+    sideTrips: () => ({
+      done: [...g.sideTrips.done],
+      completed: g.sideTrips.defs.filter((trip) => g.sideTrips.complete(trip)).map((trip) => trip.id),
+    }),
     restartFromCamp: () => g.restartFromCamp(),
     setHour: (hour) => {
       g.run.hour = hour;
