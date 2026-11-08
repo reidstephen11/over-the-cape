@@ -219,6 +219,7 @@ function readCheckpoint(raw: unknown): Checkpoint | null {
       Math.min(1, Math.max(0, h)),
     ),
     tyreFault: four(c.tyreFault, (x): x is TyreFault => faults.includes(x as TyreFault), 'none'),
+    ...([18, 24, 36].includes(c.tyrePressurePsi as number) ? { tyrePressurePsi: c.tyrePressurePsi } : {}),
     discovered: strings(c.discovered),
     // Saves from before v0.09 have none.
     taken: strings(c.taken),

@@ -39,6 +39,7 @@ import {
 import { loadRapier } from '../sim/physics';
 import { Simulation } from '../sim/sim';
 import type { Vehicle } from '../sim/vehicle/vehicle';
+import { pressurePsi, tyrePressures } from '../sim/vehicle/tyrePressure';
 import { InputManager } from '../sim/input/inputManager';
 import type { Autopilot } from '../sim/input/autopilot';
 import type { VehicleInput } from '../sim/input/vehicleInput';
@@ -876,7 +877,7 @@ export class Game {
     const leaking = c.tyres.filter((t, i) => t > 0.05 && (t < 0.97 || c.tyreFault[i] !== 'none')).length;
     cells.push({
       label: 'Tyres',
-      value: c.lowPressure ? 'Let down' : 'Road pressure',
+      value: `${pressurePsi(c)} psi`,
       note: flats ? plural(flats, 'flat') : leaking ? `${leaking} losing air` : 'All holding air',
     });
     return cells;
@@ -1088,18 +1089,14 @@ export class Game {
       t.winch.attached
         ? { id: 'detach', label: 'Detach winch', icon: 'detach', enabled: true }
         : { id: 'winch', label: 'Winch', icon: 'winch', enabled: this.anchors.inReach },
+      { id: 'recovery', label: 'Recovery gear', icon: 'winch', enabled: true },
       {
         id: 'frontDiff',
         label: v.differentials.front ? 'Unlock front diff' : 'Lock front diff',
         icon: 'feature',
         enabled: v.differentials.front || Math.abs(v.speed) <= v.tuning.crawling.diffLockMaxKmh / 3.6,
       },
-      {
-        id: 'pressure',
-        label: v.condition.lowPressure ? 'Pump the tyres up' : 'Let the tyres down',
-        icon: 'tyre',
-        enabled: Math.abs(v.speed) < 0.5,
-      },
+      { id: 'tyres', label: `Tyres: ${pressurePsi(v.condition)} psi`, icon: 'tyre', enabled: true },
       {
         id: 'refuel',
         label: refuel ? `Pour in a jerry can (${v.condition.jerryCans})` : 'No jerry cans',
@@ -1135,6 +1132,7 @@ export class Game {
               refuel: '',
               pump: '',
               hubs: '',
+              dig: '',
             }[fix.kind]
           : 'Nothing to repair',
         icon: 'wrench',
@@ -1145,6 +1143,42 @@ export class Game {
   }
 
   private pickTool(id: string): void {
+    const v = this.vehicle;
+    const t = this.sim.toolsOf(LOCAL_VEHICLE);
+    if (id === 'tyres' || id === 'recovery' || id === 'toolsBack') {
+      const back: ToolOption = { id: 'toolsBack', label: 'Back to tools', icon: 'feature', enabled: true };
+      this.toolMenu.open(
+        id === 'toolsBack'
+          ? this.toolOptions()
+          : id === 'tyres'
+            ? [
+                ...tyrePressures.map((psi): ToolOption => ({
+                  id: `pressure:${psi}`,
+                  label: `${psi} psi · ${{ 18: 'rock / mud', 24: 'trail', 36: 'road' }[psi]}${pressurePsi(v.condition) === psi ? ' (set)' : ''}`,
+                  icon: 'tyre',
+                  enabled: Math.abs(v.speed) < 0.5 && !t.repair && pressurePsi(v.condition) !== psi,
+                })),
+                back,
+              ]
+            : [
+                {
+                  id: 'snatch',
+                  label: t.winch.doubleLine ? 'Single-line winch (30 m)' : 'Snatch block (double line, 14 m)',
+                  icon: 'winch',
+                  enabled: !t.winch.attached && !t.repair && Math.abs(v.speed) < 0.5,
+                },
+                {
+                  id: 'dig',
+                  label: 'Shovel: clear the wheels (20 s)',
+                  icon: 'wrench',
+                  enabled: this.sim.canDig(LOCAL_VEHICLE),
+                },
+                back,
+              ],
+        true,
+      );
+      return;
+    }
     if (id === 'transfer') this.input.requestDriveAction('range');
     else if (id === 'centre') {
       if (this.vehicle.toggleCentre()) {
@@ -1171,14 +1205,22 @@ export class Game {
           ? 'Trailer tyre repaired'
           : 'Stop alongside it with a plug or spare left',
       );
-    else if (id === 'pressure') {
-      const c = this.vehicle.condition;
-      if (c.lowPressure) {
-        if (!this.sim.startPump(LOCAL_VEHICLE)) this.hud.toast('Stop on level ground first');
-      } else {
-        c.lowPressure = true;
-        this.hud.toast('Tyres let down: more grip on clay and rock, but they cut more easily');
+    else if (id.startsWith('pressure:')) {
+      if (!this.sim.startPressure(LOCAL_VEHICLE, Number(id.slice(9))))
+        this.hud.toast('Stop on level ground first');
+    } else if (id === 'snatch') {
+      const w = this.sim.toolsOf(LOCAL_VEHICLE).winch;
+      if (!w.attached) {
+        w.doubleLine = !w.doubleLine;
+        this.hud.toast(
+          w.doubleLine
+            ? 'Double line: twice the pull, half the speed. Fixed anchors within 14 m'
+            : 'Single line: 30 m cable',
+        );
       }
+    } else if (id === 'dig') {
+      if (!this.sim.startDig(LOCAL_VEHICLE))
+        this.hud.toast('Stop in shallow mud or sand on level ground first');
     } else if (id === 'winch' && !this.tool.startWinchTarget()) this.hud.toast('No anchor in reach');
     else if (id === 'planks') this.tool.startPlanks();
     else if (id === 'recall') this.sim.recallPlanks(LOCAL_VEHICLE);
@@ -1197,7 +1239,9 @@ export class Game {
     switch (e.type) {
       case 'winchAttached':
         this.winched = true;
-        this.hud.toast(`Winch attached to ${e.anchor.label.toLowerCase()}`);
+        this.hud.toast(
+          `Winch attached to ${e.anchor.label.toLowerCase()}${e.anchor.kind === 'tree' ? ' with tree protector' : ''}${this.sim.toolsOf(LOCAL_VEHICLE).winch.doubleLine ? ' · double line' : ''}`,
+        );
         break;
       case 'winchDetached':
         this.hud.toast('Winch detached');
@@ -1694,6 +1738,14 @@ export class Game {
       return;
     }
     if (this.toolMenu.isOpen) {
+      if (inp.pressed('back') || inp.pressed('pause')) {
+        this.toolMenu.close(false);
+        return;
+      }
+      if (this.toolMenu.sticky && (inp.pressed('confirm') || inp.pressed('toolMenu'))) {
+        this.toolMenu.close(true);
+        return;
+      }
       if (!inp.held('toolMenu') && !this.toolMenu.sticky) this.toolMenu.close(true);
       else {
         const s = inp.stick();

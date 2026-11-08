@@ -4,6 +4,7 @@ import type { TyreFault } from '../sim/vehicle/condition';
 export interface TyreGaugeState {
   /** Air remaining relative to the selected road/trail setting. */
   inflation: number;
+  psi?: number;
   fault: TyreFault;
   front: boolean;
   left: boolean;
@@ -15,6 +16,7 @@ export interface VehicleGaugeState {
   /** Normal running is about 0.5; damage begins above 1. */
   heat: number;
   lowPressure: boolean;
+  pressurePsi?: number;
   tyres: readonly TyreGaugeState[];
 }
 
@@ -28,6 +30,7 @@ export function temperatureLabel(heat: number): string {
 }
 
 export function tyreLabel(tyre: TyreGaugeState): string {
+  if (tyre.psi !== undefined) return `${Math.round(tyre.psi)} psi`;
   if (tyre.inflation <= 0.05) return 'FLAT';
   if (tyre.fault !== 'none') return 'LEAK';
   return `${Math.round(clamp(tyre.inflation) * 100)}%`;
@@ -100,7 +103,7 @@ export class VehicleGauges {
           <svg class="tyre-chassis" viewBox="0 0 32 56" aria-hidden="true"><path d="M8,3 Q16,0 24,3 L26,45 Q26,52 22,53 L10,53 Q6,52 6,45 Z M8,15 L24,15 M7,38 L25,38 M16,16 L16,37"/><path class="tyre-windscreen" d="M10,7 L22,7 L23,13 L9,13 Z"/></svg>
           ${['FL', 'FR', 'RL', 'RR'].map((label) => `<div class="tyre-gauge" data-corner="${label}" role="meter" aria-valuemin="0" aria-valuemax="100"><span class="tyre-corner">${label}</span><span class="tyre-air"><span></span></span><strong class="tyre-value"></strong></div>`).join('')}
         </div>
-        <span class="tyre-caption">AIR REMAINING</span>
+        <span class="tyre-caption">TYRE PRESSURE</span>
       </div>`;
     root.appendChild(this.el);
     this.strip = this.el.querySelector('.vehicle-strip')!;
@@ -125,7 +128,7 @@ export class VehicleGauges {
   update(s: VehicleGaugeState): void {
     const heat = temperatureLabel(s.heat);
     const fuel = clamp(s.fuel / Math.max(1, s.tank));
-    const key = `${s.heat.toFixed(2)}|${heat}|${s.fuel.toFixed(1)}|${fuel < 0.15}|${s.tank}|${s.lowPressure}|${s.tyres.map((t) => `${t.front},${t.left},${t.inflation.toFixed(2)},${t.fault},${tyreLabel(t)}`).join('|')}`;
+    const key = `${s.heat.toFixed(2)}|${heat}|${s.fuel.toFixed(1)}|${fuel < 0.15}|${s.tank}|${s.lowPressure}|${s.pressurePsi}|${s.tyres.map((t) => `${t.front},${t.left},${t.inflation.toFixed(2)},${t.fault},${tyreLabel(t)}`).join('|')}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
     const heatText = `Engine temperature: ${heat.toLowerCase()}${s.heat >= 1 ? ' — ease off and let it cool' : ''}`;
@@ -141,7 +144,8 @@ export class VehicleGauges {
       `Fuel: ${s.fuel.toFixed(1)} of ${s.tank} L${fuel < 0.15 ? ' — low fuel' : ''}`,
     );
     this.fuel.classList.toggle('low', fuel < 0.15);
-    this.pressure.textContent = s.lowPressure ? 'TRAIL' : 'ROAD';
+    this.pressure.textContent =
+      s.pressurePsi === undefined ? (s.lowPressure ? 'TRAIL' : 'ROAD') : `${s.pressurePsi} psi`;
     this.pressure.classList.toggle('trail', s.lowPressure);
     const heatEl = this.strip.querySelector('.strip-heat')!;
     heatEl.textContent = heat;
@@ -150,7 +154,7 @@ export class VehicleGauges {
     const fuelEl = this.strip.querySelector('.strip-fuel')!;
     fuelEl.textContent = `${Math.round(s.fuel)} L`;
     fuelEl.classList.toggle('low', fuel < 0.15);
-    this.strip.querySelector('.strip-mode')!.textContent = s.lowPressure ? 'TRAIL' : 'ROAD';
+    this.strip.querySelector('.strip-mode')!.textContent = this.pressure.textContent;
     for (const pip of this.strip.querySelectorAll<HTMLElement>('.strip-tyres i')) {
       const corner = pip.dataset.corner!;
       const tyre = s.tyres.find((t) => t.front === (corner[0] === 'F') && t.left === (corner[1] === 'L'));
@@ -160,9 +164,8 @@ export class VehicleGauges {
     this.warn = instrumentsNeedDetail(s);
     this.el.classList.toggle('warn', this.warn);
     this.syncOpen();
-    this.pressure.title = s.lowPressure
-      ? 'Tyres let down for off-road grip. Pump them up for gravel from Tools.'
-      : 'Road pressure. Let the tyres down for off-road grip from Tools.';
+    this.pressure.title =
+      'Choose 18 psi for rock and mud, 24 psi for trails or 36 psi for the road from Tools → Tyres.';
     for (const el of this.wheels) {
       const corner = el.dataset.corner!;
       const front = corner[0] === 'F';
@@ -174,9 +177,10 @@ export class VehicleGauges {
       const fault =
         tyre.fault === 'sidewall' ? 'torn sidewall' : tyre.fault === 'rim' ? 'off the rim' : 'puncture';
       const label = `${front ? 'Front' : 'Rear'} ${left ? 'left' : 'right'} tyre`;
-      const text = `${percent}% air remaining${tyre.fault !== 'none' ? `, ${fault}` : ''}`;
+      const text = `${tyre.psi === undefined ? `${percent}% air remaining` : `${tyre.psi.toFixed(1)} psi`}${tyre.fault !== 'none' ? `, ${fault}` : ''}`;
       el.setAttribute('aria-label', label);
-      el.setAttribute('aria-valuenow', String(percent));
+      el.setAttribute('aria-valuemax', String(tyre.psi === undefined ? 100 : 36));
+      el.setAttribute('aria-valuenow', String(tyre.psi ?? percent));
       el.setAttribute('aria-valuetext', text);
       el.title = `${label}: ${text}`;
       el.classList.toggle('leaking', tyre.fault !== 'none' || percent < 97);

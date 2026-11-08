@@ -13,15 +13,14 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 
 # Sim-audience follow-ups
 
-For players who like 4WD challenges and realistic driving. v1.35 added the manual gearbox (controller only). Its "Manual with clutch" option (○/B as the clutch) was shelved in v1.37, because a controller button is a poor clutch; it returns once steering-wheel and pedal support (item 3) gives it a real pedal. Next, one update at a time:
+For players who like 4WD challenges and realistic driving. v1.35 added the manual gearbox (controller only). Its "Manual with clutch" option (○/B as the clutch) was shelved in v1.37, because a controller button is a poor clutch. The owner has permanently ruled out steering-wheel and pedal support; do not put it back on the roadmap or plan to restore the clutch option. Next, one update at a time:
 
 1. ~~**Transfer case.**~~ Done in v1.63: part-time 2H/4H/4L, manual/automatic hubs, full-time centre lock, wind-up, HUD and touch status, and camp persistence. Starts in 4H with hubs and centre locked, retaining the existing route tuning. Next: scored gate courses.
 2. **Scored gate courses on the CREB**, using the existing `crawlCourse` and `gateCount` system (gates, touches and a score for the hard climbs).
-3. **Steering-wheel and pedal mapping**, with rumble, a clutch pedal (bringing back "Manual with clutch"), and field-of-view and sensitivity settings.
-4. **Tyre pressure in psi and more recovery gear:** a snatch block, a tree protector, a rear recovery point and a shovel.
-5. **Rendered mirrors and head motion** in the driver's seat.
-6. **Shift buttons on phones**, so the manual gearbox works with touch.
-7. **Solid-axle articulation.** First stage in v1.65: fixed-length axle geometry, shared tyre camber and moving spring/link attachments. The existing massless raycast suspension and low-range flex tuning remain; separate unsprung axle bodies and their suspension/handling retune are still open.
+3. ~~**Tyre pressure in psi and more recovery gear.**~~ Done in v1.67: 18/24/36 psi settings, timed deflation/inflation, per-wheel readings and camp persistence; double-line winching through a snatch block; automatic tree protectors; rear recovery points on stranded vehicles; a timed shovel job with local relief that wheelspin wears away.
+4. **Rendered mirrors and head motion** in the driver's seat.
+5. **Shift buttons on phones**, so the manual gearbox works with touch.
+6. **Solid-axle articulation.** First stage in v1.65: fixed-length axle geometry, shared tyre camber and moving spring/link attachments. The existing massless raycast suspension and low-range flex tuning remain; separate unsprung axle bodies and their suspension/handling retune are still open.
 
 # Performance follow-ups
 

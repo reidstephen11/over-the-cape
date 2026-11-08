@@ -3,6 +3,7 @@ import type { EnvironmentConfig } from '../data/environment';
 import type { HeadlightMode } from '../data/headlights';
 import { damageTuning, type DamageMode } from '../data/damage';
 import { SurfaceId } from '../data/surfaces';
+import { pressurePsi, setPressure, tyrePressures } from './vehicle/tyrePressure';
 import { vehicleTuning, type VehicleTuning } from '../data/vehicle';
 import { Emitter } from '../core/events';
 import { Groups, groups, Physics, type GroundQuery, type Rapier } from './physics';
@@ -121,7 +122,7 @@ export interface SimState {
     dents: number;
     health: { engine: number; tyres: number[]; suspension: number[] };
     supplies: { fuel: number; jerryCans: number; spares: number; plugs: number };
-    winch: { anchor: string | null; length: number };
+    winch: { anchor: string | null; length: number; doubleLine: boolean; treeProtector: boolean };
     planks: { carried: number; placed: { x: number; y: number; z: number }[] };
     jack: string;
   }>;
@@ -743,7 +744,7 @@ export class Simulation {
       tools.winch.step(v, input.winchIn, input.winchOut, dt);
       v.externalLoad = tools.winch.tension;
       const pulled = tools.winch.anchor?.id.startsWith('stuck:')
-        ? this.stuck.get(tools.winch.anchor.id.slice(6))
+        ? this.stuck.get(tools.winch.anchor.recoveryId ?? tools.winch.anchor.id.slice(6))
         : undefined;
       if (pulled?.pull(tools.winch.tension, tools.winch.mount, dt)) {
         // Out: its driver unhooks the line.
@@ -791,6 +792,7 @@ export class Simulation {
     const v = this.vehicleOf(id);
     const t = v.tuning;
     const m = v.localToWorld(t.winchMount.x, t.winchMount.y, t.winchMount.z);
+    if (this.toolsOf(id).winch.doubleLine) range = Math.min(range, (winchTuning.cableLength - 1) / 2);
     const out: Anchor[] = [];
     const within = (x: number, y: number, z: number) => Math.hypot(x - m.x, y - m.y, z - m.z) <= range;
     const trees = this.world.treeGrid.near(m.x, m.z, range);
@@ -871,19 +873,26 @@ export class Simulation {
       }
     }
     for (const s of this.stuck.values()) {
+      if (s.freed) continue;
+      const forward = rotate(s.body.rotation(), 0, 0, -1);
+      const centre = s.body.translation();
+      const inFront = (m.x - centre.x) * forward.x + (m.z - centre.z) * forward.z >= 0;
+      // Use the end facing the winching car: no rope through the casualty's body.
+      const local = inFront ? s.hook : s.rearHook;
       const p = anchorPoint(
-        { kind: 'vehicle', id: '', point: v3(), radius: 0, body: s.body, local: s.hook, label: '' },
+        { kind: 'vehicle', id: '', point: v3(), radius: 0, body: s.body, local, label: '' },
         v3(),
       );
       if (!within(p.x, p.y, p.z)) continue;
       out.push({
         kind: 'vehicle',
         id: `stuck:${s.def.id}`,
+        recoveryId: s.def.id,
         point: p,
         radius: 0.05,
         body: s.body,
-        local: { ...s.hook },
-        label: s.def.name,
+        local: { ...local },
+        label: `${s.def.name} (${inFront ? 'front' : 'rear'} recovery point)`,
       });
     }
     for (const t of this.trailers.values()) {
@@ -904,7 +913,9 @@ export class Simulation {
     }
     for (const other of this.vehicles.values()) {
       if (other === v) continue;
-      const tow = other.tuning.towPoint;
+      // Rated chassis eye beside/above the hitch, never the trailer's tow ball.
+      const hitch = other.tuning.towPoint;
+      const tow = { x: hitch.x + 0.35, y: hitch.y + 0.12, z: hitch.z - 0.15 };
       const p = other.localToWorld(tow.x, tow.y, tow.z);
       if (!within(p.x, p.y, p.z)) continue;
       out.push({
@@ -914,10 +925,10 @@ export class Simulation {
         radius: 0.05,
         body: other.body,
         local: { ...tow },
-        label: 'Vehicle',
+        label: 'Vehicle rear recovery point',
       });
     }
-    return out;
+    return out.filter((a) => !this.toolsOf(id).winch.doubleLine || a.kind === 'tree' || a.kind === 'rock');
   }
 
   /** E / RB: attach to the best anchor in range, or detach. */
@@ -934,13 +945,19 @@ export class Simulation {
       this.toolEvent(id, { type: 'noAnchor' });
       return;
     }
-    tools.winch.attach(v, best);
+    if (!tools.winch.attach(v, best)) {
+      this.toolEvent(id, { type: 'noAnchor' });
+      return;
+    }
     this.toolEvent(id, { type: 'winchAttached', anchor: best });
   }
 
   attachTo(id: string, anchor: Anchor): void {
     const tools = this.toolsOf(id);
-    tools.winch.attach(this.vehicleOf(id), anchor);
+    if (!tools.winch.attach(this.vehicleOf(id), anchor)) {
+      this.toolEvent(id, { type: 'noAnchor' });
+      return;
+    }
     this.toolEvent(id, { type: 'winchAttached', anchor });
   }
 
@@ -1066,11 +1083,47 @@ export class Simulation {
 
   /** Pump let-down tyres back up with the compressor: a roadside job like a repair. */
   startPump(id: string): boolean {
+    return this.startPressure(id, 36);
+  }
+
+  startPressure(id: string, psi: number): boolean {
     const v = this.vehicleOf(id);
     const tools = this.toolsOf(id);
-    if (!v.condition.lowPressure || tools.repair || !this.canWork(v, 'pump').possible) return false;
-    const total = damageTuning.repair.pumpSeconds;
-    tools.repair = { kind: 'pump', remaining: total, total };
+    const from = pressurePsi(v.condition);
+    const speed = v.body.linvel();
+    if (
+      !tyrePressures.some((p) => p === psi) ||
+      from === psi ||
+      tools.repair ||
+      !this.canWork(v, 'pump').possible ||
+      Math.hypot(speed.x, speed.y, speed.z) > 0.5
+    )
+      return false;
+    const total = ((psi > from ? damageTuning.repair.pumpSeconds : 12) * Math.abs(psi - from)) / 18;
+    tools.repair = { kind: 'pump', remaining: total, total, targetPsi: psi };
+    return true;
+  }
+
+  /** Digging helps shallow mud and sand; it cannot remove a deep bog or its water. */
+  canDig(id: string): boolean {
+    const v = this.vehicleOf(id);
+    const speed = v.body.linvel();
+    return (
+      !this.toolsOf(id).repair &&
+      this.canWork(v, 'dig').possible &&
+      Math.hypot(speed.x, speed.y, speed.z) < 0.5 &&
+      v.wheels.some(
+        (w) =>
+          w.contact &&
+          w.water < 0.2 &&
+          ([SurfaceId.Mud, SurfaceId.BlackSoil, SurfaceId.Sand] as number[]).includes(w.surface),
+      )
+    );
+  }
+
+  startDig(id: string): boolean {
+    if (!this.canDig(id)) return false;
+    this.toolsOf(id).repair = { kind: 'dig', remaining: 20, total: 20 };
     return true;
   }
 
@@ -1087,6 +1140,7 @@ export class Simulation {
       refuel: R.refuelSeconds,
       pump: R.pumpSeconds,
       hubs: 20,
+      dig: 20,
     }[option.kind];
     tools.repair = { kind: option.kind, remaining: total, total };
     return true;
@@ -1100,8 +1154,11 @@ export class Simulation {
     const v = this.vehicleOf(id);
     const c = v.condition;
     if (job.kind === 'field') repairAll(c);
-    else if (job.kind === 'pump') c.lowPressure = false;
-    else if (job.kind === 'hubs') v.transfer.hubsLocked = !v.transfer.hubsLocked;
+    else if (job.kind === 'pump') setPressure(c, job.targetPsi ?? 36);
+    else if (job.kind === 'dig') {
+      const p = v.body.translation();
+      v.dugGround = { x: p.x, z: p.z, relief: 1 };
+    } else if (job.kind === 'hubs') v.transfer.hubsLocked = !v.transfer.hubsLocked;
     else if (job.kind === 'refuel') {
       if (c.jerryCans === 0) return;
       c.jerryCans--;
@@ -1238,7 +1295,12 @@ export class Simulation {
             spares: v.condition.spares,
             plugs: v.condition.plugs,
           },
-          winch: { anchor: tools.winch.anchor?.id ?? null, length: tools.winch.length },
+          winch: {
+            anchor: tools.winch.anchor?.id ?? null,
+            length: tools.winch.length,
+            doubleLine: tools.winch.doubleLine,
+            treeProtector: tools.winch.treeProtector,
+          },
           jack: tools.jack.state,
           planks: {
             carried: tools.planks.carried,

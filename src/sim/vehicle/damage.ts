@@ -1,5 +1,6 @@
 import { damageTuning as D, type DamageMode } from '../../data/damage';
 import { SurfaceId } from '../../data/surfaces';
+import { pressureSoftness } from './tyrePressure';
 import type { TyreFault, VehicleCondition } from './condition';
 import { unrotate } from './math';
 import type { Vehicle } from './vehicle';
@@ -52,20 +53,19 @@ export function updateDamage(v: Vehicle, mode: DamageMode, dt: number): DamageEv
     events.push({ part: 'tyre', wheel: i, health: c.tyres[i], cause, fault });
   };
   const T = D.tyre;
+  const soft = pressureSoftness(c);
   const ground = Math.abs(v.speed);
   // Sharp stones: a chance for each metre rolled, more on rock and at speed, less let down.
-  const sharp =
-    ground * dt * (0.3 + (0.7 * ground) / (20 / 3.6)) * (c.lowPressure ? T.sharpRockLowPressure : 1);
+  const sharp = ground * dt * (0.3 + (0.7 * ground) / (20 / 3.6)) * (1 + (T.sharpRockLowPressure - 1) * soft);
   // Sideways acceleration in a corner (m/s²): speed times how fast the car is turning.
   const lateral = Math.abs(v.speed * v.body.angvel().y);
-  const rimRoll =
-    c.lowPressure && lateral > T.rimRollAccel ? (lateral - T.rimRollAccel) * T.rimRollPerSecond * dt : 0;
+  const rimRoll = lateral > T.rimRollAccel ? soft * (lateral - T.rimRollAccel) * T.rimRollPerSecond * dt : 0;
   for (let i = 0; i < 4; i++) {
     const hit = v.wheelLandings[i];
     const w = v.wheels[i];
     const intact = c.tyreFault[i] === 'none';
     // A tyre landing hard on rock is cut and starts going down; harder still tears the sidewall.
-    const low = c.lowPressure ? T.lowPressureCut : 1;
+    const low = 1 + (T.lowPressureCut - 1) * soft;
     if (hit > D.tyre.punctureSpeed * low && w.surface === SurfaceId.Rock && intact)
       cut(i, hit > D.tyre.sidewallSpeed ? 'sidewall' : 'puncture', 'rock');
     // A pothole or washout hit at speed pinches the tyre.

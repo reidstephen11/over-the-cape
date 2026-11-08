@@ -21,6 +21,8 @@ export class ToolsView {
   readonly group = new THREE.Group();
   private readonly cable: THREE.Mesh;
   private readonly cablePos: Float32Array;
+  private readonly returnCable: THREE.Mesh;
+  private readonly pulley: THREE.Mesh;
   private readonly strap: THREE.Mesh;
   private readonly plankGeo: THREE.BufferGeometry;
   private readonly plankMat: THREE.MeshLambertMaterial;
@@ -64,12 +66,32 @@ export class ToolsView {
     this.cable.visible = false;
     this.cable.castShadow = true;
     this.group.add(this.cable);
+    this.returnCable = this.cable.clone();
+    this.returnCable.geometry = geo.clone();
+    this.returnCable.name = 'snatch-block-return-line';
+    this.group.add(this.returnCable);
+    this.pulley = new THREE.Mesh(
+      new THREE.TorusGeometry(0.14, 0.045, 6, 12),
+      patchFog(new THREE.MeshLambertMaterial({ color: '#B34328' }), 'snatch-block'),
+    );
+    this.pulley.name = 'snatch-block';
+    const sheave = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.095, 0.095, 0.055, 12),
+      patchFog(new THREE.MeshLambertMaterial({ color: '#686C6A' }), 'snatch-sheave'),
+    );
+    sheave.rotation.x = Math.PI / 2;
+    this.pulley.add(sheave);
+    this.pulley.visible = false;
+    this.group.add(this.pulley);
 
     this.strap = new THREE.Mesh(
-      new THREE.TorusGeometry(1, 0.06, 4, 10),
-      patchFog(new THREE.MeshLambertMaterial({ color: pal('barkOchre'), flatShading: true }), 'strap'),
+      new THREE.CylinderGeometry(1, 1, 0.16, 12, 1, true),
+      patchFog(
+        new THREE.MeshLambertMaterial({ color: '#D69C37', side: THREE.DoubleSide, flatShading: true }),
+        'strap',
+      ),
     );
-    this.strap.rotation.x = Math.PI / 2;
+    this.strap.name = 'tree-protector';
     this.strap.visible = false;
     this.group.add(this.strap);
 
@@ -149,6 +171,8 @@ export class ToolsView {
     const w = tools.winch;
     if (!w.anchor) {
       this.cable.visible = false;
+      this.returnCable.visible = false;
+      this.pulley.visible = false;
       this.strap.visible = false;
       return;
     }
@@ -156,10 +180,36 @@ export class ToolsView {
     const a = v.localToWorld(t.winchMount.x, t.winchMount.y, t.winchMount.z);
     const b = w.anchorPos;
     this.tmpA.set(a.x, a.y, a.z);
-    this.tmpB.set(b.x, b.y, b.z);
+    this.tmpB.set(b.x, b.y - (w.doubleLine ? 0.095 : 0), b.z);
+    this.drawCable(this.cable, this.cablePos, w.length / (w.doubleLine ? 2 : 1));
+    this.returnCable.visible = w.doubleLine;
+    this.pulley.visible = w.doubleLine;
+    if (w.doubleLine) {
+      this.tmpA.set(w.returnMount.x, w.returnMount.y, w.returnMount.z);
+      this.tmpB.y = b.y + 0.095;
+      this.drawCable(
+        this.returnCable,
+        this.returnCable.geometry.getAttribute('position').array as Float32Array,
+        w.length / 2,
+      );
+      this.pulley.position.set(b.x, b.y, b.z);
+      this.pulley.rotation.y = Math.atan2(a.x - b.x, a.z - b.z) + Math.PI / 2;
+    }
+    // Strap round trees and the fallen log.
+    const anc = w.anchor;
+    this.strap.visible = anc.kind === 'tree' || anc.kind === 'object';
+    if (this.strap.visible) {
+      const centre = anchorPoint(anc, this.tmpP);
+      this.strap.position.set(centre.x, centre.y, centre.z);
+      const r = anc.radius + 0.04;
+      this.strap.scale.set(r, 1, r);
+    }
+  }
+
+  private drawCable(mesh: THREE.Mesh, positions: Float32Array, length: number): void {
     const d = this.tmpA.distanceTo(this.tmpB);
     // Sag when slack: a parabola deep enough to use up the extra cable.
-    const slack = Math.max(0, w.length - d);
+    const slack = Math.max(0, length - d);
     const sag = slack > 0.01 ? Math.min(3, Math.sqrt(slack * d * 0.375)) : 0;
     const dir = this.tmpB.clone().sub(this.tmpA).normalize();
     const side = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0));
@@ -174,23 +224,15 @@ export class ToolsView {
       for (let r = 0; r < RADIAL; r++) {
         const ang = (r / RADIAL) * Math.PI * 2;
         const o = (s * RADIAL + r) * 3;
-        this.cablePos[o] = p.x + (side.x * Math.cos(ang) + up.x * Math.sin(ang)) * CABLE_R;
-        this.cablePos[o + 1] = p.y + (side.y * Math.cos(ang) + up.y * Math.sin(ang)) * CABLE_R;
-        this.cablePos[o + 2] = p.z + (side.z * Math.cos(ang) + up.z * Math.sin(ang)) * CABLE_R;
+        positions[o] = p.x + (side.x * Math.cos(ang) + up.x * Math.sin(ang)) * CABLE_R;
+        positions[o + 1] = p.y + (side.y * Math.cos(ang) + up.y * Math.sin(ang)) * CABLE_R;
+        positions[o + 2] = p.z + (side.z * Math.cos(ang) + up.z * Math.sin(ang)) * CABLE_R;
       }
     }
-    const attr = this.cable.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const attr = mesh.geometry.getAttribute('position') as THREE.BufferAttribute;
     attr.needsUpdate = true;
-    this.cable.geometry.computeVertexNormals();
-    this.cable.visible = true;
-    // Strap round trees and the fallen log.
-    const anc = w.anchor;
-    this.strap.visible = anc.kind === 'tree' || anc.kind === 'object';
-    if (this.strap.visible) {
-      this.strap.position.copy(this.tmpB);
-      const r = anc.radius + 0.04;
-      this.strap.scale.set(r, r, 1);
-    }
+    mesh.geometry.computeVertexNormals();
+    mesh.visible = true;
   }
 
   private updatePlanks(tools: VehicleTools, alpha: number): void {

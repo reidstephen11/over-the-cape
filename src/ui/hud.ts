@@ -120,6 +120,8 @@ export interface HudState {
   planksCarried: number;
   planksTotal: number;
   winchAttached: boolean;
+  winchDoubleLine?: boolean;
+  treeProtector?: boolean;
   /** 0 = fine, 1 = flooding (warning), 2 = stalled. */
   engine: 0 | 1 | 2;
   /**
@@ -763,12 +765,18 @@ export function lampsFor(s: HudState): Lamp[] {
     out.push({ id: 'lights', text: 'HIGH BEAM', tone: 'blue', title: 'Headlights on high beam' });
   else if (s.lights !== 'off')
     out.push({ id: 'lights', text: 'LIGHTS', tone: 'green', title: 'Headlights on' });
-  if (s.winchAttached) out.push({ id: 'winch', text: 'WINCH', tone: 'amber', title: 'Winch attached' });
+  if (s.winchAttached)
+    out.push({
+      id: 'winch',
+      text: s.winchDoubleLine ? 'WINCH ×2' : 'WINCH',
+      tone: 'amber',
+      title: `Winch attached${s.treeProtector ? ' with tree protector' : ''}`,
+    });
   const sup = s.supplies;
   if (sup?.lowPressure)
     out.push({
       id: 'trail',
-      text: 'TRAIL',
+      text: sup.pressurePsi === undefined ? 'TRAIL' : `${sup.pressurePsi} psi`,
       tone: 'amber',
       title: 'Tyres let down for grip: pump them up for gravel from Tools',
     });

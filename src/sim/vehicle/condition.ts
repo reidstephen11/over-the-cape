@@ -1,4 +1,5 @@
 import { damageTuning as D } from '../../data/damage';
+import { pressureSoftness } from './tyrePressure';
 
 /**
  * Vehicle condition (SPEC §6.4, §11): dirt, dents and engine flooding, and the health
@@ -61,6 +62,8 @@ export interface VehicleCondition {
   engineHeat: number;
   /** Tyres let down for grip off the gravel: more grip, but they cut more easily. */
   lowPressure: boolean;
+  /** Selected pressure; absent on legacy conditions using the road/trail flag. */
+  tyrePressurePsi?: number;
 }
 
 export function createCondition(fuel = 70): VehicleCondition {
@@ -94,7 +97,7 @@ export function enginePowerMultiplier(c: VehicleCondition): number {
 }
 
 export function tyreGripMultiplier(c: VehicleCondition, wheel: number): number {
-  return (0.6 + 0.4 * c.tyres[wheel]) * (c.lowPressure ? D.tyre.lowPressureGrip : 1);
+  return (0.6 + 0.4 * c.tyres[wheel]) * (1 + (D.tyre.lowPressureGrip - 1) * pressureSoftness(c));
 }
 
 /** Cornering grip a soft or flat tyre keeps as its sidewall folds (1 when inflated). */

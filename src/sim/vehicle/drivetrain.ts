@@ -6,8 +6,8 @@ export type Range = 'high' | 'low';
  * The gearbox mode the sim drives: 'automatic' shifts itself (every vehicle, through its
  * converter); 'manual' holds the gear the player picks with the clutch worked for them;
  * 'clutch' adds a clutch pedal, and the engine can stall. 'clutch' is not offered in
- * Settings for now (a controller button made a poor clutch); it stays for the sim and its
- * tests until wheel-and-pedal support gives it a real pedal.
+ * Settings (a controller button made a poor clutch). It remains internal to the sim and
+ * its tests; the owner has ruled out wheel/pedal support and restoring this option.
  */
 export type GearboxMode = 'automatic' | 'manual' | 'clutch';
 
