@@ -59,3 +59,7 @@ The pictures the model was built from, to be downloaded to these names (see Gaps
 ## v1.62 inspection
 
 v1.62 visual review: the rack supports now rise outside the roof shoulder from the gutter clamps before turning in to the deck, instead of disappearing inside the roof. The interior mirror gains a stem to the headlining, and the padded dash top moves 0.07 m towards the screen and becomes 0.12 m deep, clearing the gauges. Overall dimensions, deck height and both spare mounts are unchanged. These are fit corrections to estimated/game-added parts; no additional photograph was available.
+
+## v1.65 articulation clearance
+
+The inner rear wheelhouse opening reaches y 0.43 instead of using the outer arch’s y 0.36 ceiling. Its trim is a thin inner wall at x ±0.49 rather than a solid 0.30 m wide block through the tyres; the rear bench support is 0.96 m wide between the wheel boxes. All remain fixed to the body and face into the cabin. The exterior arch, body dimensions and spare mounts are unchanged. No new photographs were available; these are internal clearance corrections to the existing draft.

@@ -19,7 +19,9 @@ export function addRangieInterior(b: VehicleBuilder, redlineRpm: number): void {
   const floor = 0.1;
   // Floor, the transmission tunnel and the toe board.
   b.block(0, floor, 0.1, 1.66, 0.03, 1.4, mat, M.Rubber, Z.Trim);
-  b.block(0, floor + 0.05, 1.5, 1.66, 0.03, 1.4, C.trim, M.Fabric, Z.Trim);
+  // The load floor narrows between the rear wheelhouses rather than passing through the tyres.
+  b.block(0, floor + 0.05, 1.3, 1.0, 0.03, 1.0, C.trim, M.Fabric, Z.Trim);
+  b.block(0, floor + 0.05, 2.0, 1.66, 0.03, 0.4, C.trim, M.Fabric, Z.Trim);
   b.block(0.02, floor + 0.08, -0.3, 0.3, 0.15, 0.62, mat, M.Rubber, Z.Trim, 0.04);
   b.block(0, floor + 0.08, -0.6, 1.64, 0.16, 0.06, mat, M.Rubber, Z.Trim, 0.02);
   // Dash: a steel lower panel, the padded top under the screen, and the binnacle with the two
@@ -71,8 +73,8 @@ export function addRangieInterior(b: VehicleBuilder, redlineRpm: number): void {
   }
   b.block(0, floor + 0.17, -0.4, 0.26, 0.04, 0.16, mat, M.Rubber, Z.Trim, 0.03);
   // The rear bench across the car ahead of the wheel boxes.
-  b.block(0, floor + 0.12, 1.1, 1.36, 0.18, 0.42, mat, M.Rubber, Z.Trim, 0.02);
-  b.block(0, floor + 0.27, 1.09, 1.44, 0.12, 0.5, C.vinyl, M.Fabric, Z.Trim, 0.045);
+  b.block(0, floor + 0.135, 1.1, 1.0, 0.21, 0.42, mat, M.Rubber, Z.Trim, 0.02);
+  b.block(0, floor + 0.3, 1.09, 1.44, 0.12, 0.5, C.vinyl, M.Fabric, Z.Trim, 0.045);
   b.push().translate(0, 0, 1.37).rotate(-0.14, 0, 0);
   b.block(0, floor + 0.56, 0, 1.44, 0.5, 0.12, C.vinyl, M.Fabric, Z.Trim, 0.04);
   b.pop();
@@ -84,7 +86,7 @@ export function addRangieInterior(b: VehicleBuilder, redlineRpm: number): void {
     b.rod({ x: x - side * 0.014, y: 0.6, z: -0.42 }, { x: x - side * 0.05, y: 0.6, z: -0.42 }, 0.007, metal);
     b.rod({ x: x - side * 0.05, y: 0.6, z: -0.42 }, { x: x - side * 0.05, y: 0.53, z: -0.38 }, 0.006, metal);
     b.block(x - side * 0.016, 0.66, 0.44, 0.012, 0.025, 0.08, C.chrome, M.Metal, Z.Trim, 0.005);
-    b.block(x, 0.45, 1.1, 0.02, 0.5, 1.0, C.trim, M.Fabric, Z.Trim, 0.01);
+    b.block(x, 0.56, 1.1, 0.02, 0.28, 1.0, C.trim, M.Fabric, Z.Trim, 0.01);
     // Trim along the load space behind the bench, over the wheel box.
     b.block(side * 0.81, 0.55, 1.85, 0.02, 0.36, 0.7, C.trim, M.Fabric, Z.Trim, 0.01);
   }

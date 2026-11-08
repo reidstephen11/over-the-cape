@@ -67,7 +67,7 @@ export function addMqInterior(b: VehicleBuilder, redlineRpm: number): void {
   }
   b.block(0, floor + 0.17, -0.41, 0.26, 0.04, 0.16, mat, M.Rubber, Z.Trim, 0.03);
   // The small bench behind the seats, ahead of the wheel boxes.
-  b.block(0, floor + 0.14, 0.95, 1.2, 0.2, 0.36, mat, M.Rubber, Z.Trim, 0.02);
+  b.block(0, floor + 0.14, 0.95, 0.96, 0.2, 0.36, mat, M.Rubber, Z.Trim, 0.02);
   b.block(0, floor + 0.3, 0.94, 1.28, 0.12, 0.42, C.vinyl, M.Fabric, Z.Trim, 0.045);
   b.push().translate(0, 0, 1.18).rotate(-0.14, 0, 0);
   b.block(0, floor + 0.58, 0, 1.28, 0.48, 0.12, C.vinyl, M.Fabric, Z.Trim, 0.04);
@@ -87,7 +87,7 @@ export function addMqInterior(b: VehicleBuilder, redlineRpm: number): void {
     b.block(x - side * 0.016, 0.6, 0.3, 0.012, 0.025, 0.08, C.chrome, M.Metal, Z.Trim, 0.005);
     // Trim along the load space behind the bench, over the wheel box.
     b.block(side * 0.755, 0.55, 1.6, 0.02, 0.4, 0.9, C.trim, M.Fabric, Z.Trim, 0.01);
-    b.block(side * 0.62, floor + 0.18, 1.2, 0.3, 0.32, 0.9, C.trim, M.Fabric, Z.Trim, 0.02);
+    b.block(side * 0.49, floor + 0.18, 1.2, 0.04, 0.32, 0.9, C.trim, M.Fabric, Z.Trim, 0.02);
   }
   // Sun visors, the mirror and the headlining under the roof.
   for (const x of [-0.4, 0.4]) b.block(x, 1.19, -0.4, 0.36, 0.012, 0.13, C.vinyl, M.Fabric, Z.Trim, 0.005);

@@ -1,4 +1,5 @@
 import type RAPIER from '@dimforge/rapier3d-compat';
+import { solidAxlePose } from './solidAxle';
 import {
   SurfaceId,
   surfaceGrip,
@@ -240,6 +241,8 @@ export class Vehicle {
   private readonly rawWheelRotation = [0, 0, 0, 0];
   private readonly wheelRotationDelta = [0, 0, 0, 0];
   private articulationBlend = 0;
+  /** Lateral hub positions on the rigid beams (the track narrows in projection as they roll). */
+  readonly wheelX: number[];
   /** Seconds the hill-start assist has held the brakes for this pull-away. */
   private hillHold = 0;
 
@@ -307,6 +310,7 @@ export class Vehicle {
       );
     });
     this.applyTuning();
+    this.wheelX = t.wheels.map((w) => w.x);
     this.wheelContacts = new WheelContacts(physics, tuning);
     this.wheels = t.wheels.map(() => ({
       contact: false,
@@ -853,6 +857,14 @@ export class Vehicle {
       }
       this.preload[i] = shift;
       this.preload[j] = -shift;
+      const left = t.wheels[i],
+        right = t.wheels[j];
+      const axle = solidAxlePose(right.x - left.x, left.y - wi.suspension, right.y - wj.suspension);
+      const mid = (left.x + right.x) / 2;
+      this.wheelX[i] = mid + (left.x - mid) * axle.cos;
+      this.wheelX[j] = mid + (right.x - mid) * axle.cos;
+      // Contact forces stay tangent to the ground. Camber belongs to the rigid beam,
+      // not a vertical component added to Rapier's calibrated lateral tyre impulses.
     }
     for (let i = 0; i < 4; i++) {
       const w = this.wheels[i];
@@ -877,7 +889,7 @@ export class Vehicle {
       c.setWheelRadius(i, t.wheelRadius - tyreDrop(this.condition, i, w.rotation));
     }
 
-    this.wheelContacts.update(this.body, c, WHEEL_FILTER);
+    this.wheelContacts.update(this.body, c, WHEEL_FILTER, this.wheelX);
     c.updateVehicle(dt, this.physics.R.QueryFilterFlags.EXCLUDE_SENSORS, WHEEL_FILTER);
     this.addRollTorque(q);
     this.pushDynamicGround(q, dt);

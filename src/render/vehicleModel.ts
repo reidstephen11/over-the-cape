@@ -163,7 +163,7 @@ export class VehicleModel {
       this.wheels.push({ pivot, spin, mesh });
     }
     this.suspension = new VehicleSuspension(tuning, materials, look.springs, look.suspension);
-    this.suspension.update([0, 0, 0, 0]);
+    this.poseWheels([0, 0, 0, 0]);
     this.root.add(this.suspension.group);
   }
 
@@ -339,14 +339,26 @@ export class VehicleModel {
     });
   }
 
+  /** Fixed-length beams carry both hubs and tyre camber; steering turns inside that frame. */
+  poseWheels(heights: readonly number[], steering?: readonly number[]): void {
+    this.suspension.update(heights);
+    for (let i = 0; i < this.wheels.length; i++) {
+      const pivot = this.wheels[i].pivot;
+      pivot.position.copy(this.suspension.hubs[i]);
+      pivot.rotation.set(0, -(steering?.[i] ?? 0), this.suspension.rolls[i], 'ZYX');
+    }
+  }
+
   update(v: Vehicle, alpha: number, dt: number): void {
     followBody(this.root, v, alpha);
     const t = this.tuning;
+    this.poseWheels(
+      v.wheels.map((w, i) => t.wheels[i].y - w.suspension),
+      v.wheels.map((w) => w.steer),
+    );
     for (let i = 0; i < 4; i++) {
       const w = v.wheels[i];
       const ww = this.wheels[i];
-      ww.pivot.position.y = t.wheels[i].y - w.suspension + w.sink * 0.0;
-      ww.pivot.rotation.y = -w.steer;
       // Extra spin when the wheel is spinning beyond grip.
       this.spinExtra[i] +=
         w.spin * dt * 25 * Math.sign(v.throttle > 0 ? (v.drivetrain.gear < 0 ? -1 : 1) : 0);
@@ -357,7 +369,6 @@ export class VehicleModel {
         ww.mesh.geometry = this.squashWheel(i, ww.spin.rotation.x, drop, 1 - v.condition.tyres[i]);
       else ww.mesh.geometry = this.wheelGeo;
     }
-    this.suspension.update(this.wheels.map((w) => w.pivot.position.y));
     this.instruments.update(v, dt);
     const H = headlightTuning;
     const lit = v.lights !== 'off';

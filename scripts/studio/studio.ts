@@ -70,10 +70,11 @@ if (params.has('stock') && id === 'sooty80')
   vehicleLooks.sooty80.body = (t, wheel) => buildBodyCore(t, wheel, false);
 
 const model = new VehicleModel(tuning);
+const articulationBlocks = new THREE.Group();
+scene.add(articulationBlocks);
 // The stock body has no rack, so its recovery boards stay off.
 if (params.has('stock')) model.rackPlanks.visible = false;
-for (let i = 0; i < 4; i++) model.wheels[i].pivot.position.y = tuning.wheels[i].y - rest;
-model.suspension.update(model.wheels.map((w) => w.pivot.position.y));
+model.poseWheels(tuning.wheels.map((w) => w.y - rest));
 if (!alone) scene.add(model.root);
 
 /** A trailer standing still: on its own with its ground under the origin, or on the vehicle's hitch. */
@@ -127,11 +128,42 @@ function view(x: number, y: number, z: number, tx = 0, ty = 0.3, tz = 0, fov = 4
 
 declare global {
   interface Window {
-    studio: { view: typeof view; cockpit(): void; ready: boolean };
+    studio: {
+      view: typeof view;
+      articulate(height: number, steer?: number): void;
+      cockpit(): void;
+      ready: boolean;
+    };
   }
 }
 window.studio = {
   view,
+  /** Static diagonal blocks for inspecting live-axle movement without a full map. */
+  articulate(height: number, steer = 0) {
+    // Keep this a modest inspection pose. Larger strokes can reveal existing body
+    // wheelhouse/tray clearance limits; the dev rig does not solve chassis collision.
+    const amount = Math.max(0, Math.min(0.16, height));
+    for (const child of [...articulationBlocks.children]) {
+      const mesh = child as THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>;
+      mesh.geometry.dispose();
+      mesh.material.dispose();
+      mesh.removeFromParent();
+    }
+    model.root.position.y = amount / 2;
+    model.poseWheels(
+      tuning.wheels.map((w, i) => w.y - rest + (i === 0 || i === 3 ? amount / 2 : -amount / 2)),
+      [steer, steer, 0, 0],
+    );
+    for (const i of [0, 3]) {
+      const block = new THREE.Mesh(
+        new THREE.BoxGeometry(0.7, amount || 0.001, 0.9),
+        new THREE.MeshStandardMaterial({ color: '#72766A', roughness: 1 }),
+      );
+      const hub = model.wheels[i].pivot.position;
+      block.position.set(hub.x, ground.position.y + amount / 2, hub.z);
+      articulationBlocks.add(block);
+    }
+  },
   /** From the driver's seat, as the game's cockpit view sees it. */
   cockpit() {
     const c = vehicles[id].cabin;

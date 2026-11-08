@@ -534,7 +534,11 @@ function sides(b: VehicleBuilder): void {
         [0.69, 0.45],
         [1.67, 0.45],
         [1.67, LOW],
-        ...[...REAR_OPENING].reverse().slice(0, -1),
+        // The inner wheelhouse has more bump clearance than the outer arch lip.
+        ...[...REAR_OPENING]
+          .reverse()
+          .slice(0, -1)
+          .map(([z, y, r]) => [z, y === ARCH_TOP ? 0.43 : y, r] as Vtx),
         [0.7, LOW],
       ]),
       side > 0 ? 0.5 : -0.78,

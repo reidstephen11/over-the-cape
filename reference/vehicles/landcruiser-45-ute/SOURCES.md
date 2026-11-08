@@ -28,3 +28,7 @@ No committed photograph of any 45/47 ute. No published length, height or kerb ma
 ## v1.62 inspection
 
 v1.62 visual review: both recovery boards moved 0.10 m forward, centred lengthways on the left of the deck (z 0.50–2.70), so their ends clear the headboard and tailgate. Tray and cab dimensions and both spare mounts are unchanged. The tray remains an estimate from the owner's pictures, not a new factory match.
+
+## v1.65 articulation clearance
+
+Tray crossmembers within the rear tyres’ fore/aft envelope now stop at a 1.0 m width between the chassis runners; the surrounding deck and perimeter rails retain their dimensions. The members stay at the same height and stations, facing across the car. This removes their intersection with a raised tyre without shortening suspension travel. Cab, tray outline and both spare mounts are unchanged. This is a fit correction to the estimated farm tray, not a newly verified factory detail.
