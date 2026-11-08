@@ -1,4 +1,5 @@
 import { lastPoleTrack, sideTripFlats, sideTripPois, sideTripProps } from './crebSideTrips';
+import { crebGateCourse, crebGates } from './crebGates';
 import type { HorizonDef, MapDef, TrackDef } from '../../sim/world/mapTypes';
 import {
   bigRed,
@@ -513,6 +514,8 @@ const horizon: HorizonDef = {
 };
 
 export const crebMap: MapDef = {
+  gateCourse: crebGateCourse,
+  gates: crebGates,
   id: 'creb',
   name: 'The CREB Track',
   seed: 1873,

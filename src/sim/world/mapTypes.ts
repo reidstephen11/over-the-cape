@@ -655,6 +655,8 @@ export interface MapDef {
   crawlCourses?: readonly CrawlCourseDef[];
   crawlTrails?: readonly CrawlTrailDef[];
   gates?: readonly GateDef[];
+  /** Optional scored challenge using this map's numbered gates. */
+  gateCourse?: { id: string; name: string; trackId: string };
   vegetation: VegetationDef;
   /** Repainted colour tokens (a tropical map's greener grass and red clay). */
   palette?: PaletteOverrides;

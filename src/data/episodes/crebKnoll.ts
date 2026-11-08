@@ -397,7 +397,8 @@ export const knollTracks: TrackDef[] = [
     pinMode: 'follow',
     pinSmooth: 6,
     stones: rockClimbStones,
-    routeHint: 'Hard. Low range, both lockers, crawl. Ledges, an off-camber slab and a V-notch, all rock',
+    routeHint:
+      '8 scored gates uphill. Red flag left, blue right. Start at gate 1; low range, both lockers and crawl. 1000 points: flag −25, missed gate −100, reverse/knock −5, winch −50. Time breaks ties',
   },
   {
     id: 'knoll-switchbacks',
@@ -624,7 +625,7 @@ const bothEnds = (id: string, start: string, far: string): PropDef[] => [
 ];
 export const knollProps: PropDef[] = [
   endSign(lineOf('knoll-loop'), 0, 'Knoll play area', graded),
-  ...bothEnds('knoll-rock-climb', 'Rock climb — up, hard', 'Rock climb — up only'),
+  ...bothEnds('knoll-rock-climb', 'Rock climb · 8 gates · start uphill', 'Rock climb · finish · up only'),
   ...bothEnds('knoll-switchbacks', 'Switchbacks — up', 'Switchbacks — either way'),
   ...bothEnds('knoll-side-slope', 'Side slope', 'Side slope — either way'),
   ...bothEnds('knoll-drop', 'The drop — down, hard', 'The drop — down only'),
@@ -682,7 +683,11 @@ const poi = (
 
 export const knollPois: PoiDef[] = [
   poi('knoll-top', 'Knoll summit', 'The top of the play area; the lines down start here', [TOP.x, TOP.z], 16),
-  poi('knoll-rock-climb', 'Rock climb', 'Granite all the way up the south face'),
+  poi(
+    'knoll-rock-climb',
+    'Rock climb · 8 gates',
+    'Optional scored climb: start at gate 1, finish all eight uphill. 1000 points before penalties; personal best per vehicle',
+  ),
   poi('knoll-switchbacks', 'Switchbacks', 'Tight hairpins up the east face'),
   poi('knoll-side-slope', 'Side slope', 'Round the west flank, leaning out'),
   poi(

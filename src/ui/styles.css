@@ -3431,3 +3431,22 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
 .journal-memory {
   font-style: italic;
 }
+
+.gate-count.scored-course {
+  max-width: calc(100vw - 24px);
+  white-space: normal;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* Keep course progress below the driving view, clear of phone dials and notices. */
+.touch-mode #ui[data-hud] .gate-count.scored-course {
+  top: auto;
+  bottom: calc(max(8px, env(safe-area-inset-bottom)) + 210px);
+  left: max(8px, env(safe-area-inset-left));
+  right: auto;
+  transform: none;
+  max-width: calc(100vw - 16px);
+  width: fit-content;
+}
