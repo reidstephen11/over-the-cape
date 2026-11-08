@@ -264,11 +264,12 @@ const baseTracks: TrackDef[] = [
     ruts: 0.03,
   },
   ...crebFindTracks,
-  lastPoleTrack,
   // The forks: other lines past the deep bog, the concrete and the Little Annan's ford.
   ...crebForkTracks,
   // The knoll play area between the village and the river (crebKnoll.ts).
   ...knollTracks,
+  // Roughness is seeded by track index. Append new tracks to preserve existing obstacles.
+  lastPoleTrack,
 ];
 // Each stretch's own obstacles and mud (crebStretches.ts).
 const tracks = baseTracks.map((t) => ({ ...t, ...stretchTracks[t.id] }));

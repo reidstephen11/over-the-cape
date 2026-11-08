@@ -1491,6 +1491,7 @@ export class Game {
         this.vehicle.condition.jerryCans += trip.reward.jerryCans ?? 0;
         this.vehicle.condition.plugs += trip.reward.plugs ?? 0;
       }
+      this.hud.toast(complete ? `${trip.name} complete · ${trip.rewardLabel}` : `${stop.task}: done`, 5000);
       this.showHistory({
         title: complete ? `${trip.name} · complete` : trip.name,
         text: complete

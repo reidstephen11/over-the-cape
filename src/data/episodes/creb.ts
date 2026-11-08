@@ -91,7 +91,7 @@ export const crebEpisode: EpisodeDef = {
   notes: {
     'last-pole-clearing': {
       title: 'Last pole clearing',
-      text: 'The old line ends here in the game: a leaning pole, a survey board and a clearing just wide enough to turn round. The wire is long gone. Mark the sketch, then take it back to the survey box at the hut. This side trip is fictional, on the game’s shortened map.',
+      text: 'Beyond the hut the old line runs into a small clearing. A leaning pole still carries three empty insulators, but the wire is long gone. Mark the sketch at the survey board, then return it to the box at the hut. There is room to turn round here.',
     },
     'daintree-village': {
       title: 'Daintree Village',
