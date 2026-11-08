@@ -1,3 +1,4 @@
+import { lastPoleTrack, sideTripFlats, sideTripPois, sideTripProps } from './crebSideTrips';
 import type { HorizonDef, MapDef, TrackDef } from '../../sim/world/mapTypes';
 import {
   bigRed,
@@ -267,6 +268,8 @@ const baseTracks: TrackDef[] = [
   ...crebForkTracks,
   // The knoll play area between the village and the river (crebKnoll.ts).
   ...knollTracks,
+  // Roughness is seeded by track index. Append new tracks to preserve existing obstacles.
+  lastPoleTrack,
 ];
 // Each stretch's own obstacles and mud (crebStretches.ts).
 const tracks = baseTracks.map((t) => ({ ...t, ...stretchTracks[t.id] }));
@@ -580,6 +583,7 @@ export const crebMap: MapDef = {
     { id: 'roaring-meg-camp', x: -23, z: 661, radius: 12, blend: 14 },
     { id: 'lions-den', x: 100, z: -2560, radius: 22, blend: 16 },
     ...crebFindFlats,
+    ...sideTripFlats,
     ...knollFlats,
   ],
   creeks: [
@@ -823,6 +827,7 @@ export const crebMap: MapDef = {
     },
     ...stretchPois,
     ...crebFindPois,
+    ...sideTripPois,
     ...crebForkPois,
     ...knollPois,
   ],
@@ -844,6 +849,7 @@ export const crebMap: MapDef = {
     { kind: 'signpost', x: 80, z: -2538, headingDeg: 270, text: 'Lions Den Hotel' },
     ...stretchProps,
     ...crebFindProps,
+    ...sideTripProps,
     ...crebForkProps,
     ...knollProps,
   ],
@@ -912,6 +918,7 @@ export const crebMap: MapDef = {
       { x: 100, z: -2560, radius: 40 },
       { x: -110, z: -1500, radius: 40 },
       ...knollClearings,
+      { x: -184, z: 4, radius: 18 },
     ],
   },
   palette: {

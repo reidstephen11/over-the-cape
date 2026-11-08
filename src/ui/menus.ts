@@ -1,3 +1,4 @@
+import type { TripJournalEntry } from '../sim/sideTrips';
 import { controllers, controllerTypes, type ControllerType } from '../data/controllers';
 import { BUILD_LABEL, GAME_VERSION } from '../core/buildInfo';
 import { controlsTable, touchControlsTable } from '../data/controls';
@@ -49,7 +50,7 @@ export function showGearboxSetting(gamepadConnected: boolean): boolean {
   return gamepadConnected && !isTouchDevice();
 }
 
-type Page = 'main' | 'vehicle' | 'settings' | 'controls';
+type Page = 'main' | 'journal' | 'vehicle' | 'settings' | 'controls';
 
 export interface MenuActions {
   resume(): void;
@@ -93,6 +94,11 @@ export class PauseMenu {
   /** A new build is downloaded and waiting: the main page offers to restart into it. */
   private updateReady = false;
   private status: readonly PauseStatusCell[] = [];
+  private trips: readonly TripJournalEntry[] = [];
+
+  setTrips(trips: readonly TripJournalEntry[]): void {
+    this.trips = trips;
+  }
 
   constructor(
     root: HTMLElement,
@@ -199,6 +205,7 @@ export class PauseMenu {
         <div class="pause-buttons">
           <button data-focus data-act="resume">Resume</button>
           <button data-focus data-act="map">Map</button>
+          <button data-focus data-act="journal">Trip journal<small>Optional jobs, sights and directions</small></button>
           <button data-focus data-act="camp">Restart from last camp<small></small></button>
           <button data-focus data-act="vehicle">Vehicle<small class="vehicle-name"></small></button>
           <button data-focus data-act="settings">Settings</button>
@@ -219,6 +226,42 @@ export class PauseMenu {
       }
       (card.querySelector('[data-act="camp"] small') as HTMLElement).textContent = this.campsiteName;
       (card.querySelector('.vehicle-name') as HTMLElement).textContent = vehicles[this.vehicle].tuning.name;
+    } else if (page === 'journal') {
+      card.classList.add('pause-journal');
+      card.innerHTML = `<h2>Trip journal</h2><p class="menu-note">Optional side trips. Stop for three seconds at each task. The clock runs while you drive; camps keep your progress.</p><div class="journal-scroll"></div><button data-focus data-act="back">Back</button>`;
+      const list = card.querySelector('.journal-scroll')!;
+      for (const trip of this.trips) {
+        const entry = document.createElement('article');
+        entry.className = `journal-trip${trip.complete ? ' complete' : ''}`;
+        entry.dataset.focus = '';
+        entry.tabIndex = 0;
+        const title = document.createElement('h3');
+        title.textContent = `${trip.name} · ${trip.complete ? 'Complete' : `${trip.stops.filter((s) => s.done).length}/${trip.stops.length}`}`;
+        const description = document.createElement('p');
+        description.textContent = trip.description;
+        const steps = document.createElement('ol');
+        for (const stop of trip.stops) {
+          const li = document.createElement('li');
+          li.className = stop.done ? 'done' : stop.available ? 'current' : '';
+          const task = document.createElement('strong');
+          task.textContent = `${stop.done ? '✓ ' : ''}${stop.task}`;
+          const directions = document.createElement('p');
+          directions.textContent = stop.directions;
+          li.append(task, directions);
+          if (stop.entry) {
+            const memory = document.createElement('p');
+            memory.className = 'journal-memory';
+            memory.textContent = stop.entry;
+            li.appendChild(memory);
+          }
+          steps.appendChild(li);
+        }
+        const reward = document.createElement('p');
+        reward.className = 'journal-reward';
+        reward.textContent = `${trip.complete ? 'Earned' : 'Reward'}: ${trip.reward}`;
+        entry.append(title, description, steps, reward);
+        list.appendChild(entry);
+      }
     } else if (page === 'vehicle') {
       card.innerHTML = `<h2>Vehicle</h2>
         ${vehicleOrder
@@ -309,6 +352,7 @@ export class PauseMenu {
     if (act === 'resume') this.actions.resume();
     else if (act === 'map') this.actions.openMap();
     else if (act === 'camp') this.actions.returnToCampsite();
+    else if (act === 'journal') this.show('journal');
     else if (act === 'vehicle') this.show('vehicle');
     else if (act === 'settings') this.show('settings');
     else if (act === 'controls') this.show('controls');
@@ -361,6 +405,7 @@ export class PauseMenu {
   private focus(): void {
     const b = this.buttons();
     b.forEach((x, i) => x.classList.toggle('focused', i === this.focusIndex));
+    if (this.page === 'journal') b[this.focusIndex]?.scrollIntoView({ block: 'nearest' });
   }
 
   /** Keyboard / gamepad navigation. Returns true if the menu wants to close (back from main). */

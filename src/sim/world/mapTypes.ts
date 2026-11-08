@@ -351,6 +351,7 @@ export interface PoiDef {
 }
 
 export type PropKind =
+  | 'noticeBox'
   | 'hut'
   | 'fireRing'
   | 'logSeat'

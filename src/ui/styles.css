@@ -3362,3 +3362,72 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
     transition: none;
   }
 }
+
+/* Optional jobs share the paper menu and keep Back visible on small screens. */
+.pause-journal {
+  width: min(680px, 92vw);
+  overflow: hidden;
+}
+
+.journal-scroll {
+  min-height: 0;
+  overflow: auto;
+  padding: 3px;
+}
+
+.journal-trip {
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  padding: 14px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.journal-trip.focused {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+.journal-trip h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+
+.journal-trip p {
+  margin: 6px 0;
+}
+
+.journal-trip ol {
+  padding-left: 24px;
+}
+
+.journal-trip li {
+  margin: 12px 0;
+}
+
+.journal-trip .done {
+  opacity: 0.65;
+}
+
+.journal-trip .current {
+  border-left: 3px solid currentColor;
+  padding-left: 8px;
+}
+
+.journal-reward {
+  font-weight: bold;
+}
+
+/* A history card behind the translucent journal must not show through its text. */
+#ui:has(.pause:not(.hidden) .pause-journal) .notices {
+  visibility: hidden;
+}
+
+#ui[data-hud] .pause-card.pause-journal {
+  width: min(640px, 92vw);
+}
+
+.journal-memory {
+  font-style: italic;
+}
