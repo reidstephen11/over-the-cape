@@ -6,6 +6,7 @@ import type { Device } from '../sim/input/inputManager';
 import { gearLabel } from '../sim/vehicle/drivetrain';
 import type { VehicleTools } from '../sim/tools/tools';
 import type { Vehicle } from '../sim/vehicle/vehicle';
+import { pressurePsi, wheelPsi } from '../sim/vehicle/tyrePressure';
 import type { Trailer } from '../sim/trailer';
 import type { CrawlCourseDef, CrawlTrailDef, PoiDef } from '../sim/world/mapTypes';
 import type { TrackInfo } from '../sim/world/features';
@@ -131,6 +132,7 @@ const jobText: Record<RepairKind, [string, string]> = {
   refuel: ['Pouring in a jerry can', 'Pour in a jerry can (tool menu)'],
   pump: ['Pumping the tyres up', 'Pump the tyres up (tool menu)'],
   hubs: ['Working the front hubs', 'Lock or unlock the hubs (tool menu)'],
+  dig: ['Shovelling clear of the wheels', 'Clear the wheels with the shovel (tool menu)'],
 };
 
 /** Build what the HUD shows this frame, including context prompts (SPEC §9). */
@@ -237,7 +239,7 @@ export function buildHudState(i: HudInputs): HudState {
     if (t.repair)
       prompts.push({
         keys: '…',
-        text: jobText[t.repair.kind][0],
+        text: t.repair.targetPsi ? `Setting tyres to ${t.repair.targetPsi} psi` : jobText[t.repair.kind][0],
         progress: 1 - t.repair.remaining / t.repair.total,
       });
     else if (i.repair?.possible && Math.abs(v.speed) < 0.5)
@@ -398,8 +400,10 @@ export function buildHudState(i: HudInputs): HudState {
           plugs: cond.plugs,
           heat: cond.engineHeat ?? 0.5,
           lowPressure: !!cond.lowPressure,
+          pressurePsi: pressurePsi(cond),
           tyres: v.tuning.wheels.map((w, k) => ({
             inflation: cond.tyres[k],
+            psi: wheelPsi(cond, k),
             fault: cond.tyreFault[k],
             front: w.front,
             left: w.x < 0,
@@ -429,6 +433,8 @@ export function buildHudState(i: HudInputs): HudState {
     planksCarried: t.planks.carried,
     planksTotal: 2,
     winchAttached: t.winch.attached,
+    winchDoubleLine: t.winch.doubleLine,
+    treeProtector: t.winch.treeProtector,
     engine: flood.stalled || wrecked || v.clutchStalled ? 2 : flood.timer > 0 ? 1 : 0,
     damage: isDamaged(cond)
       ? {

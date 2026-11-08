@@ -46,6 +46,8 @@ export class StuckVehicle implements PosedBody {
   freed = false;
   /** Front of the bull bar, where a winch strap goes (body coordinates). */
   readonly hook: Vec3 = { x: 0, y: 0.25, z: -2.0 };
+  /** Rated chassis recovery point, separate from a tow ball. */
+  readonly rearHook: Vec3 = { x: 0, y: 0.25, z: 2.0 };
   /** Where it stands now (x, z). */
   private x: number;
   private z: number;

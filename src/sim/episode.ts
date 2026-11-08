@@ -9,6 +9,7 @@ import type { Vehicle } from './vehicle/vehicle';
 import type { PoiDef } from './world/mapTypes';
 import type { DeliveryState } from './trailerState';
 import { createTransferState, type TransferState } from './vehicle/transferCase';
+import { pressurePsi, setPressure } from './vehicle/tyrePressure';
 
 /**
  * Where an episode restarts from: the last camp reached, the clock when you got there,
@@ -26,6 +27,7 @@ export interface Checkpoint {
   plugs: number;
   /** Tyres as they were (a torn sidewall stays torn through camp). */
   tyres: number[];
+  tyrePressurePsi?: number;
   tyreFault: TyreFault[];
   discovered: string[];
   /** Finds off the main line already loaded (src/sim/finds.ts). */
@@ -195,6 +197,7 @@ export function checkpointAt(
     spares: c.spares,
     plugs: c.plugs,
     tyres: [...c.tyres],
+    tyrePressurePsi: pressurePsi(c),
     tyreFault: [...c.tyreFault],
     discovered: [...discovered],
     taken: [...taken],
@@ -226,6 +229,7 @@ export function applyCheckpoint(v: Vehicle, c: Checkpoint): void {
   k.jerryCans = c.jerryCans;
   k.spares = c.spares;
   k.plugs = c.plugs;
+  setPressure(k, c.tyrePressurePsi ?? 36);
   for (let i = 0; i < 4; i++) {
     const fault = c.tyreFault[i] ?? 'none';
     const health = c.tyres[i] ?? 1;

@@ -17,7 +17,7 @@ export type ToolEvent =
   | { type: 'noAnchor' };
 
 /** Roadside jobs from the tool menu. */
-export type RepairKind = 'field' | 'spare' | 'plug' | 'refuel' | 'pump' | 'hubs';
+export type RepairKind = 'field' | 'spare' | 'plug' | 'refuel' | 'pump' | 'hubs' | 'dig';
 
 /** A repair under way at the roadside: the car stays put until it's done. */
 export interface RepairJob {
@@ -29,6 +29,7 @@ export interface RepairJob {
   /** Seconds left, out of `total`. */
   remaining: number;
   total: number;
+  targetPsi?: number;
 }
 
 /** What a vehicle carries: winch, planks, jack and tools for roadside repairs. */

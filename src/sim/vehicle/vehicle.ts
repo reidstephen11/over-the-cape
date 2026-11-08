@@ -241,6 +241,8 @@ export class Vehicle {
   private readonly rawWheelRotation = [0, 0, 0, 0];
   private readonly wheelRotationDelta = [0, 0, 0, 0];
   private articulationBlend = 0;
+  /** Ground cleared with the shovel: local, temporary, and lost to wheelspin. */
+  dugGround: { x: number; z: number; relief: number } | null = null;
   /** Lateral hub positions on the rigid beams (the track narrows in projection as they roll). */
   readonly wheelX: number[];
   /** Seconds the hill-start assist has held the brakes for this pull-away. */
@@ -496,6 +498,7 @@ export class Vehicle {
     this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
     this.body.setAngvel({ x: 0, y: 0, z: 0 }, true);
     for (const w of this.wheels) w.sink = 0;
+    this.dugGround = null;
     this.swept = 0;
     this.cornerFall.fill(0);
     // Settling onto the ground after a teleport isn't a hit.
@@ -840,6 +843,14 @@ export class Vehicle {
     const loadSink = Math.min(1.6, Math.max(0.7, (this.mass / t.mass) ** 3));
     const barScale = 1 + (t.crawling.antiRollScale - 1) * flex;
 
+    const dug = this.dugGround;
+    if (dug) {
+      const p = this.body.translation();
+      if (Math.hypot(p.x - dug.x, p.z - dug.z) > 3) this.dugGround = null;
+      else dug.relief = Math.max(0, dug.relief - (Math.max(...this.wheels.map((w) => w.spin)) * dt) / 12);
+    }
+    const relief = this.dugGround?.relief ?? 0;
+
     // Suspension: condition multiplier, mud sink and anti-roll bars. A bar shifts load
     // from the less compressed wheel to the more compressed one on the same axle; we do
     // that by moving spring preload (rest length) between them.
@@ -870,6 +881,7 @@ export class Vehicle {
       const w = this.wheels[i];
       const sinkTarget = w.contact
         ? surfaces[w.surface].sink *
+          (1 - 0.65 * relief) *
           loadSink *
           Math.min(1, 0.4 + w.spin + (Math.abs(this.speed) < 2 ? 0.4 : 0))
         : 0;
@@ -900,7 +912,9 @@ export class Vehicle {
     for (let i = 0; i < 4; i++) {
       const w = this.wheels[i];
       if (!w.contact) continue;
-      rr += surfaces[w.surface].rollingResistance * w.load;
+      const softGround =
+        w.surface === SurfaceId.Mud || w.surface === SurfaceId.BlackSoil || w.surface === SurfaceId.Sand;
+      rr += surfaces[w.surface].rollingResistance * w.load * (softGround ? 1 - 0.65 * relief : 1);
       // A soft or flat tyre drags at its own corner, which also pulls the car that way.
       const drag = damageTuning.tyre.flatDrag * (1 - this.condition.tyres[i]) * w.load * sv * dt;
       if (drag !== 0)

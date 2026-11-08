@@ -4,6 +4,7 @@ import type { AudioSystem } from '../audio/audioSystem';
 import type { Hud } from '../ui/hud';
 import type { Simulation } from '../sim/sim';
 import type { Vehicle } from '../sim/vehicle/vehicle';
+import { pressurePsi } from '../sim/vehicle/tyrePressure';
 import { planDuration } from '../sim/world/surprisePlan';
 import { damageMessage } from './damageMessages';
 import { surpriseMessage } from './surpriseMessages';
@@ -140,8 +141,9 @@ export function wireSimFeedback(
         plug: `Tyre plugged (${c.plugs} plug${c.plugs === 1 ? '' : 's'} left)`,
         refuel: `20 L in the tank (${c.jerryCans} can${c.jerryCans === 1 ? '' : 's'} left)`,
         camp: 'Repaired at camp',
-        pump: 'Tyres pumped back up for the gravel',
+        pump: `Tyres set to ${pressurePsi(c)} psi`,
         hubs: 'Front hubs changed',
+        dig: 'Wheels dug clear: ease out gently; wheelspin digs them back in',
       }[kind],
       2000,
     );
