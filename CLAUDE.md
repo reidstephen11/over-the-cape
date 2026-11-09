@@ -1,6 +1,6 @@
 # Working on this repo
 
-The game is the CREB Track alone (Episodes 2–4 removed in v0.73). Follow-up work is recorded in `docs/ROADMAP.md`. The owner never wants steering-wheel or pedal support. Do not implement it, propose it, or add it back to the roadmap; the shelved manual-clutch option is not planned to return.
+The game is the CREB Track alone (Episodes 2–4 removed in v0.73). Follow-up work is recorded in `docs/ROADMAP.md`. The owner never wants steering-wheel or pedal support, or manual shift buttons on phones. Do not implement or propose either feature, or add them back to the roadmap; the shelved manual-clutch option is not planned to return.
 
 ## Modelling a vehicle
 
