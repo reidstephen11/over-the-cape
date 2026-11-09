@@ -8,6 +8,17 @@ import { SAVE_KEY } from '../src/core/config';
 import { MemoryStore, saveData } from './helpers/saves';
 
 describe('exploration and saving', () => {
+  it('keeps head motion on/off and defaults older or invalid settings to on', () => {
+    const s = new MemoryStore();
+    for (const headMotion of [true, false]) {
+      writeSave(saveData({ settings: { ...defaultSettings, headMotion } }), s);
+      expect(loadSave(s)!.settings.headMotion).toBe(headMotion);
+    }
+    for (const headMotion of [undefined, null, 'false', 0]) {
+      s.setItem(SAVE_KEY, JSON.stringify({ version: 1, settings: { headMotion } }));
+      expect(loadSave(s)!.settings.headMotion).toBe(true);
+    }
+  });
   it('keeps the mirror preference and defaults older or invalid settings to on', () => {
     const s = new MemoryStore();
     for (const mirrors of [true, false]) {

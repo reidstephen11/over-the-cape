@@ -283,6 +283,7 @@ export class PauseMenu {
         `<label class="setting-row">${label}<input data-focus type="range" min="0" max="1" step="0.05" data-key="${key}" value="${s[key]}"></label>`;
       card.innerHTML = `<h2>Settings</h2>
         <div class="setting-row">Cockpit mirrors<div class="seg">${[true, false].map((on) => `<button data-focus data-mirrors="${on}" class="${s.mirrors === on ? 'on' : ''}">${on ? 'On' : 'Off'}</button>`).join('')}</div></div>
+        <div class="setting-row">Cockpit head motion<div class="seg">${[true, false].map((on) => `<button data-focus data-head-motion="${on}" class="${s.headMotion === on ? 'on' : ''}" aria-pressed="${s.headMotion === on}">${on ? 'On' : 'Off'}</button>`).join('')}</div></div>
         <div class="setting-row">Graphics<div class="seg">${offeredQualities(isTouchDevice()).map(q).join('')}</div></div>
         <div class="setting-row controller-setting phone-driving-setting">Phone driving<div class="seg">${touchDriveSchemes.map((c) => `<button data-focus data-touch-drive="${c}" class="${s.touchDrive === c ? 'on' : ''}" aria-pressed="${s.touchDrive === c}">${touchDriveLabels[c]}</button>`).join('')}</div></div>
         <div class="setting-row controller-setting phone-driving-setting">Joystick side<div class="seg">${touchStickSides.map((c) => `<button data-focus data-touch-side="${c}" class="${s.touchStickSide === c ? 'on' : ''}" aria-pressed="${s.touchStickSide === c}">${touchStickSideLabels[c]}</button>`).join('')}</div></div>
@@ -371,6 +372,10 @@ export class PauseMenu {
     } else if (t.dataset.mirrors) {
       this.settings.mirrors = t.dataset.mirrors === 'true';
       this.actions.changeSettings({ mirrors: this.settings.mirrors });
+      this.show('settings');
+    } else if (t.dataset.headMotion) {
+      this.settings.headMotion = t.dataset.headMotion === 'true';
+      this.actions.changeSettings({ headMotion: this.settings.headMotion });
       this.show('settings');
     } else if (t.dataset.controller) {
       this.settings.controller = t.dataset.controller as ControllerType;

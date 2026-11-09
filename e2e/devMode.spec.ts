@@ -24,7 +24,7 @@ test('test mode opens every episode and sets the weather, the clock, the place a
   expect(storm.rain).toBe(1);
   expect(storm.wetness).toBe(1);
   expect(storm.creekRise).toBeGreaterThan(0.3);
-  await panel.getByRole('button', { name: 'Clear' }).click();
+  await panel.getByRole('button', { name: 'Clear', exact: true }).click();
   const clear = await page.evaluate(() => window.__game!.conditions());
   expect(clear.rain).toBe(0);
   expect(clear.creekRise).toBe(0);

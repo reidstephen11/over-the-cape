@@ -4,9 +4,11 @@ import {
   cameraPresets,
   cameraPresetOrder,
   cockpit,
+  headMotion as H,
   type CameraPreset,
 } from '../data/camera';
 import { vehicles, type CabinLayout } from '../data/vehicles';
+import { CockpitHeadMotion } from './cockpitHeadMotion';
 
 export interface ChaseTarget {
   position: THREE.Vector3;
@@ -17,6 +19,8 @@ export interface ChaseTarget {
   slopeDeg: number;
   /** Vehicle orientation (for the driver's-seat view). */
   rotation?: THREE.Quaternion;
+  /** Interpolation between physics steps, shared with the vehicle model. */
+  alpha?: number;
 }
 
 /** Returns the clear distance from `from` along unit `dir` up to `max`. */
@@ -28,6 +32,8 @@ export type Blocker = (from: THREE.Vector3, dir: THREE.Vector3, max: number) => 
  * crawling, and pushes forward along the view line instead of clipping into terrain.
  */
 export class ChaseCamera {
+  readonly headMotion = new CockpitHeadMotion();
+  headMotionEnabled = true;
   distance = C.distance;
   preset: CameraPreset = 'follow';
   private followDistance = C.distance;
@@ -70,6 +76,8 @@ export class ChaseCamera {
 
   private readonly headQ = new THREE.Quaternion();
   private readonly lookQ = new THREE.Quaternion();
+  private readonly motionQ = new THREE.Quaternion();
+  private readonly headOffset = new THREE.Vector3();
   private readonly euler = new THREE.Euler(0, 0, 0, 'YXZ');
 
   /** Driver's seat: moves and tilts with the body; the head turns with the orbit input. */
@@ -79,11 +87,15 @@ export class ChaseCamera {
     this.viewPitch += (this.orbitPitch - this.viewPitch) * k;
     const q = t.rotation as THREE.Quaternion;
     const eye = this.seat.eye;
-    this.tmp.set(eye.x, eye.y, eye.z).applyQuaternion(q).add(t.position);
+    if (this.headMotionEnabled) this.headMotion.sample(t.alpha ?? 1, this.headOffset);
+    else this.headOffset.set(0, 0, 0);
+    this.tmp.copy(eye).add(this.headOffset).applyQuaternion(q).add(t.position);
     this.camera.position.copy(this.tmp);
     this.euler.set(this.seat.pitch + this.viewPitch, -this.viewYaw, 0);
     this.lookQ.setFromEuler(this.euler);
-    this.headQ.copy(q).multiply(this.lookQ);
+    this.euler.set(this.headOffset.z * H.pitchPerMetre, 0, -this.headOffset.x * H.rollPerMetre);
+    this.motionQ.setFromEuler(this.euler);
+    this.headQ.copy(q).multiply(this.motionQ).multiply(this.lookQ);
     this.camera.quaternion.copy(this.headQ);
     // Leaving the seat starts the follow camera from scratch.
     this.initialised = false;
@@ -115,6 +127,7 @@ export class ChaseCamera {
 
   /** Ease back behind the vehicle, keeping the selected zoom distance. */
   recenter(): void {
+    this.headMotion.reset();
     if (this.preset !== 'follow') {
       this.preset = 'follow';
       this.distance = this.followDistance;
@@ -124,6 +137,7 @@ export class ChaseCamera {
   }
 
   selectPreset(preset: CameraPreset): void {
+    this.headMotion.reset();
     if (this.preset === 'follow') this.followDistance = this.distance;
     this.preset = preset;
     this.distance = preset === 'follow' ? this.followDistance : cameraPresets[preset].distance;

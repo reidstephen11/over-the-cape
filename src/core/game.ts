@@ -247,6 +247,7 @@ export class Game {
   private storageOk = true;
   private readonly tmpPos = new THREE.Vector3();
   private readonly tmpFwd = new THREE.Vector3();
+  private readonly motionRotation = new THREE.Quaternion();
   private readonly camDir = new THREE.Vector3();
 
   private constructor(
@@ -372,6 +373,7 @@ export class Game {
       (x, z) => world.terrain.heightAt(x, z),
     );
     this.chase.seat = vehicles[vehicleId].cabin;
+    this.chase.headMotionEnabled = settings.headMotion;
     this.chase.scale = vehicles[vehicleId].cameraScale ?? 1;
     this.freeCam = new FreeCamera(view.camera, view.renderer.domElement);
 
@@ -771,6 +773,8 @@ export class Game {
   changeSettings(s: Partial<Settings>): void {
     const prevQuality = this.settings.quality;
     this.settings = { ...this.settings, ...s };
+    this.chase.headMotionEnabled = this.settings.headMotion;
+    if (!this.settings.headMotion) this.chase.headMotion.reset();
     if (this.settings.quality !== prevQuality)
       this.view.setQuality(qualityFor(this.settings.quality, isTouchDevice()));
     if (this.settings.damage !== this.sim.damage) this.sim.setDamage(this.settings.damage);
@@ -1509,6 +1513,18 @@ export class Game {
     this.inputs.set(LOCAL_VEHICLE, inp);
     this.trafficCars.snapshot();
     this.sim.step(this.inputs, dt);
+    // Physics-time sampling keeps the inertial response independent of the screen's
+    // refresh rate and of the browser test's accelerated steps per frame.
+    if (this.chase.headMotionEnabled && this.chase.preset === 'cockpit' && !this.freeCamOn) {
+      const body = this.vehicle.body;
+      this.motionRotation.copy(body.rotation());
+      this.tmpPos.copy(this.chase.seat.eye).applyQuaternion(this.motionRotation).add(body.translation());
+      this.chase.headMotion.step(dt, {
+        velocity: body.velocityAtPoint(this.tmpPos),
+        position: body.translation(),
+        rotation: this.motionRotation,
+      });
+    } else this.chase.headMotion.reset();
     this.run.tick(dt);
     // History notes count down in simulated time: not while paused, and the same in the
     // browser tests, which run a fixed number of steps a frame on the slow software renderer.
@@ -1903,7 +1919,7 @@ export class Game {
     this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock, between);
     this.view.particles.update(v, this.loop.paused ? 0 : frameDt);
     if (this.freeCamOn) this.freeCam.update(frameDt);
-    else if (!this.loop.paused) this.followVehicle(frameDt);
+    else if (!this.loop.paused) this.followVehicle(frameDt, between);
     this.view.focus.copy(this.model.root.position);
     this.view.shelter.copy(this.model.root.matrixWorld);
     const t0 = performance.now();
@@ -1999,7 +2015,7 @@ export class Game {
   }
 
   /** The chase camera follows the car (each frame, and once before the first). */
-  private followVehicle(frameDt: number): void {
+  private followVehicle(frameDt: number, alpha = 1): void {
     const v = this.vehicle;
     this.chase.toolView = this.tool.mode !== 'drive';
     this.chase.towing = this.sim.trailerOf(LOCAL_VEHICLE) !== null;
@@ -2013,6 +2029,7 @@ export class Game {
       speed: v.speed,
       slopeDeg: this.world.terrain.slopeDegAt(p.x, p.z),
       rotation: this.model.root.quaternion,
+      alpha,
     });
   }
 }
