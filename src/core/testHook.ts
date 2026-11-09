@@ -128,6 +128,11 @@ export interface GameHook {
    */
   autopilot(poiId: string | null, back?: number, speed?: number): void;
   autopilotState(): { active: boolean; done: boolean; remaining: number };
+  /**
+   * Start the autopilot at the start of the first named track and drive the tracks end to
+   * end in the order given (the playtest drive, scripts/playtest.ts).
+   */
+  autopilotTracks(trackIds: readonly string[], speed?: number): void;
   /** Physically drive the gate course; does not set any score or progress. */
   driveGateCourse(): boolean;
   gateCourse(): {
@@ -270,6 +275,22 @@ export function installHook(game: Game): void {
       const poi = g.world.pois.find((p) => p.id === poiId);
       if (!poi) throw new Error(`No POI ${poiId}`);
       const path = poiApproach(poi, g.world.features.tracks, back);
+      const a = path[0];
+      const b = path[Math.min(3, path.length - 1)];
+      g.vehicle.teleport(
+        g.sim.poseAt(a[0], a[1], headingOf(b[0] - a[0], b[1] - a[1]), g.vehicle.tuning.wheelRadius),
+      );
+      g.chase.reset();
+      g.view.snap();
+      g.autopilot = new Autopilot(path, speed);
+    },
+    autopilotTracks: (trackIds, speed = 8) => {
+      const path: [number, number][] = [];
+      for (const id of trackIds) {
+        const t = g.world.features.tracks.find((t) => t.def.id === id);
+        if (!t) throw new Error(`No track ${id}`);
+        for (let k = 0; k < t.poly.count; k++) path.push([t.poly.xs[k], t.poly.zs[k]]);
+      }
       const a = path[0];
       const b = path[Math.min(3, path.length - 1)];
       g.vehicle.teleport(
