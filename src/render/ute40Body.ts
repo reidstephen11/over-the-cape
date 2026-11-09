@@ -32,6 +32,7 @@ import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGe
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 import { buildVehicleWheel } from './vehicleWheel';
 import { mountSpare, spareSidewall } from './spares';
+import { mirrorHead } from './mirrors';
 
 // The 40 Series ute: the game's 40 Series cab on the HJ47's long chassis with a steel farm
 // tray. The cab is drawn by the 40's own code in the 40's frame (`src/render/vehicleBody.ts`,
@@ -417,8 +418,7 @@ function cabGear(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
     b.rod(v(side * (BW + 0.02), 0.98, DOOR_Z + 0.02), v(side * (BW + 0.2), 1.0, DOOR_Z - 0.02), 0.011, C.bar);
     b.rod(v(side * (BW + 0.02), 0.72, DOOR_Z + 0.02), v(side * (BW + 0.2), 0.9, DOOR_Z - 0.02), 0.011, C.bar);
-    b.block(side * (BW + 0.21), 0.98, DOOR_Z - 0.02, 0.03, 0.2, 0.16, C.bar, M.Metal, Z.Sides, 0.01);
-    b.block(side * (BW + 0.195), 0.98, DOOR_Z - 0.02, 0.004, 0.17, 0.13, C.chrome, M.Metal, Z.Sides);
+    mirrorHead(b, side, v(side * (BW + 0.21), 0.98, DOOR_Z - 0.02), 0.16, 0.2, 0.03, C.bar);
   }
 }
 
@@ -778,7 +778,7 @@ export function buildUte40Body(tuning: VehicleTuning, wheel: THREE.BufferGeometr
   b.push().translate(0, 0, UTE_CAB_SHIFT);
   front(b, livery);
   rustPatches(b);
-  windscreen(b, livery);
+  windscreen(b, livery, false);
   cab(b);
   interior(b, tuning.engine.redlineRpm);
   cabGear(b);

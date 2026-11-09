@@ -343,6 +343,7 @@ function windscreen(b: VehicleBuilder): void {
   }
   // Rear-view mirror inside the top of the screen.
   b.block(0, L - 0.09, 0.05, 0.2, 0.06, 0.02, black, M.Rubber, Z.Trim, 0.01);
+  b.block(0, L - 0.09, 0.061, 0.18, 0.04, 0.002, new THREE.Color('#B4C2C6'), M.Mirror, Z.Trim);
   b.pop();
 }
 

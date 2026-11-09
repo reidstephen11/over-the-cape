@@ -518,7 +518,7 @@ export function front(b: VehicleBuilder, livery: Livery): void {
   }
 }
 
-export function windscreen(b: VehicleBuilder, livery: Livery): void {
+export function windscreen(b: VehicleBuilder, livery: Livery, doorMirrors = true): void {
   const body = livery.body;
   // One flat pane in a body-colour frame, leaning back a little, wipers parked at the bottom.
   const h = CAP - 0.865;
@@ -534,6 +534,7 @@ export function windscreen(b: VehicleBuilder, livery: Livery): void {
     b.rod({ x, y: 0.09, z: -0.035 }, { x: x + 0.38, y: 0.11, z: -0.035 }, 0.007, rubber, M.Rubber, Z.Front);
   for (const x of [-0.45, 0.22]) b.block(x, 0.085, -0.03, 0.03, 0.03, 0.03, rubber, M.Rubber, Z.Front);
   b.pop();
+  if (!doorMirrors) return;
   for (const side of [-1, 1]) {
     // Rectangular mirrors on cranked arms from the doors' upper hinges.
     stalk(

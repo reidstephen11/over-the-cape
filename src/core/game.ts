@@ -336,6 +336,7 @@ export class Game {
     // Arriving at dusk or night, the headlights are already on.
     if (sim.env.lampBeams) this.vehicle.lights = 'low';
     this.model = new VehicleModel(tuning, sim.env.lampBeams);
+    view.mirrors.setVehicle(this.model);
     view.scene.add(this.model.root);
     this.sideTrips = new SideTrips(setup.def.sideTrips ?? [], world.pois, this.checkpoint.sideTrips);
     this.finds = new Finds(world.map.finds ?? [], this.checkpoint.taken);
@@ -983,8 +984,10 @@ export class Game {
     this.vehicle.packing = packWeights(this.episode.loadout, id);
     this.sim.switchOffEngine(LOCAL_VEHICLE);
     this.view.scene.remove(this.model.root);
+    this.view.mirrors.setVehicle(null);
     this.model.dispose();
     this.model = new VehicleModel(def.tuning, this.lampBeams);
+    this.view.mirrors.setVehicle(this.model);
     this.view.scene.add(this.model.root);
     this.vehicleId = id;
     this.input.setSteering(def.tuning.steering);
@@ -1904,7 +1907,7 @@ export class Game {
     this.view.focus.copy(this.model.root.position);
     this.view.shelter.copy(this.model.root.matrixWorld);
     const t0 = performance.now();
-    this.view.render(between);
+    this.view.render(between, this.hud.cockpitView && this.settings.mirrors);
     this.sceneMs += (performance.now() - t0 - this.sceneMs) * 0.1;
     // Not while tests drive a fixed number of steps a frame on the slow software renderer.
     const cpuMs = this.loop.timings.sim + this.loop.timings.render;

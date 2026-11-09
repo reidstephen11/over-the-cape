@@ -92,6 +92,7 @@ export function addMqInterior(b: VehicleBuilder, redlineRpm: number): void {
   // Sun visors, the mirror and the headlining under the roof.
   for (const x of [-0.4, 0.4]) b.block(x, 1.19, -0.4, 0.36, 0.012, 0.13, C.vinyl, M.Fabric, Z.Trim, 0.005);
   b.block(0, 1.16, -0.42, 0.2, 0.05, 0.015, mat, M.Rubber, Z.Trim, 0.012);
+  b.block(0, 1.16, -0.4115, 0.18, 0.035, 0.002, C.chrome, M.Mirror, Z.Trim);
   b.rod({ x: 0, y: 1.18, z: -0.42 }, { x: 0, y: 1.206, z: -0.42 }, 0.007, mat, M.Rubber, Z.Trim);
   b.block(0, 1.206, 0.78, 1.5, 0.008, 2.5, lining, M.Fabric, Z.Trim);
 }

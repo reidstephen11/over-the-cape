@@ -115,6 +115,7 @@ export class VehicleModel {
       this.headLampMaterial,
       this.roofLampMaterial,
       this.dialMarksMaterial,
+      patchFog(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.2, metalness: 0.8 })),
     ];
     this.wheelGeo = look.wheel(tuning);
     const geometry = look.body(tuning, this.wheelGeo);

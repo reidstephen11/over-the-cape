@@ -8,6 +8,17 @@ import { SAVE_KEY } from '../src/core/config';
 import { MemoryStore, saveData } from './helpers/saves';
 
 describe('exploration and saving', () => {
+  it('keeps the mirror preference and defaults older or invalid settings to on', () => {
+    const s = new MemoryStore();
+    for (const mirrors of [true, false]) {
+      writeSave(saveData({ settings: { ...defaultSettings, mirrors } }), s);
+      expect(loadSave(s)!.settings.mirrors).toBe(mirrors);
+    }
+    for (const mirrors of [undefined, null, 'false', 0]) {
+      s.setItem(SAVE_KEY, JSON.stringify({ version: 1, settings: { mirrors } }));
+      expect(loadSave(s)!.settings.mirrors).toBe(true);
+    }
+  });
   it('keeps controller preferences across saves and defaults old or invalid values to PlayStation', () => {
     const s = new MemoryStore();
     for (const controller of ['playstation', 'xbox', 'generic'] as const) {

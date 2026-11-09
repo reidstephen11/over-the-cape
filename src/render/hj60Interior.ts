@@ -106,5 +106,6 @@ export function addHj60Interior(b: VehicleBuilder, redlineRpm: number): void {
   // Sun visors, the mirror and the headlining under the roof.
   for (const x of [-0.42, 0.42]) b.block(x, 1.2, -0.06, 0.36, 0.012, 0.13, C.vinyl, M.Fabric, Z.Trim, 0.005);
   b.block(0, 1.17, -0.08, 0.2, 0.05, 0.015, mat, M.Rubber, Z.Trim, 0.012);
+  b.block(0, 1.17, -0.0715, 0.18, 0.035, 0.002, C.chrome, M.Mirror, Z.Trim);
   b.block(0, 1.226, 1.17, 1.56, 0.008, 2.66, lining, M.Fabric, Z.Trim);
 }
