@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { collectErrors, lowGraphics, waitReady } from './helpers';
 
-test('cockpit motion responds to physics, keeps mirrors working and can be disabled', async ({ page }) => {
+test('cockpit motion responds to physics and can be disabled without live mirrors', async ({ page }) => {
   test.setTimeout(600_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
@@ -27,9 +27,6 @@ test('cockpit motion responds to physics, keeps mirrors working and can be disab
   expect(Math.abs(offset[0])).toBeLessThanOrEqual(0.018);
   expect(Math.abs(offset[1])).toBeLessThanOrEqual(0.012);
   expect(Math.abs(offset[2])).toBeLessThanOrEqual(0.022);
-  await expect
-    .poll(() => page.evaluate(() => window.__game!.mirrors().captures), { timeout: 120_000 })
-    .toBeGreaterThan(0);
   await page.screenshot({ path: '/workspace/scratch/head-motion-cockpit.png' });
   await page.evaluate(() => {
     window.__game!.setInput({ throttle: 0, handbrake: true });
@@ -46,6 +43,7 @@ test('cockpit motion responds to physics, keeps mirrors working and can be disab
   await page.evaluate(() => document.querySelector<HTMLElement>('.history-card.reading')?.click());
   await page.keyboard.press('Escape');
   await page.locator('[data-act="settings"]').click();
+  await expect(page.getByText('Cockpit mirrors', { exact: true })).toHaveCount(0);
   await expect(page.locator('[data-head-motion="false"]')).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await page.locator('[data-title-begin]').click();
@@ -67,6 +65,7 @@ test('phone head-motion controls fit and keep Off after reload', async ({ page }
     await page.locator('[data-group="menu"][data-value="settings"]').click();
   };
   await openSettings();
+  await expect(page.getByRole('heading', { name: 'Cockpit mirrors' })).toHaveCount(0);
   const off = page.locator('[data-group="headMotion"][data-value="off"]');
   await off.click();
   await expect(off).toHaveAttribute('aria-pressed', 'true');

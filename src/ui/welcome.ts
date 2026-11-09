@@ -41,7 +41,6 @@ type Group =
   | 'touchDrive'
   | 'touchSide'
   | 'quality'
-  | 'mirrors'
   | 'headMotion'
   | 'volume'
   | 'units'
@@ -233,7 +232,6 @@ export class WelcomeScreen {
             ),
           )
           .join('')}</div></section>
-        <section class="title-setting"><h3>Cockpit mirrors</h3><div class="welcome-options seg">${setting('mirrors', 'on', 'On', this.settings.mirrors)}${setting('mirrors', 'off', 'Off', !this.settings.mirrors)}</div></section>
         <section class="title-setting"><h3>Cockpit head motion</h3><div class="welcome-options seg">${setting('headMotion', 'on', 'On', this.settings.headMotion)}${setting('headMotion', 'off', 'Off', !this.settings.headMotion)}</div></section>
         <section class="title-setting phone-driving-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
         <section class="title-setting phone-driving-setting"><h3>Joystick side</h3><div class="welcome-options seg">${touchStickSides.map((c) => setting('touchSide', c, touchStickSideLabels[c], this.settings.touchStickSide === c)).join('')}</div></section>
@@ -252,7 +250,6 @@ export class WelcomeScreen {
         [
           'back',
           'quality',
-          'mirrors',
           'headMotion',
           'touchDrive',
           'touchSide',
@@ -452,8 +449,6 @@ export class WelcomeScreen {
         return v === this.settings.touchStickSide;
       case 'quality':
         return v === shownQuality(this.settings.quality, isTouchDevice());
-      case 'mirrors':
-        return v === (this.settings.mirrors ? 'on' : 'off');
       case 'headMotion':
         return v === (this.settings.headMotion ? 'on' : 'off');
       case 'units':
@@ -502,7 +497,6 @@ export class WelcomeScreen {
     }
     if (
       group === 'quality' ||
-      group === 'mirrors' ||
       group === 'headMotion' ||
       group === 'units' ||
       group === 'controller' ||
@@ -512,7 +506,6 @@ export class WelcomeScreen {
       group === 'gearbox'
     ) {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
-      else if (group === 'mirrors') this.settings.mirrors = value === 'on';
       else if (group === 'headMotion') this.settings.headMotion = value === 'on';
       else if (group === 'controller') this.settings.controller = value as ControllerType;
       else if (group === 'touchDrive') this.settings.touchDrive = value as TouchDriveScheme;

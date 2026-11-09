@@ -17,7 +17,6 @@ import { applyFogEnvironment } from '../../src/render/fog';
 import { Lighting } from '../../src/render/lighting';
 import { Sky } from '../../src/render/sky';
 import { VehicleModel } from '../../src/render/vehicleModel';
-import { WorkingMirrors } from '../../src/render/workingMirrors';
 import { vehicleLooks } from '../../src/render/vehicleLooks';
 import { buildBodyCore } from '../../src/render/sooty80Body';
 
@@ -71,8 +70,6 @@ if (params.has('stock') && id === 'sooty80')
   vehicleLooks.sooty80.body = (t, wheel) => buildBodyCore(t, wheel, false);
 
 const model = new VehicleModel(tuning);
-const mirrors = new WorkingMirrors();
-mirrors.setVehicle(model);
 const articulationBlocks = new THREE.Group();
 scene.add(articulationBlocks);
 // The stock body has no rack, so its recovery boards stay off.
@@ -126,7 +123,6 @@ function view(x: number, y: number, z: number, tx = 0, ty = 0.3, tz = 0, fov = 4
   camera.updateProjectionMatrix();
   lighting.follow(new THREE.Vector3());
   sky.update(camera);
-  mirrors.update(renderer, scene, camera, false);
   renderer.render(scene, camera);
 }
 
@@ -176,8 +172,6 @@ window.studio = {
     camera.position.set(c.eye.x, c.eye.y, c.eye.z);
     camera.rotation.set(c.pitch, 0, 0, 'YXZ');
     camera.updateProjectionMatrix();
-    // Populate all visible heads for a single still; normal gameplay budgets one per frame.
-    for (let i = 0; i < 5; i++) mirrors.update(renderer, scene, camera, true, performance.now() + i);
     renderer.render(scene, camera);
     model.setCockpitView(false);
   },
