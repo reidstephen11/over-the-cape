@@ -18,11 +18,13 @@ import { GateMarkers } from './gates';
 import { Particles } from './particles';
 import { Rain } from './rain';
 import type { DynamicObject } from '../sim/sim';
+import { WorkingMirrors } from './workingMirrors';
 
 /** Owns the Three.js renderer, scene and camera, and the static world meshes. */
 export class GameRenderer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
+  readonly mirrors = new WorkingMirrors();
   readonly camera: THREE.PerspectiveCamera;
   readonly lighting: Lighting;
   readonly sky: Sky;
@@ -117,6 +119,7 @@ export class GameRenderer {
   setQuality(q: QualityPreset): void {
     const particlesBefore = this.quality.particles;
     this.quality = q;
+    this.mirrors.setQuality(q);
     this.renderScale = new RenderScale(q.minRenderScale);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
     this.renderer.shadowMap.enabled = q.shadows;
@@ -271,7 +274,7 @@ export class GameRenderer {
   }
 
   /** Draw a frame; `alpha` places moving bodies between physics steps (0 = before the last, 1 = after). */
-  render(alpha = 1): void {
+  render(alpha = 1, mirrors = false): void {
     const now = performance.now();
     const dt = Math.min(0.25, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
@@ -284,6 +287,7 @@ export class GameRenderer {
     this.sky.update(this.camera);
     this.water.update(dt);
     this.rain?.update(this.camera.position, this.shelter, dt);
+    this.mirrors.update(this.renderer, this.scene, this.camera, mirrors, now);
     this.renderer.render(this.scene, this.camera);
   }
 }

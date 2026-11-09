@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 
-/** Mirror glass: a pale blue-grey that reads as the sky reflected. */
+/** Fallback glazing when reflections are disabled or the camera is outside the cab. */
 export const mirrorGlass = new THREE.Color('#B4C2C6');
 
 type P = { x: number; y: number; z: number };
@@ -25,7 +25,7 @@ export function mirrorHead(
     .translate(p.x, p.y, p.z)
     .rotate(0, -side * toe, 0);
   b.block(0, 0, 0, w, h, d, housing, M.Rubber, Z.Trim, Math.min(0.03, d * 0.4));
-  b.block(0, 0, d / 2 + 0.002, w - 0.025, h - 0.025, 0.004, mirrorGlass, M.Metal, Z.Trim, 0.015);
+  b.block(0, 0, d / 2 + 0.002, w - 0.025, h - 0.025, 0.004, mirrorGlass, M.Mirror, Z.Trim, 0.015);
   b.pop();
 }
 
@@ -52,6 +52,7 @@ export function roundHead(
   b.push()
     .translate(0, 0, 0.003)
     .rotate(Math.PI / 2, 0, 0);
+  b.slot = M.Mirror;
   b.geometry(new THREE.CylinderGeometry(r - 0.006, r - 0.006, 0.004, 24), mirrorGlass);
   b.pop();
   b.pop();

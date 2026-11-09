@@ -38,6 +38,7 @@ export function addPatrolInterior(b: VehicleBuilder, redlineRpm: number, widen =
   for (const x of [-0.72, -0.2, 0.18, 0.72])
     b.block(x, 0.78, -0.53, 0.12, 0.05, 0.012, new THREE.Color('#151718'), M.Rubber, Z.Trim, 0.008);
   b.block(0.05, 1.18, -0.6, 0.22, 0.06, 0.02, dark, M.Rubber, Z.Trim, 0.01);
+  b.block(0.05, 1.18, -0.589, 0.2, 0.04, 0.002, metal, M.Mirror, Z.Trim);
   b.push().scale(1 / widen, 1, 1);
   addSteeringColumn(b, cabin);
   b.pop();
