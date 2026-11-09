@@ -1407,3 +1407,36 @@ The owner selected Expedition from three working previews. The final menu uses d
 `?tool-menu-preview` exercises the production component and input code against sample vehicle states, with optional trailer tools. It does not change the saved game. Browser checks cover twelve and sixteen tools, target overlap, disabled actions, touch selection, actual in-game right-stick selection, left-stick isolation, cancellation, release-to-use and camera isolation. Unit checks cover grouped ordering and right-stick deadzone/input separation.
 
 The release is based on v1.72 and preserves its mirrors and cockpit motion, plus the transfer-case controls and nested tyre-pressure/recovery menus. Those submenus keep mouse/touch picks, right-stick selection and keyboard/controller confirmation.
+
+## v1.74: road edges keep their shape at every distance
+
+The owner, playing on a phone held upright on Low, saw jagged road edges and the road surface redrawing itself on approach. An evaluator's recording from the Paddock Road (near the "Paddock creeks" history card) showed a saw-tooth outline on the dark band beside the track from about 15 m ahead, smooth beside the vehicle.
+
+**Reproduced first.** `scripts/playtest.ts` gained `view=portrait` (390×844, touch). On Low the Paddock Road drive showed the saw-tooth in every shot. Colouring the terrain chunks by detail level (a temporary debug build) showed that everything within about 60 m of the car, including the saw-tooth, was already drawn by the finest 1 m chunks, while driving and when still. The coarser levels were not the cause of what the owner saw near the car.
+
+**Cause.** The dark band is a clay bank, the bare cutting beside a graded track. Its edge was drawn from a distance stored at each 1 m sample. That distance includes a term from the local slope, which jumps from one sample to the next, so the edge zigzagged by up to a metre or two at 1 m spacing. Seen low and 15 m or more ahead, foreshortening turns those wiggles into long teeth. Close to the car, seen more steeply, the same edge reads as a curve, which is why the edge seemed to redraw as the car approached. Further out there was a second fault: the 2, 4 and 8 m chunks kept only the edge distances measured at their own vertices, clipped 2 m out. Between vertices on either side of a 4 m road both distances were positive, so on the 8 m chunks the road thinned or disappeared, banks moved by metres, and the edge visibly changed shape at each detail swap (160 and 360 m on Low).
+
+**Fix** (`src/render/terrainMesh.ts`, `src/render/groundMaterial.ts`, `src/sim/world/terrainGen.ts`):
+
+- A bank is now drawn as how far it reaches beyond the track's edge, blurred over 9 samples each way (bank samples on the same side only), and the shader puts its edge that far out from the track's edge. The blurred reach changes slowly along the track, so the edge is smooth.
+- Coarse vertices with no edge of their own get the distance they really are from the nearest track edge (the least of a nearby sample's distance plus the distance to it), with that track's paint colour and band, instead of a clipped value and the ground's colour.
+- On the 4 and 8 m chunks each vertex holds two distances, from the track's left edge and from its right edge, which change evenly across the track, and the shader takes the greater. A whole road can then sit inside one triangle and still be drawn at its width. The side of the track is found from bounds on the centre-line offset, not from the single nearest sample, which wavered near the centre line. Where a second track is within reach, the vertex falls back to one distance, because interpolating two different tracks' edge distances would paint between them. The 1 and 2 m chunks keep one distance: their triangles are too small to hold a road.
+- The generator now keeps each sample's offset from the track's centre line next to its edge distance (`TrackPaint.offset`), and keeps both at every clay-bank sample.
+
+**Measured.** `tests/terrainEdgeLod.test.ts` samples the shader's paint and bank cover across every CREB track (53,796 points, every 4 m, out to 3 m past each edge) at each level and compares it with the 1 m mesh. Share of points that differ by more than half, before → after:
+
+| Level | Paint         | Clay bank    |
+| ----- | ------------- | ------------ |
+| 2 m   | 0.05% → 0.05% | 1.4% → 0.35% |
+| 4 m   | 3.4% → 0.8%   | 6.7% → 1.7%  |
+| 8 m   | 31% → 3.2%    | 20% → 5.1%   |
+
+What remains on the 8 m chunks is at track ends and junctions, where the fallback applies, and banks shorter than the chunk spacing. The same test checks that the 1 m bank edge moves on average less than 0.13 m from one metre to the next along the Paddock Road and the CREB Track (0.16 m before, 0.11 m now). Against the old code, the three level checks fail.
+
+**Cost on Low.** The terrain has the same vertices and triangles; each vertex carries 27 shading values instead of 25 (about 8% more terrain vertex data). The same views before and after on Low, portrait: the chase view on the Paddock Road drew 160 calls and 361,765 triangles before and 162 calls and 363,893 after. A fixed view 700 m from the road drew 49 calls and 146,911 triangles before and 50 and 147,567 after. The small differences come from grass and vegetation timing, not the terrain. Building the terrain at load takes about 0.8 s longer in Node (1.8 → 2.6 s under the profiler), and the per-sample offset and bank cache add 2 bytes per map sample (about 16 MB on the CREB map).
+
+**Not changed.** Potholes and other round patches still fade out on the 4 and 8 m chunks, which have no vertices inside them. That is a separate detail-level effect, and potholes there are a few pixels across. The track paint's deliberate ±0.15 m wobble (so the edge isn't ruled) is kept, and at a low angle it still shows as a slight ripple.
+
+**The dark round patches** under and just behind the vehicle in the recording are tree shadows. With shadows turned off they disappear; the paint and banks stay. They are not mud holes or churn.
+
+**Dev tooling.** `scripts/playtest.ts` (from draft PR #187) drives the real game along named tracks with the autopilot and saves screenshots and a log. This release takes it to `main` with the new portrait view.

@@ -33,26 +33,30 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
     shader.uniforms.groundWetness = groundUniforms.groundWetness;
     shader.vertexShader = `attribute vec2 ground; attribute vec3 trackColor; attribute vec4 trackEdge;
       attribute vec3 patchInner; attribute vec3 patchRim; attribute vec2 patchEdge;
-      attribute vec4 patchCircle; attribute float clayBank;
+      attribute vec4 patchCircle; attribute vec2 clayBank; attribute float trackRight;
       varying vec4 vGround; varying vec4 vGroundPosition; varying vec3 vTrackColor; varying vec4 vTrackEdge;
-      varying vec3 vPatchInner; varying vec3 vPatchRim; varying vec4 vPatchCircle;
+      varying vec3 vPatchInner; varying vec3 vPatchRim; varying vec4 vPatchCircle; varying float vTrackRight;
+      varying vec2 vClayBank;
       ${shader.vertexShader}`.replace(
       '#include <begin_vertex>',
       `#include <begin_vertex>
-        vGround = vec4(ground, patchEdge); vGroundPosition = vec4((modelMatrix * vec4(position, 1.0)).xyz, clayBank);
+        vGround = vec4(ground, patchEdge); vGroundPosition = vec4((modelMatrix * vec4(position, 1.0)).xyz, 1.0); vClayBank = clayBank;
         vTrackColor = trackColor; vTrackEdge = trackEdge;
-        vPatchInner = patchInner; vPatchRim = patchRim; vPatchCircle = patchCircle;`,
+        vPatchInner = patchInner; vPatchRim = patchRim; vPatchCircle = patchCircle; vTrackRight = trackRight;`,
     );
     shader.fragmentShader = /* glsl */ `
       // xy: rockiness and wetness; zw: a ground patch's edge distance and rim width.
       varying vec4 vGround;
-      // w: the distance out from a clay bank beside a track.
       varying vec4 vGroundPosition;
+      // How far a clay bank reaches beyond the track's left and right edges.
+      varying vec2 vClayBank;
       varying vec3 vTrackColor;
       varying vec4 vTrackEdge;
       varying vec3 vPatchInner;
       varying vec3 vPatchRim;
       varying vec4 vPatchCircle;
+      // The distance out from a track's right edge (vTrackEdge.x: from its left edge).
+      varying float vTrackRight;
       uniform float groundWetness;
       float groundHash(vec2 p) {
         return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -69,13 +73,16 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
         /* glsl */ `
         #include <color_fragment>
         vec2 groundP = vGroundPosition.xz;
-        // A clay bank beside the track, under the track's paint so only its outer edge shows.
-        float bankDist = vGroundPosition.w + (groundNoise(groundP * 1.1 - 31.0) - 0.5) * 0.3;
+        // A clay bank beside the track, under the track's paint so only its outer edge shows:
+        // the distance out from the nearer edge of the track, less the bank's reach there.
+        float bankDist = (vTrackEdge.x >= vTrackRight ? vTrackEdge.x - vClayBank.x : vTrackRight - vClayBank.y) +
+          (groundNoise(groundP * 1.1 - 31.0) - 0.5) * 0.3;
         diffuseColor.rgb = mix(diffuseColor.rgb, ${glslColor(edge.band)},
           1.0 - smoothstep(-${edge.patchBlend.toFixed(3)}, ${edge.patchBlend.toFixed(3)}, bankDist));
-        // Track paint: x is the distance out from the track's edge, a little ragged so the
+        // Track paint: x and vTrackRight are the distances out from the track's left and right
+        // edges (the greater is the distance from its nearer edge), a little ragged so the
         // line isn't ruled; y where the paint ends; z the darker band's width (0: none).
-        float edgeDist = vTrackEdge.x + (groundNoise(groundP * 0.8) - 0.5) * 0.3;
+        float edgeDist = max(vTrackEdge.x, vTrackRight) + (groundNoise(groundP * 0.8) - 0.5) * 0.3;
         float paintCover = 1.0 - smoothstep(vTrackEdge.y - ${edge.paintBlend.toFixed(3)}, vTrackEdge.y + ${edge.paintBlend.toFixed(3)}, edgeDist);
         // The band fades out with its width, so it doesn't stop at a line.
         float paintBand =
@@ -128,5 +135,5 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
       `,
       );
   };
-  return patchFog(material, 'ground-detail-v4');
+  return patchFog(material, 'ground-detail-v5');
 }
