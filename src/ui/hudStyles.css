@@ -1295,11 +1295,6 @@ body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
   box-shadow: inset 3px 0 0 var(--hud-accent);
 }
 
-/* Tool menu: the centre card and the options in dark glass. */
-#ui[data-hud] .tool-menu {
-  background: rgba(8, 8, 7, 0.3);
-}
-
 /* Title, settings, journey and briefing: the camp at dusk stays, the type matches the HUD. */
 #ui[data-hud] .welcome,
 #ui[data-hud] .loading {

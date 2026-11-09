@@ -94,8 +94,8 @@ test('M5: driving into a place shows the card and its history, adds it to the ma
   await page.keyboard.down('KeyQ');
   await expect.poll(() => page.evaluate(() => window.__game!.ui().toolMenu)).toBe(true);
   await page.mouse.move(640, 360);
-  await page.locator('.tool-option', { hasText: 'Place planks' }).hover();
-  await expect(page.locator('.tool-option.selected')).toHaveText('Place planks');
+  await page.getByRole('button', { name: 'Place planks', exact: true }).hover();
+  await expect(page.locator('.tool-option.selected')).toHaveAttribute('aria-label', 'Place planks');
   await shot(page, 'M5', 'tool-menu');
   await page.keyboard.up('KeyQ');
   await expect.poll(() => page.evaluate(() => window.__game!.ui().mode)).toBe('plankPlace');

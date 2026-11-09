@@ -773,95 +773,10 @@ body:not(.touch-mode) .supplies:not(.hidden) ~ .course-hint {
 }
 
 /* ---------- Tool menu ---------- */
-.tool-menu {
-  position: fixed;
-  inset: 0;
-  background: rgba(30, 22, 14, 0.25);
-}
-
 .tool-menu.hidden,
 .paper-map.hidden,
 .pause.hidden {
   display: none;
-}
-
-.tool-ring {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 240px;
-  height: 240px;
-  margin: -120px 0 0 -120px;
-  border: 3px dashed rgba(243, 235, 218, 0.7);
-  border-radius: 50%;
-}
-
-.tool-centre {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  padding: 6px 12px;
-  font-family: var(--font-hand);
-  font-size: 22px;
-}
-
-.tool-option {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 128px;
-  padding: 8px 6px;
-  font: 700 14px var(--font);
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.tool-option.selected,
-#ui[data-hud] .tool-option.selected {
-  background: var(--accent);
-  color: var(--paper);
-}
-
-.tool-option.disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.tool-menu.tool-grid:not(.hidden) {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-  gap: 8px;
-  align-content: center;
-  padding: 48px 12px 16px;
-  overflow-y: auto;
-}
-
-.tool-grid .tool-ring {
-  display: none;
-}
-
-.tool-grid .tool-centre {
-  top: 8px;
-  transform: translateX(-50%);
-}
-
-.touch-mode .tool-grid .tool-option {
-  position: relative;
-  left: auto !important;
-  top: auto !important;
-  transform: none;
-  width: 100%;
-  min-height: 76px;
-  height: 100%;
-}
-
-.tool-icon {
-  width: 32px;
-  height: 32px;
 }
 
 /* The ring can reach the compass and status strip on a short screen: fade them out under it. */
@@ -1889,11 +1804,6 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
   font-size: 13px;
 }
 
-.touch-mode .tool-option {
-  width: 112px;
-  font-size: 12px;
-}
-
 /* The driver's-seat panels keep their touch places: top left, and the camera buttons top right. */
 .touch-mode .hud.cockpit .status,
 .touch-mode .hud.cockpit .course-hint {
@@ -1925,12 +1835,6 @@ body.touch-mode:has(.alert-rail .toast) .discovery {
 
   .touch-mode .camera-help .camera-reset-icon {
     display: inline;
-  }
-
-  /* Narrow enough for the tool menu's options to sit side by side across the screen. */
-  .touch-mode .tool-option {
-    width: 104px;
-    font-size: 11px;
   }
 
   .touch-mode .compass {

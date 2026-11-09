@@ -1,5 +1,8 @@
 /** Small inline SVG icons in the ink colour (no image files). */
 export const icons = {
+  frontDiff: `<svg viewBox="0 0 24 24"><path d="M5 4v16m14-16v16M5 7h14M5 17h14M12 9v6" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="9" y="4" width="6" height="6" rx="1" fill="currentColor"/></svg>`,
+  rearDiff: `<svg viewBox="0 0 24 24"><path d="M5 4v16m14-16v16M5 7h14M5 17h14M12 9v6" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="9" y="14" width="6" height="6" rx="1" fill="currentColor"/></svg>`,
+  crawl: `<svg viewBox="0 0 24 24"><path d="M3 18a9 9 0 1 1 18 0M12 6v2M5 11l2 1m12-1-2 1M12 16l-4-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16" r="2" fill="currentColor"/></svg>`,
   campsite: `<svg viewBox="0 0 24 24"><path d="M2 20 H22 M4.5 20 L12 6.5 L19.5 20 M9.5 3.5 L12 6.5 L14.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 11 L8.8 20 H15.2 Z" fill="currentColor"/></svg>`,
   viewpoint: `<svg viewBox="0 0 24 24"><path d="M2 12 C6 5 18 5 22 12 C18 19 6 19 2 12 Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>`,
   landmark: `<svg viewBox="0 0 24 24"><path d="M12 2 L14.6 9 L22 9.3 L16.2 13.8 L18.2 21 L12 16.8 L5.8 21 L7.8 13.8 L2 9.3 L9.4 9 Z" fill="currentColor"/></svg>`,

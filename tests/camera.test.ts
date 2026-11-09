@@ -259,6 +259,18 @@ function inputFixture() {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('camera keyboard and controller input', () => {
+  it('selects tools only with the right stick and keeps the left stick for steering and placement', () => {
+    const { input, pad } = inputFixture();
+    pad.axes = [1, -1, 0.08, -0.1];
+    input.poll();
+    expect(input.toolStick()).toEqual({ x: 0, y: 0 });
+    expect(input.stick()).toEqual({ x: 1, y: -1 });
+    pad.axes = [0, 0, -1, 1];
+    input.poll();
+    expect(input.toolStick()).toEqual({ x: -1, y: 1 });
+    expect(input.vehicleInput(0.1).steer).toBe(0);
+  });
+
   it('uses the right stick for orbit without steering or zooming, and ignores stick drift', () => {
     const { input, pad } = inputFixture();
     pad.axes = [0, 0, 0.08, -0.1];

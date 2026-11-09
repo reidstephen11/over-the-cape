@@ -154,36 +154,38 @@ Part-time 4WD, or a locked centre diff, winds up in tight turns on firm rock, co
 
 The 80 Series uses the same controls below, including low range, lockers, winch and lights. The table shows PlayStation labels; choose Xbox or Generic in Settings to change the in-game prompts and Controls help. Generic buttons are numbered 1–12 in standard gamepad order.
 
-| Action                                     | Keyboard                                              | PS4 controller                                       |
-| ------------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------- |
-| Accelerate (first press starts the engine) | W / ↑                                                 | R2                                                   |
-| Brake / reverse                            | S / ↓ (hold when stopped to reverse)                  | L2                                                   |
-| Steer                                      | A D / ← →                                             | Left stick                                           |
-| Handbrake on / off                         | Space (press again to let it off)                     | □ (Square)                                           |
-| Cycle transfer case                        | L (stop for low range)                                | △ (Triangle)                                         |
-| Front / rear diff lock                     | Z / X (below 5 km/h to engage)                        | Hold L1 → front / rear diff                          |
-| Precision crawl                            | P                                                     | Hold L1 → precision crawl                            |
-| Winch quick attach / detach                | E                                                     | R1                                                   |
-| Winch in / out                             | R / F                                                 | D-pad up / down                                      |
-| Tool menu                                  | Hold Q, point with the mouse, arrows or WASD, release | Hold L1, point with the left stick or d-pad, release |
-| Interact (planks, hitch)                   | E (when prompted)                                     | ✕ (Cross)                                            |
-| Right vehicle                              | Hold J (when prompted)                                | Hold ○ (Circle)                                      |
-| Orbit camera                               | Mouse drag (left or right button), or Num 4/6/8/2     | Right stick                                          |
-| Camera distance                            | Scroll                                                | D-pad left/right while driving (Automatic gearbox)   |
-| Shift up / down (manual gearbox)           | —                                                     | D-pad right / left                                   |
-| Recenter camera                            | V or Num 5, or the Reset view button                  | Right stick click                                    |
-| Cycle crawler / driver views               | C, or the View button                                 | Hold L1 + click right stick                          |
-| Crawl gauges: auto / on / off              | I                                                     | Shown in low range                                   |
-| Horn                                       | H                                                     | Left stick click                                     |
-| Headlights: off / low / high               | N                                                     | Hold L1 → headlights                                 |
-| Map                                        | M (scroll to zoom, drag to move it)                   | SHARE                                                |
-| Pause                                      | Esc                                                   | OPTIONS                                              |
+| Action                                     | Keyboard                                              | PS4 controller                                        |
+| ------------------------------------------ | ----------------------------------------------------- | ----------------------------------------------------- |
+| Accelerate (first press starts the engine) | W / ↑                                                 | R2                                                    |
+| Brake / reverse                            | S / ↓ (hold when stopped to reverse)                  | L2                                                    |
+| Steer                                      | A D / ← →                                             | Left stick                                            |
+| Handbrake on / off                         | Space (press again to let it off)                     | □ (Square)                                            |
+| Cycle transfer case                        | L (stop for low range)                                | △ (Triangle)                                          |
+| Front / rear diff lock                     | Z / X (below 5 km/h to engage)                        | Hold L1 → front / rear diff                           |
+| Precision crawl                            | P                                                     | Hold L1 → precision crawl                             |
+| Winch quick attach / detach                | E                                                     | R1                                                    |
+| Winch in / out                             | R / F                                                 | D-pad up / down                                       |
+| Tool menu                                  | Hold Q, point with the mouse, arrows or WASD, release | Hold L1, point with the right stick or d-pad, release |
+| Interact (planks, hitch)                   | E (when prompted)                                     | ✕ (Cross)                                             |
+| Right vehicle                              | Hold J (when prompted)                                | Hold ○ (Circle)                                       |
+| Orbit camera                               | Mouse drag (left or right button), or Num 4/6/8/2     | Right stick                                           |
+| Camera distance                            | Scroll                                                | D-pad left/right while driving (Automatic gearbox)    |
+| Shift up / down (manual gearbox)           | —                                                     | D-pad right / left                                    |
+| Recenter camera                            | V or Num 5, or the Reset view button                  | Right stick click                                     |
+| Cycle crawler / driver views               | C, or the View button                                 | Hold L1 + click right stick                           |
+| Crawl gauges: auto / on / off              | I                                                     | Shown in low range                                    |
+| Horn                                       | H                                                     | Left stick click                                      |
+| Headlights: off / low / high               | N                                                     | Hold L1 → headlights                                  |
+| Map                                        | M (scroll to zoom, drag to move it)                   | SHARE                                                 |
+| Pause                                      | Esc                                                   | OPTIONS                                               |
 
 **Frame rate (v1.49).** Pause menu → Settings → **Frame rate** picks **60** (the default) or **Screen**. The physics runs 60 times a second, so on 60 the picture is drawn at most about that often, which keeps a 120 Hz phone from drawing every frame twice and running hot; **Screen** draws on every refresh, for a strong computer with a fast monitor. `?bench` always draws every refresh.
 
 **Manual gearbox (v1.35, controller only).** Settings → **Gearbox** picks **Automatic** (the default: the gearbox changes gear itself, as always) or **Manual** (you change gear and the clutch is worked for you). The row shows only while a controller is connected on a computer; the keyboard and touch always drive automatic, and if the setting is Manual but no controller is connected the car drives automatic. In Manual **D-pad right** changes up and **D-pad left** down, one step at a time: R ← N ← 1 ← 2 …; reverse is the step below neutral, R2 is the throttle in the selected gear and L2 only brakes (it never reverses). D-pad left/right no longer move the camera then (scroll still does). The car arrives in neutral, and R2 starts the engine in any gear (v1.37). The 40 Series is an automatic: in Manual you hold its gear (a 1-2-D lever). Precision crawl works in Manual too. **Manual with clutch** (v1.35–v1.36, ○/B held as the clutch) is shelved and is not planned to return: a controller button made a poor clutch. Steering-wheel and pedal support and manual shift buttons on phones are excluded at the owner’s request. A save that had it opens as Manual. Engine braking holds in a low gear down the descents.
 
 The **tool menu** holds: Unhitch the trailer (while towing one), Winch (or Detach winch), the front and rear diff locks, Place planks (or Recall planks), precision crawl, the headlights, the repair the car needs (Field repair, Plug the tyre or Fit a spare) and Pour in a jerry can. Finds load by themselves when you stop beside them. An option that can't be used now is greyed out; picking it says why ("Stop first", "No spares left"...).
+
+The **Expedition** tool menu uses dark wedges and amber highlights. Front and rear diff locks sit together with crawl and tyre pressure; winch and planks form a recovery group, followed by vehicle maintenance and trailer tools. Hold **L1 / LB**, aim the **right stick**, then release the shoulder button to use the selection. Return the stick to centre before releasing to cancel, or press the back button / Esc. The camera does not orbit while the menu is open. Mouse and keyboard selection still work; smaller touch screens use a grid of full-size buttons. Try the menu without starting a drive at `?tool-menu-preview`; the preview uses sample vehicle states and does not change your save.
 
 Placing planks: choose **Place planks** in the tool menu, move them with W/S, turn them with A/D, place with E, cancel with Esc. Prompts switch between keyboard and gamepad glyphs depending on what you last touched.
 
@@ -271,6 +273,7 @@ Add `?seed=7` (any number) to start a new run with that run's surprises, to see 
 
 Real-device checks for the last ten versions, newest first. An unchecked box is an unverified check, not a known fault. Older checks are in [docs/TESTED.md](docs/TESTED.md).
 
+- [ ] **v1.73 radial tool menu:** the menu should use dark wedges and amber highlights. Hold **L1 / LB**, select with the **right stick**, then release: does the chosen action happen? Does the left stick leave the selection alone, the camera stay still, and returning to centre before releasing cancel? Are both diff locks adjacent and winch/planks adjacent? Check the full trailer menu for overlapping targets. On a phone, can every tool be tapped in portrait and landscape? The preview is at `?tool-menu-preview`.
 - [ ] **v1.72 cockpit head motion:** use Driver view and cross bumps, brake and corner: is the added movement gentle, with a smooth return and no constant-speed bobbing? Look round while moving; does the lean stay tied to the vehicle, and do mirrors follow the eye? In Settings turn Cockpit head motion Off: does the extra movement stop while manual look still works? Reload and check Off is remembered. Pause, switch views, teleport or change vehicle: does the camera resume without a jolt? Check the setting fits on a phone.
 - [ ] **v1.71 mirror settings checks:** the loading screen shows v1.71. Try the v1.70 mirror checks below. Open Settings with Escape on desktop or Pause on a phone, switch Cockpit mirrors Off, reload, and check the title settings keep Off.
 - [ ] **v1.70 working mirrors:** switch to the driver’s seat and look towards each door mirror. Does the track, traffic or trailer behind move correctly as you drive, reverse and look round? Try the existing centre mirror in the Hilux, 60 Series, MQ, GQ and Range Rover. Swap vehicles and graphics quality: do reflections recover? In Settings, turn Cockpit mirrors Off and On, then reload: is your choice kept? Check phone smoothness on Low; reflections should stop in chase view. On the ute, is there just one rear-facing mirror per door, with both arms attached?
@@ -281,7 +284,6 @@ Real-device checks for the last ten versions, newest first. An unchecked box is 
 
 - [ ] **v1.65 solid-axle articulation:** crawl the knoll's Axle twisters and rock climb in 4L. Do the opposite ends of each axle move together, with the tyres tilting on the beam and the springs, shocks and links staying attached? Compare a leaf-sprung 40 or 60 with a coil-sprung Perentie or Patrol. A moderate diagonal step should keep useful load on all four tyres; a deep hole should still lift a wheel and need the lockers or winch. On gravel, try a tight turn, a side slope and towing: does it remain controllable? Check on a phone too.
 - [ ] **v1.64 transfer-case checks:** the loading screen shows v1.64. Driving is the same as v1.63; try its transfer-case checks below. Regression fixtures now keep their chosen range without referencing a variable outside its scope, and the phone browser check has more time for software rendering.
-- [ ] **v1.63 transfer cases:** check 4H → 4L → 2H while stopped, and 2H → 4H below 20 km/h; try a moving low-range shift and read its refusal. In 2H, unlock the manual front hubs from TOOLS: does the 20-second job hold the car and show progress, and does 4WD wait until you lock them again? Try the 79 automatic hubs and the Perentie/Range Rover centre lock. Turn tightly on firm rock until WIND-UP appears, then release it with 2H or an open centre. On a phone, does the transfer button show the mode, and do all TOOLS actions fit? Reach a camp, reload and check mode/hubs/centre are kept.
 
 ## Project layout
 

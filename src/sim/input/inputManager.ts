@@ -279,7 +279,12 @@ export class InputManager {
     return { yaw: -(this.padAxes[2] + horizontal) * rate, pitch: (this.padAxes[3] + vertical) * rate };
   }
 
-  /** Raw stick (for radial menus and placing planks): the gamepad or the touch joystick. */
+  /** Right stick is reserved for choosing radial tools; steering cannot select one. */
+  toolStick(): { x: number; y: number } {
+    return { x: this.padAxes[2], y: this.padAxes[3] };
+  }
+
+  /** Raw stick (for placing planks): the gamepad or the touch joystick. */
   stick(): { x: number; y: number } {
     const t = this.touchStick;
     return t.x !== 0 || t.y !== 0 ? { ...t } : { x: this.padAxes[0], y: this.padAxes[1] };
