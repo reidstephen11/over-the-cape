@@ -138,7 +138,9 @@ export function drawnText(page: Page): Promise<{ px: number; text: string; cls: 
       const t = n.textContent?.trim();
       const el = n.parentElement;
       if (!t || !el || el.closest('svg') || !seen(el)) continue;
-      const k = el.offsetHeight > 0 ? el.getBoundingClientRect().height / el.offsetHeight : 1;
+      // offsetHeight is whole pixels: a ratio within 3% of 1 is rounding, not a transform.
+      const r = el.offsetHeight > 0 ? el.getBoundingClientRect().height / el.offsetHeight : 1;
+      const k = Math.abs(r - 1) < 0.03 ? 1 : r;
       out.push({
         px: parseFloat(getComputedStyle(el).fontSize) * k,
         text: t,

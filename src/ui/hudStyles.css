@@ -2550,3 +2550,24 @@ body:not(.touch-mode) #ui[data-hud] .history-card .history-hint {
 #ui[data-hud] .history-card strong {
   padding-right: calc(16 * var(--u));
 }
+
+/*
+ * Phones (v1.76): the map's Close and the title pages' Back are 44 px on their short side, and
+ * the title, setup and briefing screens' small lines are 12 px. The title screens come before
+ * the touch controls (and body.touch-mode), so these follow the pointer.
+ */
+@media (pointer: coarse) {
+  .paper-map-close,
+  #ui[data-hud] .title-back {
+    min-width: calc(44 * var(--u));
+    min-height: calc(44 * var(--u));
+  }
+
+  #ui[data-hud] .welcome .title-version,
+  #ui[data-hud] .welcome .title-eyebrow,
+  #ui[data-hud] .welcome .welcome-option small,
+  #ui[data-hud] .loading .loading-brand,
+  #ui[data-hud] .build-label {
+    font-size: calc(12 * var(--u));
+  }
+}
