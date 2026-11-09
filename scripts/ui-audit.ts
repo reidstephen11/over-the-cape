@@ -60,7 +60,9 @@ const measure = (page: Page) =>
      */
     const drawnScale = (el: HTMLElement) => {
       const h = el.offsetHeight;
-      return h > 0 ? el.getBoundingClientRect().height / h : 1;
+      // offsetHeight is whole pixels: a ratio within 3% of 1 is rounding, not a transform.
+      const k = h > 0 ? el.getBoundingClientRect().height / h : 1;
+      return Math.abs(k - 1) < 0.03 ? 1 : k;
     };
     const text: { px: number; text: string; cls: string }[] = [];
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
