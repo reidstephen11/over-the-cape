@@ -42,6 +42,19 @@ const PAINT_EDGE = 0.8,
   BAND_BLEND = 0.2;
 /** Edge distance (m) given to samples with no track paint beside a painted one. */
 const OUTSIDE_PAINT = 2.5;
+/**
+ * Weights of the blur (per 1 m sample, each way) that smooths how far a clay bank reaches
+ * out beyond a track's edge. The raw reach takes the slope at each sample, which jumps from
+ * one sample to the next, so the bank's edge was ragged at 1 m: seen low and ahead, a
+ * saw-tooth (v1.74).
+ */
+const BANK_BLUR = [1, 8, 28, 56, 70, 56, 28, 8, 1].map((w) => w / 256);
+/** `TerrainMesh.bank` for a sample with no clay bank samples round it. */
+const NONE = 127;
+/** A bank's reach (m) beyond a track's edge where there's no bank: well inside the widest track. */
+const NO_BANK = -6;
+/** Side (samples) of the blocks `TerrainMesh.seedBlocks` marks. */
+const BLOCK = 8;
 /** Half-width (m) of the blend at a ground patch's edge and into its rim. */
 const PATCH_BLEND = 0.3,
   RIM_BLEND = 0.2;
@@ -51,10 +64,35 @@ const PATCH_BLEND = 0.3,
  * its paint ends, the width of its darker edge band (0: none) and the rut tone (below 0
  * darker, above 0 paler); then a ground patch's inner and rim colours (r, g, b each), the
  * distance (m) out from its edge and its rim's width; for a round patch its centre (x, z),
- * radius (m) and 1 (0 for any other); and the distance (m, roughly) out from a clay bank.
+ * radius (m) and 1 (0 for any other); how far (m) a clay bank reaches beyond the track's
+ * left and right edges (NO_BANK: none); and the distance (m) out from the track's right edge.
+ *
+ * The two distances from a track's edges are each from one edge, out from the track's left
+ * (8) and right (26) sides: across a track each changes evenly, so a chunk whose vertices
+ * are further apart than the track is wide still draws it, at its width, and the shader
+ * takes the greater of the two (v1.74).
  */
-const SHADE = 25;
+const SHADE = 27;
 const RUT = 11;
+const TRACK_LEFT = 8,
+  TRACK_RIGHT = 26;
+/**
+ * The finest grid step (m) that keeps both distances from a track's edges. Finer chunks
+ * keep one, the distance from the nearer edge, in both: their triangles are too small to
+ * hold a whole track, and where two tracks meet, distances from different tracks' edges
+ * on either side of a triangle would draw paint between them.
+ */
+const TWO_SIDED_STEP = 4;
+/** Square roots of the whole numbers up to a search's widest reach, squared, each way. */
+const ROOTS = Float32Array.from({ length: 2 * 64 * 64 + 1 }, (_, n) => Math.sqrt(n));
+const rootOf = (n: number) => (n < ROOTS.length ? ROOTS[n] : Math.sqrt(n));
+
+interface EdgeFound {
+  value: number;
+  seed: number;
+  across: number;
+  mixed: boolean;
+}
 
 /** The shading values as the ground material's attributes. */
 function setShadeAttributes(geo: THREE.BufferGeometry, shade: Float32Array): void {
@@ -67,7 +105,8 @@ function setShadeAttributes(geo: THREE.BufferGeometry, shade: Float32Array): voi
   geo.setAttribute('patchRim', new THREE.InterleavedBufferAttribute(buffer, 3, 15));
   geo.setAttribute('patchEdge', new THREE.InterleavedBufferAttribute(buffer, 2, 18));
   geo.setAttribute('patchCircle', new THREE.InterleavedBufferAttribute(buffer, 4, 20));
-  geo.setAttribute('clayBank', new THREE.InterleavedBufferAttribute(buffer, 1, 24));
+  geo.setAttribute('clayBank', new THREE.InterleavedBufferAttribute(buffer, 2, 24));
+  geo.setAttribute('trackRight', new THREE.InterleavedBufferAttribute(buffer, 1, TRACK_RIGHT));
 }
 /** `TerrainMesh.under` for a sample not looked at yet. */
 const UNKNOWN_TINT = 255;
@@ -143,6 +182,13 @@ export class TerrainMesh {
    * read by its four neighbours too. The ground's paint is final before the mesh is built.
    */
   private readonly under: Uint8Array;
+  /**
+   * How far (tenths of a metre) the clay bank at each sample reaches beyond its track's edge,
+   * smoothed (BANK_BLUR), worked out the first time it's needed (-128: not yet; NONE: no bank).
+   */
+  private readonly bank: Int8Array;
+  /** Per BLOCK×BLOCK block of samples: 1 if a track edge is stored there, 2 if a clay bank, or both. */
+  private seedBlocks: Uint8Array | null = null;
   private readonly nodes = new Map<string, Node>();
   private readonly roots: Node[] = [];
   private lodDistances: readonly number[] = [96, 230, 520];
@@ -162,6 +208,7 @@ export class TerrainMesh {
   ) {
     this.edgeTint = terrain.muddyEdges ? GroundTint.Mud : GroundTint.DirtEdge;
     this.under = new Uint8Array(terrain.resX * terrain.resZ).fill(UNKNOWN_TINT);
+    this.bank = new Int8Array(terrain.resX * terrain.resZ).fill(-128);
     this.material = createGroundMaterial({
       paintBlend: PAINT_BLEND,
       bandBlend: BAND_BLEND,
@@ -419,12 +466,12 @@ export class TerrainMesh {
    * real line of the track instead of the triangles. Elsewhere both colours are the same
    * narrow blend of the neighbouring tints, which softens the grid.
    */
-  private sampleShade(ix: number, iz: number): number[] {
+  private sampleShade(ix: number, iz: number, step = 1): number[] {
     const t = this.terrain;
     const out = this.shade;
     out.fill(0);
     const i = iz * t.resX + ix;
-    this.trackShade(ix, iz);
+    this.trackShade(ix, iz, step);
     // A ground patch is drawn over the track paint with its own smooth edge.
     const packed = t.groundPatches.get(i);
     const patch = packed === undefined ? null : unpackPatch(packed);
@@ -436,7 +483,7 @@ export class TerrainMesh {
     const rim = patch ? (this.colors[patch.rim] ?? this.colors[0]) : null;
     const edge = patch?.edge ?? PATCH_REACH + 0.5;
     const [cx, cz] = patch?.centre ?? [0, 0];
-    const bank = t.clayBanks.get(i);
+    const [bankLeft, bankRight] = this.bankReach(ix, iz, step);
     setShade(
       out,
       12,
@@ -452,7 +499,8 @@ export class TerrainMesh {
       iz - t.halfZ + cz,
       patch?.centre ? Math.hypot(cx, cz) - edge : -edge,
       patch?.centre ? 1 : 0,
-      bank === undefined ? PATCH_REACH + 0.5 : unpackBank(bank).edge,
+      bankLeft,
+      bankRight,
     );
     return out;
   }
@@ -481,7 +529,7 @@ export class TerrainMesh {
   }
 
   /** The ground's own and any track's shading at a sample, into `shade`. */
-  private trackShade(ix: number, iz: number): void {
+  private trackShade(ix: number, iz: number, step: number): void {
     const t = this.terrain;
     const out = this.shade;
     const i = iz * t.resX + ix;
@@ -507,6 +555,7 @@ export class TerrainMesh {
       out[1] = u.g;
       out[2] = u.b;
       setShade(out, 5, c.r, c.g, c.b, e, end, band);
+      this.setTrackEdges(ix, iz, step, e, i);
       return;
     }
     for (const [ox, oz, weight] of TINT_SAMPLES) {
@@ -517,7 +566,249 @@ export class TerrainMesh {
     // No track colour of its own. Where something was painted over a track, keep the
     // distance to its edge so the blend from a painted neighbour stays true.
     const e = paint?.edge[i] ?? NO_TRACK_EDGE;
+    if (paint && e === NO_TRACK_EDGE && step > 1) {
+      // A coarse vertex more than 2 m out from a track: the distance it really is from the
+      // track's edge, with that track's paint, so that between it and a vertex on the
+      // track the edge is drawn where the 1 m mesh draws it, not pulled in towards the
+      // track and blended into the ground's colour (so it changed shape as the player
+      // drove up to it, v1.74).
+      const near = this.extend(ix, iz, step);
+      const seed = near ? paint.paint[near.seed] : 0;
+      if (near && seed) {
+        const kind = seed & 7;
+        const faint = kind === TrackPaintKind.Faint;
+        const c = this.colors[trackTint(kind)] ?? this.colors[0];
+        const band = faint || kind === TrackPaintKind.Concrete ? 0 : EDGE_BAND;
+        setShade(out, 5, c.r, c.g, c.b, near.value / 10, faint ? FAINT_EDGE : PAINT_EDGE, band);
+        this.setTrackEdges(ix, iz, step, near.value / 10, near.seed, near);
+        return;
+      }
+      if (near) {
+        setShade(out, 5, out[0], out[1], out[2], near.value / 10, PAINT_EDGE, 0);
+        this.setTrackEdges(ix, iz, step, near.value / 10, near.seed, near);
+        return;
+      }
+    }
     setShade(out, 5, out[0], out[1], out[2], e === NO_TRACK_EDGE ? OUTSIDE_PAINT : e / 10, PAINT_EDGE, 0);
+    if (e === NO_TRACK_EDGE) out[TRACK_RIGHT] = OUTSIDE_PAINT;
+    else this.setTrackEdges(ix, iz, step, e / 10, i);
+  }
+
+  /**
+   * The distances (m) out from a track's left and right edges at a vertex `step` m from its
+   * neighbours and `e` m out from the nearer edge, with the track's half-width and side at
+   * sample `seed`. `near` is what `extend` found for a vertex with no edge of its own.
+   */
+  private setTrackEdges(
+    ix: number,
+    iz: number,
+    step: number,
+    e: number,
+    seed: number,
+    near?: { across: number; mixed: boolean },
+  ): void {
+    const paint = this.terrain.trackPaint!;
+    this.shade[TRACK_LEFT] = this.shade[TRACK_RIGHT] = e;
+    if (step < TWO_SIDED_STEP) return;
+    const found = near ?? this.extend(ix, iz, step);
+    if (found?.mixed) return;
+    const offset = paint.offset[seed] / 10;
+    const halfWidth = Math.abs(offset) - paint.edge[seed] / 10;
+    const at = near ? near.across / 10 : offset;
+    this.shade[TRACK_LEFT] = at - halfWidth;
+    this.shade[TRACK_RIGHT] = -at - halfWidth;
+  }
+
+  /**
+   * How far (m) a clay bank reaches beyond a track's left and right edges at a vertex `step`
+   * m from its neighbours: the reach of the nearest bank on each side of the track (NO_BANK
+   * if none is within reach). The shader takes the bank's edge that far out from the
+   * track's edge (v1.74). A distance from the bank's own edge would have no bank between
+   * vertices either side of a track, as a distance from the track's edge had no track.
+   */
+  private bankReach(ix: number, iz: number, step: number): [number, number] {
+    const t = this.terrain;
+    const paint = t.trackPaint;
+    if (!paint || t.clayBanks.size === 0) return [NO_BANK, NO_BANK];
+    const blocks = this.blocks();
+    const bx = Math.ceil(t.resX / BLOCK);
+    const reach = Math.ceil(step * 1.5 + PATCH_REACH);
+    let left = Infinity,
+      right = Infinity,
+      leftSeed = -1,
+      rightSeed = -1;
+    const x0 = Math.max(0, ix - reach),
+      x1 = Math.min(t.sizeX, ix + reach);
+    const z0 = Math.max(0, iz - reach),
+      z1 = Math.min(t.sizeZ, iz + reach);
+    for (let qz = Math.floor(z0 / BLOCK); qz <= Math.floor(z1 / BLOCK); qz++)
+      for (let qx = Math.floor(x0 / BLOCK); qx <= Math.floor(x1 / BLOCK); qx++) {
+        if (!(blocks[qz * bx + qx] & 2)) continue;
+        for (let z = Math.max(z0, qz * BLOCK); z <= Math.min(z1, qz * BLOCK + BLOCK - 1); z++)
+          for (let x = Math.max(x0, qx * BLOCK); x <= Math.min(x1, qx * BLOCK + BLOCK - 1); x++) {
+            const k = z * t.resX + x;
+            if (!this.isBankSeed(k)) continue;
+            const r = (x - ix) * (x - ix) + (z - iz) * (z - iz);
+            if (paint.offset[k] >= 0) {
+              if (r < left) {
+                left = r;
+                leftSeed = k;
+              }
+            } else if (r < right) {
+              right = r;
+              rightSeed = k;
+            }
+          }
+      }
+    const at = (seed: number) => {
+      const v = seed < 0 ? NONE : this.reachAt(seed);
+      return v === NONE ? NO_BANK : v / 10;
+    };
+    if (step < TWO_SIDED_STEP) {
+      // One distance from the track's edge: the bank on the vertex's own side, in both.
+      const own =
+        this.terrain.trackPaint!.edge[iz * t.resX + ix] !== NO_TRACK_EDGE
+          ? paint.offset[iz * t.resX + ix] >= 0
+          : left <= right;
+      const reachHere = at(own ? leftSeed : rightSeed);
+      return [reachHere, reachHere];
+    }
+    return [at(leftSeed), at(rightSeed)];
+  }
+
+  /** A clay bank sample with its track's edge distance kept. */
+  private isBankSeed(i: number): boolean {
+    return this.terrain.trackPaint!.edge[i] !== NO_TRACK_EDGE && this.terrain.clayBanks.has(i);
+  }
+
+  /**
+   * How far (tenths of a metre) the clay bank at sample `i` reaches beyond its track's
+   * edge, blurred over the bank samples round it on the same side of the track.
+   */
+  private reachAt(i: number): number {
+    const cached = this.bank[i];
+    if (cached !== -128) return cached;
+    const t = this.terrain;
+    const paint = t.trackPaint!;
+    const ix = i % t.resX,
+      iz = (i - ix) / t.resX;
+    const left = paint.offset[i] >= 0;
+    let sum = 0,
+      weight = 0;
+    const r = (BANK_BLUR.length - 1) / 2;
+    for (let dz = -r; dz <= r; dz++)
+      for (let dx = -r; dx <= r; dx++) {
+        const x = ix + dx,
+          z = iz + dz;
+        if (x < 0 || z < 0 || x > t.sizeX || z > t.sizeZ) continue;
+        const k = z * t.resX + x;
+        if (!this.isBankSeed(k) || paint.offset[k] >= 0 !== left) continue;
+        const w = BANK_BLUR[dx + r] * BANK_BLUR[dz + r];
+        sum += (paint.edge[k] / 10 - unpackBank(t.clayBanks.get(k)!).edge) * w;
+        weight += w;
+      }
+    const v = weight > 0 ? Math.max(-126, Math.min(126, Math.round((sum / weight) * 10))) : NONE;
+    this.bank[i] = v;
+    return v;
+  }
+
+  /**
+   * For a vertex `step` m from its neighbours: the least of (a nearby sample's distance out
+   * from a track's edge + the distance to that sample), over the samples within reach that
+   * have one. A distance from an edge grows by a metre a metre, so this is the distance
+   * from the edge those samples lie along, out as far as the vertex. With the sample it
+   * came from (`seed`), the vertex's offset from that track's centre line (`across`) and
+   * whether another track's edge is within reach too (`mixed`). Distances are in tenths
+   * of a metre; null if no edge is within reach.
+   */
+  private extend(ix: number, iz: number, step: number): EdgeFound | null {
+    const t = this.terrain;
+    const paint = t.trackPaint!;
+    const blocks = this.blocks();
+    const bx = Math.ceil(t.resX / BLOCK);
+    // Far enough to reach the edge from any vertex of a triangle the edge crosses.
+    const reach = Math.ceil(step * 1.5 + PATCH_REACH);
+    let best = Infinity,
+      seed = -1;
+    const found = this.found;
+    found.length = 0;
+    const x0 = Math.max(0, ix - reach),
+      x1 = Math.min(t.sizeX, ix + reach);
+    const z0 = Math.max(0, iz - reach),
+      z1 = Math.min(t.sizeZ, iz + reach);
+    for (let qz = Math.floor(z0 / BLOCK); qz <= Math.floor(z1 / BLOCK); qz++)
+      for (let qx = Math.floor(x0 / BLOCK); qx <= Math.floor(x1 / BLOCK); qx++) {
+        if (!(blocks[qz * bx + qx] & 1)) continue;
+        for (let z = Math.max(z0, qz * BLOCK); z <= Math.min(z1, qz * BLOCK + BLOCK - 1); z++)
+          for (let x = Math.max(x0, qx * BLOCK); x <= Math.min(x1, qx * BLOCK + BLOCK - 1); x++) {
+            const k = z * t.resX + x;
+            const v = paint.edge[k];
+            if (v === NO_TRACK_EDGE) continue;
+            const r = rootOf((x - ix) * (x - ix) + (z - iz) * (z - iz)) * 10;
+            if (v + r < best) {
+              best = v + r;
+              seed = k;
+            }
+            found.push(k, r);
+          }
+      }
+    if (seed < 0) return null;
+    // Only the samples of the nearest track: their offsets differ from its by no more than
+    // the distance between them (and rounding). Another track's beside it needn't.
+    const sx = seed % t.resX,
+      sz = (seed - sx) / t.resX,
+      so = paint.offset[seed];
+    let upper = Infinity,
+      lower = -Infinity,
+      mixed = false;
+    for (let n = 0; n < found.length; n += 2) {
+      const k = found[n],
+        r = found[n + 1];
+      const kx = k % t.resX,
+        kz = (k - kx) / t.resX;
+      const o = paint.offset[k];
+      if (Math.abs(o - so) > rootOf((kx - sx) * (kx - sx) + (kz - sz) * (kz - sz)) * 10 + 3) {
+        mixed = true;
+        continue;
+      }
+      if (o + r < upper) upper = o + r;
+      if (o - r > lower) lower = o - r;
+    }
+    // The offset from a track's centre line changes a metre a metre across it, so it is at
+    // most `upper` and at least `lower`: `upper` on its left, where the samples nearest are
+    // further left, and `lower` on its right. Their sum is clear of 0 either side (twice
+    // the half-width and the reach of the samples), where picking the side by the nearest
+    // sample alone wavered near the centre line.
+    const out = this.edgeFound;
+    out.value = best;
+    out.seed = seed;
+    out.across = upper + lower >= 0 ? upper : lower;
+    out.mixed = mixed;
+    return out;
+  }
+
+  /** `extend`'s answer, kept between calls. */
+  private readonly edgeFound: EdgeFound = { value: 0, seed: 0, across: 0, mixed: false };
+
+  /** Samples (index, then distance) `extend` found, kept between calls. */
+  private readonly found: number[] = [];
+
+  /** The blocks of samples with a track edge or a clay bank stored, marked the first time they're needed. */
+  private blocks(): Uint8Array {
+    if (this.seedBlocks) return this.seedBlocks;
+    const t = this.terrain;
+    const bx = Math.ceil(t.resX / BLOCK);
+    const blocks = new Uint8Array(bx * Math.ceil(t.resZ / BLOCK));
+    const mark = (i: number, bit: number) => {
+      const ix = i % t.resX,
+        iz = (i - ix) / t.resX;
+      blocks[Math.floor(iz / BLOCK) * bx + Math.floor(ix / BLOCK)] |= bit;
+    };
+    const edge = t.trackPaint?.edge;
+    if (edge) for (let i = 0; i < edge.length; i++) if (edge[i] !== NO_TRACK_EDGE) mark(i, 1);
+    for (const i of t.clayBanks.keys()) mark(i, 2);
+    this.seedBlocks = blocks;
+    return blocks;
   }
 
   private addTint(tint: number, weight: number): void {
@@ -558,7 +849,7 @@ export class TerrainMesh {
         nrm[v * 3] = dx / length;
         nrm[v * 3 + 1] = 2 / length;
         nrm[v * 3 + 2] = dz / length;
-        shade.set(this.sampleShade(ix, iz), v * SHADE);
+        shade.set(this.sampleShade(ix, iz, step), v * SHADE);
       }
     }
     const skirt = 1.5 * step + 1;

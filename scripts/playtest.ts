@@ -6,9 +6,10 @@
  * numbers say how hard the section was.
  *
  * Usage (against `npx vite build && npx vite preview --port 4173`):
- *   npx vite-node scripts/playtest.ts <outDir> [view=desktop|phone] [quality=low|medium|high]
+ *   npx vite-node scripts/playtest.ts <outDir> [view=desktop|phone|portrait] [quality=low|medium|high]
  *     [tracks=upper-daintree-road,daintree-crossing] [every=20] [speed=8] [vehicle=<id>]
  *     [steps=30] [url=http://localhost:4173/]
+ * view=phone is a phone held sideways (844x390), view=portrait one held upright (390x844).
  * PW_CHROMIUM names another Chromium than the pinned Playwright's own.
  */
 import { chromium } from '@playwright/test';
@@ -37,7 +38,9 @@ const browser = await chromium.launch({
 const page = await browser.newPage(
   view === 'phone'
     ? { viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true }
-    : { viewport: { width: 1280, height: 720 } },
+    : view === 'portrait'
+      ? { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true }
+      : { viewport: { width: 1280, height: 720 } },
 );
 await page.addInitScript((quality) => {
   localStorage.setItem(

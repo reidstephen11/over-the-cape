@@ -1039,6 +1039,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 
   const trackDistance = new Uint8Array(n).fill(255);
   const paintEdge = new Int8Array(n).fill(NO_TRACK_EDGE);
+  const paintOffset = new Int8Array(n);
   const paint = new Uint8Array(n);
   for (let i = 0; i < n; i++) {
     const id = trackOwner[i];
@@ -1056,10 +1057,14 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
           : def.surface === 'rock' || def.surface === 'sand'
             ? TrackPaintKind.None
             : TrackPaintKind.Dirt;
+    const bank = clayBanks.get(i);
+    // A clay bank is drawn out from the track's edge, so its samples keep that too.
+    if ((kind && d - hw < 2) || bank !== undefined) {
+      paintEdge[i] = Math.max(-127, Math.min(127, Math.round((d - hw) * 10)));
+      paintOffset[i] = Math.max(-127, Math.min(127, Math.round(trackSide[i] * 10)));
+    }
     if (kind && d - hw < 2) {
-      paintEdge[i] = Math.max(-127, Math.round((d - hw) * 10));
       // The ground beside the track, as it would be without a clay bank (drawn separately).
-      const bank = clayBanks.get(i);
       paint[i] = kind | ((bank === undefined ? tint[i] : bank >> 8) << 3);
     }
     if (d > hw + 0.6) continue;
@@ -1186,7 +1191,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
 
   const terrain = new Terrain(map.width, map.length, heights, surface, tint, water);
   terrain.holes = holes;
-  terrain.trackPaint = { edge: paintEdge, paint };
+  terrain.trackPaint = { edge: paintEdge, paint, offset: paintOffset };
   terrain.groundPatches = packedOverlays;
   terrain.clayBanks = clayBanks;
   terrain.muddyEdges = !!map.muddyEdges;
