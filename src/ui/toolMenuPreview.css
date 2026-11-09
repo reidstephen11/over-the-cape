@@ -1,0 +1,51 @@
+.tool-preview-bar {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 40;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.tool-preview-bar button,
+.tool-preview-bar a {
+  color: #d7e2d7;
+  background: #10211f;
+  border: 1px solid #65786b;
+  border-radius: 4px;
+  padding: 9px 11px;
+  font:
+    500 12px 'Barlow',
+    sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+}
+.tool-preview-bar [aria-pressed='true'] {
+  color: #1e261e;
+  background: #edbd6f;
+  border-color: #edbd6f;
+}
+.tool-preview-status {
+  position: fixed;
+  z-index: 40;
+  bottom: 16px;
+  right: 24px;
+  color: #f0d8a2;
+  font:
+    500 12px 'Barlow',
+    sans-serif;
+  pointer-events: none;
+}
+@media (max-width: 1000px) {
+  .tool-preview-bar {
+    top: auto;
+    bottom: 70px;
+    left: 12px;
+    right: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .tool-preview-status {
+    bottom: 46px;
+  }
+}

@@ -115,5 +115,11 @@ function boot(): void {
   new WelcomeScreen(uiEl, choice, save, (c, audio) => void play(c, audio));
 }
 
-boot();
-prefetchEngine();
+if (new URLSearchParams(location.search).has('tool-menu-preview')) {
+  void import('./ui/toolMenuPreview').then(({ showToolMenuPreview }) =>
+    showToolMenuPreview(document.getElementById('ui')!),
+  );
+} else {
+  boot();
+  prefetchEngine();
+}

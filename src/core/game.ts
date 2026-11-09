@@ -1,3 +1,4 @@
+import { controllers } from '../data/controllers';
 import type { ControlInstruction } from '../data/controlInstructions';
 import * as THREE from 'three';
 import { maps } from '../data/maps';
@@ -1118,7 +1119,7 @@ export class Game {
       {
         id: 'frontDiff',
         label: v.differentials.front ? 'Unlock front diff' : 'Lock front diff',
-        icon: 'feature',
+        icon: 'frontDiff',
         enabled: v.differentials.front || Math.abs(v.speed) <= v.tuning.crawling.diffLockMaxKmh / 3.6,
       },
       { id: 'tyres', label: `Tyres: ${pressurePsi(v.condition)} psi`, icon: 'tyre', enabled: true },
@@ -1131,14 +1132,14 @@ export class Game {
       {
         id: 'rearDiff',
         label: v.differentials.rear ? 'Unlock rear diff' : 'Lock rear diff',
-        icon: 'feature',
+        icon: 'rearDiff',
         enabled: v.differentials.rear || Math.abs(v.speed) <= v.tuning.crawling.diffLockMaxKmh / 3.6,
       },
       planks,
       {
         id: 'precision',
         label: v.precisionCrawl ? 'Disable precision crawl' : 'Enable precision crawl',
-        icon: 'feature',
+        icon: 'crawl',
         enabled: true,
       },
       {
@@ -1812,27 +1813,29 @@ export class Game {
       return;
     }
     if (this.toolMenu.isOpen) {
-      if (inp.pressed('back') || inp.pressed('pause')) {
-        this.toolMenu.close(false);
-        return;
-      }
-      if (this.toolMenu.sticky && (inp.pressed('confirm') || inp.pressed('toolMenu'))) {
+      const s = inp.toolStick();
+      const kx = (inp.held('menuRight') ? 1 : 0) - (inp.held('menuLeft') ? 1 : 0);
+      const ky = (inp.held('menuDown') ? 1 : 0) - (inp.held('menuUp') ? 1 : 0);
+      if (inp.activeDevice === 'gamepad' || kx || ky) this.toolMenu.pointAt(s.x + kx, s.y + ky, 0.4);
+      if (inp.pressed('back') || inp.pressed('pause')) this.toolMenu.close(false);
+      else if (this.toolMenu.sticky && (inp.pressed('confirm') || inp.pressed('toolMenu')))
         this.toolMenu.close(true);
-        return;
-      }
-      if (!inp.held('toolMenu') && !this.toolMenu.sticky) this.toolMenu.close(true);
-      else {
-        const s = inp.stick();
-        const kx = (inp.held('menuRight') ? 1 : 0) - (inp.held('menuLeft') ? 1 : 0);
-        const ky = (inp.held('menuDown') ? 1 : 0) - (inp.held('menuUp') ? 1 : 0);
-        this.toolMenu.pointAt(s.x + kx, s.y + ky, 0.4);
-      }
+      else if (!inp.held('toolMenu') && !this.toolMenu.sticky) this.toolMenu.close(true);
       return;
     }
     if (this.tool.mode !== 'drive') return;
     if (inp.pressed('pause')) this.openPause();
     else if (inp.pressed('map')) this.openMap();
-    else if (inp.pressed('toolMenu')) this.toolMenu.open(this.toolOptions(), inp.activeDevice === 'touch');
+    else if (inp.pressed('toolMenu')) {
+      const pad = controllers[this.settings.controller];
+      this.toolMenu.open(
+        this.toolOptions(),
+        inp.activeDevice === 'touch',
+        inp.activeDevice === 'gamepad'
+          ? `Hold ${pad.toolMenu} · Right stick to select · Release ${pad.toolMenu} to use · ${pad.back} to cancel`
+          : undefined,
+      );
+    }
   }
 
   /**

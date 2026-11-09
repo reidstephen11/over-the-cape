@@ -38,7 +38,7 @@ test('damage: a setting, shown on the HUD; fit a spare for a torn sidewall, camp
 
   // Tool menu → Fit a spare: the tyre is mended, the engine isn't, one of the two spares is used.
   await page.keyboard.down('KeyQ');
-  await page.locator('.tool-option', { hasText: 'Fit a spare' }).click();
+  await page.getByRole('button', { name: 'Fit a spare', exact: true }).click();
   await page.keyboard.up('KeyQ');
   await expect.poll(() => page.evaluate(() => window.__game!.health().repairing)).toBe(true);
   await expect

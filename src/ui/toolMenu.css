@@ -1,0 +1,295 @@
+/* Expedition: dark sectors and amber selection, independent of the driving HUD. */
+#ui .tool-menu[data-style] {
+  position: fixed;
+  inset: 0;
+  --tool-bg: #171d1bee;
+  --tool-text: #f3eedf;
+  --tool-muted: #a5aaa0;
+  --tool-line: #63736b;
+  --tool-accent: #efb65a;
+  --tool-on: #201c14;
+  z-index: 30;
+  background: radial-gradient(ellipse at center, #111b19a8, #080e10d9);
+  backdrop-filter: blur(5px);
+  color: var(--tool-text);
+  font-family: 'Barlow', sans-serif;
+}
+.tool-heading {
+  position: absolute;
+  top: 23px;
+  left: 32px;
+  pointer-events: none;
+}
+.tool-heading > span,
+.tool-eyebrow {
+  font:
+    600 10px 'Barlow',
+    sans-serif;
+  letter-spacing: 0.18em;
+}
+.tool-heading > span {
+  color: var(--tool-muted);
+}
+.tool-heading h2 {
+  font:
+    600 28px 'Barlow Condensed',
+    sans-serif;
+  margin: 5px 0;
+}
+.tool-stage {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  top: 50%;
+  left: 50%;
+}
+.tool-sectors {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.tool-sector {
+  fill: var(--tool-bg);
+  stroke: var(--tool-line);
+  stroke-width: 0.8;
+  cursor: pointer;
+}
+.tool-sector[data-group='drive'] {
+  stroke: #b19c6a;
+}
+.tool-sector[data-group='recovery'] {
+  stroke: #c78360;
+}
+.tool-sector[data-group='service'] {
+  stroke: #7f9c89;
+}
+.tool-sector.selected {
+  fill: var(--tool-accent);
+  stroke: var(--tool-accent);
+}
+.tool-sector.disabled {
+  fill-opacity: 0.65;
+  stroke-opacity: 0.4;
+  cursor: default;
+}
+#ui .tool-menu[data-style] .tool-option {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 94px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  gap: 5px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  color: var(--tool-text);
+  font:
+    600 15px 'Barlow Condensed',
+    sans-serif;
+  cursor: pointer;
+}
+#ui .tool-menu[data-style] .tool-option.selected {
+  color: var(--tool-on);
+  background: none;
+}
+#ui .tool-menu[data-style] .tool-option.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#ui .tool-menu[data-style] .tool-option:focus-visible {
+  outline: 2px solid var(--tool-accent);
+  outline-offset: 5px;
+}
+.tool-family {
+  font:
+    500 8px 'Barlow',
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 0.65;
+}
+.tool-menu .tool-icon {
+  display: block;
+  width: 29px;
+  height: 29px;
+}
+.tool-menu .tool-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#ui .tool-menu[data-style] .tool-centre {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 196px;
+  height: 196px;
+  padding: 18px;
+  border: 1px solid var(--tool-line);
+  border-radius: 50%;
+  background: var(--tool-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+  pointer-events: none;
+  font-family: 'Barlow', sans-serif;
+}
+.tool-eyebrow {
+  color: var(--tool-accent);
+  font-size: 9px;
+}
+.tool-centre strong {
+  font:
+    600 26px/1.05 'Barlow Condensed',
+    sans-serif;
+}
+.tool-centre small {
+  color: var(--tool-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.tool-centre.unavailable strong {
+  color: var(--tool-muted);
+}
+.tool-legend {
+  position: absolute;
+  bottom: 57px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 22px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+.tool-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 7px;
+  background: #b19c6a;
+}
+.tool-legend span:nth-child(2)::before {
+  background: #c78360;
+}
+.tool-legend span:nth-child(3)::before {
+  background: #7f9c89;
+}
+.tool-legend span:nth-child(4)::before {
+  background: #a5aaa0;
+}
+.tool-hint {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  margin: 0;
+  text-align: center;
+  color: var(--tool-muted);
+  font-size: 13px;
+}
+/* Touch uses full-size targets instead of shrinking a wheel below legibility. */
+#ui .tool-menu.tool-grid[data-style]:not(.hidden) {
+  display: block;
+  padding: 0;
+  overflow-y: auto;
+}
+.tool-grid .tool-heading {
+  position: static;
+  margin: 18px 16px;
+}
+.tool-grid .tool-heading h2 {
+  font-size: 24px;
+}
+.tool-grid .tool-stage {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 16px 90px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+  gap: 8px;
+}
+.tool-grid .tool-sectors,
+#ui .tool-grid[data-style] .tool-centre {
+  display: none;
+}
+#ui .tool-menu.tool-grid[data-style] .tool-option {
+  position: static;
+  transform: none;
+  width: 100%;
+  height: 94px;
+  border: 1px solid var(--tool-line);
+  border-radius: 4px;
+  background: var(--tool-bg);
+}
+#ui .tool-menu.tool-grid[data-style] .tool-option.selected {
+  background: var(--tool-accent);
+}
+.tool-grid .tool-legend {
+  display: none;
+}
+.tool-grid .tool-hint {
+  position: fixed;
+  bottom: 0;
+  padding: 14px;
+  left: 0;
+  right: 0;
+  background: #111e1cf2;
+}
+@media (max-height: 500px) {
+  .tool-heading {
+    top: 12px;
+    left: 16px;
+  }
+  .tool-heading h2 {
+    font-size: 22px;
+  }
+  .tool-heading > span {
+    display: none;
+  }
+  .tool-legend {
+    bottom: 40px;
+  }
+  .tool-hint {
+    bottom: 10px;
+    font-size: 11px;
+  }
+}
+
+#ui .tool-menu.tool-dense[data-style]:not(.tool-grid) .tool-option {
+  width: 76px;
+  height: 66px;
+  gap: 3px;
+  font-size: 14px;
+}
+.tool-menu.tool-dense[data-style]:not(.tool-grid) .tool-icon {
+  width: 23px;
+  height: 23px;
+}
+.tool-menu.tool-dense[data-style]:not(.tool-grid) .tool-family {
+  font-size: 7px;
+}
+
+#ui .tool-menu.tool-crowded[data-style]:not(.tool-grid) .tool-option {
+  width: 64px;
+  height: 58px;
+  gap: 2px;
+  font-size: 12px;
+}
+.tool-menu.tool-crowded[data-style]:not(.tool-grid) .tool-icon {
+  width: 22px;
+  height: 22px;
+}

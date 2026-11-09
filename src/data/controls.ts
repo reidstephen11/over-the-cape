@@ -239,7 +239,7 @@ export function controlsTable(
     ['Toggle precision crawl', 'P (6 km/h forward, 5 km/h reverse)', `Hold ${p.toolMenu} → precision crawl`],
     ['Winch quick attach / detach', 'E', p.winch],
     ['Winch in / out', 'R / F', 'D-pad up / down'],
-    ['Tool menu', 'Hold Q', `Hold ${p.toolMenu}`],
+    ['Tool menu', 'Hold Q, point, release', `Hold ${p.toolMenu}, right stick, release`],
     ['Interact (pick up planks)', 'E (when prompted)', p.confirm],
     ['Right vehicle', 'Hold J', `Hold ${p.back}`],
     ['Orbit camera', 'Mouse drag / Num 4 6 8 2', 'Right stick'],
