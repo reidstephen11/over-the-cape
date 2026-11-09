@@ -1,5 +1,6 @@
 import './toolMenu.css';
 import { icons } from './icons';
+import { uiScale } from './uiScale';
 import { orderTools, toolGroup, toolGroupLabels, toolShortLabels } from '../data/toolMenu';
 
 export interface ToolOption {
@@ -32,7 +33,11 @@ export class ToolMenu {
         return;
       }
       const r = this.el.getBoundingClientRect();
-      this.pointAt(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2), 92 * this.scale);
+      this.pointAt(
+        e.clientX - (r.left + r.width / 2),
+        e.clientY - (r.top + r.height / 2),
+        92 * uiScale() * this.scale,
+      );
     });
     this.el.addEventListener('click', (e) => {
       const over = (e.target as HTMLElement).closest<HTMLElement>('[data-tool-index]');
@@ -93,7 +98,13 @@ export class ToolMenu {
   }
 
   private layout(): void {
-    this.scale = Math.min(1, (this.el.clientWidth - 32) / 600, (this.el.clientHeight - 152) / 600);
+    // The wheel is drawn 600 × --u across (src/ui/uiScale.ts); shrink it to fit the screen.
+    const u = uiScale();
+    this.scale = Math.min(
+      1,
+      (this.el.clientWidth - 32 * u) / (600 * u),
+      (this.el.clientHeight - 152 * u) / (600 * u),
+    );
     const grid = this.sticky && this.scale < 0.72;
     this.el.classList.toggle('tool-grid', grid);
     const stage = this.el.querySelector<HTMLElement>('.tool-stage')!;
@@ -101,8 +112,8 @@ export class ToolMenu {
     this.el.querySelectorAll<HTMLElement>('.tool-option').forEach((b, i) => {
       const radius = this.options.length > 10 ? 234 : 211;
       const p = ringPoint(i, this.options.length, radius, radius);
-      b.style.left = `calc(50% + ${p.x}px)`;
-      b.style.top = `calc(50% + ${p.y}px)`;
+      b.style.left = `calc(50% + ${p.x} * var(--u))`;
+      b.style.top = `calc(50% + ${p.y} * var(--u))`;
     });
   }
 

@@ -114,3 +114,47 @@ export async function waitSim(page: Page, seconds: number, timeoutMs = 300_000):
     polling: 100,
   });
 }
+
+/**
+ * Every visible piece of text in the interface with its size as drawn on screen (CSS px):
+ * the font size times any CSS transform on the way, and SVG lettering's font size times its
+ * drawing's scale (as scripts/ui-audit.ts measures it).
+ */
+export function drawnText(page: Page): Promise<{ px: number; text: string; cls: string }[]> {
+  return page.evaluate(() => {
+    const seen = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) return false;
+      if (r.right < 0 || r.bottom < 0 || r.left > innerWidth || r.top > innerHeight) return false;
+      for (let e: Element | null = el; e; e = e.parentElement) {
+        const s = getComputedStyle(e);
+        if (s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) < 0.05) return false;
+      }
+      return true;
+    };
+    const out: { px: number; text: string; cls: string }[] = [];
+    const walker = document.createTreeWalker(document.getElementById('ui')!, NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      const t = n.textContent?.trim();
+      const el = n.parentElement;
+      if (!t || !el || el.closest('svg') || !seen(el)) continue;
+      const k = el.offsetHeight > 0 ? el.getBoundingClientRect().height / el.offsetHeight : 1;
+      out.push({
+        px: parseFloat(getComputedStyle(el).fontSize) * k,
+        text: t,
+        cls: el.className || el.tagName,
+      });
+    }
+    for (const el of document.querySelectorAll<SVGTextElement>('#ui svg text')) {
+      if (!el.textContent?.trim() || !seen(el)) continue;
+      const m = el.getScreenCTM();
+      const k = m ? Math.hypot(m.a, m.b) : 1;
+      out.push({
+        px: parseFloat(getComputedStyle(el).fontSize) * k,
+        text: el.textContent.trim(),
+        cls: `svg ${el.getAttribute('class') ?? ''}`,
+      });
+    }
+    return out;
+  });
+}

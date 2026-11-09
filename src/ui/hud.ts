@@ -459,6 +459,8 @@ export class Hud {
     const key = `${touch ? 't' : 'd'}:${prompts.map((p) => `${p.keys}|${p.text}|${p.progress?.toFixed(2) ?? ''}`).join('#')}`;
     if (key !== this.lastPromptKey) {
       this.lastPromptKey = key;
+      // On a phone held upright the prompt takes a line under the dials (hudStyles.css).
+      this.el.classList.toggle('with-prompt', prompts.length > 0);
       this.promptsEl.innerHTML = '';
       for (const p of prompts) {
         const el = document.createElement('div');

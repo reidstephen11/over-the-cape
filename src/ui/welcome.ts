@@ -31,6 +31,8 @@ import {
 import { MenuStick } from '../sim/input/touchStick';
 import { isTouchDevice } from './touchControls';
 import { applyHudStyle, hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
+import { uiSizeLabels, uiSizes, type UiSize } from '../data/uiSize';
+import { applyUiSize } from './uiScale';
 import { damageNotes, gearboxLabels, gearboxNote, showGearboxSetting } from './menus';
 import { GEARBOX_SETTINGS, type GearboxSetting } from '../sim/vehicle/drivetrain';
 
@@ -46,6 +48,7 @@ type Group =
   | 'volume'
   | 'units'
   | 'hudStyle'
+  | 'uiSize'
   | 'gearbox'
   | 'episode'
   | 'start'
@@ -240,6 +243,7 @@ export class WelcomeScreen {
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
+        <section class="title-setting ui-size-setting"><h3>UI size</h3><div class="welcome-options seg">${uiSizes.map((z) => setting('uiSize', z, uiSizeLabels[z], this.settings.uiSize === z)).join('')}</div></section>
         <section class="title-setting"><h3>HUD style</h3><div class="welcome-options seg">${pickableHudStyles.map((h) => setting('hudStyle', h, hudStyleLabels[h], this.settings.hudStyle === h)).join('')}</div></section>
         ${
           showGearboxSetting(this.padConnected)
@@ -259,6 +263,7 @@ export class WelcomeScreen {
           'volume',
           'controller',
           'units',
+          'uiSize',
           'hudStyle',
           'gearbox',
         ],
@@ -460,6 +465,8 @@ export class WelcomeScreen {
         return v === this.settings.units;
       case 'hudStyle':
         return v === this.settings.hudStyle;
+      case 'uiSize':
+        return v === this.settings.uiSize;
       case 'gearbox':
         return v === this.settings.gearbox;
       case 'episode':
@@ -509,6 +516,7 @@ export class WelcomeScreen {
       group === 'touchDrive' ||
       group === 'touchSide' ||
       group === 'hudStyle' ||
+      group === 'uiSize' ||
       group === 'gearbox'
     ) {
       if (group === 'quality') this.settings.quality = value as Settings['quality'];
@@ -518,7 +526,10 @@ export class WelcomeScreen {
       else if (group === 'touchDrive') this.settings.touchDrive = value as TouchDriveScheme;
       else if (group === 'touchSide') this.settings.touchStickSide = value as TouchStickSide;
       else if (group === 'gearbox') this.settings.gearbox = value as GearboxSetting;
-      else if (group === 'hudStyle') {
+      else if (group === 'uiSize') {
+        this.settings.uiSize = value as UiSize;
+        applyUiSize(this.settings.uiSize);
+      } else if (group === 'hudStyle') {
         this.settings.hudStyle = value as HudStyle;
         applyHudStyle(this.settings.hudStyle);
       } else this.settings.units = value as Settings['units'];

@@ -1,10 +1,10 @@
 .tool-preview-bar {
   position: fixed;
-  top: 24px;
-  right: 24px;
+  top: calc(24 * var(--u));
+  right: calc(24 * var(--u));
   z-index: 40;
   display: flex;
-  gap: 6px;
+  gap: calc(6 * var(--u));
   align-items: center;
 }
 .tool-preview-bar button,
@@ -12,10 +12,10 @@
   color: #d7e2d7;
   background: #10211f;
   border: 1px solid #65786b;
-  border-radius: 4px;
-  padding: 9px 11px;
+  border-radius: calc(4 * var(--u));
+  padding: calc(9 * var(--u)) calc(11 * var(--u));
   font:
-    500 12px 'Barlow',
+    500 calc(12 * var(--u)) 'Barlow',
     sans-serif;
   text-decoration: none;
   cursor: pointer;
@@ -28,24 +28,24 @@
 .tool-preview-status {
   position: fixed;
   z-index: 40;
-  bottom: 16px;
-  right: 24px;
+  bottom: calc(16 * var(--u));
+  right: calc(24 * var(--u));
   color: #f0d8a2;
   font:
-    500 12px 'Barlow',
+    500 calc(12 * var(--u)) 'Barlow',
     sans-serif;
   pointer-events: none;
 }
 @media (max-width: 1000px) {
   .tool-preview-bar {
     top: auto;
-    bottom: 70px;
-    left: 12px;
-    right: 12px;
+    bottom: calc(70 * var(--u));
+    left: calc(12 * var(--u));
+    right: calc(12 * var(--u));
     justify-content: center;
     flex-wrap: wrap;
   }
   .tool-preview-status {
-    bottom: 46px;
+    bottom: calc(46 * var(--u));
   }
 }

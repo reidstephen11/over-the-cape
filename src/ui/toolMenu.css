@@ -10,20 +10,20 @@
   --tool-on: #201c14;
   z-index: 30;
   background: radial-gradient(ellipse at center, #111b19a8, #080e10d9);
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(calc(5 * var(--u)));
   color: var(--tool-text);
   font-family: 'Barlow', sans-serif;
 }
 .tool-heading {
   position: absolute;
-  top: 23px;
-  left: 32px;
+  top: calc(23 * var(--u));
+  left: calc(32 * var(--u));
   pointer-events: none;
 }
 .tool-heading > span,
 .tool-eyebrow {
   font:
-    600 10px 'Barlow',
+    600 calc(10 * var(--u)) 'Barlow',
     sans-serif;
   letter-spacing: 0.18em;
 }
@@ -32,14 +32,14 @@
 }
 .tool-heading h2 {
   font:
-    600 28px 'Barlow Condensed',
+    600 calc(28 * var(--u)) 'Barlow Condensed',
     sans-serif;
-  margin: 5px 0;
+  margin: calc(5 * var(--u)) 0;
 }
 .tool-stage {
   position: absolute;
-  width: 600px;
-  height: 600px;
+  width: calc(600 * var(--u));
+  height: calc(600 * var(--u));
   top: 50%;
   left: 50%;
 }
@@ -76,21 +76,21 @@
 #ui .tool-menu[data-style] .tool-option {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 100px;
-  height: 94px;
+  width: calc(100 * var(--u));
+  height: calc(94 * var(--u));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 0;
-  gap: 5px;
+  gap: calc(5 * var(--u));
   border: 0;
   border-radius: 0;
   box-shadow: none;
   background: none;
   color: var(--tool-text);
   font:
-    600 15px 'Barlow Condensed',
+    600 calc(15 * var(--u)) 'Barlow Condensed',
     sans-serif;
   cursor: pointer;
 }
@@ -103,12 +103,12 @@
   cursor: default;
 }
 #ui .tool-menu[data-style] .tool-option:focus-visible {
-  outline: 2px solid var(--tool-accent);
-  outline-offset: 5px;
+  outline: calc(2 * var(--u)) solid var(--tool-accent);
+  outline-offset: calc(5 * var(--u));
 }
 .tool-family {
   font:
-    500 8px 'Barlow',
+    500 calc(8 * var(--u)) 'Barlow',
     sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -116,8 +116,8 @@
 }
 .tool-menu .tool-icon {
   display: block;
-  width: 29px;
-  height: 29px;
+  width: calc(29 * var(--u));
+  height: calc(29 * var(--u));
 }
 .tool-menu .tool-icon svg {
   display: block;
@@ -129,9 +129,9 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 196px;
-  height: 196px;
-  padding: 18px;
+  width: calc(196 * var(--u));
+  height: calc(196 * var(--u));
+  padding: calc(18 * var(--u));
   border: 1px solid var(--tool-line);
   border-radius: 50%;
   background: var(--tool-bg);
@@ -140,22 +140,22 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 12px;
+  gap: calc(12 * var(--u));
   pointer-events: none;
   font-family: 'Barlow', sans-serif;
 }
 .tool-eyebrow {
   color: var(--tool-accent);
-  font-size: 9px;
+  font-size: calc(9 * var(--u));
 }
 .tool-centre strong {
   font:
-    600 26px/1.05 'Barlow Condensed',
+    600 calc(26 * var(--u))/1.05 'Barlow Condensed',
     sans-serif;
 }
 .tool-centre small {
   color: var(--tool-muted);
-  font-size: 12px;
+  font-size: calc(12 * var(--u));
   line-height: 1.5;
 }
 .tool-centre.unavailable strong {
@@ -163,12 +163,12 @@
 }
 .tool-legend {
   position: absolute;
-  bottom: 57px;
+  bottom: calc(57 * var(--u));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 22px;
-  font-size: 10px;
+  gap: calc(22 * var(--u));
+  font-size: calc(10 * var(--u));
   text-transform: uppercase;
   letter-spacing: 0.12em;
   white-space: nowrap;
@@ -176,9 +176,9 @@
 .tool-legend span::before {
   content: '';
   display: inline-block;
-  width: 5px;
-  height: 5px;
-  margin-right: 7px;
+  width: calc(5 * var(--u));
+  height: calc(5 * var(--u));
+  margin-right: calc(7 * var(--u));
   background: #b19c6a;
 }
 .tool-legend span:nth-child(2)::before {
@@ -192,13 +192,13 @@
 }
 .tool-hint {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 18px;
+  left: calc(16 * var(--u));
+  right: calc(16 * var(--u));
+  bottom: calc(18 * var(--u));
   margin: 0;
   text-align: center;
   color: var(--tool-muted);
-  font-size: 13px;
+  font-size: calc(13 * var(--u));
 }
 /* Touch uses full-size targets instead of shrinking a wheel below legibility. */
 #ui .tool-menu.tool-grid[data-style]:not(.hidden) {
@@ -208,19 +208,19 @@
 }
 .tool-grid .tool-heading {
   position: static;
-  margin: 18px 16px;
+  margin: calc(18 * var(--u)) calc(16 * var(--u));
 }
 .tool-grid .tool-heading h2 {
-  font-size: 24px;
+  font-size: calc(24 * var(--u));
 }
 .tool-grid .tool-stage {
   position: static;
   width: auto;
   height: auto;
-  margin: 0 16px 90px;
+  margin: 0 calc(16 * var(--u)) calc(90 * var(--u));
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(calc(104 * var(--u)), 1fr));
+  gap: calc(8 * var(--u));
 }
 .tool-grid .tool-sectors,
 #ui .tool-grid[data-style] .tool-centre {
@@ -230,9 +230,9 @@
   position: static;
   transform: none;
   width: 100%;
-  height: 94px;
+  height: calc(94 * var(--u));
   border: 1px solid var(--tool-line);
-  border-radius: 4px;
+  border-radius: calc(4 * var(--u));
   background: var(--tool-bg);
 }
 #ui .tool-menu.tool-grid[data-style] .tool-option.selected {
@@ -244,52 +244,87 @@
 .tool-grid .tool-hint {
   position: fixed;
   bottom: 0;
-  padding: 14px;
+  padding: calc(14 * var(--u));
   left: 0;
   right: 0;
   background: #111e1cf2;
 }
 @media (max-height: 500px) {
   .tool-heading {
-    top: 12px;
-    left: 16px;
+    top: calc(12 * var(--u));
+    left: calc(16 * var(--u));
   }
   .tool-heading h2 {
-    font-size: 22px;
+    font-size: calc(22 * var(--u));
   }
   .tool-heading > span {
     display: none;
   }
   .tool-legend {
-    bottom: 40px;
+    bottom: calc(40 * var(--u));
   }
   .tool-hint {
-    bottom: 10px;
-    font-size: 11px;
+    bottom: calc(10 * var(--u));
+    font-size: calc(11 * var(--u));
   }
 }
 
 #ui .tool-menu.tool-dense[data-style]:not(.tool-grid) .tool-option {
-  width: 76px;
-  height: 66px;
-  gap: 3px;
-  font-size: 14px;
+  width: calc(76 * var(--u));
+  height: calc(66 * var(--u));
+  gap: calc(3 * var(--u));
+  font-size: calc(14 * var(--u));
 }
 .tool-menu.tool-dense[data-style]:not(.tool-grid) .tool-icon {
-  width: 23px;
-  height: 23px;
+  width: calc(23 * var(--u));
+  height: calc(23 * var(--u));
 }
 .tool-menu.tool-dense[data-style]:not(.tool-grid) .tool-family {
-  font-size: 7px;
+  font-size: calc(7 * var(--u));
 }
 
 #ui .tool-menu.tool-crowded[data-style]:not(.tool-grid) .tool-option {
-  width: 64px;
-  height: 58px;
-  gap: 2px;
-  font-size: 12px;
+  width: calc(64 * var(--u));
+  height: calc(58 * var(--u));
+  gap: calc(2 * var(--u));
+  font-size: calc(12 * var(--u));
 }
 .tool-menu.tool-crowded[data-style]:not(.tool-grid) .tool-icon {
-  width: 22px;
-  height: 22px;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+}
+
+/*
+ * Screens without touch (v1.75): the wheel shrinks to fit a television's height (about 0.7 of
+ * its drawn size at 1080p), so its lettering is drawn larger to read from the couch: names
+ * 24 px and the small labels 18 px or more on screen there.
+ */
+body:not(.touch-mode) #ui .tool-menu[data-style]:not(.tool-grid) .tool-option {
+  width: calc(110 * var(--u));
+  font-size: calc(18.5 * var(--u));
+}
+body:not(.touch-mode) #ui .tool-menu.tool-dense[data-style]:not(.tool-grid) .tool-option {
+  width: calc(96 * var(--u));
+  height: calc(76 * var(--u));
+  font-size: calc(18.5 * var(--u));
+}
+body:not(.touch-mode) #ui .tool-menu.tool-crowded[data-style]:not(.tool-grid) .tool-option {
+  width: calc(84 * var(--u));
+  height: calc(70 * var(--u));
+  font-size: calc(17 * var(--u));
+}
+body:not(.touch-mode) .tool-menu[data-style]:not(.tool-grid) .tool-family {
+  font-size: calc(14 * var(--u));
+  letter-spacing: 0.06em;
+}
+body:not(.touch-mode) .tool-menu.tool-crowded[data-style]:not(.tool-grid) .tool-family {
+  font-size: calc(13 * var(--u));
+}
+body:not(.touch-mode) .tool-menu .tool-centre .tool-eyebrow {
+  font-size: calc(14 * var(--u));
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+body:not(.touch-mode) .tool-menu .tool-centre small {
+  font-size: calc(14 * var(--u));
 }
