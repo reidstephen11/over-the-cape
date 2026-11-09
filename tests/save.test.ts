@@ -19,15 +19,24 @@ describe('exploration and saving', () => {
       expect(loadSave(s)!.settings.headMotion).toBe(true);
     }
   });
-  it('keeps the mirror preference and defaults older or invalid settings to on', () => {
+  it('loads saves with retired mirror settings while preserving head motion and progress', () => {
     const s = new MemoryStore();
+    const data = saveData({
+      settings: { ...defaultSettings, headMotion: false },
+      unlocked: ['hilux'],
+      episodes: {
+        creb: {
+          completed: false,
+          checkpoint: startCheckpoint(crebEpisode, 'roaring-meg-camp', 'shortie'),
+        },
+      },
+    });
     for (const mirrors of [true, false]) {
-      writeSave(saveData({ settings: { ...defaultSettings, mirrors } }), s);
-      expect(loadSave(s)!.settings.mirrors).toBe(mirrors);
-    }
-    for (const mirrors of [undefined, null, 'false', 0]) {
-      s.setItem(SAVE_KEY, JSON.stringify({ version: 1, settings: { mirrors } }));
-      expect(loadSave(s)!.settings.mirrors).toBe(true);
+      s.setItem(SAVE_KEY, JSON.stringify({ ...data, settings: { ...data.settings, mirrors } }));
+      const loaded = loadSave(s)!;
+      expect(loaded.settings).toEqual(data.settings);
+      expect(loaded.episodes).toEqual(data.episodes);
+      expect(loaded.unlocked).toEqual(data.unlocked);
     }
   });
   it('keeps controller preferences across saves and defaults old or invalid values to PlayStation', () => {

@@ -22,8 +22,6 @@ import { isGearboxSetting, type GearboxSetting } from '../vehicle/drivetrain';
 
 export interface Settings {
   quality: 'low' | 'medium' | 'high';
-  /** Live cockpit mirror reflections. Older saves default to on. */
-  mirrors: boolean;
   /** Subtle acceleration-driven movement in the driver's seat. */
   headMotion: boolean;
   controller: ControllerType;
@@ -87,7 +85,6 @@ export interface SaveData {
 
 export const defaultSettings: Settings = {
   quality: 'medium',
-  mirrors: true,
   headMotion: true,
   controller: defaultController,
   masterVolume: 0.8,
@@ -142,7 +139,6 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
       settings: {
         controller: isControllerType(st.controller) ? st.controller : defaultController,
         quality: st.quality === 'low' || st.quality === 'high' ? st.quality : 'medium',
-        mirrors: typeof st.mirrors === 'boolean' ? st.mirrors : true,
         headMotion: typeof st.headMotion === 'boolean' ? st.headMotion : true,
         masterVolume: clamp01(st.masterVolume, defaultSettings.masterVolume),
         engineVolume: clamp01(st.engineVolume, defaultSettings.engineVolume),

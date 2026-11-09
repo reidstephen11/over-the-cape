@@ -19,7 +19,7 @@ export const VehicleMaterial = {
   DrivingLamp: 9,
   /** Dial markings: lit in their own colours with the headlights, like dash lights. */
   DialMarks: 10,
-  /** Rear-facing mirror glazing; live reflections are attached only to the player's car. */
+  /** Static mirror glazing, with no extra scene renders. */
   Mirror: 11,
 } as const;
 export type VehicleMaterialId = (typeof VehicleMaterial)[keyof typeof VehicleMaterial];

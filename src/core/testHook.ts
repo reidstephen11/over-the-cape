@@ -137,10 +137,8 @@ export interface GameHook {
     best: { points: number; seconds: number } | null;
   } | null;
   setQuality(level: 'low' | 'medium' | 'high'): void;
-  setMirrors(enabled: boolean): void;
   setHeadMotion(enabled: boolean): void;
   headMotion(): { enabled: boolean; offset: number[] };
-  mirrors(): { targets: number; captures: number; enabled: boolean };
   quality(): 'low' | 'medium' | 'high';
   setTouchDrive(scheme: TouchDriveScheme): void;
   touchDrive(): TouchDriveScheme;
@@ -330,14 +328,8 @@ export function installHook(game: Game): void {
       return true;
     },
     setQuality: (level) => g.changeSettings({ quality: level }),
-    setMirrors: (enabled) => g.changeSettings({ mirrors: enabled }),
     setHeadMotion: (enabled) => g.changeSettings({ headMotion: enabled }),
     headMotion: () => ({ enabled: g.settings.headMotion, offset: g.chase.headMotion.offset.toArray() }),
-    mirrors: () => ({
-      targets: g.view.mirrors.targetCount,
-      captures: g.view.mirrors.captures,
-      enabled: g.settings.mirrors,
-    }),
     quality: () => g.settings.quality,
     setTouchDrive: (scheme) => g.changeSettings({ touchDrive: scheme }),
     touchDrive: () => g.settings.touchDrive,

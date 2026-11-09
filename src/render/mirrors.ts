@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 
-/** Fallback glazing when reflections are disabled or the camera is outside the cab. */
+/** Static mirror glass: a pale blue-grey that reads as the sky reflected. */
 export const mirrorGlass = new THREE.Color('#B4C2C6');
 
 type P = { x: number; y: number; z: number };
