@@ -9,6 +9,14 @@ test('drives all eight gates, shows the phone score and keeps a per-vehicle best
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
+  // This checks scoring, display and saving. The scripted driver has no tyre-repair
+  // strategy; damage and recovery are exercised by their own simulation tests.
+  await page.addInitScript(() => {
+    const key = 'overthecape.save.v1';
+    const saved = JSON.parse(localStorage.getItem(key) ?? '{"version":1}');
+    saved.settings = { ...saved.settings, quality: 'low', damage: 'off' };
+    localStorage.setItem(key, JSON.stringify(saved));
+  });
   await page.goto('/?touch&track=reopened&surprises=off');
   await waitReady(page);
   await expect(page.locator('.gate-count')).toHaveClass(/hidden/);

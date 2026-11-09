@@ -13,14 +13,13 @@ The owner finds Episodes 2–4 boring and easy and wants the game to focus on Ep
 
 # Sim-audience follow-ups
 
-For players who like 4WD challenges and realistic driving. v1.35 added the manual gearbox (controller only). Its "Manual with clutch" option (○/B as the clutch) was shelved in v1.37, because a controller button is a poor clutch. The owner has permanently ruled out steering-wheel and pedal support; do not put it back on the roadmap or plan to restore the clutch option. Next, one update at a time:
+For players who like 4WD challenges and realistic driving. v1.35 added the manual gearbox (controller only). Its "Manual with clutch" option (○/B as the clutch) was shelved in v1.37, because a controller button is a poor clutch. The owner has permanently ruled out steering-wheel and pedal support and manual shift buttons on phones; do not put these back on the roadmap or plan to restore the clutch option. Next, one update at a time:
 
 1. ~~**Transfer case.**~~ Done in v1.63: part-time 2H/4H/4L, manual/automatic hubs, full-time centre lock, wind-up, HUD and touch status, and camp persistence. Starts in 4H with hubs and centre locked, retaining the existing route tuning. The first scored gate course followed in v1.68.
 2. ~~**Scored gate course on the CREB.**~~ First course done in v1.68: eight numbered gates on the knoll rock climb, a live score and timer, penalties for flags, skipped gates, reverses, knocks and winching, and saved personal bests per vehicle. More courses on other climbs can follow.
 3. ~~**Tyre pressure in psi and more recovery gear.**~~ Done in v1.67: 18/24/36 psi settings, timed deflation/inflation, per-wheel readings and camp persistence; double-line winching through a snatch block; automatic tree protectors; rear recovery points on stranded vehicles; a timed shovel job with local relief that wheelspin wears away.
 4. **Rendered mirrors and head motion** in the driver's seat.
-5. **Shift buttons on phones**, so the manual gearbox works with touch.
-6. **Solid-axle articulation.** First stage in v1.65: fixed-length axle geometry, shared tyre camber and moving spring/link attachments. The existing massless raycast suspension and low-range flex tuning remain; separate unsprung axle bodies and their suspension/handling retune are still open.
+5. **Solid-axle articulation.** First stage in v1.65: fixed-length axle geometry, shared tyre camber and moving spring/link attachments. The existing massless raycast suspension and low-range flex tuning remain; separate unsprung axle bodies and their suspension/handling retune are still open.
 
 # Performance follow-ups
 

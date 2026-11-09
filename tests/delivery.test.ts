@@ -33,6 +33,8 @@ const world = buildWorld({
   ],
   noise: { ...crebMap.noise, macroAmplitude: 0, midAmplitude: 0, detailAmplitude: 0 },
   tracks: [],
+  gates: [],
+  gateCourse: undefined,
   creeks: [],
   bogs: [],
   props: [],
