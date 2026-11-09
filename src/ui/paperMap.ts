@@ -4,7 +4,9 @@ import { NO_WATER } from '../sim/world/terrain';
 import { Noise2D } from '../sim/world/noise';
 import type { PoiDef } from '../sim/world/mapTypes';
 import { icons } from './icons';
-import { placeMapLabels, type MapLabel } from './mapLabels';
+import { mergeHints, placeMapLabels, type MapBox, type MapLabel } from './mapLabels';
+import { isTouchDevice } from './touchControls';
+import { uiScale } from './uiScale';
 import { trailPoint } from '../sim/world/crawlTrail';
 import { gateColours } from '../data/palette';
 import { seenTuning, type SeenGround } from '../sim/seenGround';
@@ -16,8 +18,13 @@ const PAPER = '#F3EBDA';
 /** The sheet's longer side (canvas px). */
 const SIZE = 1400;
 const MARGIN = 70;
-/** A long, narrow map's sheet is at least this share of SIZE across, leaving paper beside it for names. */
-const MIN_SHEET = 0.45;
+/**
+ * A long, narrow map's sheet is at least this share of SIZE across, leaving paper beside it
+ * for names: wider on a big screen, where the names are drawn larger (see `marks`).
+ */
+const MIN_SHEET = { touch: 0.45, screen: 0.6 };
+/** Place names on the open map are at least this many CSS px at interface scale 1 (src/ui/uiScale.ts). */
+const MIN_NAME_PX = 13;
 /** Closest zoom (the whole map is 1). */
 const MAX_ZOOM = 4;
 /**
@@ -104,6 +111,13 @@ export class PaperMap {
   private readonly halfX: number;
   private readonly halfZ: number;
   private readonly scale: number;
+  /**
+   * How large the names, icons, question marks and the car's arrow are drawn (1 = as on a
+   * phone): set on opening so a name is at least MIN_NAME_PX × the interface scale on screen.
+   */
+  private marks = 1;
+  /** The `marks` the frame's lettering was drawn at. */
+  private frameMarks = 0;
 
   constructor(
     root: HTMLElement,
@@ -113,8 +127,9 @@ export class PaperMap {
     this.halfX = world.map.wall[0] + 20;
     this.halfZ = world.map.wall[1] + 20;
     this.scale = (SIZE - 2 * MARGIN) / (2 * Math.max(this.halfX, this.halfZ));
-    this.width = Math.round(Math.max(2 * this.halfX * this.scale + 2 * MARGIN, MIN_SHEET * SIZE));
-    this.height = Math.round(Math.max(2 * this.halfZ * this.scale + 2 * MARGIN, MIN_SHEET * SIZE));
+    const minSheet = isTouchDevice() ? MIN_SHEET.touch : MIN_SHEET.screen;
+    this.width = Math.round(Math.max(2 * this.halfX * this.scale + 2 * MARGIN, minSheet * SIZE));
+    this.height = Math.round(Math.max(2 * this.halfZ * this.scale + 2 * MARGIN, minSheet * SIZE));
     this.el = document.createElement('div');
     this.el.className = 'paper-map hidden';
     this.el.innerHTML = `<div class="paper-map-sheet"><button type="button" class="paper-map-close" aria-label="Close map">Close</button><div class="paper-map-view"><canvas width="${this.width}" height="${this.height}"></canvas></div><div class="paper-map-hint"></div></div>`;
@@ -194,11 +209,6 @@ export class PaperMap {
       this.drawWater(g);
       await yieldFrame();
       this.drawTracks(g);
-      const f = document.createElement('canvas');
-      f.width = this.width;
-      f.height = this.height;
-      this.drawFrame(f.getContext('2d') as CanvasRenderingContext2D);
-      this.frame = f;
       this.base = c;
     })();
     return this.building;
@@ -484,7 +494,9 @@ export class PaperMap {
     wobblyRect(MARGIN - 4, 3);
     wobblyRect(MARGIN - 14, 1.2);
     g.fillStyle = '#3B2A1E';
-    g.font = '44px "Patrick Hand", "Nunito", sans-serif';
+    // The title fits the margin above the frame, so it grows less than the other lettering.
+    const k = this.marks;
+    g.font = `${44 * Math.min(k, 1.35)}px "Patrick Hand", "Nunito", sans-serif`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText(this.world.map.name, this.width / 2, top - MARGIN / 2 - 2);
@@ -498,13 +510,14 @@ export class PaperMap {
     g.lineTo(nx - 14, ny + 10);
     g.closePath();
     g.fill();
-    g.font = '30px "Patrick Hand", "Nunito", sans-serif';
-    g.fillText('N', nx, ny - 58);
+    g.font = `${30 * k}px "Patrick Hand", "Nunito", sans-serif`;
+    g.fillText('N', nx, ny - 40 - 18 * k);
     // Scale bar: 200 m, or 500 m on a map drawn small.
     const metres = 200 * this.scale < 60 ? 500 : 200;
     const len = metres * this.scale;
     const sx = left + 30;
-    const sy = bottom - 34;
+    // Outside the frame, in the sheet's margin, so it can't sit under a place near the edge.
+    const sy = bottom + 20;
     g.lineWidth = 3;
     g.strokeStyle = '#3B2A1E';
     g.beginPath();
@@ -515,8 +528,8 @@ export class PaperMap {
     g.moveTo(sx + len, sy - 7);
     g.lineTo(sx + len, sy + 7);
     g.stroke();
-    g.font = '24px "Patrick Hand", "Nunito", sans-serif';
-    g.fillText(`${metres} m`, sx + len / 2, sy - 18);
+    g.font = `${24 * k}px "Patrick Hand", "Nunito", sans-serif`;
+    g.fillText(`${metres} m`, sx + len / 2, sy + 6 + 12 * k);
   }
 
   /**
@@ -553,6 +566,12 @@ export class PaperMap {
       else if (w > 0 && Math.max(w, h) < SMALL_SHEET) this.zoomAt(PHONE_ZOOM, w / 2, h / 2, ux, uy);
       else this.applyView();
     }
+    // Names at least MIN_NAME_PX × the interface scale on screen at the opening zoom.
+    const [vw, vh] = [this.view.clientWidth, this.view.clientHeight];
+    if (vw > 0) {
+      const shown = (mapCanvasBase(vw, vh, this.width, this.height).baseH * this.zoom) / this.height;
+      this.marks = Math.min(2.5, Math.max(1, (MIN_NAME_PX * uiScale()) / (26 * shown)));
+    }
     if (!this.base) {
       // Still drawing: show the paper and fill it in when ready.
       this.ctx.fillStyle = '#F3EBDA';
@@ -562,32 +581,64 @@ export class PaperMap {
       });
       return;
     }
+    const k = this.marks;
+    if (!this.frame || this.frameMarks !== k) {
+      this.frame ??= document.createElement('canvas');
+      this.frame.width = this.width;
+      this.frame.height = this.height;
+      this.drawFrame(this.frame.getContext('2d') as CanvasRenderingContext2D);
+      this.frameMarks = k;
+    }
     const g = this.ctx;
     g.drawImage(this.base, 0, 0);
     if (seen) this.drawFog(g, seen);
-    if (this.frame) g.drawImage(this.frame, 0, 0);
-    if (seen)
+    g.drawImage(this.frame, 0, 0);
+    // Question marks: one for a cluster, so they can't pile on top of each other.
+    const hintSpots: { x: number; z: number }[] = [];
+    if (seen) {
       for (const p of this.world.pois)
-        if (!discovered.has(p.id) && seen.near(p.x, p.z, HINT_RANGE)) this.drawHint(g, p);
-    if (seen) for (const f of unfound) if (seen.near(f.x, f.z, HINT_RANGE)) this.drawHint(g, f);
+        if (!discovered.has(p.id) && seen.near(p.x, p.z, HINT_RANGE)) hintSpots.push(p);
+      for (const f of unfound) if (seen.near(f.x, f.z, HINT_RANGE)) hintSpots.push(f);
+    }
+    const hints = mergeHints(
+      hintSpots.map((p) => {
+        const [x, y] = this.toMap(p.x, p.z);
+        return { x, y };
+      }),
+      32 * k,
+    );
+    for (const h of hints) this.drawHint(g, h.x, h.y);
     const pois = this.world.pois.filter((p) => discovered.has(p.id));
+    // Names keep clear of the question marks and of the car's arrow as well as each other.
+    const [carX, carY] = this.toMap(player.x, player.z);
+    const obstacles: MapBox[] = [
+      ...hints.map((h) => ({
+        left: h.x - 15 * k,
+        right: h.x + 15 * k,
+        top: h.y - 15 * k,
+        bottom: h.y + 15 * k,
+      })),
+      { left: carX - 26 * k, right: carX + 26 * k, top: carY - 26 * k, bottom: carY + 26 * k },
+    ];
     const labels = placeMapLabels(
       pois.map((p) => {
         const [x, y] = this.toMap(p.x, p.z);
-        g.font = `${p.kind === 'campsite' ? 'bold ' : ''}26px "Patrick Hand", "Nunito", sans-serif`;
+        g.font = this.nameFont(p);
         return { id: p.id, x, y, width: g.measureText(p.name).width };
       }),
       this.width,
       MARGIN,
       this.height,
+      k,
+      obstacles,
     );
     g.strokeStyle = 'rgba(59, 42, 30, 0.5)';
-    g.lineWidth = 1.5;
+    g.lineWidth = 1.5 * k;
     g.beginPath();
     for (const label of labels) {
-      if (label.labelX === label.x + 22 && label.labelY === label.y) continue;
+      if (label.labelX === label.x + 22 * k && label.labelY === label.y) continue;
       const right = label.labelX > label.x;
-      g.moveTo(label.x + (right ? 18 : -18), label.y);
+      g.moveTo(label.x + (right ? 18 : -18) * k, label.y);
       g.lineTo(label.labelX + (right ? 0 : label.width), label.labelY);
     }
     g.stroke();
@@ -704,14 +755,19 @@ export class PaperMap {
     g.restore();
   }
 
-  /** A pencilled question mark where something hasn't been found yet. */
-  private drawHint(g: CanvasRenderingContext2D, p: { x: number; z: number }): void {
-    const [x, y] = this.toMap(p.x, p.z);
+  /** A place's name on the map, at the size the marks are drawn. */
+  private nameFont(p: PoiDef): string {
+    return `${p.kind === 'campsite' ? 'bold ' : ''}${26 * this.marks}px "Patrick Hand", "Nunito", sans-serif`;
+  }
+
+  /** A pencilled question mark where something hasn't been found yet (canvas px). */
+  private drawHint(g: CanvasRenderingContext2D, x: number, y: number): void {
+    const k = this.marks;
     g.fillStyle = 'rgba(243, 235, 218, 0.85)';
     g.beginPath();
-    g.arc(x, y, 15, 0, Math.PI * 2);
+    g.arc(x, y, 15 * k, 0, Math.PI * 2);
     g.fill();
-    g.font = 'bold 30px "Patrick Hand", "Nunito", sans-serif';
+    g.font = `bold ${30 * k}px "Patrick Hand", "Nunito", sans-serif`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillStyle = '#7A5A3A';
@@ -721,15 +777,16 @@ export class PaperMap {
   private drawPoi(g: CanvasRenderingContext2D, p: PoiDef, label: MapLabel): void {
     const [x, y] = this.toMap(p.x, p.z);
     const img = this.iconImages.get(p.kind);
+    const k = this.marks;
     g.fillStyle = 'rgba(243, 235, 218, 0.85)';
     g.beginPath();
-    g.arc(x, y, 17, 0, Math.PI * 2);
+    g.arc(x, y, 17 * k, 0, Math.PI * 2);
     g.fill();
-    if (img?.complete) g.drawImage(img, x - 14, y - 14, 28, 28);
-    g.font = `${p.kind === 'campsite' ? 'bold ' : ''}26px "Patrick Hand", "Nunito", sans-serif`;
+    if (img?.complete) g.drawImage(img, x - 14 * k, y - 14 * k, 28 * k, 28 * k);
+    g.font = this.nameFont(p);
     g.textAlign = 'left';
     g.textBaseline = 'middle';
-    g.lineWidth = 5;
+    g.lineWidth = 5 * k;
     g.strokeStyle = 'rgba(243, 235, 218, 0.9)';
     g.strokeText(p.name, label.labelX, label.labelY);
     g.fillStyle = '#3B2A1E';
@@ -741,6 +798,7 @@ export class PaperMap {
     g.save();
     g.translate(x, y);
     g.rotate((p.heading * Math.PI) / 180);
+    g.scale(this.marks, this.marks);
     g.fillStyle = '#B5653A';
     g.strokeStyle = '#3B2A1E';
     g.lineWidth = 3;

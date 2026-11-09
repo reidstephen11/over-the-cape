@@ -19,6 +19,7 @@ import { isTimeOfDay, isWeather, type Conditions } from '../../data/environment'
 import { isDamageMode, type DamageMode } from '../../data/damage';
 import { readDeliveryState } from '../trailerState';
 import { isGearboxSetting, type GearboxSetting } from '../vehicle/drivetrain';
+import { defaultUiSize, isUiSize, type UiSize } from '../../data/uiSize';
 
 export interface Settings {
   quality: 'low' | 'medium' | 'high';
@@ -50,6 +51,8 @@ export interface Settings {
    * 'screen' draws on every refresh of a faster screen. Missing on older saves: '60'.
    */
   frameRate: FrameRateSetting;
+  /** How big the interface is drawn (src/ui/uiScale.ts). Missing on older saves: normal. */
+  uiSize: UiSize;
 }
 
 export type FrameRateSetting = '60' | 'screen';
@@ -100,6 +103,7 @@ export const defaultSettings: Settings = {
   hudStyle: defaultHudStyle,
   gearbox: 'automatic',
   frameRate: '60',
+  uiSize: defaultUiSize,
 };
 
 /** Minimal storage interface so tests can pass a fake. */
@@ -158,6 +162,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
             ? 'manual'
             : defaultSettings.gearbox,
         frameRate: st.frameRate === 'screen' ? 'screen' : '60',
+        uiSize: isUiSize(st.uiSize) ? st.uiSize : defaultUiSize,
       },
       vehicle: isVehicleId(data.vehicle) ? data.vehicle : 'shortie',
       episode: isEpisodeId(data.episode) ? data.episode : episodeOrder[0],

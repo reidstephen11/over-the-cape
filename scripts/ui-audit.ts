@@ -9,6 +9,12 @@
  * Usage (against `npx vite build && npx vite preview --port 4173`):
  *   npx vite-node scripts/ui-audit.ts <outDir> [views=tv,portrait,landscape] [url=http://localhost:4173/]
  * PW_CHROMIUM names another Chromium than the pinned Playwright's own.
+ *
+ * Text is measured as drawn on screen: an element's font size times any CSS transform on it
+ * (the tool wheel scales itself to fit), and SVG lettering's font size times the drawing's
+ * scale. Each screen also reports `cover`, the share of the screen under the interface
+ * (panels, cards, text and buttons), and `coverMiddle`, the same for the middle third of the
+ * picture, where the road ahead and the vehicle are.
  */
 import { chromium, type Page } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -31,6 +37,8 @@ const MIN_TOUCH = 44;
 interface Measured {
   text: { px: number; text: string; cls: string }[];
   buttons: { w: number; h: number; label: string }[];
+  cover: number;
+  coverMiddle: number;
 }
 
 /** Every visible piece of text with its font size, and every visible button with its size. */
@@ -46,25 +54,36 @@ const measure = (page: Page) =>
       }
       return true;
     };
+    /**
+     * How much an element is drawn larger or smaller than its own size: a CSS transform on it
+     * or an ancestor (the tool wheel fits itself to the screen with scale()).
+     */
+    const drawnScale = (el: HTMLElement) => {
+      const h = el.offsetHeight;
+      return h > 0 ? el.getBoundingClientRect().height / h : 1;
+    };
     const text: { px: number; text: string; cls: string }[] = [];
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
       const t = n.textContent?.trim();
       const el = n.parentElement;
-      if (!t || !el || !seen(el)) continue;
+      // SVG lettering is measured below, as drawn: its font size is in drawing units.
+      if (!t || !el || el.closest('svg') || !seen(el)) continue;
       text.push({
-        px: parseFloat(getComputedStyle(el).fontSize),
+        px: +(parseFloat(getComputedStyle(el).fontSize) * drawnScale(el)).toFixed(1),
         text: t.slice(0, 40),
         cls: (el.getAttribute('class') ?? el.tagName).slice(0, 40),
       });
     }
-    // SVG gauge lettering scales with its drawing, so measure it as drawn.
-    for (const el of document.querySelectorAll('svg text')) {
+    // SVG gauge lettering scales with its drawing: its font size times the drawing's scale on screen.
+    for (const el of document.querySelectorAll<SVGTextElement>('svg text')) {
       if (!seen(el) || !el.textContent?.trim()) continue;
+      const m = el.getScreenCTM();
+      const k = m ? Math.hypot(m.a, m.b) : 1;
       text.push({
-        px: +el.getBoundingClientRect().height.toFixed(1),
+        px: +(parseFloat(getComputedStyle(el).fontSize) * k).toFixed(1),
         text: el.textContent.trim().slice(0, 40),
-        cls: 'svg text',
+        cls: `svg ${el.getAttribute('class') ?? 'text'}`.slice(0, 40),
       });
     }
     const buttons = [...document.querySelectorAll('button')].filter(seen).map((b) => {
@@ -75,7 +94,41 @@ const measure = (page: Page) =>
         label: (b.getAttribute('aria-label') ?? b.textContent ?? '').trim().slice(0, 30),
       };
     });
-    return { text, buttons };
+    // What the interface covers: every visible panel, card, button, picture or line of text
+    // under #ui, marked on an 8 px grid. Full-screen layers (menus' dimmers) are left out.
+    const G = 8;
+    const cols = Math.ceil(innerWidth / G);
+    const rows = Math.ceil(innerHeight / G);
+    const grid = new Uint8Array(cols * rows);
+    const ui = document.getElementById('ui');
+    for (const el of ui ? ui.querySelectorAll<HTMLElement>('*') : []) {
+      const r = el.getBoundingClientRect();
+      if (r.width * r.height > innerWidth * innerHeight * 0.6 || !seen(el)) continue;
+      const s = getComputedStyle(el);
+      const filled =
+        (s.backgroundColor !== 'rgba(0, 0, 0, 0)' && s.backgroundColor !== 'transparent') ||
+        s.backgroundImage !== 'none' ||
+        el instanceof SVGSVGElement ||
+        el instanceof HTMLCanvasElement ||
+        [...el.childNodes].some((c) => c.nodeType === 3 && c.textContent!.trim());
+      if (!filled) continue;
+      for (let y = Math.max(0, Math.floor(r.top / G)); y < Math.min(rows, Math.ceil(r.bottom / G)); y++)
+        for (let x = Math.max(0, Math.floor(r.left / G)); x < Math.min(cols, Math.ceil(r.right / G)); x++)
+          grid[y * cols + x] = 1;
+    }
+    let all = 0;
+    let mid = 0;
+    let midCells = 0;
+    for (let y = 0; y < rows; y++)
+      for (let x = 0; x < cols; x++) {
+        const inMid = x >= cols / 3 && x < (cols * 2) / 3 && y >= rows / 3 && y < (rows * 2) / 3;
+        all += grid[y * cols + x];
+        if (inMid) {
+          midCells++;
+          mid += grid[y * cols + x];
+        }
+      }
+    return { text, buttons, cover: all / (cols * rows), coverMiddle: mid / midCells };
   });
 
 const report: Record<string, unknown> = {};
@@ -124,8 +177,14 @@ for (const view of views) {
       smallText: m.text.filter((t) => t.px < MIN_TEXT[view]).sort((a, b) => a.px - b.px),
       smallButtons: touch ? m.buttons.filter((b) => Math.min(b.w, b.h) < MIN_TOUCH) : [],
       buttons: m.buttons.length,
+      cover: +m.cover.toFixed(3),
+      coverMiddle: +m.coverMiddle.toFixed(3),
     };
-    console.log(`${view} ${name}: text ${sizes[0]}–${sizes[sizes.length - 1]} px`);
+    const small = m.text.filter((t) => t.px < MIN_TEXT[view]).length;
+    console.log(
+      `${view} ${name}: text ${sizes[0] ?? '-'}–${sizes[sizes.length - 1] ?? '-'} px, ${small} under ${MIN_TEXT[view]} px, ` +
+        `covers ${(m.cover * 100).toFixed(1)}% (middle ${(m.coverMiddle * 100).toFixed(1)}%)`,
+    );
   };
   const press = async (tap: string, key: string) => {
     if (touch) await page.locator(`[data-tap="${tap}"]`).first().tap();
@@ -168,20 +227,28 @@ for (const view of views) {
   await page.waitForTimeout(4000);
   await capture('5-driving');
   await page.evaluate(() => window.__game!.setInput({ throttle: 0, brake: 1 }));
-  await press('toolMenu', 'KeyQ');
+  // With a keyboard the wheel is open while Q is held: a press and release would close it
+  // before it was measured, so hold Q down until after the capture.
+  if (touch) await page.locator('[data-tap="toolMenu"]').first().tap();
+  else await page.keyboard.down('KeyQ');
+  await page.waitForFunction(() => window.__game!.ui().toolMenu);
   await capture('6-tools');
-  // A touch menu covers the button that opened it, so a key closes it there. With a keyboard
-  // the menu key closes it (after Escape there the map did not open in this script; cause not found).
-  await page.keyboard.press(touch ? 'Escape' : 'KeyQ');
+  // A touch menu closes with a tap outside the wheel (its top left corner); a keyboard's menu key
+  // closes it. No key is pressed in a touch view: a key press makes the keyboard the device in
+  // use, and the game then hides the touch buttons, so the map button could not be tapped
+  // (why the touch views stopped here before v1.75).
+  if (touch) await page.locator('.tool-menu').tap({ position: { x: 4, y: 4 } });
+  else await page.keyboard.up('KeyQ');
   await page.waitForFunction(() => !window.__game!.ui().toolMenu);
   await press('map', 'KeyM');
   // The paper map unfolds over a second or so of slow frames.
   await page.waitForFunction(() => window.__game!.ui().map);
   await page.waitForTimeout(6000);
   await capture('7-map');
-  await page.keyboard.press('KeyM');
+  if (touch) await page.locator('.paper-map-close').tap();
+  else await page.keyboard.press('KeyM');
   await page.waitForFunction(() => !window.__game!.ui().map);
-  await page.keyboard.press('Escape');
+  await press('pause', 'Escape');
   await page.waitForFunction(() => window.__game!.ui().pause);
   await page.waitForTimeout(2000);
   await capture('8-pause');

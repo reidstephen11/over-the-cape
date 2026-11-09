@@ -90,6 +90,7 @@ import { ToolController } from './toolController';
 import { pendingUpdate } from './update';
 import { buildHudState, CourseHintCache, episodeHud } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
+import { applyUiSize } from '../ui/uiScale';
 import { installHook } from './testHook';
 import { Bench } from '../debug/bench';
 import { sectionTargetsMet, supplyRun, vehicleChallenges, type LockedVehicleId } from '../data/unlocks';
@@ -784,6 +785,7 @@ export class Game {
     this.hud.units = this.settings.units;
     this.hud.style = this.settings.hudStyle;
     applyHudStyle(this.settings.hudStyle);
+    applyUiSize(this.settings.uiSize);
     this.hud.setControllerType(this.settings.controller);
     this.input.setTouchDrive(this.settings.touchDrive);
     this.touch.setDriveScheme(this.settings.touchDrive);
@@ -849,7 +851,7 @@ export class Game {
   openPause(): void {
     const camp = this.world.pois.find((p) => p.id === this.exploration.lastCampsite);
     this.pause.setStatus(this.pauseStatus());
-    this.pause.setTrips(this.sideTrips.journal());
+    this.pause.setTrips(this.sideTrips.journal(), this.history.log);
     this.pause.open(camp?.name ?? '', this.input.activeDevice === 'touch');
     this.loop.paused = true;
   }
@@ -1529,7 +1531,7 @@ export class Game {
     this.run.tick(dt);
     // History notes count down in simulated time: not while paused, and the same in the
     // browser tests, which run a fixed number of steps a frame on the slow software renderer.
-    this.history.tick(dt);
+    this.history.tick(dt, this.vehicle.body.translation());
     if (this.run.status === 'driving') this.recordGhost();
     const p = this.vehicle.body.translation();
     if (this.ghostGap) this.ghostBehind = this.ghostGap.update(p.x, p.z, this.run.elapsed);

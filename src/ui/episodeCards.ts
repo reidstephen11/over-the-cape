@@ -8,6 +8,19 @@ const LESSONS: readonly ControlInstruction[] = ['range', 'precision', 'locks', '
 /** How long a short note stays up on a touch screen if it isn't tapped open (seconds). */
 export const BRIEF_SECONDS = 7;
 
+/**
+ * On a screen without touch, a note shrinks to its title and first lines once it has been up
+ * this long (seconds) and the car has gone DRIVE_OFF_METRES from where it opened: the player
+ * has driven on, so the card gets out of the picture. It closes BRIEF_SECONDS later; the
+ * trip journal keeps the whole note.
+ */
+export const DRIVE_OFF_SECONDS = 8;
+export const DRIVE_OFF_METRES = 40;
+
+/** Has the player driven on from a note: up `seconds` and `metres` from where it opened? */
+export const drivenOff = (seconds: number, metres: number): boolean =>
+  seconds >= DRIVE_OFF_SECONDS && metres >= DRIVE_OFF_METRES;
+
 /** How long a note stays up to be read: about 200 words a minute, and at least 12 s. */
 export function readingSeconds(text: string): number {
   const words = text.trim().split(/\s+/).length;
@@ -53,6 +66,8 @@ export class HistoryCard {
   readonly el: HTMLElement;
   /** Titles shown so far, oldest first. */
   readonly shown: string[] = [];
+  /** Every note shown so far, oldest first, once each: the trip journal lists them. */
+  readonly log: { title: string; text: string }[] = [];
   private readonly backdrop: HTMLElement;
   private readonly queue: HistoryNote[] = [];
   private current: HistoryNote | null = null;
@@ -60,6 +75,9 @@ export class HistoryCard {
   private controller: ControllerType = defaultController;
   /** Seconds before the note closes by itself; counts down with the game (`tick`), so it waits while paused. */
   private timeLeft = 0;
+  /** Seconds the note has been up, and where the car was when it opened (see DRIVE_OFF_SECONDS). */
+  private upFor = 0;
+  private openedAt: { x: number; z: number } | null = null;
 
   /**
    * `root` takes the backdrop for a note read with the game stopped; `host` (the HUD's corner
@@ -118,6 +136,9 @@ export class HistoryCard {
     }
     this.el.querySelector('strong')!.textContent = n.title;
     this.shown.push(n.title);
+    if (!this.log.some((l) => l.title === n.title)) this.log.push({ title: n.title, text: this.noteText(n) });
+    this.upFor = 0;
+    this.openedAt = null;
     this.el.classList.toggle('brief', !n.reading && this.device === 'touch');
     this.fill(n);
     this.updateHint();
@@ -125,11 +146,26 @@ export class HistoryCard {
     this.timeLeft = this.el.classList.contains('brief') ? BRIEF_SECONDS : readingSeconds(this.noteText(n));
   }
 
-  /** A step of play went by (not called while the game is paused or the map is open). */
-  tick(dt: number): void {
+  /**
+   * A step of play went by (not called while the game is paused or the map is open). `car`:
+   * where the car is now, so a note can make way once the player drives on.
+   */
+  tick(dt: number, car?: { x: number; z: number }): void {
     if (this.timeLeft <= 0) return;
     this.timeLeft -= dt;
-    if (this.timeLeft <= 0) this.next();
+    if (this.timeLeft <= 0) {
+      this.next();
+      return;
+    }
+    this.upFor += dt;
+    if (!car || this.device === 'touch' || this.el.classList.contains('brief')) return;
+    this.openedAt ??= { x: car.x, z: car.z };
+    const driven = Math.hypot(car.x - this.openedAt.x, car.z - this.openedAt.z);
+    if (drivenOff(this.upFor, driven)) {
+      this.el.classList.add('brief');
+      this.updateHint();
+      this.timeLeft = Math.min(this.timeLeft, BRIEF_SECONDS);
+    }
   }
 
   /** Open a short note to its full text, with the time to read it. */
@@ -183,7 +219,9 @@ export class HistoryCard {
 
   private updateHint(): void {
     this.el.querySelector('.history-hint')!.textContent = this.el.classList.contains('brief')
-      ? 'Tap to read more'
+      ? this.device === 'touch'
+        ? 'Tap to read more'
+        : 'The trip journal keeps this note'
       : this.device === 'touch'
         ? 'Tap to carry on'
         : `${this.device === 'gamepad' ? controllers[this.controller].confirm : 'Enter'} to carry on`;

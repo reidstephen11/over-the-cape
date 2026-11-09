@@ -44,10 +44,16 @@ export interface InstrumentState {
   lamps: readonly Lamp[];
 }
 
-/** Text in a dial never drops below this on screen (CSS px). */
-const MIN_TEXT_PX = 9.5;
-/** Dial sizes the text is worked out for: the phone sizes are the smallest each layout uses. */
-const DIAL_PX = { compact: { speedo: 68, dial: 46 }, full: { speedo: 132, dial: 84 } };
+/**
+ * Text in a dial never drops below this on screen (CSS px at scale 1): 12 px, read in the hand
+ * on a phone's small dials, and on the full-size ones taken to 18 px on a 1080p television by
+ * the dash's scale (1.5 there, src/ui/uiScale.ts).
+ */
+const MIN_TEXT_PX = { compact: 12, full: 12 };
+/** Below this size (CSS px) a dial is a phone's compact one. */
+const COMPACT_BELOW = 100;
+/** Dial sizes the text is worked out for: the phone sizes are those of a phone 390 px or wider. */
+const DIAL_PX = { compact: { speedo: 78, dial: 50 }, full: { speedo: 132, dial: 84 } };
 /** The field kit's chrome gauges, brass compass and watch (CSS px). */
 const KIT_PX = { compact: { gauge: 56, brass: 54, watch: 64 }, full: { gauge: 92, brass: 104, watch: 128 } };
 /** The edge style's straight scales and compass tape (CSS px). */
@@ -71,8 +77,12 @@ function arc(cx: number, cy: number, r: number, a: number, b: number): string {
 /** A dial's needle angle: a 240° sweep from -120° (empty, cold) to +120° (full, hot). */
 export const sweep = (share: number): number => -120 + clamp01(share) * 240;
 
-/** Font size in dial units (viewBox 100) so the text is at least MIN_TEXT_PX on a dial `px` wide. */
-const fz = (units: number, px: number, min = MIN_TEXT_PX) => Math.max(units, (min * 100) / px).toFixed(1);
+/** Font size in dial units (viewBox 100) so the text is at least MIN_TEXT_PX (or `min`) on a dial `px` wide. */
+const fz = (units: number, px: number, min = 0) =>
+  Math.max(
+    units,
+    (Math.max(min, px < COMPACT_BELOW ? MIN_TEXT_PX.compact : MIN_TEXT_PX.full) * 100) / px,
+  ).toFixed(1);
 
 function line(a: [number, number], b: [number, number], width: number): string {
   return `<line x1="${f2(a[0])}" y1="${f2(a[1])}" x2="${f2(b[0])}" y2="${f2(b[1])}" stroke-width="${width}"/>`;
@@ -596,8 +606,9 @@ function dialSvg(
   const compact = px < 60;
   const labelSize = fz(9, px);
   const endSize = fz(9, px);
-  const e1 = pt(50, 52, 25, -135);
-  const e2 = pt(50, 52, 25, 135);
+  // The end letters sit out at the ends of the sweep, clear of the label under the hub.
+  const e1 = pt(50, 52, 27, -120);
+  const e2 = pt(50, 52, 27, 120);
   const valueSize = fz(11, px, 10.5);
   return `<svg viewBox="0 0 100 100" role="img" aria-label="${label}">
     <circle class="face" cx="50" cy="52" r="47"/>

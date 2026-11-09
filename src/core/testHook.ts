@@ -198,6 +198,8 @@ export interface GameHook {
   historyShown(): string[];
   /** Show the history note for a place as if just reached (closing any card that is up). */
   showNote(poi: string): void;
+  /** The crawl gauges: 'auto' (the default), always 'on', or 'off' (the I key's cycle). */
+  setCrawlGauges(mode: 'auto' | 'on' | 'off'): void;
   /** Set the park brake directly (the key toggles it). */
   setParkBrake(on: boolean): void;
   /** Set the headlights directly (the key cycles them). */
@@ -538,6 +540,9 @@ export function installHook(game: Game): void {
       const note = g.episode.notes[poi];
       g.history.clear();
       if (note) g.showHistory(note);
+    },
+    setCrawlGauges: (mode) => {
+      g.hud.gaugeMode = mode;
     },
     setParkBrake: (on) => {
       g.vehicle.parkBrake = on;

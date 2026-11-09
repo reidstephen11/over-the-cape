@@ -1,3 +1,5 @@
+import { onUiScale, uiScale } from './uiScale';
+
 /** One tyre on the gauge: share of its parked load, on the ground, spinning. */
 export interface GaugeWheel {
   load: number;
@@ -45,6 +47,15 @@ export function outlineRotation(angleDeg: number): number {
   return (angleDeg * Math.PI) / 180;
 }
 
+/**
+ * Lettering sizes in drawing units. A phone shows the panel at 0.62 of its size
+ * (styles.css), so its lettering is drawn larger to stay at 12 px or more on screen.
+ */
+const LETTERING = {
+  screen: { label: 10, figure: 16, small: 12, revBar: 120 },
+  phone: { label: 19.5, figure: 21, small: 19.5, revBar: 64 },
+};
+
 const W = 318;
 const H = 150;
 /** Angles where the dial turns red: tipping risk. */
@@ -78,6 +89,17 @@ export class CrawlGauges {
   private font = "'Patrick Hand', 'Nunito', cursive";
   /** Speed units from the settings. */
   units: SpeedUnits = 'kmh';
+  private lettering: (typeof LETTERING)['screen'] = LETTERING.screen;
+  /** Canvas pixels per drawing unit: the screen's pixel ratio times the interface scale. */
+  private drawScale = 1;
+
+  /** Size the canvas's pixels to how big it is drawn (W × H drawing units at the interface scale). */
+  private fitCanvas(ui: number): void {
+    this.drawScale = Math.min(2, window.devicePixelRatio || 1) * ui;
+    this.canvas.width = Math.round(W * this.drawScale);
+    this.canvas.height = Math.round(H * this.drawScale);
+    this.lastKey = '';
+  }
 
   constructor(root: HTMLElement) {
     this.el = document.createElement('div');
@@ -85,13 +107,11 @@ export class CrawlGauges {
     this.canvas = document.createElement('canvas');
     this.el.appendChild(this.canvas);
     root.appendChild(this.el);
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    this.canvas.width = W * dpr;
-    this.canvas.height = H * dpr;
-    this.canvas.style.width = `${W}px`;
-    this.canvas.style.height = `${H}px`;
+    this.canvas.style.width = `calc(${W} * var(--u))`;
+    this.canvas.style.height = `calc(${H} * var(--u))`;
     this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-    this.ctx.scale(dpr, dpr);
+    this.fitCanvas(uiScale());
+    onUiScale((k) => this.fitCanvas(k));
     const css = getComputedStyle(document.documentElement);
     const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
     this.ink = v('--ink', '#3b2a1e');
@@ -136,24 +156,29 @@ export class CrawlGauges {
       g.bodyContact,
       ...g.wheels.map((w) => `${w.contact ? Math.round(w.load * 8) : 'x'}${w.spin > 0.3 ? 's' : ''}`),
     ].join('|');
-    if (key === this.lastKey) return;
-    this.lastKey = key;
+    // A phone shows the panel at about half size, so its lettering is drawn larger (see LETTERING).
+    const phone = typeof document !== 'undefined' && document.body.classList.contains('touch-mode');
+    this.lettering = phone ? LETTERING.phone : LETTERING.screen;
+    if (`${phone}|${key}` === this.lastKey) return;
+    this.lastKey = `${phone}|${key}`;
     const c = this.ctx;
+    c.setTransform(this.drawScale, 0, 0, this.drawScale, 0, 0);
     c.clearRect(0, 0, W, H);
     this.dial(52, 58, 40, g.pitch, PITCH_WARN, 'side', 'PITCH');
     this.dial(146, 58, 40, g.roll, ROLL_WARN, 'rear', 'ROLL');
     this.wheels(g, 262, 60);
     // Speed, gear and revs along the bottom.
     c.fillStyle = this.ink;
-    c.font = `700 19px ${this.font}`;
+    const t = this.lettering;
+    c.font = `700 ${t.figure}px ${this.font}`;
     c.textAlign = 'left';
     c.textBaseline = 'alphabetic';
     const gear = `${g.range === 'low' ? 'L' : 'H'}${g.gear}`;
     c.fillText(gear, 10, H - 9);
     c.fillText(formatSpeed(g.speedKmh, this.units), 44, H - 9);
-    // Rev bar.
+    // Rev bar, shortened to leave room for larger lettering after it.
     const x0 = 128;
-    const bw = 120;
+    const bw = t.revBar;
     const y = H - 20;
     c.strokeStyle = this.ink;
     c.lineWidth = 1.5;
@@ -162,11 +187,11 @@ export class CrawlGauges {
     c.fillStyle = g.rpm > g.redline ? this.warn : this.accent;
     c.fillRect(x0 + 1, y + 1, (bw - 2) * f, 8);
     c.fillStyle = this.ink;
-    c.font = `600 12px ${this.font}`;
+    c.font = `600 ${t.small}px ${this.font}`;
     c.fillText(`${Math.round(g.rpm / 10) * 10} rpm`, x0 + bw + 6, H - 10);
     if (g.bodyContact) {
       c.fillStyle = this.warn;
-      c.font = `800 11px ${this.font}`;
+      c.font = `800 ${t.label}px ${this.font}`;
       c.textAlign = 'center';
       c.fillText('BELLY ON ROCK', 262, 126);
     }
@@ -253,10 +278,12 @@ export class CrawlGauges {
     }
     c.restore();
     c.fillStyle = danger ? this.warn : this.ink;
-    c.font = `800 10px ${this.font}`;
+    const t = this.lettering;
+    c.font = `800 ${t.label}px ${this.font}`;
     c.textAlign = 'center';
-    c.fillText(label, cx, cy + r - 16);
-    c.font = `700 16px ${this.font}`;
+    // Inside the dial under the outline; on a phone, where it is drawn larger, above the dial.
+    c.fillText(label, cx, t === LETTERING.phone ? cy - r - 2 : cy + r - t.figure);
+    c.font = `700 ${t.figure}px ${this.font}`;
     c.fillText(`${Math.round(Math.abs(angle))}°`, cx, cy + r - 2);
   }
 
@@ -301,7 +328,7 @@ export class CrawlGauges {
       c.strokeRect(x, y, 12, 22);
     });
     c.fillStyle = this.ink;
-    c.font = `800 10px ${this.font}`;
+    c.font = `800 ${this.lettering.label}px ${this.font}`;
     c.textAlign = 'center';
     c.fillText('FRONT', cx, cy - 46);
   }

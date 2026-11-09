@@ -19,6 +19,7 @@ import { isDevMode } from '../data/devWeather';
 import type { EpisodeDef } from '../data/episodes';
 import { damageLabels, damageModes, type DamageMode } from '../data/damage';
 import { hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
+import { uiSizeLabels, uiSizes, type UiSize } from '../data/uiSize';
 import { offeredQualities, shownQuality } from '../data/quality';
 import { GEARBOX_SETTINGS, type GearboxSetting } from '../sim/vehicle/drivetrain';
 
@@ -95,9 +96,12 @@ export class PauseMenu {
   private updateReady = false;
   private status: readonly PauseStatusCell[] = [];
   private trips: readonly TripJournalEntry[] = [];
+  /** History notes and lessons shown on this trip, oldest first (the journal keeps them). */
+  private notes: readonly { title: string; text: string }[] = [];
 
-  setTrips(trips: readonly TripJournalEntry[]): void {
+  setTrips(trips: readonly TripJournalEntry[], notes: readonly { title: string; text: string }[] = []): void {
     this.trips = trips;
+    this.notes = notes;
   }
 
   constructor(
@@ -205,7 +209,7 @@ export class PauseMenu {
         <div class="pause-buttons">
           <button data-focus data-act="resume">Resume</button>
           <button data-focus data-act="map">Map</button>
-          <button data-focus data-act="journal">Trip journal<small>Optional jobs, sights and directions</small></button>
+          <button data-focus data-act="journal">Trip journal<small>Side trips, directions and notes on the way</small></button>
           <button data-focus data-act="camp">Restart from last camp<small></small></button>
           <button data-focus data-act="vehicle">Vehicle<small class="vehicle-name"></small></button>
           <button data-focus data-act="settings">Settings</button>
@@ -262,6 +266,25 @@ export class PauseMenu {
         entry.append(title, description, steps, reward);
         list.appendChild(entry);
       }
+      // The history notes and lessons met so far, to read again once their card has gone.
+      if (this.notes.length) {
+        const heading = document.createElement('h3');
+        heading.className = 'journal-notes-heading';
+        heading.textContent = 'Notes on the way';
+        list.appendChild(heading);
+      }
+      for (const note of this.notes) {
+        const entry = document.createElement('article');
+        entry.className = 'journal-trip journal-note';
+        entry.dataset.focus = '';
+        entry.tabIndex = 0;
+        const title = document.createElement('h3');
+        title.textContent = note.title;
+        const text = document.createElement('p');
+        text.textContent = note.text;
+        entry.append(title, text);
+        list.appendChild(entry);
+      }
     } else if (page === 'vehicle') {
       card.innerHTML = `<h2>Vehicle</h2>
         ${vehicleOrder
@@ -293,6 +316,7 @@ export class PauseMenu {
         <div class="setting-row controller-setting">Controller type<div class="seg">${controllerTypes.map((c) => `<button data-focus data-controller="${c}" class="${s.controller === c ? 'on' : ''}" aria-pressed="${s.controller === c}">${controllers[c].label}</button>`).join('')}</div></div>
         <div class="setting-row frame-rate-setting">Frame rate<div class="seg"><button data-focus data-frame-rate="60" class="${s.frameRate === '60' ? 'on' : ''}" aria-pressed="${s.frameRate === '60'}">60</button><button data-focus data-frame-rate="screen" class="${s.frameRate === 'screen' ? 'on' : ''}" aria-pressed="${s.frameRate === 'screen'}">Screen</button></div></div>
         <div class="setting-row">Units<div class="seg"><button data-focus data-units="kmh" class="${s.units === 'kmh' ? 'on' : ''}">km/h</button><button data-focus data-units="mph" class="${s.units === 'mph' ? 'on' : ''}">mph</button></div></div>
+        <div class="setting-row ui-size-setting">UI size<div class="seg">${uiSizes.map((z) => `<button data-focus data-ui-size="${z}" class="${s.uiSize === z ? 'on' : ''}" aria-pressed="${s.uiSize === z}">${uiSizeLabels[z]}</button>`).join('')}</div></div>
         <div class="setting-row">HUD style<div class="seg">${pickableHudStyles.map((h) => `<button data-focus data-hud-style="${h}" class="${s.hudStyle === h ? 'on' : ''}" aria-pressed="${s.hudStyle === h}">${hudStyleLabels[h]}</button>`).join('')}</div></div>
         <div class="setting-row">Damage<div class="seg">${damageModes
           .map(
@@ -397,6 +421,10 @@ export class PauseMenu {
       this.settings.units = t.dataset.units as Settings['units'];
       this.actions.changeSettings({ units: this.settings.units });
       this.show('settings');
+    } else if (t.dataset.uiSize) {
+      this.settings.uiSize = t.dataset.uiSize as UiSize;
+      this.actions.changeSettings({ uiSize: this.settings.uiSize });
+      this.show('settings');
     } else if (t.dataset.hudStyle) {
       this.settings.hudStyle = t.dataset.hudStyle as HudStyle;
       this.actions.changeSettings({ hudStyle: this.settings.hudStyle });
@@ -415,7 +443,8 @@ export class PauseMenu {
   private focus(): void {
     const b = this.buttons();
     b.forEach((x, i) => x.classList.toggle('focused', i === this.focusIndex));
-    if (this.page === 'journal') b[this.focusIndex]?.scrollIntoView({ block: 'nearest' });
+    // A long page (the journal, or any page on a television's larger lettering) scrolls to the focus.
+    b[this.focusIndex]?.scrollIntoView({ block: 'nearest' });
   }
 
   /** Keyboard / gamepad navigation. Returns true if the menu wants to close (back from main). */

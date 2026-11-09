@@ -25,6 +25,8 @@ if (import.meta.env.PROD && location.pathname.startsWith('/over-the-cape')) {
 import { episodes } from './data/episodes';
 import { maps } from './data/maps';
 import { applyHudStyle, defaultHudStyle } from './data/hudStyles';
+import { applyUiSize } from './ui/uiScale';
+import { defaultUiSize } from './data/uiSize';
 import { loadSave } from './sim/save/save';
 import { LoadingScreen } from './ui/loading';
 import { WelcomeScreen, type WelcomeChoice } from './ui/welcome';
@@ -111,6 +113,7 @@ function boot(): void {
   const uiEl = document.getElementById('ui') as HTMLElement;
   const save = loadSave();
   applyHudStyle(save?.settings.hudStyle ?? defaultHudStyle);
+  applyUiSize(save?.settings.uiSize ?? defaultUiSize);
   const choice: WelcomeChoice = { ...choiceFromSave(save), damage: save?.settings.damage ?? 'mild' };
   new WelcomeScreen(uiEl, choice, save, (c, audio) => void play(c, audio));
 }
