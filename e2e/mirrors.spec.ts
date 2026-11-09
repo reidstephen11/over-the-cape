@@ -31,7 +31,8 @@ test('cockpit mirrors capture only while enabled and keep the choice across relo
   const chase = await page.evaluate(() => window.__game!.mirrors().captures);
   await page.waitForTimeout(1000);
   expect(await page.evaluate(() => window.__game!.mirrors().captures)).toBe(chase);
-  await page.locator('[data-tap="pause"]').click();
+  await page.evaluate(() => document.querySelector<HTMLElement>('.history-card.reading')?.click());
+  await page.keyboard.press('Escape');
   await page.locator('[data-act="settings"]').click();
   await page.locator('[data-mirrors="false"]').click();
   await expect(page.locator('[data-mirrors="false"]')).toHaveClass('on');
@@ -42,5 +43,27 @@ test('cockpit mirrors capture only while enabled and keep the choice across relo
     'aria-pressed',
     'true',
   );
+  expect(errors).toEqual([]);
+});
+
+test('phone title settings keep the mirror choice across reload', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await lowGraphics(page);
+  await page.goto('/?touch');
+  const openSettings = async () => {
+    await page.locator('[data-title-begin]').click();
+    await page.locator('[data-group="menu"][data-value="settings"]').click();
+  };
+  await openSettings();
+  const off = page.locator('[data-group="mirrors"][data-value="off"]');
+  await off.click();
+  await expect(off).toHaveAttribute('aria-pressed', 'true');
+  const box = await off.boundingBox();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+  await page.reload();
+  await openSettings();
+  await expect(off).toHaveAttribute('aria-pressed', 'true');
   expect(errors).toEqual([]);
 });
