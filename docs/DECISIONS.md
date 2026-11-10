@@ -1537,3 +1537,20 @@ The owner asked for a new vehicle: a black 1985 Toyota Pickup (Hilux) SR5 Xtra C
 The owner asked for the Hilux SR5 Xtra Cab to be available from the start of the game. It joins the 40 Series and the Camel Trophy Land Rover in `starterVehicles` (`src/data/unlocks.ts`), and its challenge (clear all eight gates on the scored rock climb) is removed. The rock climb no longer opens anything: its result card shows the score, time and penalties only. A save that already lists `xtracab` as unlocked still loads; the entry is simply not needed. No vehicle geometry changed, so no renders or reviewer were needed.
 
 Checks: `tests/xtracab.test.ts` now checks it is open with nothing unlocked; `e2e/scoredGates.spec.ts` no longer expects the unlock line; `e2e/vehicles.spec.ts` picks it on the welcome screen from a save with nothing unlocked.
+
+## v1.80: menus that fit on the phone
+
+The owner sent four phone screenshots from v1.79 and asked why the checks had not caught what they show. Three faults, each fixed in the stylesheet, and each now with a test that fails on v1.79:
+
+1. **Pause → Vehicle: a description spilled onto the next button.** The pause card is a column that scrolls when its page is taller than the screen, and its rows were allowed to shrink to fit; a button with a two-line description shrank to 44 px and its second line ran over the button below. The card's rows now keep their own height (`.pause-card > * { flex-shrink: 0 }`, `src/ui/styles.css`), which fixes every pause page, not only Vehicle.
+2. **A history note covered the end of the road's hint.** On a phone held upright the road name and hint (left, up to 64 % of the width) and the note (right, up to 52 %) start at the same height. While a note is open, it is now at most 200 px or 44 % wide and the road name and hint narrow to the space left beside it (`src/ui/hudStyles.css`, the end of the file), in all three HUD styles.
+3. **The tool menu's bottom row sat under "Tap a tool to use".** At UI size Large on a phone about 384 px wide the grid fell to two columns, six rows deep, taller than the screen; the bottom row was hidden behind the hint bar until scrolled. The grid now always has at least three columns (`src/ui/toolMenu.css`), so the twelve tools fit in four rows above the bar.
+
+**Why they were missed.** No test opened Pause → Vehicle; the vehicle tests only checked that the welcome screen's buttons fit across a phone. The phone overlap test did not include the history note, and checked the note only on its own. The tool menu test checked only that the grid appeared at 390 × 844 at UI size Normal, where it has three columns. And the screens were not looked at on a phone before shipping.
+
+**New checks.**
+
+- `e2e/toolMenu.spec.ts`: at 390 × 844, 384 × 785 and 360 × 740, at UI sizes Small, Normal and Large, every tool sits inside the screen and above the hint bar without scrolling, and no label is cut off. It fails on v1.79 at Large with Refuel and Lights hidden.
+- `e2e/uiSize.spec.ts`, "every HUD style and UI size": with a note and the road's hint up, in each HUD style, at 390 × 844 and 360 × 740, Normal and Large, the note overlaps none of the dials, the road name, the hint or the mission; then in Pause → Vehicle no description overflows its button and no row of the card overlaps another.
+- A test hook, `changeSettings`, changes settings as the Settings page does, so the test switches HUD style and UI size the real way (setting the page's attributes directly left the dials undrawn).
+- The older tool menu test compared each wedge's rectangle; with sixteen tools neighbouring wedges' rectangles overlap by about 8 px though the wedges do not (it already failed on `main`). It now compares each tool's family, icon and name.

@@ -219,7 +219,12 @@
   height: auto;
   margin: 0 calc(16 * var(--u)) calc(90 * var(--u));
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(calc(104 * var(--u)), 1fr));
+  /* Three across at least, so a phone held upright shows every tool above the hint bar
+     without scrolling, even at UI size Large. */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(calc(104 * var(--u)), calc((100% - 16 * var(--u)) / 3)), 1fr)
+  );
   gap: calc(8 * var(--u));
 }
 .tool-grid .tool-sectors,

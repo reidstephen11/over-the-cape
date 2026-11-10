@@ -8,9 +8,19 @@ test('Expedition tools fit, group related actions, and reject disabled choices',
   for (const cargo of [false, true]) {
     if (cargo) await page.locator('[data-preview-cargo]').click();
     await expect(page.locator('.tool-option')).toHaveCount(cargo ? 16 : 12);
-    const boxes = await page
-      .locator('.tool-option')
-      .evaluateAll((buttons) => buttons.map((b) => b.getBoundingClientRect().toJSON()));
+    // Each tool's family, icon and name (the wedges themselves are clipped shapes whose
+    // rectangles overlap a few pixels once there are sixteen of them).
+    const boxes = await page.locator('.tool-option').evaluateAll((buttons) =>
+      buttons.map((b) => {
+        const rs = [...b.children].map((c) => c.getBoundingClientRect());
+        return {
+          left: Math.min(...rs.map((r) => r.left)),
+          right: Math.max(...rs.map((r) => r.right)),
+          top: Math.min(...rs.map((r) => r.top)),
+          bottom: Math.max(...rs.map((r) => r.bottom)),
+        };
+      }),
+    );
     for (let i = 0; i < boxes.length; i++) {
       const a = boxes[i];
       expect(a.left).toBeGreaterThanOrEqual(0);
@@ -35,6 +45,42 @@ test('Expedition tools fit, group related actions, and reject disabled choices',
   await expect(page.locator('.tool-menu')).toHaveClass(/tool-grid/);
   await page.getByRole('button', { name: 'Place planks', exact: true }).click();
   await expect(page.locator('.tool-preview-status')).toHaveText('Selected: planks');
+  expect(errors).toEqual([]);
+});
+
+test('on a phone held upright every tool shows above the hint bar without scrolling, at every UI size', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto('/?tool-menu-preview');
+  for (const size of [
+    { width: 390, height: 844 },
+    { width: 384, height: 785 },
+    { width: 360, height: 740 },
+  ])
+    for (const ui of [0.8, 1, 1.2]) {
+      await page.setViewportSize(size);
+      await page.evaluate((ui) => document.documentElement.style.setProperty('--ui', String(ui)), ui);
+      await expect(page.locator('.tool-menu')).toHaveClass(/tool-grid/);
+      const where = `${size.width}×${size.height} ui ${ui}`;
+      const hidden = await page.evaluate(() => {
+        const bar = document.querySelector<HTMLElement>('.tool-hint')!.getBoundingClientRect();
+        return [...document.querySelectorAll<HTMLElement>('.tool-option')]
+          .filter((b) => {
+            const r = b.getBoundingClientRect();
+            return r.top < 0 || r.left < 0 || r.right > innerWidth || r.bottom > bar.top;
+          })
+          .map((b) => b.getAttribute('aria-label') ?? b.textContent);
+      });
+      expect(hidden, where).toEqual([]);
+      // Labels fit inside their tiles.
+      const clipped = await page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('.tool-option *')]
+          .filter((e) => e.scrollWidth > e.clientWidth + 1 && e.clientWidth > 0)
+          .map((e) => e.textContent),
+      );
+      expect(clipped, where).toEqual([]);
+    }
   expect(errors).toEqual([]);
 });
 

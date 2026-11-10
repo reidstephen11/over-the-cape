@@ -133,3 +133,96 @@ test.describe('phone held sideways', () => {
     expect(errors).toEqual([]);
   });
 });
+
+/** Pairs of the given boxes that overlap by more than a pixel, named for the failure message. */
+function overlaps(boxes: { name: string; r: DOMRect }[]): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < boxes.length; i++)
+    for (let j = i + 1; j < boxes.length; j++) {
+      const [a, b] = [boxes[i].r, boxes[j].r];
+      if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1)
+        out.push(`${boxes[i].name} × ${boxes[j].name}`);
+    }
+  return out;
+}
+
+test.describe('phone held upright, every HUD style and UI size', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test('a history note keeps clear of the road name and hint, and every vehicle description stays inside its button', async ({
+    page,
+  }) => {
+    test.setTimeout(900_000);
+    const errors = collectErrors(page);
+    await lowGraphics(page);
+    await page.goto('/?surprises=off&track=reopened');
+    await waitReady(page);
+    // At the start the road name and its hint show under the dials (v1.79 screenshot).
+    await page.evaluate(() => window.__game!.showNote('creb-lookout'));
+    await expect(page.locator('.history-card')).toBeVisible();
+    await expect(page.locator('.hud-stack .course-hint')).toBeVisible();
+    const styles = ['dash', 'edge', 'kit'] as const;
+    const sizes = [
+      { width: 390, height: 844 },
+      { width: 360, height: 740 },
+    ];
+    for (const style of styles)
+      for (const size of sizes)
+        for (const ui of ['normal', 'large'] as const) {
+          await page.setViewportSize(size);
+          await page.evaluate(
+            ({ style, ui }) => window.__game!.changeSettings({ hudStyle: style, uiSize: ui }),
+            { style, ui },
+          );
+          await waitSim(page, 0.2);
+          const where = `${style} ${size.width}×${size.height} ui ${ui}`;
+          const found = await page.evaluate(() => {
+            const near = [
+              ...document.querySelectorAll<HTMLElement>('.hud-stack > *, .inst-cluster > *, .inst-compass'),
+            ]
+              .filter((e) => e.offsetParent && e.getBoundingClientRect().width > 0)
+              .map((e) => ({ name: e.className.split(' ')[0], r: e.getBoundingClientRect().toJSON() }));
+            const card = document.querySelector<HTMLElement>('.history-card')!;
+            return { near, card: { name: 'history-card', r: card.getBoundingClientRect().toJSON() } };
+          });
+          const hits = overlaps([found.card, ...found.near]).filter((p) => p.startsWith('history-card'));
+          expect(hits, where).toEqual([]);
+          if (style === 'dash' && size.width === 390 && ui === 'large')
+            await shot(page, 'uiSize', 'portrait-note-hint');
+        }
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    // The vehicle list in the pause menu: each description stays inside its own button.
+    await page.locator('.history-card').click();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.pause-card h2')).toHaveText('Paused');
+    await page.locator('.pause-card [data-act="vehicle"]').click();
+    await expect(page.locator('.vehicle-choice').first()).toBeVisible();
+    for (const style of styles)
+      for (const size of sizes)
+        for (const ui of ['normal', 'large'] as const) {
+          await page.setViewportSize(size);
+          await page.evaluate(
+            ({ style, ui }) => window.__game!.changeSettings({ hudStyle: style, uiSize: ui }),
+            { style, ui },
+          );
+          const where = `${style} ${size.width}×${size.height} ui ${ui}`;
+          const spilled = await page.evaluate(() =>
+            [...document.querySelectorAll<HTMLElement>('.vehicle-choice')]
+              .filter((b) => b.scrollHeight > b.clientHeight + 1)
+              .map((b) => b.firstChild?.textContent ?? ''),
+          );
+          expect(spilled, where).toEqual([]);
+          const boxes = await page.evaluate(() =>
+            [...document.querySelectorAll<HTMLElement>('.pause-card > *')].map((e, i) => ({
+              name: `${i} ${e.textContent?.slice(0, 20)}`,
+              r: e.getBoundingClientRect().toJSON(),
+            })),
+          );
+          expect(overlaps(boxes), where).toEqual([]);
+          if (style === 'dash' && size.width === 390 && ui === 'large')
+            await shot(page, 'uiSize', 'portrait-vehicle-list');
+        }
+    expect(errors).toEqual([]);
+  });
+});

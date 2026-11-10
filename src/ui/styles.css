@@ -919,6 +919,12 @@ body.map-open .hud {
   gap: calc(8 * var(--u));
 }
 
+/* The card scrolls when its page is taller than the screen; its rows keep their own height
+   (a vehicle's two-line description once spilled onto the next button when they shrank). */
+.pause-card > * {
+  flex-shrink: 0;
+}
+
 .pause-card h2 {
   margin: 0 0 calc(6 * var(--u));
   text-align: center;
