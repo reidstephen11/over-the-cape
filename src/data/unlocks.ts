@@ -1,13 +1,14 @@
 import type { VehicleId } from './vehicle';
 
 /**
- * Vehicles to earn (v1.06). The 40 Series and the Land Rover Ninety are open from the start;
+ * Vehicles to earn (v1.06). The 40 Series, the Land Rover Ninety and (since v1.79) the SR5 Xtra Cab
+ * are open from the start;
  * each of the others opens with one challenge on the CREB, picked to suit the vehicle.
  * Test mode (`?dev`) opens them all.
  */
-export const starterVehicles: readonly VehicleId[] = ['shortie', 'camel'];
+export const starterVehicles: readonly VehicleId[] = ['shortie', 'camel', 'xtracab'];
 
-export type LockedVehicleId = Exclude<VehicleId, 'shortie' | 'camel'>;
+export type LockedVehicleId = Exclude<VehicleId, 'shortie' | 'camel' | 'xtracab'>;
 
 export interface VehicleChallenge {
   /** What to do, as the vehicle lists show it. */
@@ -20,10 +21,6 @@ export const vehicleChallenges: Record<LockedVehicleId, VehicleChallenge> = {
   hilux: {
     task: 'Reach the Lions Den for the first time',
     unlocked: 'You made the Lions Den. A HiLux is waiting in the car park.',
-  },
-  xtracab: {
-    task: 'Clear all eight gates on the scored rock climb',
-    unlocked: 'All eight gates on the rock climb. A black 1985 SR5 Xtra Cab on 31s is yours.',
   },
   patrol: {
     task: 'Winch the bogged Patrol out on the ridge',

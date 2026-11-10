@@ -1531,3 +1531,9 @@ The owner asked for a new vehicle: a black 1985 Toyota Pickup (Hilux) SR5 Xtra C
 **Left open, and not this truck's body.** With the same rays run against the suspension group, the front tyres at full lock meet the shared code's drawn front dampers and their mount struts, on this truck and equally on the red Hilux and the HJ60. The body test does not cover those parts. It is noted under the roadmap's "Body clearance through full suspension travel".
 
 **Not done.** No SR5 badges or stripes; no bed mat (the restorer lists one); no mud flaps. The published track is kept although the film truck's wider wheels must have stood further out. The physics treats the hubs as manual. The scripted full-route drive (`scripts/creb-drive.ts xtracab`, the episode's storm) finished the CREB in 44.8 minutes on 23.5 L with seven winch pulls.
+
+## v1.79: the SR5 Xtra Cab is open from the start
+
+The owner asked for the Hilux SR5 Xtra Cab to be available from the start of the game. It joins the 40 Series and the Camel Trophy Land Rover in `starterVehicles` (`src/data/unlocks.ts`), and its challenge (clear all eight gates on the scored rock climb) is removed. The rock climb no longer opens anything: its result card shows the score, time and penalties only. A save that already lists `xtracab` as unlocked still loads; the entry is simply not needed. No vehicle geometry changed, so no renders or reviewer were needed.
+
+Checks: `tests/xtracab.test.ts` now checks it is open with nothing unlocked; `e2e/scoredGates.spec.ts` no longer expects the unlock line; `e2e/vehicles.spec.ts` picks it on the welcome screen from a save with nothing unlocked.

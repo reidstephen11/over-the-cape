@@ -3,7 +3,7 @@ import { DoubleSide, Mesh, MeshBasicMaterial, type MeshStandardMaterial, Raycast
 import { efiFourSynthTuning, engineSynthTunings } from '../src/data/audio';
 import { hiluxTuning } from '../src/data/hilux';
 import { SurfaceId } from '../src/data/surfaces';
-import { vehicleChallenges, vehicleOpen } from '../src/data/unlocks';
+import { isLockedVehicle, vehicleOpen } from '../src/data/unlocks';
 import { vehicleOrder, vehicles } from '../src/data/vehicles';
 import { xtracabTuning as t } from '../src/data/xtracab';
 import { spareSidewall } from '../src/render/spares';
@@ -46,10 +46,9 @@ describe('Hilux SR5 Xtra Cab', () => {
     expect(t.mass).toBeGreaterThan(hiluxTuning.mass);
   });
 
-  it('opens with a clean scored rock climb and is remembered in the save', () => {
-    expect(vehicleOpen('xtracab', [])).toBe(false);
-    expect(vehicleOpen('xtracab', ['xtracab'])).toBe(true);
-    expect(vehicleChallenges.xtracab.task).toMatch(/eight gates/);
+  it('is open from the start and is remembered in the save', () => {
+    expect(vehicleOpen('xtracab', [])).toBe(true);
+    expect(isLockedVehicle('xtracab')).toBe(false);
     expect(vehicles.xtracab.tuning.name).not.toMatch(/future|mcfly/i);
     expect(vehicles.xtracab.blurb).not.toMatch(/future|mcfly/i);
     const store = new MemoryStore();
