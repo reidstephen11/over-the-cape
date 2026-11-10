@@ -187,6 +187,17 @@ test.describe('phone held upright, every HUD style and UI size', () => {
           });
           const hits = overlaps([found.card, ...found.near]).filter((p) => p.startsWith('history-card'));
           expect(hits, where).toEqual([]);
+          // The hint's text shows for a few seconds after a new road, so also check the widest the
+          // road name and hint may grow: it must stop short of the note.
+          const reach = await page.evaluate(() => {
+            const stack = document.querySelector<HTMLElement>('.hud-stack')!;
+            const card = document.querySelector<HTMLElement>('.history-card')!.getBoundingClientRect();
+            return {
+              right: stack.getBoundingClientRect().left + parseFloat(getComputedStyle(stack).maxWidth),
+              cardLeft: card.left,
+            };
+          });
+          expect(reach.right, where).toBeLessThanOrEqual(reach.cardLeft);
           if (style === 'dash' && size.width === 390 && ui === 'large')
             await shot(page, 'uiSize', 'portrait-note-hint');
         }
