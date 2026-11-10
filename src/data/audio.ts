@@ -906,6 +906,31 @@ export const roverV8SynthTuning: EngineSynthTuning = {
   },
 };
 
+/**
+ * The SR5 Xtra Cab's 2.4 L 22R-E: the Hilux's single-cam four with fuel injection. The idle
+ * is steadier and the engine catches sooner on the starter; the air box hushes the intake
+ * that honks through the 18R's carburettor; lifting off cuts the fuel, so it pops far less;
+ * and the longer truck's exhaust sounds a little lower.
+ */
+export const efiFourSynthTuning: EngineSynthTuning = {
+  ...petrolFourSynthTuning,
+  limiterRpm: 5700,
+  runners: { delayMs: [0.33, 0.14, 0.12, 0.31], strength: [0.99, 1.01, 1.02, 0.98] },
+  jitter: { idle: 0.05, load: 0.025, timingDeg: 1.5, lopeRpm: 6 },
+  exhaust: {
+    ...petrolFourSynthTuning.exhaust,
+    headPipe: { length: 1.5, reflection: -0.35, dampingHz: 2600 },
+    muffler: { cutoffHz: 980, q: 0.6, boomHz: 94, boomQ: 1.3, boomDb: 3.5, leak: 0.22 },
+    tailPipe: { length: 1.7, reflection: -0.3, dampingHz: 3500 },
+    radiationHz: 39,
+  },
+  block: { cutoffHz: 170, gain: 0.34 },
+  intake: { ...petrolFourSynthTuning.intake, noiseHz: 640, noiseGain: 0.95, honkHz: 135, honkGain: 0.22 },
+  overrun: { ...petrolFourSynthTuning.overrun, misfire: 0.5, popChance: 0.006, popGain: 0.8 },
+  starter: { ...petrolFourSynthTuning.starter, seconds: 0.8, rpm: 220 },
+  catch: { seconds: 1.1, flareRpm: 1350, flareSeconds: 0.24, settleSeconds: 0.4 },
+};
+
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
@@ -924,4 +949,5 @@ export const engineSynthTunings = {
   },
   lc79: v8DieselSynthTuning,
   rangie: roverV8SynthTuning,
+  xtracab: efiFourSynthTuning,
 } as const;

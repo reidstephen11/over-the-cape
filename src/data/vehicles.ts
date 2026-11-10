@@ -10,6 +10,7 @@ import { perentieTuning } from './perentie';
 import { TROOPY_START_FUEL, troopyTuning } from './troopy';
 import { unimogTuning } from './unimog';
 import { UTE_CAB_SHIFT, ute40Tuning } from './ute40';
+import { xtracabTuning } from './xtracab';
 import type { EpisodeLoadout } from './episodes';
 import { vehicleTuning, type VehicleId, type VehicleTuning } from './vehicle';
 
@@ -290,6 +291,42 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
       },
     },
   },
+  xtracab: {
+    tuning: xtracabTuning,
+    blurb:
+      '1985 Toyota Pickup (Hilux) SR5 Xtra Cab 4x4, left-hand drive: 2.4 L injected petrol four, five-speed, 31 inch tyres, tube bumpers, roll bar and six driving lamps.',
+    cameraScale: 1.08,
+    cabin: {
+      // Left-hand drive, as sold in North America: low on a bucket seat under a low roof,
+      // looking down a flat bonnet through a raked screen.
+      eye: { x: -0.37, y: 1.0, z: 0.06 },
+      pitch: -0.12,
+      dialY: 0.665,
+      dialZ: -0.565,
+      dials: {
+        speed: { x: -0.445, radius: 0.052, max: 160, major: 20, minor: 10 },
+        rpm: { x: -0.295, radius: 0.052, max: 7000, major: 1000, minor: 500 },
+        oil: { x: -0.565, radius: 0.03, max: 1, major: 0.5, minor: 0.25 },
+      },
+      lamps: { xs: [-0.52, -0.47, -0.42, -0.37, -0.32, -0.27, -0.22], y: 0.588, z: -0.568 },
+      // The pull-and-twist handbrake handle under the dash, right of the column.
+      handbrake: {
+        kind: 'pull',
+        base: { x: -0.17, y: 0.53, z: -0.6 },
+        tip: { x: -0.17, y: 0.52, z: -0.48 },
+        travel: 0.1,
+      },
+      steeringWheel: {
+        centre: { x: -0.37, y: 0.735, z: -0.3 },
+        columnBase: { x: -0.37, y: 0.53, z: -0.62 },
+        radius: 0.19,
+        // Power steering on the SR5, about 1¾ turns to full lock; the two-spoke wheel of
+        // the interior photographs.
+        ratio: 21,
+        spokes: 2,
+      },
+    },
+  },
   unimog: {
     tuning: unimogTuning,
     blurb:
@@ -407,6 +444,7 @@ export const vehicleOrder: readonly VehicleId[] = [
   'rangie',
   'perentie',
   'hilux',
+  'xtracab',
   'unimog',
   'troopy',
   'hj60',

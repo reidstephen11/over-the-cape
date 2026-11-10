@@ -30,6 +30,7 @@ const kit: Record<VehicleId, { spareKg: number; roomKg: number }> = {
   lc79: { spareKg: 60, roomKg: 140 },
   sooty80: { spareKg: 55, roomKg: 120 },
   rangie: { spareKg: 32, roomKg: 130 },
+  xtracab: { spareKg: 34, roomKg: 130 },
 };
 
 /** The packing that matters to the physics: one spare's weight, and the standard load's. */

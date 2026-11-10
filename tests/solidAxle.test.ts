@@ -45,7 +45,7 @@ describe('rigid axle articulation', () => {
     });
   }
 
-  for (const id of ['ute40', 'mq', 'rangie'] as const) {
+  for (const id of ['ute40', 'mq', 'rangie', 'xtracab'] as const) {
     it(`${id}: leaves the raised rear tyre clear of the tray or inner wheelhouse`, () => {
       const tuning = vehicles[id].tuning;
       const model = new VehicleModel(tuning);

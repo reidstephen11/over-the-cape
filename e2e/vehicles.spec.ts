@@ -229,3 +229,37 @@ test('the LC79 V8 is chosen on the welcome screen and drives off', async ({ page
   await shot(page, 'vehicle', 'lc79-cockpit');
   expect(errors).toEqual([]);
 });
+
+test('the SR5 Xtra Cab is chosen on the welcome screen once unlocked and drives off', async ({ page }) => {
+  test.setTimeout(900_000);
+  const errors = collectErrors(page);
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('overthecape.save.v1'))
+      localStorage.setItem(
+        'overthecape.save.v1',
+        JSON.stringify({ version: 1, settings: { quality: 'low' }, unlocked: ['xtracab'] }),
+      );
+  });
+  await page.goto('/?track=reopened');
+  await openJourney(page);
+  await page.locator('[data-group="setup"]').click();
+  await page.getByRole('button', { name: /Hilux SR5 Xtra Cab/ }).click();
+  await expect(page.locator('.welcome-option.on[data-group="vehicle"]')).toHaveAttribute(
+    'data-value',
+    'xtracab',
+  );
+  await expect(page.locator('.welcome-card')).toContainText('SR5 Xtra Cab');
+  await shot(page, 'vehicle', 'welcome-xtracab');
+  await page.locator('[data-welcome-drive]').click({ timeout: 120_000 });
+  await driveFromBriefing(page);
+  expect(await page.evaluate(() => window.__game!.vehicleId())).toBe('xtracab');
+  await page.evaluate(() => window.__game!.setInput({ throttle: 0.6 }));
+  await waitSim(page, 3);
+  expect((await page.evaluate(() => window.__game!.vehicle())).speed).toBeGreaterThan(2);
+  await page.evaluate(() => window.__game!.setInput(null));
+  await shot(page, 'vehicle', 'xtracab-in-game');
+  await page.evaluate(() => window.__game!.cameraPreset('cockpit' as never));
+  await waitSim(page, 1);
+  await shot(page, 'vehicle', 'xtracab-cockpit');
+  expect(errors).toEqual([]);
+});

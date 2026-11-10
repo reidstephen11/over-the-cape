@@ -43,6 +43,8 @@ test('drives all eight gates, shows the phone score and keeps a per-vehicle best
     .toBeTruthy();
   await expect(page.locator('.run-card')).toContainText('Personal best');
   await expect(page.locator('.run-card')).toContainText('0 missed');
+  // A clean run in any vehicle opens the SR5 Xtra Cab, named on the same card.
+  await expect(page.locator('.run-card')).toContainText('Unlocked: Hilux SR5 Xtra Cab');
   const best = await page.evaluate(() => window.__game!.gateCourse()!.best);
   await page.screenshot({ path: '/workspace/scratch/gates-phone-finish.png' });
   await page.locator('[data-tap="pause"]').click();
@@ -51,6 +53,9 @@ test('drives all eight gates, shows the phone score and keeps a per-vehicle best
   await page.reload();
   await waitReady(page);
   expect(await page.evaluate(() => window.__game!.gateCourse()!.best)).toEqual(best);
+  expect(
+    await page.evaluate(() => JSON.parse(localStorage.getItem('overthecape.save.v1')!).unlocked),
+  ).toContain('xtracab');
   await expect(page.locator('.gate-count')).toHaveClass(/hidden/);
   expect(errors).toEqual([]);
 });

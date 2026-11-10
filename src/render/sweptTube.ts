@@ -44,7 +44,9 @@ export function sweptTube(samples: THREE.Vector3[], radius: number, sides: numbe
         bb = rings[i][(k + 1) % sides],
         c = rings[i + 1][(k + 1) % sides],
         d = rings[i + 1][k];
-      put(a, c, bb, a, d, c);
+      // Wound so each quad faces out of the tube (it faced in until v1.78, which drew every
+      // tube as its far inner wall).
+      put(a, bb, c, a, c, d);
     }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));

@@ -21,6 +21,10 @@ export const vehicleChallenges: Record<LockedVehicleId, VehicleChallenge> = {
     task: 'Reach the Lions Den for the first time',
     unlocked: 'You made the Lions Den. A HiLux is waiting in the car park.',
   },
+  xtracab: {
+    task: 'Clear all eight gates on the scored rock climb',
+    unlocked: 'All eight gates on the rock climb. A black 1985 SR5 Xtra Cab on 31s is yours.',
+  },
   patrol: {
     task: 'Winch the bogged Patrol out on the ridge',
     unlocked: 'The Patrol’s owner is selling up when he gets home: it’s yours to drive.',

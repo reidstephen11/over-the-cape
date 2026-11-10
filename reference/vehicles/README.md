@@ -11,6 +11,7 @@ Each modelled vehicle has a folder. `SOURCES.md` in that folder names the real v
 | `shortie`  | Short-wheelbase 4WD        | Toyota Land Cruiser 40 Series hardtop, FJ40, 1970s, 4.2 L 2F                                                     | `landcruiser-fj40/`                                         |
 | `camel`    | Camel Trophy Land Rover 90 | 1986 Camel Trophy Land Rover Ninety County, LHD, 2.5 L diesel (since v0.80)                                      | `camel-trophy/` (no photos; see `land-rover-110-perentie/`) |
 | `hilux`    | Hilux single cab           | Toyota Hilux 4WD, 1979–83, long bed, single cab, styleside tub, 2.0 L 18R                                        | `hilux-1979-83/`                                            |
+| `xtracab`  | Hilux SR5 Xtra Cab         | Toyota Pickup (Hilux) SR5 Xtracab 4x4, North American 1985, left-hand drive, 2.4 L 22R-E, fitted as the film truck | `hilux-sr5-xtracab-1985/` (scaled Commons copies; see its `SOURCES.md`) |
 | `perentie` | Land Rover 110 Perentie    | Australian Army Land Rover 110, 4x4 General Service soft top (Project Perentie, JRA Moorebank)                   | `land-rover-110-perentie/`                                  |
 | `unimog`   | Unimog UL1700L             | Australian Army Mercedes-Benz Unimog U 1700 L/38, type 435.113, 3,850 mm wheelbase                               | `unimog-ul1700l/`                                           |
 | `troopy`   | Troop Carrier              | Toyota Land Cruiser 75 Series Troop Carrier, HZJ75, 1990–99, 4.2 L 1HZ                                           | `landcruiser-hzj75-troopy/`                                 |
@@ -38,6 +39,8 @@ Since v1.09 the `sooty80` body is rebuilt from the photographs in `landcruiser-8
 The `rangie` (v1.58) was built the same way from fourteen Commons photographs that could not be downloaded at full size from its container (Wikimedia throttled the address); `range-rover-two-door/SOURCES.md` credits them and `manifest.json` has their URLs, so the files can be added later.
 
 The `hj60` (v1.10) was built from `landcruiser-60/` in the same way. Its `SOURCES.md` gives the camera that matches `side-left-j60-mod-roof-tent.jpg`.
+
+The `xtracab` (v1.78) was built from Toyota's 1985 brochure (its specifications table, and its square-on studio view of a long bed for the stations along the body) and eleven Commons photographs of stock trucks. Wikimedia refused the originals again, so the committed files are the 1,920 and 3,840 px copies it does serve; `hilux-sr5-xtracab-1985/manifest.json` has the originals' URLs. Its film fit-out is recorded as links and quotations only. Its `SOURCES.md` gives the camera that matches `side-left-4wd-sr5-regular-cab.jpg`.
 
 The `mq` (v1.55) was built from ten Commons photographs listed in `nissan-mq-patrol/SOURCES.md` and `manifest.json`, which the container could not download at full size (Wikimedia answered every request for an original with HTTP 429), so none is committed yet. Download the originals from the manifest's URLs before the next pass on that body.
 
