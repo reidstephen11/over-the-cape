@@ -1690,8 +1690,6 @@ export class Game {
       this.hud.toast(`Rock climb abandoned: ${e.reason}. Return to gate 1 to retry`, 3200);
     else {
       const r = e.result;
-      // Every gate passed, in any vehicle, opens the SR5 Xtra Cab (named on the result card).
-      const unlocked = r.missed ? [] : this.unlock('xtracab', false);
       this.hud.runResult(
         r.missed
           ? 'Rock climb · gates missed'
@@ -1699,10 +1697,7 @@ export class Game {
             ? 'Rock climb · Personal best'
             : 'Rock climb complete',
         `${r.score} / 1000 · ${clock(r.seconds)}`,
-        [
-          `${r.flags} flags · ${r.missed} missed · ${r.reverses} reverses · ${r.knocks} knocks · ${r.winches} winches`,
-          ...unlocked,
-        ].join(' · '),
+        `${r.flags} flags · ${r.missed} missed · ${r.reverses} reverses · ${r.knocks} knocks · ${r.winches} winches`,
         15000,
       );
       this.audio.discovery();

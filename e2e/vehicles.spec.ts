@@ -230,14 +230,14 @@ test('the LC79 V8 is chosen on the welcome screen and drives off', async ({ page
   expect(errors).toEqual([]);
 });
 
-test('the SR5 Xtra Cab is chosen on the welcome screen once unlocked and drives off', async ({ page }) => {
+test('the SR5 Xtra Cab is chosen on the welcome screen from the start and drives off', async ({ page }) => {
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await page.addInitScript(() => {
     if (!localStorage.getItem('overthecape.save.v1'))
       localStorage.setItem(
         'overthecape.save.v1',
-        JSON.stringify({ version: 1, settings: { quality: 'low' }, unlocked: ['xtracab'] }),
+        JSON.stringify({ version: 1, settings: { quality: 'low' } }),
       );
   });
   await page.goto('/?track=reopened');
