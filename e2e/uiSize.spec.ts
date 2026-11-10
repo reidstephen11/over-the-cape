@@ -174,7 +174,10 @@ test.describe('phone held upright, every HUD style and UI size', () => {
             ({ style, ui }) => window.__game!.changeSettings({ hudStyle: style, uiSize: ui }),
             { style, ui },
           );
+          // The note closes itself after a few seconds: open it again for each check.
+          await page.evaluate(() => window.__game!.showNote('creb-lookout'));
           await waitSim(page, 0.2);
+          await expect(page.locator('.history-card')).toBeVisible();
           const where = `${style} ${size.width}×${size.height} ui ${ui}`;
           const found = await page.evaluate(() => {
             const near = [
@@ -187,13 +190,25 @@ test.describe('phone held upright, every HUD style and UI size', () => {
           });
           const hits = overlaps([found.card, ...found.near]).filter((p) => p.startsWith('history-card'));
           expect(hits, where).toEqual([]);
+          // The hint's text shows for a few seconds after a new road, so also check the widest the
+          // road name and hint may grow: it must stop short of the note.
+          const reach = await page.evaluate(() => {
+            const stack = document.querySelector<HTMLElement>('.hud-stack')!;
+            const card = document.querySelector<HTMLElement>('.history-card')!.getBoundingClientRect();
+            return {
+              right: stack.getBoundingClientRect().left + parseFloat(getComputedStyle(stack).maxWidth),
+              cardLeft: card.left,
+            };
+          });
+          expect(reach.right, where).toBeLessThanOrEqual(reach.cardLeft);
           if (style === 'dash' && size.width === 390 && ui === 'large')
             await shot(page, 'uiSize', 'portrait-note-hint');
         }
     await page.setViewportSize({ width: 390, height: 844 });
 
     // The vehicle list in the pause menu: each description stays inside its own button.
-    await page.locator('.history-card').click();
+    // The note closes itself after a while; close it if it is still up.
+    await page.evaluate(() => document.querySelector<HTMLElement>('.history-card:not(.hidden)')?.click());
     await page.keyboard.press('Escape');
     await expect(page.locator('.pause-card h2')).toHaveText('Paused');
     await page.locator('.pause-card [data-act="vehicle"]').click();
