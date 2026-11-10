@@ -198,6 +198,8 @@ export interface GameHook {
   historyShown(): string[];
   /** Show the history note for a place as if just reached (closing any card that is up). */
   showNote(poi: string): void;
+  /** Change settings as the Settings page does (HUD style, UI size and the rest). */
+  changeSettings(s: Partial<Game['settings']>): void;
   /** The crawl gauges: 'auto' (the default), always 'on', or 'off' (the I key's cycle). */
   setCrawlGauges(mode: 'auto' | 'on' | 'off'): void;
   /** Set the park brake directly (the key toggles it). */
@@ -536,6 +538,7 @@ export function installHook(game: Game): void {
     history: () => (g.history.isShown ? (g.history.el.querySelector('strong')?.textContent ?? '') : null),
     historyShown: () => [...g.history.shown],
     historyReading: () => g.history.reading,
+    changeSettings: (s) => g.changeSettings(s),
     showNote: (poi) => {
       const note = g.episode.notes[poi];
       g.history.clear();

@@ -2571,3 +2571,17 @@ body:not(.touch-mode) #ui[data-hud] .history-card .history-hint {
     font-size: calc(12 * var(--u));
   }
 }
+
+/*
+ * A phone held upright with a history note open (v1.80): the note narrows to its title and
+ * the road name and hint beside it narrow to the space left, so the note never covers them.
+ */
+@media (orientation: portrait) {
+  .touch-mode #ui[data-hud] .notices:has(.history-card:not(.hidden)) {
+    max-width: min(calc(200 * var(--u)), 44vw);
+  }
+
+  .touch-mode #ui[data-hud] .hud:has(.notices .history-card:not(.hidden)) .hud-stack {
+    max-width: calc(100vw - min(calc(200 * var(--u)), 44vw) - calc(40 * var(--u)));
+  }
+}
