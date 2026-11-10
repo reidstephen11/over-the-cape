@@ -19,6 +19,8 @@ import { UTE_NOSE, buildUte40Body, buildUte40Plank, buildUte40Wheel } from './ut
 import { NOSE as MQ_NOSE, buildMqBody, buildMqPlank, buildMqWheel } from './mqBody';
 import { buildRangieBody, buildRangiePlank, buildRangieWheel } from './rangieBody';
 import { RANGIE_DRIVING_LAMPS } from './rangieGear';
+import { buildXtracabBody, buildXtracabPlank, buildXtracabWheel } from './xtracabBody';
+import { F as XTRACAB_NOSE, XTRACAB_DRIVING_LAMPS } from './xtracabLayout';
 import type { SuspensionLayout } from './vehicleSuspension';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
@@ -138,6 +140,20 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
         { x: -0.6, y: 0.416, z: -2.21 },
         { x: 0.6, y: 0.416, z: -2.21 },
       ],
+    },
+  },
+  xtracab: {
+    name: 'hilux-sr5-xtra-cab',
+    body: buildXtracabBody,
+    wheel: buildXtracabWheel,
+    plank: buildXtracabPlank,
+    // Gloss black under a clear coat.
+    paint: { roughness: 0.3, metalness: 0.1, clearcoat: 0.8, clearcoatRoughness: 0.18 },
+    springs: 'leaf',
+    lamps: {
+      head: [-0.575, 0.575].map((x) => ({ x, y: 0.41, z: XTRACAB_NOSE - 0.022 })),
+      // The four round lamps on the roll bar and the two on the front hoop come on with high beam.
+      roof: XTRACAB_DRIVING_LAMPS,
     },
   },
   unimog: {

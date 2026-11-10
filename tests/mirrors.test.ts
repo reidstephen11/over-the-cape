@@ -15,7 +15,8 @@ describe('working mirrors', () => {
       const wheel = vehicleLooks[id].wheel(tuning);
       const body = vehicleLooks[id].body(tuning, wheel);
       const faces = mirrorSurfaces(body);
-      const expected = id === 'unimog' ? 4 : ['hilux', 'hj60', 'mq', 'rangie', 'patrol'].includes(id) ? 3 : 2;
+      const expected =
+        id === 'unimog' ? 4 : ['hilux', 'xtracab', 'hj60', 'mq', 'rangie', 'patrol'].includes(id) ? 3 : 2;
       expect(faces.length).toBe(expected);
       const outer = faces.filter((f) => Math.abs(f.position.x) > 0.7);
       expect(outer.some((f) => f.position.x < -0.7)).toBe(true);

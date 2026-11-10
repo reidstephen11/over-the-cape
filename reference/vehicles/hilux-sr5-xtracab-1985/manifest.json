@@ -1,0 +1,239 @@
+{
+  "vehicle": "Toyota Pickup (Hilux) SR5 Xtracab 4x4, 1985 (fourth generation, N60 series)",
+  "target": "1985 North American SR5 Xtracab 4x4, left-hand drive, 22R-E, solid front axle; fitted as the film truck",
+  "side_convention": "left/right are the vehicle's own, seen from the driver's seat. North American LHD: driver sits on the left.",
+  "note": "Every file is the largest standard-size copy Commons would serve (1,920 or 3,840 px wide). Wikimedia answered every request for an original from this container with HTTP 429 (\"use thumbnail images in sizes listed on https://w.wiki/GHai\"). Replace each with the original at original.url when it can be downloaded.",
+  "photos": [
+    {
+      "file": "side-left-4wd-sr5-regular-cab.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_truck_(13787602865).jpg",
+      "author": "dave_7 from Lethbridge, Canada",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "original": {
+        "width": 3235,
+        "height": 2000,
+        "bytes": 781721,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/9/98/Toyota_truck_%2813787602865%29.jpg"
+      },
+      "committed": {
+        "width": 1920,
+        "height": 1187,
+        "bytes": 350201,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "side, left",
+      "description": "4WD SR5 regular cab long bed with a canopy, square-on. Same 2,850 mm wheelbase, front clip, door and ride height as the Xtracab; the cab is 235 mm shorter and the bed 290 mm longer. The proportion check is made on this one."
+    },
+    {
+      "file": "rear-34-right-xtracab-4wd.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Truck_4WD_Xtracab_02.jpg",
+      "author": "Jacob Frey 4A",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "original": {
+        "width": 3264,
+        "height": 2448,
+        "bytes": 3470603,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/1/11/Toyota_Truck_4WD_Xtracab_02.jpg"
+      },
+      "committed": {
+        "width": 1920,
+        "height": 1440,
+        "bytes": 970793,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "rear three-quarter, right",
+      "description": "1986–88 Xtracab 4WD: the extended cab, quarter window, short bed with its pressed fenders, tailgate and tail lamps. Chrome step bumper and running boards are not on the film truck."
+    },
+    {
+      "file": "front-34-left-xtracab-4wd-1988-v6.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Truck_4WD_Xtracab_01.jpg",
+      "author": "Jacob Frey 4A",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "original": {
+        "width": 3264,
+        "height": 2289,
+        "bytes": 2965504,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/2/21/Toyota_Truck_4WD_Xtracab_01.jpg"
+      },
+      "committed": {
+        "width": 1920,
+        "height": 1346,
+        "bytes": 866789,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "front three-quarter, left",
+      "description": "1988 V6 Xtracab 4WD. Use the cab and bed. Do not copy the 1987–88 grille or the independent front suspension."
+    },
+    {
+      "file": "front-34-left-xtracab-sr5-1988.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Hilux_SR5_Xtracab_1988.jpg",
+      "author": "RL GNZLZ",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "original": {
+        "width": 4320,
+        "height": 2432,
+        "bytes": 5893129,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Toyota_Hilux_SR5_Xtracab_1988.jpg"
+      },
+      "committed": {
+        "width": 3840,
+        "height": 2162,
+        "bytes": 1710203,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "front three-quarter, left",
+      "description": "SR5 Xtracab 4WD photographed in Chile, captioned 1988: cab, quarter window, door mirror on its bracket, pressed fenders. Later grille, lifted, oversize tyres: do not copy those."
+    },
+    {
+      "file": "front-34-left-4wd-sr5-1984-86.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:84%E2%80%9386_Toyota_Truck_4WD_short_bed.jpg",
+      "author": "Jacob Frey 4A",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "original": {
+        "width": 3264,
+        "height": 2448,
+        "bytes": 2429175,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/b/bd/84%E2%80%9386_Toyota_Truck_4WD_short_bed.jpg"
+      },
+      "committed": {
+        "width": 1920,
+        "height": 1440,
+        "bytes": 681667,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "front three-quarter, left",
+      "description": "1984–86 4WD SR5 short bed in black: the face the 1985 truck has (one rectangular lamp a side, big amber corner lamps, the grille), black flares, solid front axle."
+    },
+    {
+      "file": "interior-4wd-through-window.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Hilux_truck_(4286561957).jpg",
+      "author": "dave_7 from Lethbridge, Canada",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "original": {
+        "width": 2748,
+        "height": 3664,
+        "bytes": 1659171,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/c/cd/Toyota_Hilux_truck_%284286561957%29.jpg"
+      },
+      "committed": {
+        "width": 1920,
+        "height": 2560,
+        "bytes": 900821,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "interior, through the passenger window",
+      "description": "Left-hand-drive 4WD cab: two-spoke wheel, squared dash, square vents, floor levers. A base model: no tachometer."
+    },
+    {
+      "file": "front-34-left-4wd-sr5-museum.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Truck_SR5_4WD.jpg",
+      "author": "Jacob Frey 4A",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "original": {
+        "width": 2048,
+        "height": 1536,
+        "bytes": 1660685,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/4/43/Toyota_Truck_SR5_4WD.jpg"
+      },
+      "committed": {
+        "width": 1920,
+        "height": 1440,
+        "bytes": 460291,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "front three-quarter, left",
+      "description": "4WD SR5 short bed in the Toyota USA Automobile Museum: stock 1984–86 face, flares, ride height on stock tyres."
+    },
+    {
+      "file": "rear-34-right-4wd-long-bed.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Hilux_truck_(4286562583).jpg",
+      "author": "dave_7 from Lethbridge, Canada",
+      "licence": "CC BY 2.0",
+      "licence_url": "https://creativecommons.org/licenses/by/2.0",
+      "original": {
+        "width": 3664,
+        "height": 2748,
+        "bytes": 2254919,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Toyota_Hilux_truck_%284286562583%29.jpg"
+      },
+      "committed": {
+        "width": 1920,
+        "height": 1440,
+        "bytes": 733990,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "rear three-quarter, right",
+      "description": "4WD regular cab long bed: tailgate lettering, tail lamps, the bed side."
+    },
+    {
+      "file": "front-34-right-4wd.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Pickup_4x4_grey_(1).jpg",
+      "author": "Ethan Llamas",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "original": {
+        "width": 5626,
+        "height": 4218,
+        "bytes": 7477805,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/8/80/Toyota_Pickup_4x4_grey_%281%29.jpg"
+      },
+      "committed": {
+        "width": 3840,
+        "height": 2879,
+        "bytes": 3519769,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "front three-quarter, right",
+      "description": "4WD regular cab with the 1987–88 chrome grille. Use the bonnet pressings, cowl, screen and door; not the grille."
+    },
+    {
+      "file": "rear-34-left-4wd.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:Toyota_Pickup_4x4_gray_(2).jpg",
+      "author": "Ethan Llamas",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "original": {
+        "width": 4762,
+        "height": 3572,
+        "bytes": 6638860,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/2/29/Toyota_Pickup_4x4_gray_%282%29.jpg"
+      },
+      "committed": {
+        "width": 3840,
+        "height": 2880,
+        "bytes": 2883170,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "rear three-quarter, left",
+      "description": "Same truck from behind: TOYOTA across the tailgate, tail lamps (amber over red), the pressed rear fender."
+    },
+    {
+      "file": "interior-dashboard-1984.jpg",
+      "commons_page": "https://commons.wikimedia.org/wiki/File:1984_Toyota_Pickup_Interior,_01-16-2023.jpg",
+      "author": "Elise240SX",
+      "licence": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "original": {
+        "width": 4000,
+        "height": 3000,
+        "bytes": 7096173,
+        "url": "https://upload.wikimedia.org/wikipedia/commons/1/10/1984_Toyota_Pickup_Interior%2C_01-16-2023.jpg"
+      },
+      "committed": {
+        "width": 3840,
+        "height": 2880,
+        "bytes": 1735652,
+        "note": "Commons-served scaled copy, not the original"
+      },
+      "angle": "interior, dashboard",
+      "description": "1984 Pickup dashboard, left-hand drive: the instrument hood, vents, heater slides, two-spoke wheel, gear lever. A base 2WD: the SR5 adds a tachometer."
+    }
+  ]
+}
