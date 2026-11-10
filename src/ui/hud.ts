@@ -461,6 +461,7 @@ export class Hud {
       this.lastPromptKey = key;
       // On a phone held upright the prompt takes a line under the dials (hudStyles.css).
       this.el.classList.toggle('with-prompt', prompts.length > 0);
+      this.el.style.setProperty('--prompt-count', String(prompts.length));
       this.promptsEl.innerHTML = '';
       for (const p of prompts) {
         const el = document.createElement('div');

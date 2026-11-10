@@ -2463,7 +2463,7 @@ body:not(.touch-mode) #ui[data-hud='kit'] .hud.cockpit .inst-compass {
   .touch-mode #ui[data-hud='dash'] .hud.with-prompt .crawl-gauges {
     top: calc(
       max(calc(8 * var(--u)), env(safe-area-inset-top)) + calc(50 * var(--u)) + var(--speedo) +
-        calc(18 * var(--u)) + calc(36 * var(--u))
+        calc(18 * var(--u)) + calc(4 * var(--u)) + calc(33 * var(--u)) * var(--prompt-count, 1)
     );
   }
 
