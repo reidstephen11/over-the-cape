@@ -193,7 +193,8 @@ test.describe('phone held upright, every HUD style and UI size', () => {
     await page.setViewportSize({ width: 390, height: 844 });
 
     // The vehicle list in the pause menu: each description stays inside its own button.
-    await page.locator('.history-card').click();
+    // The note closes itself after a while; close it if it is still up.
+    await page.evaluate(() => document.querySelector<HTMLElement>('.history-card:not(.hidden)')?.click());
     await page.keyboard.press('Escape');
     await expect(page.locator('.pause-card h2')).toHaveText('Paused');
     await page.locator('.pause-card [data-act="vehicle"]').click();
