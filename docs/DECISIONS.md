@@ -1464,3 +1464,9 @@ An evaluator playtested v1.73 on the owner's two screens: the television (the El
 ## v1.76: the last small things on the phone
 
 The v1.75 audit's phone views listed what was left: the map's Close button (58×32 upright, 61×36 sideways) and the title pages' ‹ Back (31×44) under 44 px on a side, and 10–11 px lines on the title, setup and briefing screens (the version, "Over the Cape" above a heading, the episode options' small lines, the build label). On a touch screen these are now 44 px and 12 px; the title screens come before the touch controls, so the rules follow `pointer: coarse`. The audit and the browser tests' text measure also stop counting a whole-pixel rounding of a box's height as a transform: a sideways phone's history note measured 11.9 px for its 12 px text.
+
+## v1.77: the panels move down for every prompt on an upright phone
+
+The touch browser test (`e2e/touch.spec.ts`, "the HUD's panels keep clear") caught a v1.75 fault: with two prompts up at once on a phone held upright (release the handbrake, attach the winch), the prompts filled two lines under the dials but the panels below moved down by one, so the warning lamps sat under the second prompt. The HUD now sets `--prompt-count` and the panels move down 33 px per prompt.
+
+The same suite has three failures that also fail, identically, on the v1.74 build, so they predate v1.75: the landscape controls test waits for `.tool-ring`, which the v1.73 tool menu no longer has; the Joystick-only test reads full throttle after pulling the stick back; and the panels test expects one tap to close a history note, while a tap on a short note opens it to its full text. They are left for a separate fix.
