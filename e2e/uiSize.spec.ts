@@ -174,7 +174,10 @@ test.describe('phone held upright, every HUD style and UI size', () => {
             ({ style, ui }) => window.__game!.changeSettings({ hudStyle: style, uiSize: ui }),
             { style, ui },
           );
+          // The note closes itself after a few seconds: open it again for each check.
+          await page.evaluate(() => window.__game!.showNote('creb-lookout'));
           await waitSim(page, 0.2);
+          await expect(page.locator('.history-card')).toBeVisible();
           const where = `${style} ${size.width}×${size.height} ui ${ui}`;
           const found = await page.evaluate(() => {
             const near = [
