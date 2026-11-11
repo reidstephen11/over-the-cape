@@ -57,7 +57,7 @@ test('New Journey opens episode setup and keeps vehicle, difficulty and replay c
   await openJourney(page);
   await expect(page.locator('#welcome-setup')).toBeHidden();
   await page.locator('[data-group="setup"]').click();
-  await expect(page.locator('[data-group="vehicle"]')).toHaveCount(9);
+  await expect(page.locator('[data-group="vehicle"]')).toHaveCount(15);
   await expect(page.locator('[data-group="time"].on')).toHaveAttribute('data-value', 'dusk');
   await expect(page.locator('[data-group="weather"].on')).toHaveAttribute('data-value', 'rain');
   await page.locator('[data-group="vehicle"][data-value="perentie"]').click();

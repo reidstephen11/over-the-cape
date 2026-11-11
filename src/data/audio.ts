@@ -934,6 +934,7 @@ export const efiFourSynthTuning: EngineSynthTuning = {
 /** Engine sound for each vehicle. */
 export const engineSynthTunings = {
   shortie: engineSynthTuning,
+  forty: engineSynthTuning,
   ute40: engineSynthTuning,
   camel: dieselSynthTuning,
   perentie: dieselSynthTuning,

@@ -1,14 +1,14 @@
 import type { VehicleId } from './vehicle';
 
 /**
- * Vehicles to earn (v1.06). The FJ40 (the short-wheelbase 40 Series), the Land Rover Ninety
+ * Vehicles to earn (v1.06). The FJ40, the earlier short-wheelbase 4WD, the Land Rover Ninety
  * and (since v1.79) the SR5 Xtra Cab are open from the start;
  * each of the others opens with one challenge on the CREB, picked to suit the vehicle.
  * Test mode (`?dev`) opens them all.
  */
-export const starterVehicles: readonly VehicleId[] = ['shortie', 'camel', 'xtracab'];
+export const starterVehicles: readonly VehicleId[] = ['shortie', 'forty', 'camel', 'xtracab'];
 
-export type LockedVehicleId = Exclude<VehicleId, 'shortie' | 'camel' | 'xtracab'>;
+export type LockedVehicleId = Exclude<VehicleId, 'shortie' | 'forty' | 'camel' | 'xtracab'>;
 
 export interface VehicleChallenge {
   /** What to do, as the vehicle lists show it. */

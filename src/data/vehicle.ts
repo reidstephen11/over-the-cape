@@ -180,6 +180,7 @@ export interface VehicleTuning {
 
 export type VehicleId =
   | 'shortie'
+  | 'forty'
   | 'ute40'
   | 'perentie'
   | 'camel'
@@ -329,6 +330,13 @@ export const vehicleTuning: VehicleTuning = {
   intake: { x: 0.7, y: 0.9 - R - SUSPENSION_LIFT, z: -0.9 },
   winchMount: { x: 0, y: 0.28, z: -2.0 },
   towPoint: { x: 0, y: 0.05, z: 1.95 },
+};
+
+/** The earlier hand-coded 40 Series: the same truck as the FJ40, so the two bodies can be compared. */
+export const fortyTuning: VehicleTuning = {
+  ...vehicleTuning,
+  id: 'forty',
+  name: 'Short-wheelbase 4WD',
 };
 
 /**

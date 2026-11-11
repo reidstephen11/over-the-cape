@@ -269,7 +269,7 @@ class OscillatorEngine implements EngineVoice {
     if (e.powerCut) level *= E.sputterGain;
     // Fallback path only: a cheap bounce at the limiter on the two engines that have one.
     if (
-      (this.vehicle === 'shortie' || this.vehicle === 'lc79') &&
+      (this.vehicle === 'shortie' || this.vehicle === 'forty' || this.vehicle === 'lc79') &&
       e.rpm >= eng.redlineRpm &&
       e.throttle > 0.35
     ) {
