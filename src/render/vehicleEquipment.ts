@@ -1,3 +1,4 @@
+import { jerryCan, numberPlate, strokeText } from './bodyKit';
 import { ROUND_BEND, continuousTube, cleanGeometry } from './bodyRefinement';
 import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
@@ -8,6 +9,19 @@ import { mountSpare, spareSidewall } from './spares';
 
 /** The rack was laid out on a roof at 1.64 m; it rides on the lower hardtop by this much. */
 const rackDrop = () => ROOF - 1.64;
+
+/**
+ * The Blender FJ40's roof is 0.12 m under the code body's, once its hubs sit on the game's
+ * axles. The rack, the roof spare and the recovery boards drop by this much on that car only.
+ */
+export const FJ40_GEAR_DROP = -0.12;
+
+/** Round driving lamps on the bull bar, in the game frame. They come on with high beam. */
+export const fj40DrivingLamps: { x: number; y: number; z: number }[] = [-0.55, 0.55].map((x) => ({
+  x,
+  y: 0.78,
+  z: -1.9,
+}));
 
 const trim = new THREE.Color('#343D37'),
   steel = new THREE.Color('#959B94'),
@@ -287,7 +301,7 @@ function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
  * boards. A spine in the slot between the boards carries it from the deck, which is what
  * shows once the boards are put down on a crossing. The door spare is unchanged.
  */
-function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
+function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry, lift = 0): void {
   const width = tuning.drawnWheels?.width ?? tuning.wheelWidth;
   const drop = rackDrop();
   const x = -0.24;
@@ -298,7 +312,7 @@ function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
   const plateBottom = plankTop + 0.006;
   const base = plateBottom + plateH;
   // The tyre's sidewall rests on the plate, 4 mm clear; the hub caps sink into its middle.
-  const hubY = base + spareSidewall(wheel) + 0.004;
+  const hubY = base + spareSidewall(wheel) + 0.004 + lift;
   const top = hubY + width / 2 + 0.044;
   // The slot between the boards is only 60 mm, centred at x -0.28.
   const spineTop = plateBottom + 0.012;
@@ -331,21 +345,112 @@ export function addVehicleEquipment(
   b.rod({ x: ax, y: 0.67, z: -0.95 }, { x: ax + aerialSide * 0.02, y: 1.5, z: -0.91 }, 0.005, trim);
 }
 
+/** Safari snorkel: the scoop sits on the left guard, the riser is clamped to the A-pillar. */
+function fj40Snorkel(b: VehicleBuilder): void {
+  const x = -0.8;
+  const rubber = new THREE.Color('#202325');
+  // On the vertical face of the guard, behind the headlamp, so the scoop meets the panel.
+  b.block(x, 0.36, -1.22, 0.16, 0.18, 0.22, rubber, M.Rubber, Z.Front, 0.02);
+  tubePath(
+    b,
+    [v(x, 0.4, -1.12), v(x - 0.02, 0.82, -0.55), v(x, 1.15, -0.34), v(x, 1.48, -0.3)],
+    0.042,
+    rubber,
+  );
+  b.slot = M.Rubber;
+  b.tag = Z.Front;
+  b.push()
+    .translate(x, 1.48, -0.4)
+    .rotate(Math.PI / 2, 0, 0);
+  b.geometry(new THREE.CylinderGeometry(0.048, 0.042, 0.14, 10), rubber);
+  b.pop();
+  // The pillar skin is near x -0.75. Each clamp bridges the tube to it.
+  for (const y of [0.95, 1.22]) b.block(-0.775, y, -0.32, 0.07, 0.028, 0.04, rubber, M.Rubber, Z.Front);
+}
+
+/** Two round lamps on stalks off the bull bar's hoop, lenses facing forward. */
+function fj40Spots(b: VehicleBuilder): void {
+  const lens = new THREE.Color('#F3E2B8');
+  for (const lamp of fj40DrivingLamps) {
+    b.rod(v(lamp.x, 0.66, -1.8), v(lamp.x, lamp.y, lamp.z + 0.02), 0.014, bar, M.Metal, Z.Front);
+    b.slot = M.Metal;
+    b.tag = Z.Front;
+    b.push()
+      .translate(lamp.x, lamp.y, lamp.z + 0.03)
+      .rotate(Math.PI / 2, 0, 0);
+    b.geometry(new THREE.CylinderGeometry(0.05, 0.055, 0.07, 12), bar);
+    b.pop();
+    b.block(lamp.x, lamp.y, lamp.z, 0.08, 0.08, 0.01, lens, M.DrivingLamp, Z.Front);
+  }
+}
+
+/** A rubber flap hung just behind a tyre, its top tucked into the sill. */
+function fj40Flap(b: VehicleBuilder, x: number, z: number): void {
+  b.block(x, -0.06, z, 0.18, 0.34, 0.012, black, M.Rubber, Z.Trim);
+}
+
+/** Jerry can in a cradle on the right barn door, clear of the spare and the tail lamp. */
+function fj40RearCan(b: VehicleBuilder): void {
+  const x = 0.38,
+    y = 0.62,
+    z = 2.08;
+  b.block(x, y - 0.26, z - 0.1, 0.22, 0.03, 0.16, bar, M.Metal, Z.Rear);
+  for (const dx of [-0.1, 0.1]) b.block(x + dx, y - 0.04, 1.9, 0.025, 0.34, 0.05, bar, M.Metal, Z.Rear);
+  jerryCan(b, x, y, z, { colour: new THREE.Color('#667258'), zone: Z.Rear, width: 0.16, ribX: 0.08 });
+  b.block(x, y, z + 0.175, 0.17, 0.028, 0.012, black, M.Rubber, Z.Rear);
+}
+
+/** Rear bar under the lamps, with the plate on the right (the spare takes the left) and a tow ball. */
+function fj40RearBar(b: VehicleBuilder): void {
+  b.block(0, 0.12, 2.0, 1.55, 0.12, 0.1, bar, M.Metal, Z.Rear, 0.012);
+  for (const x of [-0.5, 0.5]) b.block(x, 0.12, 1.92, 0.06, 0.08, 0.12, bar, M.Metal, Z.Rear);
+  numberPlate(b, 0.48, 0.12, 2.06, 1, 'FJ-40', black);
+  b.slot = M.Metal;
+  b.tag = Z.Rear;
+  b.push().translate(0, 0.16, 2.02);
+  b.geometry(new THREE.SphereGeometry(0.028, 10, 8), steel);
+  b.pop();
+}
+
 /**
- * What the Blender FJ40 (fj40-blender-test) keeps from the code car's equipment: the roof rack
- * the planks ride on, the roof spare and the aerial. Its own bumpers, spare, chassis and
- * door hardware come from the GLB.
+ * Touring kit on the Blender FJ40: the code car's bull bar (winch, shackles and front plate),
+ * TOYOTA across the grille opening, driving lamps, a snorkel, mud flaps, a rear bar and a
+ * jerry can. The roof rack was drawn for the code roof, so it drops onto this one.
  */
 export function addFj40GlbEquipment(
   b: VehicleBuilder,
   tuning: VehicleTuning,
   wheel: THREE.BufferGeometry,
 ): void {
+  bullBar(b, tuning);
+  b.push().translate(0, 0.56, -1.72);
+  strokeText(b, 'TOYOTA', {
+    w: 0.028,
+    h: 0.046,
+    pitch: 0.044,
+    radius: 0.0035,
+    colour: new THREE.Color('#E8E6DC'),
+    slot: M.Metal,
+    zone: Z.Front,
+    z: 0,
+  });
+  b.pop();
+  fj40Spots(b);
+  fj40Snorkel(b);
+  for (const x of [-0.7, 0.7]) {
+    fj40Flap(b, x, -0.7);
+    fj40Flap(b, x, 1.6);
+  }
+  fj40RearBar(b);
+  fj40RearCan(b);
+  b.push().translate(0, FJ40_GEAR_DROP, 0);
   roofGear(b);
-  roofSpare(b, tuning, wheel);
-  const ax = -(HW - 0.08);
-  b.block(ax, 0.655, -0.95, 0.06, 0.04, 0.06, black, M.Rubber, Z.Front);
-  b.rod({ x: ax, y: 0.67, z: -0.95 }, { x: ax + -1 * 0.02, y: 1.5, z: -0.91 }, 0.005, trim);
+  // The Blender wheel's tread is thicker than the plate the code spare sits on.
+  roofSpare(b, tuning, wheel, 0.045);
+  b.pop();
+  // Whip aerial on the left guard, standing on the wing rather than inside it.
+  b.block(-0.74, 0.78, -1.02, 0.05, 0.03, 0.05, black, M.Rubber, Z.Front);
+  b.rod({ x: -0.74, y: 0.8, z: -1.02 }, { x: -0.76, y: 1.55, z: -0.98 }, 0.005, trim);
 }
 
 export function buildRackPlank(index: number): THREE.BufferGeometry {

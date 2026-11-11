@@ -1573,3 +1573,28 @@ The owner wanted the new FJ and the earlier body in the game at once. They are t
 - **Short-wheelbase 4WD** (`forty`) always draws the earlier hand-coded body. Same mass, gearbox, springs, cabin and engine sound. It is open with nothing unlocked, listed straight after the FJ40. Finishing the CREB in either one still opens the 60 Series.
 
 A new journey still starts in the FJ40. **Continue** still resumes whichever vehicle was saved. Pause → Vehicle switches to the other and restarts from the last camp.
+
+## v1.83: the FJ40 touring kit, and the body sat on its axles
+
+The Blender FJ40 (`shortie`) was looked at in the studio from the front, both sides, the rear, above, the driver's seat, a wheel, the bull bar, the snorkel, the rack and from under the tail. The earlier short-wheelbase 4WD is unchanged.
+
+**What was wrong, and what was done.**
+
+- The body had been lifted 108 mm so its roof matched the code car. The arches, which were drawn around the model's own hubs, then sat 120 mm above the game's wheels. The body now drops 12 mm, which puts those hubs on the parked axles (`LIFT` in `src/render/fj40Glb.ts`). The wheels sit in the arches and the tyres meet the ground.
+- The rear spare, as modelled, covered the left tail lamp. It and its carrier move 220 mm inboard, so both lamps show.
+- The stock bumpers and the little red reflectors that hung on them are not drawn. A bull bar and a rear bar take their place, and the two together flickered.
+- The roof rack, the recovery boards and the roof spare were drawn for the code roof, 120 mm higher. They drop with this body. The Blender wheel's tread was still in the boards, so that spare sits another 45 mm up on its clamp.
+
+**Touring kit, and what holds each part.** All of it is on the FJ40 only.
+
+- Bull bar: the code car's bar, winch and shackles, ahead of the grille, with the front plate on the pan facing forward. TOYOTA is stroked across the grille opening, inside the hoop.
+- Two driving lamps stand on short stalks on the outer tubes of the bar, lenses forward. They come on with high beam.
+- Snorkel: the scoop is on the outer face of the left guard, behind the headlamp (the passenger side). The tube runs up the A-pillar, two clamps reach the pillar, and the ram head turns forward above the gutter.
+- Mud flaps hang behind each tyre, the top tucked into the sill.
+- Rear bar under the lamps, brackets back to the body, the plate on the right facing back, a tow ball in the middle.
+- Jerry can in a cradle on the right barn door, the uprights set into the door skin, clear of the spare and the lamp. The can's long side faces out.
+- Roof rack as before (feet on the hardtop), with the recovery boards, a strapped swag, a toolbox and the flat spare, white face up, held by the centre clamp. A whip aerial stands on the left guard.
+
+The intake height is unchanged, so the snorkel does not let it ford any deeper than the other 40. The studio loads the Blender model before it draws the FJ40, so those photographs are of this body.
+
+**The second look.** A reviewer was given the studio set and the close-ups and nothing else. It found the roof spare through the boards (the spare was raised, as above) and a red piece hanging under the rear corner (the old bumper's reflector, now left off). After that, the side view shows the spare on the rack and the low rear view no longer has the red piece.

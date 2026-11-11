@@ -4,7 +4,7 @@ import type { VehicleId, VehicleTuning } from '../data/vehicle';
 import { buildVehicleBody } from './vehicleBody';
 import { buildVehicleWheel } from './vehicleWheel';
 import { buildFj40GlbBody, buildFj40GlbWheel, fj40GlbActive, fj40GlbHeadlamps } from './fj40Glb';
-import { buildRackPlank } from './vehicleEquipment';
+import { FJ40_GEAR_DROP, buildRackPlank, fj40DrivingLamps } from './vehicleEquipment';
 import { WIDEN as PATROL_WIDEN, buildPatrolBody, buildPatrolPlank, buildPatrolWheel } from './patrolBody';
 import { buildPerentieBody, buildPerentiePlank, buildPerentieWheel } from './perentieBody';
 import { buildCamelBody, buildCamelPlank } from './camelBody';
@@ -64,12 +64,19 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     // fj40-blender-test: the Blender GLB when it has loaded (?fj40=code for the code body).
     body: (t, w) => (fj40GlbActive() ? buildFj40GlbBody(t, w) : buildVehicleBody(t, w)),
     wheel: (t) => (fj40GlbActive() ? buildFj40GlbWheel(t) : buildVehicleWheel(t)),
-    plank: buildRackPlank,
+    plank: (index) => {
+      const g = buildRackPlank(index);
+      if (fj40GlbActive()) g.translate(0, FJ40_GEAR_DROP, 0);
+      return g;
+    },
     paint: { roughness: 0.39, metalness: 0.14, clearcoat: 0.7, clearcoatRoughness: 0.24 },
     springs: 'leaf',
     get lamps() {
       const glb = fj40GlbActive() ? fj40GlbHeadlamps() : [];
-      return { head: glb.length === 2 ? glb : fortySeriesHeadlamps };
+      return {
+        head: glb.length === 2 ? glb : fortySeriesHeadlamps,
+        ...(fj40GlbActive() ? { roof: fj40DrivingLamps } : {}),
+      };
     },
   },
   forty: {
