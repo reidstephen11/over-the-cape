@@ -208,7 +208,7 @@ const SUSPENSION_LIFT = 0.12;
 export const vehicleTuning: VehicleTuning = {
   id: 'shortie',
   transfer: 'partTime',
-  name: 'Short-wheelbase 4WD',
+  name: 'FJ40',
   mass: 1600,
   // Retain the existing centre-of-mass height above ground with the taller suspension.
   com: { x: 0, y: 0.44 - SUSPENSION_LIFT, z: 0.05 },

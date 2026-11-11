@@ -1556,3 +1556,11 @@ The owner sent four phone screenshots from v1.79 and asked why the checks had no
 - The older tool menu test compared each wedge's rectangle; with sixteen tools neighbouring wedges' rectangles overlap by about 8 px though the wedges do not (it already failed on `main`). It now compares each tool's family, icon and name.
 
 **Follow-up to the v1.80 tests (no game change, so no new version).** The note test first hung tapping a note that had already closed itself, and checked the hint only while its text happened to show. It now reopens the note before each check and also checks the widest the road name and hint may grow beside it. Run with v1.79's stylesheet it fails (Dash cluster, 390 × 844); with v1.80's it passes in all three styles at both sizes and both UI sizes. The unit tests all passed (971).
+
+## v1.81: the Blender-built FJ40
+
+The short-wheelbase 40 Series now draws its body and wheels from the Blender model `public/models/fj40.glb` (`src/render/fj40Glb.ts`), loaded once before the drive starts. The hand-coded cabin and dials, the roof rack the planks ride on, the roof spare, the aerial, and the moving axles and springs stay as they were. The model is in metres, nose to −Z, and is lifted 0.108 m so its hubs meet the game's. Headlamp beams come from the model's lamp centres when both are there.
+
+It is the same starter vehicle as before (`shortie` in `starterVehicles`), so a new journey can drive it with nothing unlocked. The vehicle list calls it **FJ40**. `?fj40=code` keeps the old body. `?fj40paint=` followed by six hex digits recolours the paint (for example `?fj40paint=b22d1f`). If the file fails to load, the game uses the old body.
+
+The blend file and build log are in `assets/vehicles/fj40/` and `tools/blender/fj40/`. `e2e/fj40Glb.spec.ts` checks that the shortie loads from the model with no console errors, and that another paint colour loads cleanly. `tests/unlocks.test.ts` still checks the FJ40 is open with an empty unlock list.

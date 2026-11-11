@@ -1,8 +1,8 @@
 import type { VehicleId } from './vehicle';
 
 /**
- * Vehicles to earn (v1.06). The 40 Series, the Land Rover Ninety and (since v1.79) the SR5 Xtra Cab
- * are open from the start;
+ * Vehicles to earn (v1.06). The FJ40 (the short-wheelbase 40 Series), the Land Rover Ninety
+ * and (since v1.79) the SR5 Xtra Cab are open from the start;
  * each of the others opens with one challenge on the CREB, picked to suit the vehicle.
  * Test mode (`?dev`) opens them all.
  */

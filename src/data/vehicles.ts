@@ -230,7 +230,8 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
   },
   shortie: {
     tuning: vehicleTuning,
-    blurb: '1970s-style short-wheelbase 4WD, 4.2 L petrol six, three-speed automatic.',
+    blurb:
+      '1970s Land Cruiser FJ40, open from the start. The Blender-built body, 4.2 L petrol six, three-speed automatic.',
     cabin: shortieCabin,
   },
   ute40: {

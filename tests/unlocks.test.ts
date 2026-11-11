@@ -9,7 +9,7 @@ const fake = (data: unknown): KeyValueStore => ({
 });
 
 describe('vehicle unlocks', () => {
-  it('opens the 40 Series and the Land Rover from the start, and the rest once earned', () => {
+  it('opens the FJ40 and the Land Rover from the start, and the rest once earned', () => {
     expect(vehicleOpen('shortie', [])).toBe(true);
     expect(vehicleOpen('camel', [])).toBe(true);
     expect(vehicleOpen('unimog', [])).toBe(false);
