@@ -1564,3 +1564,12 @@ The short-wheelbase 40 Series now draws its body and wheels from the Blender mod
 It is the same starter vehicle as before (`shortie` in `starterVehicles`), so a new journey can drive it with nothing unlocked. The vehicle list calls it **FJ40**. `?fj40=code` keeps the old body. `?fj40paint=` followed by six hex digits recolours the paint (for example `?fj40paint=b22d1f`). If the file fails to load, the game uses the old body.
 
 The blend file and build log are in `assets/vehicles/fj40/` and `tools/blender/fj40/`. `e2e/fj40Glb.spec.ts` checks that the shortie loads from the model with no console errors, and that another paint colour loads cleanly. `tests/unlocks.test.ts` still checks the FJ40 is open with an empty unlock list.
+
+## v1.82: both 40 Series bodies, to compare
+
+The owner wanted the new FJ and the earlier body in the game at once. They are two starters, the same truck:
+
+- **FJ40** (`shortie`) draws the Blender model when `fj40.glb` loads, as in v1.81. `?fj40=code` still forces this one back to the old body, and a failed load does the same.
+- **Short-wheelbase 4WD** (`forty`) always draws the earlier hand-coded body. Same mass, gearbox, springs, cabin and engine sound. It is open with nothing unlocked, listed straight after the FJ40. Finishing the CREB in either one still opens the 60 Series.
+
+A new journey still starts in the FJ40. **Continue** still resumes whichever vehicle was saved. Pause → Vehicle switches to the other and restarts from the last camp.

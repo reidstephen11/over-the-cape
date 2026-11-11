@@ -72,6 +72,15 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
       return { head: glb.length === 2 ? glb : fortySeriesHeadlamps };
     },
   },
+  forty: {
+    name: '40-series-4wd-code',
+    body: buildVehicleBody,
+    wheel: buildVehicleWheel,
+    plank: buildRackPlank,
+    paint: { roughness: 0.39, metalness: 0.14, clearcoat: 0.7, clearcoatRoughness: 0.24 },
+    springs: 'leaf',
+    lamps: { head: fortySeriesHeadlamps },
+  },
   ute40: {
     name: 'ute40-farm-ute',
     body: buildUte40Body,

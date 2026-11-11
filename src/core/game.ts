@@ -1393,7 +1393,7 @@ export class Game {
       ...this.keepGhost(),
       ...this.unlock('hilux', false),
       ...(this.winched ? [] : this.unlock('unimog', false)),
-      ...(this.vehicleId === 'shortie' ? this.unlock('hj60', false) : []),
+      ...(this.vehicleId === 'shortie' || this.vehicleId === 'forty' ? this.unlock('hj60', false) : []),
       ...(this.vehicleId === 'hilux' ? this.unlock('ute40', false) : []),
       ...(this.vehicleId === 'patrol' ? this.unlock('mq', false) : []),
       ...(this.vehicleId === 'camel' ? this.unlock('rangie', false) : []),

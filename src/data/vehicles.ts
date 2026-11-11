@@ -12,7 +12,7 @@ import { unimogTuning } from './unimog';
 import { UTE_CAB_SHIFT, ute40Tuning } from './ute40';
 import { xtracabTuning } from './xtracab';
 import type { EpisodeLoadout } from './episodes';
-import { vehicleTuning, type VehicleId, type VehicleTuning } from './vehicle';
+import { fortyTuning, vehicleTuning, type VehicleId, type VehicleTuning } from './vehicle';
 
 type Point = { x: number; y: number; z: number };
 
@@ -231,7 +231,13 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
   shortie: {
     tuning: vehicleTuning,
     blurb:
-      '1970s Land Cruiser FJ40, open from the start. The Blender-built body, 4.2 L petrol six, three-speed automatic.',
+      '1970s Land Cruiser FJ40, open from the start. The Blender-built body, 4.2 L petrol six, three-speed automatic. The earlier body is listed next to it.',
+    cabin: shortieCabin,
+  },
+  forty: {
+    tuning: fortyTuning,
+    blurb:
+      'The earlier hand-coded 40 Series, open from the start. The same truck as the FJ40, so the two bodies can be compared.',
     cabin: shortieCabin,
   },
   ute40: {
@@ -440,6 +446,7 @@ export function vehicleLoadout(load: EpisodeLoadout, id: VehicleId): EpisodeLoad
 
 export const vehicleOrder: readonly VehicleId[] = [
   'shortie',
+  'forty',
   'ute40',
   'camel',
   'rangie',
