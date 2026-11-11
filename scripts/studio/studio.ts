@@ -19,6 +19,7 @@ import { Sky } from '../../src/render/sky';
 import { VehicleModel } from '../../src/render/vehicleModel';
 import { WorkingMirrors } from '../../src/render/workingMirrors';
 import { vehicleLooks } from '../../src/render/vehicleLooks';
+import { loadFj40Glb } from '../../src/render/fj40Glb';
 import { buildBodyCore } from '../../src/render/sooty80Body';
 
 const params = new URLSearchParams(location.search);
@@ -69,6 +70,10 @@ if (params.has('plain')) {
 }
 if (params.has('stock') && id === 'sooty80')
   vehicleLooks.sooty80.body = (t, wheel) => buildBodyCore(t, wheel, false);
+
+// The FJ40's body is the Blender model. Load it before the mesh is built, or the studio
+// draws the hand-coded fallback and the photographs are of the wrong car.
+if (id === 'shortie') await loadFj40Glb();
 
 const model = new VehicleModel(tuning);
 const mirrors = new WorkingMirrors();

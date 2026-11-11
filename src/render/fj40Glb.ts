@@ -21,9 +21,14 @@ import { standardLivery, type Livery } from './vehicleBody';
  * chassis_axle_*, chassis_spring_*; the wheel_* nodes become the shared wheel geometry.
  */
 
-/** Ground in the GLB is 0.5 m below its origin and its hubs at -0.108; the game's hubs sit at
- * -0.12 with the shortie's 0.12 m suspension lift, so the body rises 0.108 m. */
-const LIFT = 0.108;
+/**
+ * GLB hubs are at y = -0.108 and the tyres meet the ground. The game parks its hubs at
+ * y = -0.12, so the body drops 12 mm and the wheels sit in the arches. The previous
+ * +0.108 lift lined the roof up with the code body and left a 120 mm gap above each tyre.
+ */
+const LIFT = -0.012;
+/** The rear spare, as modelled, covered the left tail lamp. It and its carrier move inboard. */
+const SPARE_INBOARD = 0.22;
 const GLB_TYRE_R = 0.392;
 
 let gltfRoot: THREE.Object3D | null = null;
@@ -143,7 +148,11 @@ function soupGeometry(s: Soup): THREE.BufferGeometry {
   return geo;
 }
 
-const skipInBody = /^(wheel_|interior_|chassis_axle|chassis_spring)/;
+/**
+ * Wheels, the code cabin and the moving axles stay out. The stock bumpers are left out too:
+ * the touring bull bar and the rear bar take their place, and the two together z-fought.
+ */
+const skipInBody = /^(wheel_|interior_|chassis_axle|chassis_spring|trim_bumper_|trim_reflector)/;
 
 /** The GLB body in the game's attributes, with the code cabin, rack, roof spare and aerial. */
 export function buildFj40GlbBody(
@@ -160,7 +169,10 @@ export function buildFj40GlbBody(
     if (!(o as THREE.Mesh).isMesh) return;
     const part = partName(o);
     if (skipInBody.test(part)) return;
-    addMesh(soup, o as THREE.Mesh, part, livery, (v) => void (v.y += LIFT));
+    addMesh(soup, o as THREE.Mesh, part, livery, (v) => {
+      v.y += LIFT;
+      if (part === 'spare' || part.startsWith('spare') || part === 'trim_spare_carrier') v.x += SPARE_INBOARD;
+    });
   });
   const glb = soupGeometry(soup);
   const b = new VehicleBuilder();
