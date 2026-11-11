@@ -1,4 +1,5 @@
 import { controllers } from '../data/controllers';
+import { loadFj40Glb } from '../render/fj40Glb';
 import type { ControlInstruction } from '../data/controlInstructions';
 import * as THREE from 'three';
 import { maps } from '../data/maps';
@@ -527,6 +528,7 @@ export class Game {
    */
   static preload(): void {
     void loadRapier().catch(() => undefined);
+    void loadFj40Glb();
   }
 
   /**
@@ -605,6 +607,8 @@ export class Game {
     });
     progress(0.86, 'Starting physics');
     await nextFrame();
+    // fj40-blender-test: the Blender FJ40 must be loaded before the shortie is built.
+    await loadFj40Glb();
     const sim = new Simulation(await rapier, world, env);
     sim.setWeather(env, weather.creekRise, weather.flowScale);
     // This run's surprises, from its seed: the same ones again after a restart from camp.

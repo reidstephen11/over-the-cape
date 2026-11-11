@@ -331,6 +331,23 @@ export function addVehicleEquipment(
   b.rod({ x: ax, y: 0.67, z: -0.95 }, { x: ax + aerialSide * 0.02, y: 1.5, z: -0.91 }, 0.005, trim);
 }
 
+/**
+ * What the Blender FJ40 (fj40-blender-test) keeps from the code car's equipment: the roof rack
+ * the planks ride on, the roof spare and the aerial. Its own bumpers, spare, chassis and
+ * door hardware come from the GLB.
+ */
+export function addFj40GlbEquipment(
+  b: VehicleBuilder,
+  tuning: VehicleTuning,
+  wheel: THREE.BufferGeometry,
+): void {
+  roofGear(b);
+  roofSpare(b, tuning, wheel);
+  const ax = -(HW - 0.08);
+  b.block(ax, 0.655, -0.95, 0.06, 0.04, 0.06, black, M.Rubber, Z.Front);
+  b.rod({ x: ax, y: 0.67, z: -0.95 }, { x: ax + -1 * 0.02, y: 1.5, z: -0.91 }, 0.005, trim);
+}
+
 export function buildRackPlank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   b.push().translate(0, rackDrop(), 0);
