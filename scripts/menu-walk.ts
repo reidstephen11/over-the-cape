@@ -362,12 +362,16 @@ async function focusOn(label: RegExp): Promise<boolean> {
       const plain = await page.evaluate(
         () => !document.querySelector('.focused')?.closest('.seg, .welcome-options'),
       );
-      if (plain) {
-        await press(Pad.Right);
-        const right = await at();
-        if (right && label.test(right.label)) return true;
-        if (!same(f, right)) await press(Pad.Left);
-      }
+      if (plain)
+        for (const [out, home] of [
+          [Pad.Right, Pad.Left],
+          [Pad.Left, Pad.Right],
+        ]) {
+          await press(out);
+          const beside = await at();
+          if (beside && label.test(beside.label)) return true;
+          if (!same(f, beside)) await press(home);
+        }
       stuck = same(prev, f) ? stuck + 1 : 0;
       prev = f;
       f = null;
