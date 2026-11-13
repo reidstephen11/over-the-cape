@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { patchFog } from './fog';
+import { canopyUniforms } from './shadowReach';
 
 /** Shared by every ground material: 0 = dry, 1 = soaked (darker, with a damp sheen). */
 export const groundUniforms = { groundWetness: { value: 0 } };
@@ -29,8 +30,11 @@ const glslColor = (c: THREE.Color) => `vec3(${c.r.toFixed(5)}, ${c.g.toFixed(5)}
  */
 export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMaterial {
   const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.93 });
+  // Beyond the shadow map the ground is shaded by the tree cover above it (shadowReach.ts).
+  material.defines = { ...material.defines, SHADOW_FAR_SHADE: '' };
   material.onBeforeCompile = (shader) => {
     shader.uniforms.groundWetness = groundUniforms.groundWetness;
+    Object.assign(shader.uniforms, canopyUniforms);
     shader.vertexShader = `attribute vec2 ground; attribute vec3 trackColor; attribute vec4 trackEdge;
       attribute vec3 patchInner; attribute vec3 patchRim; attribute vec2 patchEdge;
       attribute vec4 patchCircle; attribute vec2 clayBank; attribute float trackRight;
@@ -58,6 +62,10 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
       // The distance out from a track's right edge (vTrackEdge.x: from its left edge).
       varying float vTrackRight;
       uniform float groundWetness;
+      uniform sampler2D canopyMap;
+      uniform vec4 canopyBox;
+      uniform vec2 canopyShift;
+      uniform float canopyStrength;
       float groundHash(vec2 p) {
         return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
       }
@@ -73,6 +81,12 @@ export function createGroundMaterial(edge: TrackEdgeStyle): THREE.MeshStandardMa
         /* glsl */ `
         #include <color_fragment>
         vec2 groundP = vGroundPosition.xz;
+        #ifdef USE_SHADOWMAP
+          // The sun left under the trees, for where no shadow is drawn: the cover map, read
+          // where this ground's shadow would come from.
+          shadowFarLit = 1.0 - canopyStrength *
+            texture2D(canopyMap, (groundP + canopyShift + canopyBox.xy) * canopyBox.zw).r;
+        #endif
         // A clay bank beside the track, under the track's paint so only its outer edge shows:
         // the distance out from the nearer edge of the track, less the bank's reach there.
         float bankDist = (vTrackEdge.x >= vTrackRight ? vTrackEdge.x - vClayBank.x : vTrackRight - vClayBank.y) +

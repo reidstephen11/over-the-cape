@@ -1232,10 +1232,55 @@ body:not(.touch-mode) #ui[data-hud='dash'] .hud.cockpit .camera-help {
   box-shadow: inset calc(3 * var(--u)) 0 0 var(--hud-accent);
 }
 
+/* The highlight a keyboard or controller moves: a ring as well as the bar, so it reads from
+   the couch and is not mistaken for an option that is merely switched on (v1.84). */
+#ui[data-hud] .pause-card button.focused,
+#ui[data-hud] .pause-card input.focused {
+  box-shadow:
+    inset calc(4 * var(--u)) 0 0 var(--hud-accent),
+    0 0 0 calc(2 * var(--u)) var(--hud-accent);
+}
+
+#ui[data-hud] .setting-row.focused-row {
+  --row-band: var(--hud-accent-fill);
+}
+
 #ui[data-hud] .pause-card button.on {
   color: var(--hud-accent);
   border-color: var(--hud-accent);
   background: var(--hud-accent-fill);
+}
+
+/* A big screen read from the couch has the height of a small one once everything on it is
+   drawn larger (576 units at 1080p): the pause pages use the width instead. The main page's
+   eight buttons stand two abreast under one row of readings, and all of it fits (v1.84). */
+:root[data-short] #ui .pause-card {
+  width: min(calc(520 * var(--u)), 92vw);
+  max-height: 94vh;
+}
+
+/* 600 units: clear of the dash cluster in the bottom left corner. */
+:root[data-short] #ui .pause-card.pause-main,
+:root[data-short] #ui .pause-card.pause-journal {
+  width: min(calc(600 * var(--u)), 92vw);
+}
+
+:root[data-short] #ui .pause-main .pause-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+:root[data-short] #ui .pause-status {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+:root[data-short] #ui .controller-setting {
+  display: flex;
+}
+
+:root[data-short] #ui .controller-setting .seg {
+  flex-wrap: nowrap;
+  margin-top: 0;
 }
 
 #ui[data-hud] .pause-card button.on small {

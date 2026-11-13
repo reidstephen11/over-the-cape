@@ -35,6 +35,9 @@ Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.59). Measure ea
 
 # Other follow-up work
 
+- **Vehicle audit (November 2026).** `docs/AUDIT-2026-11.md` lists the faults found in the FJ40 and the Perentie by comparing 24 large pictures of each (`scripts/studio-audit.ts`) with their reference photographs. Fix those, then review the other thirteen vehicles the same way, one or two at a time (a review is about 260,000 tokens), starting with the ones the owner drives. v1.84 fixed the track and menu faults from the same audit.
+- **Menus, still open after v1.84:** the journey page lists one episode to choose from and its vehicle chooser is a wrapping grid with locked vehicles mixed in; Pause → Vehicle is a long list of paragraphs; Pause → Map → ○ closes the map and the pause menu together. Grass tufts, shrubs and rocks beyond the shadow map take no shade from the trees above them (the ground does since v1.84).
+
 - **More side quests and interesting discoveries off the beaten track on the CREB.** First set in v1.66: the lost-logbook delivery, the last-pole survey with a new clearing beyond the linesman’s hut, and a three-stop falls/lookout scrapbook. Pause → Trip journal tracks directions, observations and camp-saved progress. Still open: more optional recoveries, hidden camps and abandoned equipment, with distinct tasks and worthwhile rewards.
 
 - Episodes 5–7: Telegraph Track South, Telegraph Track North and The Tip (SPEC.md §2).

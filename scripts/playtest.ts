@@ -8,7 +8,7 @@
  * Usage (against `npx vite build && npx vite preview --port 4173`):
  *   npx vite-node scripts/playtest.ts <outDir> [view=desktop|phone|portrait] [quality=low|medium|high]
  *     [tracks=upper-daintree-road,daintree-crossing] [every=20] [speed=8] [vehicle=<id>]
- *     [steps=30] [url=http://localhost:4173/]
+ *     [steps=30] [max=0] [url=http://localhost:4173/]
  * view=phone is a phone held sideways (844x390), view=portrait one held upright (390x844).
  * PW_CHROMIUM names another Chromium than the pinned Playwright's own.
  */
@@ -25,6 +25,8 @@ const tracks = arg('tracks', 'upper-daintree-road,daintree-crossing').split(',')
 const every = Number(arg('every', '20'));
 const speed = Number(arg('speed', '8'));
 const url = arg('url', 'http://localhost:4173/');
+/** Stop after this many metres (0: drive to the end), for a short close-spaced run of frames. */
+const maxMetres = Number(arg('max', '0'));
 /** Sim seconds without 2 m of progress before the drive is called stuck. */
 const STUCK_AFTER = 45;
 /** Physics steps per drawn frame: the software renderer is far slower than real time. */
@@ -153,6 +155,10 @@ for (;;) {
   }
   last = now;
   if (now.a.done) break;
+  if (maxMetres > 0 && travelled >= maxMetres) {
+    outcome = `stopped at ${maxMetres} m as asked`;
+    break;
+  }
   if (stuck) {
     outcome = `stuck ${Math.round(now.a.remaining)} m short of the end`;
     break;

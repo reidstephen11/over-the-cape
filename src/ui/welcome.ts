@@ -102,6 +102,8 @@ export class WelcomeScreen {
   private padConnected = false;
   private row = 0;
   private col = 0;
+  /** The main menu item the open page was reached from: Back returns the highlight to it. */
+  private menuFrom = '';
   private padPrev: boolean[] = [];
   private readonly padStick = new MenuStick();
   private raf = 0;
@@ -223,6 +225,11 @@ export class WelcomeScreen {
     if (this.page === 'settings') {
       const setting = (group: Group, value: string, label: string, on: boolean) =>
         `<button type="button" class="welcome-option ${on ? 'on' : ''}" aria-pressed="${on}" data-group="${group}" data-value="${value}">${label}</button>`;
+      // The two phone settings are only for a touch screen: a television has no use for them.
+      const phone = isTouchDevice()
+        ? `<section class="title-setting phone-driving-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
+          <section class="title-setting phone-driving-setting"><h3>Joystick side</h3><div class="welcome-options seg">${touchStickSides.map((c) => setting('touchSide', c, touchStickSideLabels[c], this.settings.touchStickSide === c)).join('')}</div></section>`
+        : '';
       this.el.innerHTML = `<div class="title-settings title-panel"><button class="title-back" data-group="back">‹ Back</button><p class="title-eyebrow">Over the Cape</p><h2>Settings</h2>
         <section class="title-setting"><h3>Graphics</h3><div class="welcome-options seg">${offeredQualities(
           isTouchDevice(),
@@ -238,8 +245,7 @@ export class WelcomeScreen {
           .join('')}</div></section>
         <section class="title-setting"><h3>Cockpit mirrors</h3><div class="welcome-options seg">${setting('mirrors', 'on', 'On', this.settings.mirrors)}${setting('mirrors', 'off', 'Off', !this.settings.mirrors)}</div></section>
         <section class="title-setting"><h3>Cockpit head motion</h3><div class="welcome-options seg">${setting('headMotion', 'on', 'On', this.settings.headMotion)}${setting('headMotion', 'off', 'Off', !this.settings.headMotion)}</div></section>
-        <section class="title-setting phone-driving-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
-        <section class="title-setting phone-driving-setting"><h3>Joystick side</h3><div class="welcome-options seg">${touchStickSides.map((c) => setting('touchSide', c, touchStickSideLabels[c], this.settings.touchStickSide === c)).join('')}</div></section>
+        ${phone}
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
@@ -267,7 +273,7 @@ export class WelcomeScreen {
           'hudStyle',
           'gearbox',
         ],
-        focusGroup ?? 'back',
+        focusGroup ?? 'quality',
       );
       return;
     }
@@ -277,8 +283,16 @@ export class WelcomeScreen {
         : `<nav class="title-menu" aria-label="Main menu"><button type="button" data-group="menu" data-value="continue" data-title-continue ${hasCamp ? '' : 'disabled'}>Continue</button><button type="button" data-group="menu" data-value="journey" data-title-journey>New Journey</button><button type="button" data-group="menu" data-value="settings">Settings</button></nav>`
     }
       </div><p class="title-version" title="Build ${BUILD_LABEL}">${GAME_VERSION}</p>${this.page === 'menu' ? `<p class="title-input-hint">${hint}</p>` : ''}`;
-    if (this.page === 'menu') this.setRows(['menu'], 'menu');
-    else {
+    if (this.page === 'menu') {
+      this.setRows(['menu'], 'menu');
+      // Back from a page: onto the item it was opened from.
+      const from = this.rows[0]?.findIndex((b) => b.dataset.value === this.menuFrom) ?? -1;
+      if (from >= 0) {
+        this.col = from;
+        this.refresh();
+        this.rows[0][from].focus({ preventScroll: true });
+      }
+    } else {
       this.rows = [];
       this.el.focus({ preventScroll: true });
     }
@@ -503,6 +517,7 @@ export class WelcomeScreen {
         return this.drive(true);
       }
       this.page = value === 'settings' ? 'settings' : 'journey';
+      this.menuFrom = value;
       if (this.page === 'journey') this.choice.resume = false;
       this.render();
       return;
@@ -626,7 +641,13 @@ export class WelcomeScreen {
       const input = this.rows[this.row][this.col] as HTMLInputElement;
       input.value = String(Math.max(0, Math.min(1, Number(input.value) + dCol * 0.1)));
       input.dispatchEvent(new Event('input', { bubbles: true }));
-    } else this.col = Math.max(0, Math.min(this.rows[this.row].length - 1, this.col + dCol));
+    } else {
+      const col = Math.max(0, Math.min(this.rows[this.row].length - 1, this.col + dCol));
+      const moved = col !== this.col;
+      this.col = col;
+      // On the Settings page a setting changes as the highlight moves along it, as in the pause menu.
+      if (moved && this.page === 'settings') return this.activate(this.rows[this.row][col]);
+    }
     this.rows[this.row][this.col]?.focus();
     this.refresh();
   }

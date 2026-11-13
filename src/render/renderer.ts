@@ -19,6 +19,14 @@ import { Particles } from './particles';
 import { Rain } from './rain';
 import type { DynamicObject } from '../sim/sim';
 import { WorkingMirrors } from './workingMirrors';
+import { canopyUniforms, setCanopyShade, shadowShift } from './shadowReach';
+
+/**
+ * How much of the sun the tree cover takes from the ground beyond the shadow map: set so a
+ * road under the ridge's forest is as dark far off as the drawn shadows make it near the car
+ * (scripts/reach-check.ts).
+ */
+const FAR_SHADE = 0.9;
 
 /** Owns the Three.js renderer, scene and camera, and the static world meshes. */
 export class GameRenderer {
@@ -45,6 +53,8 @@ export class GameRenderer {
   private renderScale = new RenderScale(1);
   private lastFrame = performance.now();
   private firstFrame = true;
+  /** The typical height (m) of the crowns that shade the ground: sets how far their shadows fall. */
+  private crownHeight = 0;
   private reflectionMap: THREE.WebGLRenderTarget | null = null;
   /** The sky the reflections are filtered from, and the filter. */
   private reflection: { scene: THREE.Scene; sky: Sky; pmrem: THREE.PMREMGenerator } | null = null;
@@ -97,6 +107,8 @@ export class GameRenderer {
     this.scene.add(this.water.group);
     this.vegetation = new Vegetation(world, quality);
     this.scene.add(this.vegetation.group);
+    this.crownHeight = setCanopyShade(world.terrain.sizeX, world.terrain.sizeZ, world.scatter.trees);
+    this.shadeUnderTrees();
     this.props = new WorldProps(world, dynamics);
     this.scene.add(this.props.group);
     this.ruts = new TrackRuts(world);
@@ -160,9 +172,16 @@ export class GameRenderer {
     this.reflectionMap = next;
   }
 
+  /** Lay the tree cover's far shade where the shadows fall with the sun where it is. */
+  private shadeUnderTrees(): void {
+    shadowShift(this.lighting.sunDir, this.crownHeight, canopyUniforms.canopyShift.value);
+    canopyUniforms.canopyStrength.value = FAR_SHADE;
+  }
+
   setEnvironment(env: EnvironmentConfig): void {
     this.env = env;
     this.lighting.setEnvironment(env);
+    this.shadeUnderTrees();
     this.sky.setEnvironment(env);
     this.horizon.setEnvironment(env);
     this.updateReflections(env);

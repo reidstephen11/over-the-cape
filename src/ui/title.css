@@ -437,6 +437,64 @@
   outline-offset: calc(4 * var(--u));
 }
 
+/* A big screen read from the couch has the height of a small one once everything on it is
+   drawn larger (576 units at 1080p). Each setting is one line there, its name on the left and
+   its options on the right, so the page fits the screen instead of running to three (v1.84). */
+:root[data-short] .title-settings {
+  width: min(calc(580 * var(--u)), 100%);
+  padding: calc(14 * var(--u)) calc(26 * var(--u)) calc(16 * var(--u));
+}
+:root[data-short] .title-settings .title-eyebrow {
+  display: none;
+}
+:root[data-short] .title-settings h2 {
+  margin: 0 0 calc(8 * var(--u));
+  font-size: calc(28 * var(--u));
+}
+:root[data-short] .title-setting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(4 * var(--u)) calc(14 * var(--u));
+  margin-top: calc(7 * var(--u));
+}
+:root[data-short] .title-setting h3,
+:root[data-short] .title-setting label {
+  margin: 0;
+}
+:root[data-short] .title-setting label {
+  flex: 1;
+  padding-right: calc(10 * var(--u));
+}
+:root[data-short] .title-setting input {
+  width: 46%;
+  min-height: calc(26 * var(--u));
+}
+:root[data-short] .title-setting .welcome-options {
+  flex: 0 1 auto;
+  margin: 0;
+}
+:root[data-short] .title-setting .welcome-option {
+  min-height: 0;
+  padding: calc(6 * var(--u)) calc(14 * var(--u));
+}
+:root[data-short] .title-setting .welcome-note {
+  flex-basis: 100%;
+  margin: 0;
+}
+:root[data-short] .title-settings-version {
+  margin-top: calc(10 * var(--u));
+}
+
+/* With a keyboard or a controller the hint sits clear of the panel, which is on the right:
+   it lay over the panel's own buttons (v1.84). */
+.welcome[data-screen='settings']:not([data-input='touch']) .title-input-hint,
+.welcome[data-screen='journey']:not([data-input='touch']) .title-input-hint {
+  right: auto;
+  left: max(calc(28 * var(--u)), env(safe-area-inset-left));
+}
+
 .loading {
   justify-items: end;
   padding: calc(36 * var(--u)) 6vw;
