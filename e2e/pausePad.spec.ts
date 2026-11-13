@@ -12,6 +12,9 @@ const Pad = { A: 0, B: 1, Start: 9, Up: 12, Down: 13, Left: 14, Right: 15 } as c
 
 async function controller(page: Page): Promise<void> {
   await page.addInitScript(() => {
+    // The 3D picture at a third of its size: the menus are what is tested, and the software
+    // renderer takes seconds over a full 1080p frame. The page and its menus stay 1920×1080.
+    Object.defineProperty(window, 'devicePixelRatio', { get: () => 0.34 });
     const buttons = Array.from({ length: 18 }, () => ({ pressed: false, value: 0, touched: false }));
     Object.defineProperty(navigator, 'getGamepads', {
       value: () => [{ connected: true, mapping: 'standard', axes: [0, 0, 0, 0], buttons }],
