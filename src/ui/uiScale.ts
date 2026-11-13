@@ -11,6 +11,8 @@
 import { defaultUiSize, type UiSize } from '../data/uiSize';
 
 const STEP: Record<UiSize, number> = { small: 0.8, normal: 1, large: 1.2 };
+/** A screen this many interface units tall or less is laid out as a short one. */
+const SHORT_UNITS = 640;
 
 /** The screen's own part of the scale: 1 on touch and up to 1280×720, 1.875 at 1080p, 3.75 at 4K. */
 function screenScale(width: number, height: number, touch: boolean): number {
@@ -66,6 +68,9 @@ function apply(): void {
   root.style.setProperty('--ui', String(next));
   root.style.setProperty('--ui-dash', String(dashScaleFor(w, h, touch, size)));
   root.dataset.uiSize = size;
+  // A screen without touch that is short once everything is drawn at this scale (576 units
+  // at 1080p): the stylesheets lay the pause pages out for it, as they do for a short window.
+  root.toggleAttribute('data-short', !touch && h / next <= SHORT_UNITS);
   if (next === current) return;
   current = next;
   for (const l of listeners) l(next);

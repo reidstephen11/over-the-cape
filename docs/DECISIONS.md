@@ -1598,3 +1598,59 @@ The Blender FJ40 (`shortie`) was looked at in the studio from the front, both si
 The intake height is unchanged, so the snorkel does not let it ford any deeper than the other 40. The studio loads the Blender model before it draws the FJ40, so those photographs are of this body.
 
 **The second look.** A reviewer was given the studio set and the close-ups and nothing else. It found the roof spare through the boards (the spare was raised, as above) and a red piece hanging under the rear corner (the old bumper's reflector, now left off). After that, the side view shows the spare on the rack and the low rear view no longer has the red piece.
+
+## v1.84: the road no longer darkens ahead of the car, and menus a controller can use
+
+The owner, after v1.83: the vehicles still have many visual faults, the track still redraws after the Daintree River, the menus are poor to look at and to use, most of all on the television with a PS4 controller, and all of it could have been found by looking more thoroughly. This version fixes the track and the menus' controller faults. The vehicles come next; `docs/AUDIT-2026-11.md` holds what was found in the two reviewed so far.
+
+**Why the earlier checks missed these.** `scripts/playtest.ts` stops at the Daintree crossing by default and saves still pictures, which cannot show ground changing ahead of the car. `scripts/ui-audit.ts` uses a keyboard, photographs eight screens and never opens a pause page or moves the highlight. Each check covered what had just been changed, on a 1280×720 window with a keyboard, not what the owner sees on his screens.
+
+**The track: what redrew.** The v1.74 fix (road edges) was confirmed by a calculation and never by looking at the same view again. Two tests settled it this time. `scripts/approach-check.ts` parks the car and draws the same view at the quality setting's terrain detail and with every chunk at its finest: 0.0–0.4% of the picture differed at three points on the Paddock Road, so the terrain's detail levels are not it. `scripts/reach-check.ts` stands a free camera over a stretch of track and puts the car down nearer and nearer behind it: the camera does not move, so whatever changes is drawn according to how far the car is. On the Paddock Road nothing changed (0.1%). On the forested ridge track, 300 m along, 11.1% of the picture changed once the car was within 50 m: the road ahead lay in full sun and turned dark along a line.
+
+**Cause.** The sun's shadows come from one map centred on the car, 40 m either way on Low and 55 m on Medium and High. Beyond it nothing is shaded. Grass under trees was already tinted dark where it is planted (`scatter.ts`), which is why the paddocks looked right; a road, rock or clay under trees was not. In forest, most of the road is in shadow, so the edge of the shadow map showed as a line 40 m ahead of the car with bright road beyond it, all the way up the range.
+
+**Fix** (`src/render/shadowReach.ts`):
+
+- Every drawn shadow fades out over the outer third of the map's half-width (`SHADOW_RIM`), in three's shared shader chunks, so the map's edge is never a line.
+- The ground takes a second, soft shade from a picture of the map's tree cover seen from above: one byte for every 2 m square, full under a crown and falling away past its edge, built once at load from the tree list. Where a drawn shadow fades out the ground fades to that, read from where the shadow would come from (the crowns' typical height over the tangent of the sun's elevation, towards the sun, at most 45 m). A road under trees is now shaded at any distance, and the sharp shadows of trunks and crowns sharpen out of the soft shade near the car.
+- It costs one texture read per ground pixel and no extra shadow pass. three r186 has a two-cascade sun light (`three/addons/lights/SunLight.js`) that would draw true shadows further out; it was not used, because its far cascade would put several times as many trees through the shadow pass on Low, where the forest's shadows were already a quarter of a phone's frame.
+
+**Measured** (Low, 1280×720, share of the picture that differs from the car 120 m away by more than 22 of 255 on a colour channel):
+
+| Ridge track, 300 m along | v1.83 | v1.84 |
+| ------------------------ | ----- | ----- |
+| car 70 m away            | 0.1%  | 0.1%  |
+| car 50 m away            | 7.5%  | 0.1%  |
+| car 40 m away            | 11.1% | 0.2%  |
+| car 30 m away            | 11.1% | 0.3%  |
+| car 15 m away            | 11.0% | 0.2%  |
+
+What remains is grass moving in the wind. `tests/shadowReach.test.ts` checks the shader patch (and fails loudly if three changes the line it wraps), the cover under and clear of a crown, and the shift for the sun's position.
+
+**Not changed.** Grass tufts, shrubs and rocks beyond the shadow map take no shade from the tree cover; only the ground does. The shadow map's size and reach are as before.
+
+**The menus: what a walk with a controller found.** `scripts/menu-walk.ts` works every menu at 1920×1080 with a simulated PS4 controller, saves a picture after each press and records where the highlight went.
+
+- Pause → Settings stepped through every option of every row: 33 presses of Down to cross 16 rows, and Left and Right did the same as Up and Down. Choosing any option redrew the page with the highlight back on the first item.
+- Pause → Controls opened scrolled to its end with only Back to highlight, so the top of the table could not be read. The v1.80 rule that stopped rows shrinking had also stopped the table's own scrolling box shrinking, and the highlight on Back then scrolled the card.
+- ○ on every pause page returned to Resume, and on the title's Settings to New Journey, not the item the page was opened from.
+- At the television's scale the pages were taller than the screen: on the main pause page Settings was cut off and Controls and Main menu were out of sight; the title's Settings ran to three screens at 180 px a setting, with the "✕ Select ○ Back" hint drawn over its buttons. The compass sat on the pause card's corner and a prompt showed through its foot.
+- Phone driving and Joystick side were offered on a screen with no touch.
+- A setting's name was drawn at half the height of its options.
+
+**Fix.**
+
+- **Rows** (`src/ui/menus.ts`). Up and Down step through rows: a setting's options share a row, and so do buttons side by side in a grid. Left and Right change the setting (the highlight is always on the option in use) or move across a grid; ✕ presses a button and on a setting steps to its next option. A change redraws the page with the highlight and the scrolling where they were, which also stops a phone's Settings page jumping to its top after a tap.
+- **Pages.** Each page is a heading that stays put, a body that scrolls and a foot with Back and the hint that stays in sight. The first row brings the top of the page back with it. With nothing to choose but Back (Controls), Up and Down turn the body's pages. Back returns the highlight to the row and column the page was opened from. The Vehicle page opens on the vehicle being driven.
+- **The television.** A screen without touch that is 640 interface units tall or less once everything is drawn at its scale (576 at 1080p) is marked `data-short` (`src/ui/uiScale.ts`). There the main pause page's eight buttons stand two abreast under one row of readings and all of it fits; the title's Settings draws each setting on one line and fits the screen; the title pages' hint sits bottom left, clear of the panel. The compass and the prompts are hidden behind any pause page.
+- **The highlight** is a ring as well as the bar, and the row of the highlighted setting has a band behind it, so it is not mistaken for an option that is merely switched on.
+- **The title's Settings** opens on the first setting, not on Back; Left and Right change a setting there too; Back returns to Settings on the menu.
+- The two phone settings are drawn only on a touch screen.
+
+**Measured with the walk** (1920×1080, controller only): Pause → Settings 33 presses → 14 to go round; the main pause page 8 → 4 with every button on the screen; title Settings three screens → one; Back lands on the item each page was opened from on all six pages (v1.83: none).
+
+`e2e/pausePad.spec.ts` drives the pause menu with a controller at 1920×1080 and checks the rows, the changed value staying highlighted, Back, the Controls page opening at its top and scrolling, and that the whole main page is on the screen. `e2e/uiSize.spec.ts` now compares the rows of the page's body.
+
+**Still open** (in `docs/ROADMAP.md`): the journey page lists one episode to choose from and its vehicle chooser is a wrapping grid with locked vehicles mixed in; Pause → Vehicle is a long list of paragraphs; Pause → Map → ○ closes the map and the pause menu together.
+
+**New tools** (dev only): `scripts/menu-walk.ts`, `scripts/studio-audit.ts` (24 large, tightly framed pictures of a vehicle, for a reviewer who also has its reference photographs), `scripts/approach-check.ts` with `approach-diff.py`, `scripts/reach-check.ts` with `reach-diff.py`, and `max=` on `scripts/playtest.ts`. Test hooks `terrainLod` and `trackPoints`, and `window.studio.bounds()` in the studio page.

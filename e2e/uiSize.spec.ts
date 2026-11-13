@@ -229,7 +229,8 @@ test.describe('phone held upright, every HUD style and UI size', () => {
           );
           expect(spilled, where).toEqual([]);
           const boxes = await page.evaluate(() =>
-            [...document.querySelectorAll<HTMLElement>('.pause-card > *')].map((e, i) => ({
+            // The rows of the page's body, which scrolls under its heading and foot (v1.84).
+            [...document.querySelectorAll<HTMLElement>('.pause-body > *')].map((e, i) => ({
               name: `${i} ${e.textContent?.slice(0, 20)}`,
               r: e.getBoundingClientRect().toJSON(),
             })),

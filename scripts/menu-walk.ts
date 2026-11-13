@@ -7,7 +7,7 @@
  * page that takes too many presses to cross, and Back losing its place.
  *
  * Usage (against `npm run dev`, or `npx vite build && npx vite preview --port 4173`):
- *   npx vite-node scripts/menu-walk.ts <outDir> [url=http://localhost:5173/] [quality=low]
+ *   npx vite-node scripts/menu-walk.ts <outDir> [url=http://localhost:5173/] [quality=low] [only=title|pause]
  * PW_CHROMIUM names another Chromium than the pinned Playwright's own.
  */
 import { chromium } from '@playwright/test';
@@ -20,6 +20,8 @@ const arg = (key: string, fallback: string) =>
   rest.find((a) => a.startsWith(`${key}=`))?.slice(key.length + 1) ?? fallback;
 const url = arg('url', 'http://localhost:5173/');
 const quality = arg('quality', 'low');
+/** `title`: the title screens only, which take a minute. `pause`: straight into the game, for its pages. */
+const only = arg('only', '');
 /** Most presses spent crossing one page before the walk gives up on it. */
 const MAX_PRESSES = 90;
 
@@ -326,7 +328,7 @@ async function sideways(name: string): Promise<void> {
   const moves: string[] = [];
   for (const [dir, index] of [
     ['right', Pad.Right],
-    ['right', Pad.Right],
+    ['left', Pad.Left],
     ['left', Pad.Left],
   ] as const) {
     await press(index);
@@ -339,16 +341,36 @@ async function sideways(name: string): Promise<void> {
   save();
 }
 
-/** Move the highlight to the item whose label matches: down the page, then back up it. */
+/**
+ * Move the highlight to the item whose label matches: down the page row by row, looking
+ * along each row of buttons that stand side by side, then back up it.
+ */
 async function focusOn(label: RegExp): Promise<boolean> {
+  const at = async () => (await snap()).focus;
   for (const dir of [Pad.Down, Pad.Up]) {
     let stuck = 0;
     let prev: Snap['focus'] = null;
+    const seen = new Set<string>();
     for (let i = 0; i <= MAX_PRESSES && stuck < 2; i++) {
-      const f = (await snap()).focus;
+      let f = await at();
       if (f && label.test(f.label)) return true;
+      // Round a list that wraps: every row has been looked at.
+      const key = `${f?.label}#${f?.index}`;
+      if (seen.has(key) && !same(prev, f)) break;
+      seen.add(key);
+      // Along a row of plain buttons (a setting's options are not looked through: Right changes them).
+      const plain = await page.evaluate(
+        () => !document.querySelector('.focused')?.closest('.seg, .welcome-options'),
+      );
+      if (plain) {
+        await press(Pad.Right);
+        const right = await at();
+        if (right && label.test(right.label)) return true;
+        if (!same(f, right)) await press(Pad.Left);
+      }
       stuck = same(prev, f) ? stuck + 1 : 0;
       prev = f;
+      f = null;
       await press(dir);
     }
   }
@@ -386,27 +408,36 @@ await page.waitForTimeout(1500);
 await shot('title');
 await press(Pad.A);
 await page.waitForTimeout(700);
-await walk('title-menu');
-await visit('title-settings', /^Settings/, async () => {
-  await sideways('title-settings');
-});
-await visit('title-journey', /New journey|Journey|Start/i, async () => {
-  await sideways('title-journey');
-});
+if (only !== 'pause') {
+  await walk('title-menu');
+  await visit('title-settings', /^Settings/, async () => {
+    await sideways('title-settings');
+  });
+  await visit('title-journey', /New journey|Journey|Start/i, async () => {
+    await sideways('title-journey');
+  });
+}
+if (only === 'title') {
+  save();
+  console.log(errors.length ? `console errors:\n${errors.join('\n')}` : 'no console errors');
+  await browser.close();
+  process.exit(0);
+}
 // Into the game: New journey, then Options starts the drive.
 if (await focusOn(/New journey|Journey|Start/i)) await press(Pad.A);
 await page.waitForTimeout(700);
 // The two folded sections of the journey page: the vehicle list and the packing.
-for (const [name, label] of [
-  ['title-journey-vehicle', /^Vehicle/],
-  ['title-journey-packing', /^Packing/],
-] as const) {
-  if (!(await focusOn(label))) continue;
-  await press(Pad.A);
-  await page.waitForTimeout(700);
-  await walk(name);
-  await sideways(name);
-}
+if (only !== 'pause')
+  for (const [name, label] of [
+    ['title-journey-vehicle', /^Vehicle/],
+    ['title-journey-packing', /^Packing/],
+  ] as const) {
+    if (!(await focusOn(label))) continue;
+    await press(Pad.A);
+    await page.waitForTimeout(700);
+    await walk(name);
+    await sideways(name);
+  }
 await shot('journey-before-drive');
 await press(Pad.Start);
 const briefing = page.locator('[data-briefing-drive]:not(.hidden)');
@@ -512,8 +543,14 @@ for (let k = 0; k < 8; k++) {
 await stick([0, 0, 0, 0]);
 await frames(4);
 await hold(Pad.LB, false);
-await page.waitForTimeout(800);
-wheel.closed = !(await page.evaluate(() => window.__game!.ui().toolMenu));
+// Frames, not a fixed wait: on the software renderer one frame can outlast it.
+await frames(6);
+wheel.closed = await page
+  .waitForFunction(() => !window.__game!.ui().toolMenu, null, { timeout: 30_000 })
+  .then(
+    () => true,
+    () => false,
+  );
 report['tool-wheel'] = wheel;
 
 // ---- The map on its own button ----

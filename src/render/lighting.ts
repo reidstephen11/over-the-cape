@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { EnvironmentConfig } from '../data/environment';
 import type { QualityPreset } from '../data/quality';
 import { sunDirection } from './sky';
+import { patchShadowReach } from './shadowReach';
 
 const ORIGIN = new THREE.Vector3(0, 0, 0);
 const UP = new THREE.Vector3(0, 1, 0);
@@ -13,11 +14,14 @@ const UP = new THREE.Vector3(0, 1, 0);
 export class Lighting {
   readonly sun: THREE.DirectionalLight;
   readonly hemi: THREE.HemisphereLight;
-  private readonly sunDir = new THREE.Vector3();
+  /** Towards the sun. */
+  readonly sunDir = new THREE.Vector3();
   private extent = 55;
   private mapSize = 2048;
 
   constructor(scene: THREE.Scene, env: EnvironmentConfig) {
+    // Before any material is compiled: shadows fade out at the rim of the map.
+    patchShadowReach();
     this.sun = new THREE.DirectionalLight();
     this.sun.castShadow = true;
     this.sun.shadow.bias = -0.0004;
