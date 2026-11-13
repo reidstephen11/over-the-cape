@@ -141,6 +141,8 @@ declare global {
       view: typeof view;
       articulate(height: number, steer?: number): void;
       cockpit(): void;
+      /** The vehicle's box, its hubs and the ground's height, for framing a camera on it. */
+      bounds(): { min: number[]; max: number[]; hubs: number[][]; ground: number };
       ready: boolean;
     };
   }
@@ -185,6 +187,15 @@ window.studio = {
     for (let i = 0; i < 5; i++) mirrors.update(renderer, scene, camera, true, performance.now() + i);
     renderer.render(scene, camera);
     model.setCockpitView(false);
+  },
+  bounds() {
+    const box = new THREE.Box3().setFromObject(model.root);
+    return {
+      min: box.min.toArray(),
+      max: box.max.toArray(),
+      hubs: model.wheels.map((w) => w.pivot.getWorldPosition(new THREE.Vector3()).toArray()),
+      ground: ground.position.y,
+    };
   },
   ready: true,
 };

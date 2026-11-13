@@ -11,6 +11,7 @@ import type { CameraPreset } from '../data/camera';
 import type { VehicleId } from '../data/vehicle';
 import type { HeadlightMode } from '../data/headlights';
 import type { TouchDriveScheme, TouchStickSide } from '../data/touch';
+import { qualityPresets } from '../data/quality';
 
 const LOCAL = 'player-1';
 
@@ -142,6 +143,15 @@ export interface GameHook {
     best: { points: number; seconds: number } | null;
   } | null;
   setQuality(level: 'low' | 'medium' | 'high'): void;
+  /**
+   * Debug: how far each terrain detail level reaches (null: the quality setting's own), with
+   * every chunk that needs building built at once. `scripts/approach-check.ts` draws the
+   * same view at the setting's distances and at full detail, to show what would redraw on
+   * the way there.
+   */
+  terrainLod(distances: readonly [number, number, number] | null): void;
+  /** The centre line of a track, a point every metre or so. */
+  trackPoints(id: string): [number, number][];
   setMirrors(enabled: boolean): void;
   setHeadMotion(enabled: boolean): void;
   headMotion(): { enabled: boolean; offset: number[] };
@@ -355,6 +365,15 @@ export function installHook(game: Game): void {
       return true;
     },
     setQuality: (level) => g.changeSettings({ quality: level }),
+    terrainLod: (distances) => {
+      g.view.terrainMesh.setLodDistances(distances ?? qualityPresets[g.settings.quality].terrainLod);
+      g.view.terrainMesh.update(g.view.camera.position, true);
+    },
+    trackPoints: (id) => {
+      const t = g.world.features.tracks.find((t) => t.def.id === id);
+      if (!t) throw new Error(`No track ${id}`);
+      return Array.from({ length: t.poly.count }, (_, k) => [t.poly.xs[k], t.poly.zs[k]]);
+    },
     setMirrors: (enabled) => g.changeSettings({ mirrors: enabled }),
     setHeadMotion: (enabled) => g.changeSettings({ headMotion: enabled }),
     headMotion: () => ({ enabled: g.settings.headMotion, offset: g.chase.headMotion.offset.toArray() }),
