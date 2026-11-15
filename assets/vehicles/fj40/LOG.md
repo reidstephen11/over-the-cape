@@ -239,3 +239,10 @@ file as headless Blender: the script rebuilt the committed GLB byte for byte bef
 - Ride height is not in the model: the game stands the body 42 mm higher on its axles (`FJ40_BODY_LIFT` in
   `src/data/vehicles.ts`).
 - GLB: 56,312 tris.
+
+## Step 8 — door outlines, filler flap (v1.87, 15 Nov 2026)
+
+- Each front door is one grooved outline (`groove_ring`): rounded lower corners (70 mm), its foot 45 mm above the sill, in
+  place of two straight grooves down to the sill (`rear-34-left.jpg`).
+- Fuel filler flap outline on the right rear quarter, between the door and the arch (`front-34-hardtop.jpg`).
+- GLB: 57,310 tris.

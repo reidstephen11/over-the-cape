@@ -24,7 +24,7 @@ export class VehicleModel {
   readonly bodyGroup = new THREE.Group();
   readonly body: THREE.Mesh;
   readonly rackPlanks = new THREE.Group();
-  readonly wheels: { pivot: THREE.Group; spin: THREE.Group; mesh: THREE.Mesh }[] = [];
+  readonly wheels: { pivot: THREE.Group; spin: THREE.Group; mesh: THREE.Mesh; turned: boolean }[] = [];
   readonly bodyMaterial: THREE.MeshPhysicalMaterial;
   readonly suspension: VehicleSuspension;
   readonly instruments: VehicleInstruments;
@@ -158,10 +158,13 @@ export class VehicleModel {
       const spin = new THREE.Group();
       const mesh = new THREE.Mesh(this.wheelGeo, materials);
       mesh.castShadow = true;
+      // A wheel with an inner and an outer face is drawn outer face to +x: turn the left ones.
+      const turned = look.handedWheels === true && x < 0;
+      if (turned) mesh.rotation.y = Math.PI;
       spin.add(mesh);
       pivot.add(spin);
       this.root.add(pivot);
-      this.wheels.push({ pivot, spin, mesh });
+      this.wheels.push({ pivot, spin, mesh, turned });
     }
     this.suspension = new VehicleSuspension(tuning, materials, look.springs, look.suspension);
     this.poseWheels([0, 0, 0, 0]);
@@ -367,7 +370,13 @@ export class VehicleModel {
       // A tyre going down squashes flat where it meets the ground and bulges out at the sides.
       const drop = tyreDrop(v.condition, i, w.rotation);
       if (drop > 0.004)
-        ww.mesh.geometry = this.squashWheel(i, ww.spin.rotation.x, drop, 1 - v.condition.tyres[i]);
+        // A turned wheel's own z points the other way, so its axle angle is the other sign.
+        ww.mesh.geometry = this.squashWheel(
+          i,
+          ww.turned ? -ww.spin.rotation.x : ww.spin.rotation.x,
+          drop,
+          1 - v.condition.tyres[i],
+        );
       else ww.mesh.geometry = this.wheelGeo;
     }
     this.instruments.update(v, dt);

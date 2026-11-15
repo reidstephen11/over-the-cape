@@ -32,6 +32,8 @@ export interface VehicleLook {
   plank(index: number): THREE.BufferGeometry;
   paint: { roughness: number; metalness: number; clearcoat: number; clearcoatRoughness: number };
   springs: 'leaf' | 'coil';
+  /** The wheel has an outer face (to +x) and a different inner one, so the left wheels are turned round. */
+  handedWheels?: boolean;
   suspension?: SuspensionLayout;
   /** Lens centres: the headlamps, and any driving lamps that come on with high beam. */
   lamps: { head: readonly Vec3[]; roof?: readonly Vec3[] };
@@ -71,6 +73,9 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     },
     paint: { roughness: 0.39, metalness: 0.14, clearcoat: 0.7, clearcoatRoughness: 0.24 },
     springs: 'leaf',
+    get handedWheels() {
+      return fj40GlbActive();
+    },
     get lamps() {
       const glb = fj40GlbActive() ? fj40GlbHeadlamps() : [];
       return {
