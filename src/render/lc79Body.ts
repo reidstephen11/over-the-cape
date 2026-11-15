@@ -307,36 +307,74 @@ function cabSides(b: VehicleBuilder, paint: THREE.Color): void {
 }
 
 /**
- * A round LED headlamp as on the 2024-on 70 Series, standing in its pod in the grille's
- * surround: a black bezel,
- * a clear lens with the projector behind it and the daytime-running ring round its edge.
+ * A round LED headlamp as on the 2024-on 70 Series (side-wagon.jpg), standing in its pod in
+ * the grille's surround: a black bezel, a dark chrome bowl behind clear glass, the bright
+ * daytime-running ring round its edge, and a small projector with a chrome ring above the
+ * middle.
  */
 function headlamp(b: VehicleBuilder, x: number, y: number): void {
   const r = 0.105,
     f = F - 0.022;
+  const bowl = new THREE.Color('#5C6163'),
+    tint = new THREE.Color('#3A4244');
   b.ring(x, y, f - 0.022, r + 0.012, 0.014, black, M.Rubber, 'z', Z.Front);
-  b.slot = M.Rubber;
+  b.slot = M.Metal;
   b.tag = Z.Front;
   b.push()
     .translate(x, y, f - 0.012)
     .rotate(Math.PI / 2, 0, 0);
-  b.geometry(new THREE.CylinderGeometry(r + 0.005, r + 0.005, 0.02, 32), trim);
+  b.geometry(new THREE.CylinderGeometry(r + 0.005, r + 0.005, 0.02, 32), bowl);
   b.pop();
-  b.ring(x, y, f - 0.026, r - 0.012, 0.007, lens, M.Headlamp, 'z', Z.Front);
+  // The daytime-running ring, and a second fainter ring inside it.
+  b.ring(x, y, f - 0.026, r - 0.014, 0.006, lens, M.Headlamp, 'z', Z.Front);
+  b.ring(x, y, f - 0.024, r - 0.04, 0.003, chrome, M.Metal, 'z', Z.Front);
+  // Projector: dark lens in a chrome ring, a little above the middle.
+  b.ring(x, y + 0.012, f - 0.028, 0.034, 0.006, chrome, M.Metal, 'z', Z.Front);
   b.slot = M.Headlamp;
   b.push()
-    .translate(x, y + 0.01, f - 0.024)
-    .scale(1, 1, 0.3);
-  b.geometry(new THREE.SphereGeometry(0.038, 20, 8), lens);
+    .translate(x, y + 0.012, f - 0.026)
+    .scale(1, 1, 0.35);
+  b.geometry(new THREE.SphereGeometry(0.03, 20, 8), lens.clone().multiplyScalar(0.75));
   b.pop();
-  b.ring(x, y + 0.01, f - 0.027, 0.042, 0.005, chrome, M.Metal, 'z', Z.Front);
+  // The clear outer glass, faintly tinted so the parts behind it read.
   b.slot = M.Glass;
   b.push()
-    .translate(x, y, f - 0.03)
-    .scale(1, 1, 0.12);
-  b.geometry(new THREE.SphereGeometry(r - 0.004, 20, 8), lens.clone().multiplyScalar(0.9));
+    .translate(x, y, f - 0.032)
+    .scale(1, 1, 0.1);
+  b.geometry(new THREE.SphereGeometry(r - 0.004, 24, 8), tint);
   b.pop();
 }
+
+/** The stroke font with the letters the guards' LAND CRUISER badge needs as well. */
+const BADGE_GLYPHS: typeof GLYPHS = {
+  ...GLYPHS,
+  ' ': [],
+  L: [
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+  ],
+  U: [
+    [0, 1, 0, 0.15],
+    [0, 0.15, 0.3, 0],
+    [0.3, 0, 0.7, 0],
+    [0.7, 0, 1, 0.15],
+    [1, 0.15, 1, 1],
+  ],
+  I: [[0.5, 0, 0.5, 1]],
+  S: [
+    [1, 1, 0, 1],
+    [0, 1, 0, 0.5],
+    [0, 0.5, 1, 0.5],
+    [1, 0.5, 1, 0],
+    [1, 0, 0, 0],
+  ],
+  E: [
+    [1, 1, 0, 1],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0.5, 0.8, 0.5],
+  ],
+};
 
 /** Height of the bonnet's raised centre panel above the clip's top. */
 const CROWN = 0.024;
@@ -530,6 +568,30 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
       iz = F + 0.045;
     b.block(ix, iy, iz, 0.13, 0.14, 0.13, black, M.Rubber, Z.Front, 0.012);
     b.block(ix + side * 0.004, iy, iz - 0.004, 0.118, 0.118, 0.13, amber, M.Amber, Z.Front, 0.012);
+    // LandCruiser badge in chrome capitals on the guard, behind the indicator and above
+    // the flare (front-34-single-cab.jpg), reading towards the front on the right and the
+    // back on the left.
+    const badge = 'LAND CRUISER',
+      pitch = 0.024,
+      len = (badge.length - 1) * pitch + 0.016;
+    b.push()
+      .translate(side * (SIDE + 0.023), WAIST - 0.13, -1.72)
+      .rotate(0, side * (Math.PI / 2), 0);
+    strokeText(b, badge, {
+      x: -len / 2,
+      y: 0,
+      z: 0,
+      dir: 1,
+      w: 0.016,
+      h: 0.026,
+      pitch,
+      radius: 0.0022,
+      colour: chrome,
+      slot: M.Metal,
+      zone: Z.Sides,
+      glyphs: BADGE_GLYPHS,
+    });
+    b.pop();
     // Side repeater on the guard ahead of the door.
     b.block(
       side * (SIDE + 0.022),
@@ -686,7 +748,7 @@ function flares(b: VehicleBuilder): void {
   }
 }
 
-/** A round driving lamp facing forward: black can, chrome rim and lens. */
+/** A round driving lamp facing forward: black can, chrome rim, lens and its reflector's rings. */
 function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: number): void {
   b.slot = M.Metal;
   b.tag = Z.Front;
@@ -698,8 +760,11 @@ function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: numb
   b.ring(x, y, z, r + 0.005, 0.01, chrome, M.Metal, 'z', Z.Front);
   b.slot = M.DrivingLamp;
   b.push().translate(x, y, z).scale(1, 1, 0.2);
-  b.geometry(new THREE.SphereGeometry(r, 20, 8), lens);
+  b.geometry(new THREE.SphereGeometry(r, 20, 8), lens.clone().multiplyScalar(0.86));
   b.pop();
+  // The reflector's rings and the bulb's cap, seen through the lens.
+  b.ring(x, y, z - r * 0.2 - 0.002, r * 0.62, 0.004, chrome, M.Metal, 'z', Z.Front);
+  b.ring(x, y, z - r * 0.2 - 0.002, r * 0.3, 0.004, chrome, M.Metal, 'z', Z.Front);
   b.rod(v(x, y - r - 0.01, z + 0.06), v(x, y - r - 0.07, z + 0.06), 0.012, black, M.Metal, Z.Front);
 }
 
@@ -768,15 +833,18 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     [v(-0.4, top - 0.015, zc + 0.01), v(-0.4, 0.95, zt), v(0.4, 0.95, zt), v(0.4, top - 0.015, zc + 0.01)],
     0.032,
   );
-  b.rod(v(-0.4, 0.74, (zc + zt) / 2), v(0.4, 0.74, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
+  b.rod(v(-0.4, 0.765, (zc + zt) / 2), v(0.4, 0.765, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
   for (const side of [-1, 1]) {
     // Outboard of the indicators on the guards' corners, and ahead of them.
-    const foot = v(side * 0.93, top, zc + 0.1);
+    const foot = v(side * 0.95, top, zc + 0.1);
     b.block(foot.x, top, foot.z, 0.1, 0.025, 0.1, bar, M.Metal, Z.Front, 0.006);
-    tube([v(foot.x, top - 0.01, foot.z), v(side * 0.96, 0.87, zt), v(side * 0.4, 0.88, zt - 0.016)], 0.028);
+    tube(
+      [v(foot.x, top - 0.01, foot.z), v(side * 0.99, 0.87, zt - 0.02), v(side * 0.4, 0.88, zt - 0.016)],
+      0.028,
+    );
     b.rod(v(side * 0.24, 0.95, zt), v(side * 0.24, 0.985, zt), 0.013, bar, M.Metal, Z.Front);
     // Lamp stem meets the middle rail rather than hanging ahead of it.
-    b.rod(v(side * 0.21, 0.74, (zc + zt) / 2), v(side * 0.21, 0.775, -2.51), 0.013, bar, M.Metal, Z.Front);
+    b.rod(v(side * 0.21, 0.765, (zc + zt) / 2), v(side * 0.21, 0.775, -2.51), 0.013, bar, M.Metal, Z.Front);
   }
   b.block(0, 1.01, zt, 0.62, 0.07, 0.07, black, M.Metal, Z.Front, 0.012);
   b.block(0, 1.01, zt - 0.037, 0.58, 0.045, 0.006, lens, M.DrivingLamp, Z.Front, 0.004);

@@ -1911,3 +1911,21 @@ The owner asked for the LC79 next. Before any change the 28 audit pictures were 
 - Not changed: in the pictures from the rear corners above, the door spare looks wider than the canopy, and from the front quarters the side step's front end and the rear mud flap look against the tyres. In the square-on views the spare is 0.47 m in radius against the canopy's 0.93 m half width, the step ends 0.2 m behind the front tyre and the flap is 0.11 m behind the rear one; perspective puts them together.
 
 Each fix was photographed again and read. `tests/spares.test.ts` passes. 59.9k triangles with wheels and boards (body 39.6k).
+
+## v1.95: the LC79, stage 2 (lamps and badges)
+
+After v1.94 the truck was photographed again from the angle of `front-34-single-cab.jpg` and beside `side-wagon.jpg`. The body now reads as a 70 Series; what still looked unlike the photographs was the lamps. Only the LC79 changes.
+
+- **Headlamps.** The 2024 LED unit as in `side-wagon.jpg`: a dark chrome bowl behind faintly tinted glass, the bright daytime-running ring round its edge with a fainter chrome ring inside it, and a small projector in a chrome ring a little above the middle. The glass was drawn in the lens's white, so each lamp read as a white disc. The ring and the projector are the parts that light with the headlamps.
+- **Driving lamps.** Two chrome reflector rings show through each lens, which is a shade greyer than before.
+- **Badges.** LAND CRUISER in small chrome capitals on each front guard, behind the indicator and above the flare, reading towards the front on the right and towards the back on the left, so it reads the right way from outside. The real badge is a script; the game's stroke font has capitals only.
+
+**Where each part is attached and which way it faces.** The headlamps stand in their pods in the grille's surround, facing forward. The badges lie on the guards' sides, facing out.
+
+**The second look.** A reviewer was given 59 pictures (the standard set, the 28 audit pictures and 23 close-ups, including each lamp, each badge and the parts moved in v1.94) and nothing else. What it found, and what was done:
+
+- From the front quarters the bar's outer hoops still looked pressed against the corner indicators. Each upright is now 0.99 m out at the top (was 0.96) and 2 cm further forward, with its foot 0.95 m out: 3.7 cm outboard of the indicator and 4 cm ahead of it.
+- From above the front quarters the bar's middle rail crossed the top of the TOYOTA letters. It is 2.5 cm higher (0.765 m), with the driving lamps' stems shortened to match; the letters read from every audit angle.
+- Not changed: a grey tip shows above each tyre, inboard. It is the top of the shock absorber on its bracket, drawn by the shared suspension behind the tyre, as on every coil-sprung vehicle; a real lifted truck shows its shocks there. The coil springs look like stacked rings from low in front (the shared spring, minor). The door spare is 2 cm off the canopy's door, on its carrier plate; the boards overhang the rack at both ends as v1.61 recorded.
+
+Each fix was photographed again and read.
