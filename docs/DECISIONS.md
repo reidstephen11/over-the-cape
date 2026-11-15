@@ -1951,3 +1951,7 @@ The owner asked for a new level, "shorter but more challenging" than the CREB. A
 **Looked at.** Screenshots from the chase camera, the driver's seat and the free camera at Palm Creek and Bertie, and the map from above. Bertie's holes could not be seen from the seat; this map's deep-water colour is darker now, and they show as dark patches, faint and blocky (1 m cells). The other crossings were checked as profiles rather than from the seat. The design's colours differ where the game has one colour for dirt and clay: the junction's road is pale grey like the clay, not red.
 
 **Measured** in this container's software renderer (both maps draw at about 4 fps there, so its frame rate says nothing about the phone): Drive to Ready about 21 s on the Telegraph against about 43 s on the CREB, and about 270,000 triangles a frame against 650,000. The owner's `?bench` on the phone is in the README's checklist.
+
+## v1.97: browser tests for two episodes
+
+Follow-up to v1.96. Two browser tests still expected one episode on the journey page: `welcome:4` and `launch:40` now expect two (the CREB and the Telegraph Track), and `welcome:4` checks the Telegraph Track is open. Both pass. In this container the suite must be pointed at the pre-installed browser (`CHROMIUM_PATH=/opt/pw-browsers/chromium`), as the project pins its own Playwright; without it every test fails to launch. `launch:73`, `launch:147` and `launch:219` fail the same way on v1.95, so they predate the Telegraph Track. No change to the game.
