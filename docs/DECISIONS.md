@@ -1776,3 +1776,20 @@ Compared with `side.jpg`, `rear-34-hardtop.jpg`, `front-34-hardtop.jpg` and `rea
 - Not changed: the left mirror is 47 mm behind the snorkel's tube, so the two overlap from the front without touching. A few faint marks on the side panels (a short line behind each door, a tick ahead of the right rear arch) are shading on the cut panels, not parts. The shock towers and the winch hook are as noted under v1.86 and v1.85.
 
 Each fix was photographed again and read.
+
+## v1.89: the FJ40's rear corners
+
+The owner sent a picture from the game of the right rear corner, taken from behind and above, and asked how things were still being missed. Under the curved corner window the lower body stood out past the hardtop and its top showed as a black ledge.
+
+**What was wrong.** The hardtop's rear corners have a 0.20 m radius; the tub under it had 0.06 m. At the corner the tub stood up to 58 mm outside the hardtop, and the top of the tub, which is dark because it is inside the cabin everywhere else, showed there. It had been so since the model was first used (v1.81).
+
+**Why it was missed.** The standard studio set and the 24 audit pictures look at the car from the side, the ends, level three-quarter views and straight above. None looks down at an upper corner from close by. The close-ups in v1.85 to v1.88 were aimed at the parts being changed. The reviewer sees only the pictures it is given. So nothing had looked at this join.
+
+**What was done.**
+
+- The tub's rear corners have the hardtop's radius, so the two are flush. The cabin's hollow has round rear corners to match.
+- The tail lamps were 130 mm wide and would have hung off the new round corner. They are 64 mm wide and as tall as before, on the flat of the rear face between the door's edge and the corner, which is nearer the real car's tall narrow lamps.
+- The seam between the tub and the hardtop runs round each rear corner to the barn door's edge, instead of stopping where the side ended.
+- The spare carrier's bracket reaches forward to the round corner's skin (at x −0.69 the skin is at z 1.85).
+- `scripts/studio-audit.ts` takes four more pictures, one looking down at each upper corner from outside (`shoulder-*`), 28 in all. `reference/vehicles/README.md` says to open them after any change to a body's outline.
+- After the fix the car was photographed from eight more places chosen for its joins (both front corners from above, the roof's front and rear edges, the left sill from below, the right rear from below, the front from below, the right side) and each was read at full size. Nothing else was found.

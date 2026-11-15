@@ -94,6 +94,8 @@ The standard set is too far away to show a part through a panel. For every part 
 
 Then write in the version's notes, for each part, where it is attached and which way it faces.
 
+**Look at every corner from above as well.** Where a cab with round corners sits on a lower body, the two must have the same corner; a lower body that stands out past the cab shows as a ledge only from above and behind. `scripts/studio-audit.ts` takes four such pictures (`shoulder-*`). Open them at full size after any change to a body's outline. The FJ40's rear corners were wrong from v1.81 to v1.88 and no picture taken until then looked at them.
+
 Camera positions that work (`studio.view(x, y, z, lookX, lookY, lookZ, fov)`, vehicle frame, z back):
 
 ```js

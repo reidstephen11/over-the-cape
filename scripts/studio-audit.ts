@@ -3,7 +3,8 @@
  * reviewer who compares each with its reference photographs. Unlike `studio-shots.ts` (seven
  * fixed cameras, the car a third of the picture), each camera here is placed from the
  * vehicle's own size so the car fills the frame, and the set covers both sides, all four
- * corners, above, low at each end, every wheel, each corner close up, the roof, the driver's
+ * corners, above, low at each end, every wheel, each corner close up and again from above, the
+ * roof, the driver's
  * seat, and the axles crossed up on full lock.
  *
  * Usage (needs `npm run dev`):
@@ -124,6 +125,23 @@ for (const id of ids) {
     [hi[0] * 0.3, midY, hi[2] - 0.7],
     40,
   );
+  // Each upper corner from above and outside, close: where the cab meets the body below it and
+  // the roof above. A lower body that stands out past a round cab corner shows only from here
+  // (the FJ40's rear corners, found by the owner in v1.88, not by the 24 pictures above).
+  for (const [fz, zEdge, zOut] of [
+    ['front', lo[2], -1],
+    ['rear', hi[2], 1],
+  ] as const)
+    for (const [fx, xEdge, xOut] of [
+      ['left', lo[0], -1],
+      ['right', hi[0], 1],
+    ] as const)
+      await shoot(
+        `shoulder-${fz}-${fx}`,
+        [xEdge + xOut * 1.1, top + 0.35, zEdge + zOut * 1.1],
+        [xEdge * 0.85, top - 0.8, zEdge - zOut * 0.25],
+        34,
+      );
   // One front and one rear wheel in its arch.
   for (const [name, i] of [
     ['wheel-front-left', 0],

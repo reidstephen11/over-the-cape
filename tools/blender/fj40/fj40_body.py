@@ -35,6 +35,9 @@ DOOR_REAR = -0.45
 # Step 9: each barn door's outer edge. At 0.73 the tail lamps were on the doors; the real doors stop
 # inboard of the lamps and the corner glass, which sit on fixed corner panels (front-34-hardtop.jpg).
 REAR_DOOR = 0.52
+# Step 10: the tub's rear corners have the hardtop's radius. At 0.06 the tub stood out past the
+# hardtop's round corners and its top showed as a black ledge under each corner window.
+TAIL_R = 0.20
 
 # ---------------------------------------------------------------- helpers
 def clean_scene():
@@ -365,22 +368,26 @@ def build_sides(M):
     tub_loops = []
     for zz in (SILL, SILL + 0.02, BELT - 0.02, BELT):
         ins = 0.012 if zz in (SILL, ) else 0.0
-        tub_loops.append(rrect(h(zz), HW_TUB - ins, Y_SCREEN + 0.0 - ins, Y_TAIL + ins, 0.02, 0.06))
+        tub_loops.append(rrect(h(zz), HW_TUB - ins, Y_SCREEN + 0.0 - ins, Y_TAIL + ins, 0.02, TAIL_R))
     tub = loft('tub', tub_loops, M['paint'])
     tub.data.materials.append(M['interior'])
     cut = cutter_coll('tub_cut')
-    to_coll(box('cabin_void', -0.735, 0.735, Y_TAIL + 0.04, Y_SCREEN - 0.03, 0.70, BELT + 0.2, M['interior']), cut)
+    # the void's rear corners are round too, 40 mm inside the skin
+    to_coll(loft('cabin_void', [rrect(h(zz), 0.735, Y_SCREEN - 0.03, Y_TAIL + 0.04, 0.02, TAIL_R - 0.04) for zz in (0.70, BELT + 0.2)], M['interior']), cut)
     to_coll(prism_x('arch_cut_r', sarch(ARCH_R['y'], ARCH_R['hc'], ARCH_R['a'], ARCH_R['b'], ARCH_R['n'], 0, 2 * math.pi, 96)[:-1], -1, 1), cut)
     # door shut lines and rear barn-door seams (shallow grooves)
     for s in (-1, 1):
         # Step 8: the door is one outline with rounded lower corners, its foot 45 mm above the
         # sill (rear-34-left.jpg), instead of two straight grooves down to the sill.
         to_coll(groove_ring('door', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07, material=M['black']), cut)
-        # swage line along the tub at door-handle height
-        # the seam between the tub and the hardtop. Step 9: 4 mm wide and 6 mm deep, like the door
-        # lines. Wider grooves lose their walls to the 8 mm bevel and shade away to nothing.
-        to_coll(box('swage', HW_TUB - 0.006 if s > 0 else -HW_TUB - 0.05, HW_TUB + 0.05 if s > 0 else -HW_TUB + 0.006,
-                    Y_TAIL + 0.1, Y_SCREEN + 0.02, 1.100, 1.104, M['black']), cut)
+    # The seam between the tub and the hardtop, at door-handle height: 4 mm wide and 6 mm deep, like
+    # the door lines (wider grooves lose their walls to the 8 mm bevel and shade away). Step 10: it
+    # is one band along both sides and round the rear corners, stopping at the barn doors.
+    seam = loft('swage', [rrect(h(zz), HW_TUB + 0.05, Y_SCREEN + 0.02, Y_TAIL - 0.05, 0.02, TAIL_R + 0.05) for zz in (1.100, 1.104)], M['black'])
+    core = loft('swage_i', [rrect(h(zz), HW_TUB - 0.006, Y_SCREEN + 0.1, Y_TAIL + 0.006, 0.02, TAIL_R - 0.006) for zz in (1.09, 1.11)])
+    boolean(seam, core); kill(core)
+    boolean(seam, box('swage_d', -REAR_DOOR, REAR_DOOR, Y_TAIL - 0.2, Y_TAIL + 0.1, 1.0, 1.2)); kill(bpy.data.objects['swage_d'])
+    to_coll(seam, cut)
     # Fuel filler flap on the right rear quarter, between the door and the arch (front-34-hardtop.jpg).
     to_coll(groove_ring('filler', 1, DOOR_REAR - 0.135, DOOR_REAR - 0.035, 0.975, 1.075, 0.015, w=0.003, material=M['black']), cut)
     for xx in (0.0, -REAR_DOOR, REAR_DOOR):
@@ -678,7 +685,8 @@ def build_rear_hardware(M):
         finish(b, bevel=0.006, seg=2); out.append(b)
         rf = cyl_y('trim_reflector_' + sn, s * 0.70, 0.565, 0.026, -2.0, -1.988, seg=20, material=M['red'])
         finish(rf, bevel=0.002, seg=1); out.append(rf)
-        x0, x1 = sorted((s * 0.575, s * 0.705))
+        # tall narrow lamps on the flat of the rear face, between the door's edge and the round corner
+        x0, x1 = sorted((s * 0.548, s * 0.612))
         hs = rbox_y('tail_h', x0 - 0.008, x1 + 0.008, Y_TAIL - 0.018, Y_TAIL + 0.004, 0.662, 0.808, r=0.012, seg=2)
         hs.data.materials.append(M['chrome']); finish(hs, bevel=0.002, seg=1)
         out.append(hs)

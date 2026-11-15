@@ -540,8 +540,10 @@ function fj40RearCan(b: VehicleBuilder): void {
 function fj40SpareCarrier(b: VehicleBuilder): void {
   const y = 0.8,
     z = 1.912;
-  b.block(-0.745, y, 1.905, 0.07, 0.14, 0.03, bar, M.Metal, Z.Rear, 0.004);
-  b.rod(v(-0.745, y, z), v(0.075, y, z), 0.018, bar, M.Metal, Z.Rear);
+  // The body's rear corner is round (0.2 m): at x -0.69 its skin is at z 1.85, so the bracket
+  // reaches forward to it.
+  b.block(-0.69, y, 1.885, 0.07, 0.14, 0.09, bar, M.Metal, Z.Rear, 0.004);
+  b.rod(v(-0.69, y, z), v(0.075, y, z), 0.018, bar, M.Metal, Z.Rear);
   b.block(-0.355, y - 0.03, z, 0.06, 0.08, 0.03, bar, M.Metal, Z.Rear, 0.004);
   b.block(0.075, y, 1.905, 0.045, 0.07, 0.03, bar, M.Metal, Z.Rear, 0.004);
 }
