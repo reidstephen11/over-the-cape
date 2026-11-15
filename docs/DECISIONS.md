@@ -1757,10 +1757,22 @@ Compared with `rear-34-left.jpg` and `front-34-hardtop.jpg` beside the studio pi
 
 ## v1.88: the FJ40's grille, back doors and seams
 
-The owner asked for the three small differences left after v1.87. All three are in the model; no code or kit changed.
+The owner asked for the three small differences left after v1.87. All three are in the model. The reviewer's findings then changed the back of the car, as below.
 
 - **Grille.** A mesh panel with TOYOTA across it in chrome letters 58 mm tall, as the cars from 1975 have (`side.jpg`, `rear-34-hardtop.jpg`), in place of four chrome bars and a small badge plate. The mesh is grey wires 14 mm apart, 12 mm in front of the black recess.
 - **Back doors.** Each barn door has the outline of its pressed panel in the lower half, inboard of the tail lamps and under the handle (`front-34-hardtop.jpg`). The right one shows either side of the jerry can; the left one below the spare.
 - **Seams.** The line along each side at door-handle height (the seam between the tub and the hardtop) did not show from eye level: its walls face up and down and its floor was body colour. Every shut line (that seam, the door outlines, the filler flap, the barn-door seams and panels) now has black faces inside the groove, which is how a real shut line reads. The side seam is 4 mm wide and 6 mm deep, like the door lines; the 12 mm groove of v1.87 lost its walls to the body's bevel.
 
 Compared with `side.jpg`, `rear-34-hardtop.jpg`, `front-34-hardtop.jpg` and `rear-34-left.jpg`.
+
+**The second look.** A reviewer was given the standard studio set and nine close-ups and nothing else. What it found, and what was done:
+
+- **Nothing visible held the door spare, and it crossed the seam between the doors.** It now hangs on a swing-away carrier, as the car in `rear-34-left.jpg` has: a bracket on the fixed left corner panel, a tube across behind the wheel between the door skin and the tyre, a link down to the hub boss the wheel bolts to, and a latch on the right door. The spare faces the rear as before. On a swing-away carrier it may stand across the seam, because it swings clear before the doors open.
+- **The tail lamps were on the doors.** The doors' outer edges were drawn 0.73 m from the centre, outside the lamps. The real doors stop inboard of the lamps and the corner glass, which are on fixed corner panels (`front-34-hardtop.jpg`). The edges, their hinges and the seams above them are now 0.52 m from the centre.
+- **Jerry can.** Its caps overlapped the foot of the window and its tray had nothing under it. With the door narrower it moved 90 mm inboard and 50 mm down, still broad side flat against the right door: clear of the window, the door's edge and the handle (which is 50 mm shorter). A stay runs from each side of the tray's outer edge back to the door.
+- **Ragged corners at the front of the bonnet.** The bonnet's sides ended 9 cm behind the grille face and 15 mm outside the front panel, which showed as a flap at each corner. The front panel is now as wide as the bonnet.
+- **Driving-lamp lenses read as empty rings:** they were cream, the body's colour. They are clear glass.
+- **The rear plate hung below the bar:** raised 10 mm.
+- Not changed: the left mirror is 47 mm behind the snorkel's tube, so the two overlap from the front without touching. A few faint marks on the side panels (a short line behind each door, a tick ahead of the right rear arch) are shading on the cut panels, not parts. The shock towers and the winch hook are as noted under v1.86 and v1.85.
+
+Each fix was photographed again and read.

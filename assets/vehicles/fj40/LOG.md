@@ -255,4 +255,6 @@ file as headless Blender: the script rebuilt the committed GLB byte for byte bef
 - **Shut lines:** the door outlines, the tub-to-hardtop seam, the filler flap, the barn-door seams and panels are cut with
   a black cutter, so the grooves' own faces are black (`material_mode = TRANSFER`). The side seam is 4 mm wide, 6 mm deep:
   a wider groove loses its walls to the tub's 8 mm bevel and shades away.
-- GLB: 59,248 tris.
+- **Barn doors' edges** (`REAR_DOOR`) at 0.52 m from the centre (were 0.73 m), inboard of the tail lamps and the corner
+  glass; hinges and seams follow; the rear handle is 50 mm shorter. **Front panel** as wide as the bonnet (±0.53 m).
+- GLB: 59,530 tris.
