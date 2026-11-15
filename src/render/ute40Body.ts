@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import { UTE_CAB_SHIFT } from '../data/ute40';
-import { vehicles } from '../data/vehicles';
+import { shortieCabin } from '../data/vehicles';
 import { ROUND_BEND, cleanGeometry, continuousTube, subdivideSurface } from './bodyRefinement';
 import { extrudeX, extrudeZ, rounded, sideShape } from './bodyShapes';
 import { pal } from './colors';
@@ -336,7 +336,7 @@ function cab(b: VehicleBuilder): void {
 
 /** The 40's cabin, cut at the cab back: two seats, the dash, dials, column and floor levers. */
 function interior(b: VehicleBuilder, redlineRpm: number): void {
-  const cabin = vehicles.shortie.cabin;
+  const cabin = shortieCabin;
   const dark = new THREE.Color('#343B37'),
     seat = new THREE.Color('#615F4C');
   const metal = new THREE.Color('#858A83'),

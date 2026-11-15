@@ -1656,3 +1656,49 @@ What remains is grass moving in the wind. `tests/shadowReach.test.ts` checks the
 **New tools** (dev only): `scripts/menu-walk.ts`, `scripts/studio-audit.ts` (24 large, tightly framed pictures of a vehicle, for a reviewer who also has its reference photographs), `scripts/approach-check.ts` with `approach-diff.py`, `scripts/reach-check.ts` with `reach-diff.py`, and `max=` on `scripts/playtest.ts`. Test hooks `terrainLod` and `trackPoints`, and `window.studio.bounds()` in the studio page.
 
 **Follow-up to v1.84's tests (no game change, so no new version).** The unit tests all passed (985). `e2e/pausePad.spec.ts` first ran out of its 15 minutes on the Units row, with every check before it passing: at 1920×1080 the software renderer takes seconds a frame and the test waits four frames a press, and the unit tests were running beside it. It now draws the 3D scene at a third of its size (the page and its menus stay 1920×1080), as the menu walk does, and passes in a little over two minutes. `scripts/menu-walk.ts` looked only rightwards along a row of buttons and could not find Controls from Settings on the two-column pause page; it looks both ways now.
+
+## v1.85: the FJ40, first fixes from the November audit
+
+The owner asked for the FJ40 improvements to start. This version takes twelve of the fifteen faults `docs/AUDIT-2026-11.md` lists for the Blender FJ40 (`shortie`), and part of a thirteenth. The earlier hand-coded 40 Series (`forty`), the ute and every other vehicle are unchanged.
+
+**Before and after.** 24 audit pictures (`scripts/studio-audit.ts`) were taken before any change and again after, with the standard studio set and 23 close-ups, and eight more close-ups after the reviewer's findings. The photographs compared were `rear-34-left.jpg` (the nearest to a true side view), `side-1977.jpg`, `front-white.jpg`, `front-34-hardtop.jpg` and `rear-34-hardtop.jpg`.
+
+**The driver's view and the glass (items 1, 2, 3 and part of 15).**
+
+- The cause of "no horizon or sky": the cab was still at the code body's height. This body's roof and glass are 0.12 m lower, so the driver's eye was 13 mm under the top of the windscreen and the dash stood across the glass. The seat, dash, wheel, dials and eye now sit 0.12 m lower on this car (`FJ40_CAB_DROP`, and `vehicles.shortie.cabin` once the model has loaded). If the model fails to load, the code body is drawn and keeps the higher cab.
+- The glass was also too shallow. On `rear-34-left.jpg` the door glass is 30% of the height from sill to roof, and on `side-1977.jpg` 34%: 0.42 to 0.46 m on this body. It was 0.32 m clear. The top of the tub drops 1.35 → 1.33 m above the ground and the white cap's lower edge rises 1.81 → 1.825 m; the window openings run 1.345 to 1.795 m (were 1.40 to 1.765) with a 15 mm seal (was 22 mm). Clear glass is now 0.42 m, and the windscreen's is 1.35 × 0.425 m (3.2 to 1; `front-white.jpg` shows about 2.9 to 1).
+- From the driver's seat the horizon is 42% of the way down the picture, with sky above it; the roof lining fills the top 20% (it was 42%, and no sky).
+- Each side has one window behind the door instead of two, with a bar for the fixed rear pane and a thin one where the sliding panes overlap, and the door glass has its quarter-light bar (`front-34-hardtop.jpg`, which is a rear view despite its name, and `rear-34-left.jpg`).
+- The windscreen frame, wipers, drip rails and mirrors moved with the glass. The wipers pivot on the frame's lower rail under the glass. Each mirror arm starts on the door skin just under the glass and the head faces back.
+- The dash now stops at the screen's inner face. It ran 0.11 m further forward, so once it was lowered it showed outside as a dark slab on the cowl at the foot of the windscreen. This was found in the close-ups, not in the audit.
+
+**Item 8, tyres.** The wheel is built from the outer half of the model's wheel, mirrored. Triangles were kept or dropped by their centre, so half of each quad of the centre rib went missing: the see-through zig-zag. Every triangle that reaches the outer half is now kept and the rest of it is flattened onto the centre plane.
+
+**Item 10, the black strip on each rear quarter.** It was the top of the cabin's box over the rear wheel, drawn for the wider code body and standing 15 mm outside this body's side. On this car the boxes stop at 0.735 m, inside the 0.775 m skin.
+
+**The touring kit: where each part is attached and which way it faces.**
+
+- **Snorkel (item 5).** A flat box on the left cowl side, over the vent louvres just ahead of the door (x −0.775 to −0.875, 0.91 to 1.18 m above the ground). The tube leaves the top of the box and runs up the windscreen pillar, leaning back with the screen and 55 mm ahead of its face, to a ram head that faces forward beside the roof cap. Two steel bands with a strap each hold it to the pillar's front corner. It was a box on the wing over the tyre and 1.2 m of tube through the air.
+- **Roof rack (items 7 and 13).** This car has its own layout (`fj40Rack`). Six posts stand on the hardtop, reaching 30 mm further down than before. From each post an arm goes out past the roof's edge and straight down to a clamp on the gutter (x 0.762 to 0.794, the gutter's edge is at 0.763). A straight arm would pass through the roof cap, which the first close-up showed. The rack is 2.44 m long (was 2.02 m), from 0.2 m ahead of the roof's front edge to 0.05 m behind the tail, so the 2.4 m recovery boards lie inside it; they are 0.13 m further back. The boards are the length the game lays down on a crossing, so they were not shortened.
+- **Roof spare (item 6).** Lying flat, face up, on its plate on the boards, 4 mm clear, held by the centre clamp. v1.83 had lifted it 45 mm off the plate, which left the air under it and the clamp's pin showing as a post. Placed with `mountSpare()`.
+- **Winch (item 11).** The drum is sunk into the bull bar's pan, directly behind the fairlead in the bar's face, its top 35 mm above the pan between the centre hoop's legs. The motor is inside the bar. On top of the bar it stood in front of the left headlamp. Both headlamps are clear.
+- **Driving lamps.** Each has a round lens facing forward, just proud of its housing. A square lens lay in the same plane as the housing's rim and flickered. Not in the audit.
+- **Jerry can (item 12).** On the right barn door, its broad side flat against the door skin, standing in a tray that two flat bars behind the can bolt to the door, with a strap round it. Its back is 0.19 m off the door, level with the spare, instead of 0.36 m. It clears the spare, the tail lamp below and the door handle.
+- **Exhaust (item 14).** In the model: a round 60 mm pipe, a muffler ahead of the rear axle, up to 0.62 m over the axle, down to 0.37 m under the rear crossmember, ending 5 cm behind the tail under the rear bar. It was a 48 mm straight pipe at 0.30 m with the muffler where the axle is.
+- **TOYOTA.** The grille had two: the model's badge, and letters the code stroked over it in v1.83. The stroked ones are gone.
+
+**The second look.** A reviewer was given the standard studio set and 22 close-ups (30 pictures) and nothing else. What it found, and what was done:
+
+- The aerial's base hung in the air beside the bonnet, about 0.3 m above the wing (it had since v1.83). It now stands on the flat top of the left wing, facing up.
+- The roof spare's clamp bar was shorter than the rim's opening and higher than the tyre, so it held nothing. The bar is now 0.44 m long, spans the rim and bears on the tyre's bead on both sides, under the T-handle.
+- The jerry can's strap touched the door spare. The can, tray and strap moved 30 mm outboard and 20 mm up; the strap's near side is 23 mm from the tyre.
+- The driving lamps' stalks passed through the bar's side rail and showed underneath. Each now starts at the centre of the rail.
+- The door spare's tread stood 24 mm into the rear bar ("no daylight"). The rear bar, its brackets, plate and tow ball are 45 mm lower; the tread is 21 mm above the bar.
+- The snorkel's head was a closed cylinder with its wide end to the rear. It is turned round, wide end forward, with a grey mesh disc in its mouth.
+- Not changed: the winch's hook rests in the fairlead with no rope showing (the rope is drawn when the winch is in use). The door spare sits across the seam between the two barn doors, where v1.83 moved it to uncover the tail lamp, and its carrier is hidden behind the wheel. The left mirror is close behind the snorkel, not touching.
+
+Each fix was photographed again close up and read.
+
+**Still open on this car.** Item 4 (front wings too deep and round, tyre against the wing on full lock with the axle crossed), item 9 (rear arches: shape, lip, sky showing through), and the rest of 15 (black door hinges, no step, plain wheel discs). Found on the way and not fixed: the bonnet is about 7 cm high at the cowl against `side-1977.jpg` and `rear-34-left.jpg`. `reference/vehicles/landcruiser-fj40/SOURCES.md` now has this body's measures, and four captions there were corrected (`front.jpg` and `rear.jpg` are three-quarter views of a soft top; `front-34-hardtop.jpg` and `rear-34-hardtop.jpg` have each other's angle).
+
+**Tools.** The model was rebuilt with Blender's Python module (`pip install bpy`, version 5.3.0) from `tools/blender/fj40/fj40_body.py`. Run unchanged, the script reproduced the committed model byte for byte, so the script is the source. `tests/fj40Cab.test.ts` checks the lowered cab. `tests/spares.test.ts` passes.

@@ -1,11 +1,29 @@
 import * as THREE from 'three';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
-import { vehicles } from '../data/vehicles';
+import { shortieCabin, type CabinLayout } from '../data/vehicles';
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 
+export interface InteriorFit {
+  /** The cab the dials and the wheel are laid out on. */
+  cabin: CabinLayout;
+  /** How far the fixed parts sit below the code body's (the Blender FJ40's cab is lower). */
+  drop: number;
+  /** Outer face of the boxes over the rear wheels; it has to stay inside the body side. */
+  boxOuter: number;
+  /** How far the dash runs forward of its face (z -0.22); it has to stop behind the screen. */
+  dashDepth: number;
+}
+
 /** A real cabin behind the glass: seats, instruments, RHD steering and floor levers. */
-export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void {
-  const cabin = vehicles.shortie.cabin;
+export function addVehicleInterior(
+  b: VehicleBuilder,
+  redlineRpm: number,
+  fit: InteriorFit = { cabin: shortieCabin, drop: 0, boxOuter: 0.79, dashDepth: 0.18 },
+): void {
+  const cabin = fit.cabin;
+  const boxInner = 0.52;
+  // Everything placed by hand moves with the cab; the dials and the column follow `cabin`.
+  b.push().translate(0, fit.drop, 0);
   const dark = new THREE.Color('#343B37'),
     seat = new THREE.Color('#615F4C');
   const metal = new THREE.Color('#858A83'),
@@ -17,7 +35,18 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
   ])
     b.block(0, 0.265, (z0 + z1) / 2, w, 0.06, z1 - z0, dark, M.Rubber, Z.Trim);
   for (const side of [-1, 1]) {
-    b.block(side * 0.655, 0.49, 1.15, 0.27, 0.035, 1.06, dark, M.Rubber, Z.Trim, 0.01);
+    b.block(
+      (side * (boxInner + fit.boxOuter)) / 2,
+      0.49,
+      1.15,
+      fit.boxOuter - boxInner,
+      0.035,
+      1.06,
+      dark,
+      M.Rubber,
+      Z.Trim,
+      0.01,
+    );
     for (const z of [0.84, 1.56])
       b.block(side * 0.56, 0.55, z, 0.025, 0.09, 0.025, new THREE.Color('#858A83'), M.Metal, Z.Trim);
   }
@@ -41,9 +70,11 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
       Z.Trim,
     );
   }
-  b.block(0, 0.83, -0.31, 1.4, 0.27, 0.18, dark, M.Rubber, Z.Trim, 0.018);
+  b.block(0, 0.83, -0.22 - fit.dashDepth / 2, 1.4, 0.27, fit.dashDepth, dark, M.Rubber, Z.Trim, 0.018);
   b.block(0.36, 0.87, -0.203, 0.43, 0.19, 0.02, metal, M.Metal, Z.Trim, 0.014);
+  b.pop();
   addDialFaces(b, cabin, redlineRpm);
+  b.push().translate(0, fit.drop, 0);
   for (const x of [-0.5, -0.4, -0.3, 0.03]) {
     b.slot = M.Rubber;
     b.push()
@@ -54,7 +85,9 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
   }
   b.block(-0.34, 0.91, -0.202, 0.38, 0.08, 0.012, ivory.clone().multiplyScalar(0.5), M.Paint, Z.Trim);
   b.block(-0.34, 0.91, -0.191, 0.12, 0.012, 0.012, metal, M.Metal, Z.Trim);
+  b.pop();
   addSteeringColumn(b, cabin);
+  b.push().translate(0, fit.drop, 0);
   b.block(0, 0.36, 0.13, 0.31, 0.16, 0.83, dark, M.Rubber, Z.Trim, 0.025);
   for (const [x, h, z] of [
     [0.02, 0.68, 0.18],
@@ -73,4 +106,5 @@ export function addVehicleInterior(b: VehicleBuilder, redlineRpm: number): void 
     b.block(side * 0.73, 0.71, 0.3, 0.05, 0.035, 0.19, dark, M.Rubber, Z.Trim);
     b.rod({ x: side * 0.72, y: 0.61, z: -0.07 }, { x: side * 0.69, y: 0.61, z: -0.01 }, 0.009, metal);
   }
+  b.pop();
 }

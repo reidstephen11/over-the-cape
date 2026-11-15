@@ -100,6 +100,21 @@ export const shortieCabin: CabinLayout = {
   },
 };
 
+/**
+ * The Blender FJ40's roof and glass are 0.12 m lower than the code body's, so its seat, dash,
+ * wheel and the driver's eye are too. Until v1.85 they were left at the code body's height: the
+ * eye was 13 mm under the top of the glass and the dash stood across the windscreen.
+ */
+export const FJ40_CAB_DROP = -0.12;
+let fj40CabLowered = false;
+/**
+ * Called when the Blender body is in use (src/render/fj40Glb.ts). If the model fails to load
+ * the FJ40 is drawn with the code body, which keeps the higher cab.
+ */
+export function useFj40Cab(on: boolean): void {
+  fj40CabLowered = on;
+}
+
 /** The 70 Series cab, as in the Troop Carrier. */
 const seventyCabin: CabinLayout = {
   // High up behind an upright screen, looking down the short, square bonnet.
@@ -163,6 +178,8 @@ function raised(c: CabinLayout, dy: number): CabinLayout {
     },
   };
 }
+
+const fj40Cabin = raised(shortieCabin, FJ40_CAB_DROP);
 
 const perentieCabin: CabinLayout = {
   // Upright seat high on the seat box, close to the door and the screen's top rail.
@@ -232,7 +249,9 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     tuning: vehicleTuning,
     blurb:
       '1970s Land Cruiser FJ40, open from the start. The Blender-built body, 4.2 L petrol six, three-speed automatic. The earlier body is listed next to it.',
-    cabin: shortieCabin,
+    get cabin() {
+      return fj40CabLowered ? fj40Cabin : shortieCabin;
+    },
   },
   forty: {
     tuning: fortyTuning,

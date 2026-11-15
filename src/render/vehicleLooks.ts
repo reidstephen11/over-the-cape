@@ -4,7 +4,7 @@ import type { VehicleId, VehicleTuning } from '../data/vehicle';
 import { buildVehicleBody } from './vehicleBody';
 import { buildVehicleWheel } from './vehicleWheel';
 import { buildFj40GlbBody, buildFj40GlbWheel, fj40GlbActive, fj40GlbHeadlamps } from './fj40Glb';
-import { FJ40_GEAR_DROP, buildRackPlank, fj40DrivingLamps } from './vehicleEquipment';
+import { FJ40_GEAR_DROP, FJ40_PLANK_SHIFT, buildRackPlank, fj40DrivingLamps } from './vehicleEquipment';
 import { WIDEN as PATROL_WIDEN, buildPatrolBody, buildPatrolPlank, buildPatrolWheel } from './patrolBody';
 import { buildPerentieBody, buildPerentiePlank, buildPerentieWheel } from './perentieBody';
 import { buildCamelBody, buildCamelPlank } from './camelBody';
@@ -66,7 +66,7 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     wheel: (t) => (fj40GlbActive() ? buildFj40GlbWheel(t) : buildVehicleWheel(t)),
     plank: (index) => {
       const g = buildRackPlank(index);
-      if (fj40GlbActive()) g.translate(0, FJ40_GEAR_DROP, 0);
+      if (fj40GlbActive()) g.translate(0, FJ40_GEAR_DROP, FJ40_PLANK_SHIFT);
       return g;
     },
     paint: { roughness: 0.39, metalness: 0.14, clearcoat: 0.7, clearcoatRoughness: 0.24 },

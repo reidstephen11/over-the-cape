@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Vec3 } from '../sim/vehicle/math';
 import type { VehicleTuning } from '../data/vehicle';
+import { FJ40_CAB_DROP, useFj40Cab, vehicles } from '../data/vehicles';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { addVehicleInterior } from './vehicleInterior';
 import { addFj40GlbEquipment } from './vehicleEquipment';
@@ -52,6 +53,7 @@ export function loadFj40Glb(): Promise<void> {
     .then((gltf) => {
       gltf.scene.updateMatrixWorld(true);
       gltfRoot = gltf.scene;
+      useFj40Cab(true);
       console.info('[fj40] Blender GLB loaded');
     })
     .catch((err: unknown) => {
@@ -176,7 +178,14 @@ export function buildFj40GlbBody(
   });
   const glb = soupGeometry(soup);
   const b = new VehicleBuilder();
-  addVehicleInterior(b, tuning.engine.redlineRpm);
+  // The cab sits 0.12 m lower than in the code body, the tub is narrower (0.775 m a side) and
+  // the screen's inner face is at z -0.29, so the dash stops there instead of 0.11 m ahead of it.
+  addVehicleInterior(b, tuning.engine.redlineRpm, {
+    cabin: vehicles.shortie.cabin,
+    drop: FJ40_CAB_DROP,
+    boxOuter: 0.735,
+    dashDepth: 0.07,
+  });
   addFj40GlbEquipment(b, tuning, wheel);
   const code = b.build();
   const merged = mergeGeometries([glb, code]);
@@ -203,8 +212,11 @@ export function buildFj40GlbWheel(tuning: VehicleTuning): THREE.BufferGeometry {
   });
   const out: Soup = { pos: [], nrm: [], col: [], tag: [], slot: [] };
   for (let t = 0; t < half.pos.length / 9; t++) {
-    const cx = half.pos[t * 9] + half.pos[t * 9 + 3] + half.pos[t * 9 + 6];
-    if (cx < 0) continue;
+    // Keep every triangle that reaches the outer half and flatten the rest of it onto the
+    // centre plane. Dropping a triangle by its centre left half of each centre-rib quad
+    // out, a see-through zig-zag round the tread.
+    const xs = [half.pos[t * 9], half.pos[t * 9 + 3], half.pos[t * 9 + 6]];
+    if (Math.max(...xs) <= 1e-6) continue;
     for (const mirror of [1, -1]) {
       const order = mirror === 1 ? [0, 1, 2] : [0, 2, 1];
       for (const j of order) {
