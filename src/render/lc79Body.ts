@@ -37,8 +37,16 @@ const SILL = 0.04 + DY;
 const WAIST = 0.84 + DY;
 const F = -2.36;
 const AXLE = 1.59;
-/** Front wheel opening: cut high and wide for the big tyres. */
-const ARCH = { r: 0.6, cy: 0.0 };
+/**
+ * Front wheel opening as on the 70 Series: a flat top with radiused corners and straight
+ * sides that splay out towards the sill (front-34-single-cab.jpg), cut high and wide for
+ * the big tyres. `top` is the flat's height, `half` the half width where the sides would
+ * meet it, `splay` how far each side moves out per metre down, `corner` the corners' radius.
+ * `r` is a nominal size for the wheelhouse's walls.
+ */
+const ARCH = { r: 0.6, cy: 0.0, top: 0.6, half: 0.5, splay: 0.3, corner: 0.17 };
+/** Where the wheelhouse walls face, for the dark colouring of the opening's cut faces. */
+const WELL_CENTRE: [number, number] = [-AXLE, 0.12];
 const COWL = { y: WAIST, z: -0.98 };
 const SCREEN_TOP = { y: 1.44 + DY, z: -0.8 };
 const DOOR = { front: -0.95, back: 0.12 };
@@ -50,8 +58,8 @@ const CLIP = {
   back: DOOR.front - 0.02,
   noseTop: 0.86,
   backTop: WAIST - 0.005,
-  round: 0.15,
-  ratio: 0.55,
+  round: 0.045,
+  ratio: 0.9,
   low: 0.4,
 };
 /** The tray: deck height, headboard, tail and half width. */
@@ -74,17 +82,23 @@ const LAMP_Y = 0.68;
 const clipTop = (z: number) => CLIP.noseTop + ((z - F) / (CLIP.back - F)) * (CLIP.backTop - CLIP.noseTop);
 const v = (x: number, y: number, z: number) => ({ x, y, z });
 
-/** A round opening's outline from height yBack on its back side, over the top, to yFront on its front side. */
-function archPath(axle: number, yBack: number, yFront: number, grow = 0, steps = 24): Vtx[] {
-  const r = ARCH.r + grow;
-  const a0 = Math.asin(Math.max(-1, Math.min(1, (yBack - ARCH.cy) / r))),
-    a1 = Math.PI - Math.asin(Math.max(-1, Math.min(1, (yFront - ARCH.cy) / r)));
-  const out: Vtx[] = [];
-  for (let i = 0; i <= steps; i++) {
-    const a = a0 + ((a1 - a0) * i) / steps;
-    out.push([axle + r * Math.cos(a), ARCH.cy + r * Math.sin(a)]);
-  }
-  return out;
+/** Half the opening's width at height y, `grow` out from its edge. */
+const archHalf = (y: number, grow = 0) =>
+  ARCH.half + (ARCH.top - y) * ARCH.splay + grow * Math.hypot(1, ARCH.splay);
+
+/**
+ * The opening's outline from height yBack on its back side, over the flat top, to yFront
+ * on its front side, `grow` out from its edge (a flare's outer edge, or inside it).
+ */
+function archPath(axle: number, yBack: number, yFront: number, grow = 0): Vtx[] {
+  const top = ARCH.top + grow,
+    corner = Math.max(0.02, ARCH.corner + grow);
+  return [
+    [axle + archHalf(yBack, grow), yBack],
+    [axle + archHalf(top, grow), top, corner],
+    [axle - archHalf(top, grow), top, corner],
+    [axle - archHalf(yFront, grow), yFront],
+  ];
 }
 
 /** Where the A pillar's front edge is at height y. */
@@ -101,7 +115,7 @@ const doorWindow: Vtx[] = [
 /** Each side of the cab: one panel from behind the front wheel to the back corner. */
 function cabSides(b: VehicleBuilder, paint: THREE.Color): void {
   const end = CAB_BACK - CORNER;
-  const archBack = (y: number) => -AXLE + Math.sqrt(ARCH.r ** 2 - (y - ARCH.cy) ** 2);
+  const archBack = (y: number) => -AXLE + archHalf(y);
   const outline: Vtx[] = [
     [archBack(SILL), SILL],
     ...[0.25, 0.35, CLIP.low].map((y): Vtx => [archBack(y), y]),
@@ -116,7 +130,7 @@ function cabSides(b: VehicleBuilder, paint: THREE.Color): void {
   const shape = sideShape(outline, [doorWindow]);
   for (const side of [-1, 1]) {
     const x0 = side > 0 ? SIDE - 0.04 : -SIDE;
-    extrudeX(b, shape, x0, x0 + 0.04, paint, M.Paint, Z.Sides, 0.012, [[-AXLE, ARCH.cy]]);
+    extrudeX(b, shape, x0, x0 + 0.04, paint, M.Paint, Z.Sides, 0.012, [WELL_CENTRE]);
     sidePane(b, doorWindow, side, side * (SIDE - 0.022), rubber, M.Rubber, Z.Glass, inset(doorWindow, 0.022));
     sidePane(b, inset(doorWindow, 0.018), side, side * (SIDE - 0.02), glass, M.Glass, Z.Glass);
     const x = side * (SIDE + 0.001);
@@ -217,6 +231,34 @@ function cabSides(b: VehicleBuilder, paint: THREE.Color): void {
     b.push().translate(side * (SIDE - CORNER), (SILL + ROOF) / 2 - 0.01, end);
     b.geometry(g, paint);
     b.pop();
+    // The cab's vent: a black louvred grille on the back pillar just behind the door, under
+    // the swage line (front-34-single-cab.jpg).
+    const vz = DOOR.back + 0.12;
+    b.block(side * (SIDE + 0.004), WAIST - 0.1, vz, 0.012, 0.08, 0.15, black, M.Rubber, Z.Sides, 0.006);
+    for (let i = 0; i < 4; i++)
+      b.block(
+        side * (SIDE + 0.011),
+        WAIST - 0.127 + i * 0.018,
+        vz,
+        0.006,
+        0.006,
+        0.13,
+        trim,
+        M.Rubber,
+        Z.Sides,
+      );
+    // The fuel filler: a round body-colour flap on the left pillar below the vent.
+    if (side < 0) {
+      b.ring(-SIDE - 0.003, WAIST - 0.25, vz, 0.055, 0.004, black, M.Rubber, 'x', Z.Sides);
+      b.slot = M.Paint;
+      b.tag = Z.Sides;
+      b.push()
+        .translate(-SIDE - 0.004, WAIST - 0.25, vz)
+        .rotate(0, 0, Math.PI / 2);
+      b.geometry(new THREE.CylinderGeometry(0.052, 0.052, 0.008, 24), paint);
+      b.pop();
+      b.block(-SIDE - 0.009, WAIST - 0.25, vz + 0.025, 0.004, 0.012, 0.012, chrome, M.Metal, Z.Sides);
+    }
     // Rock slider along the sill: a black rail on outriggers with a step plate.
     const sx = side * (SIDE + 0.07);
     b.rod(
@@ -265,69 +307,69 @@ function cabSides(b: VehicleBuilder, paint: THREE.Color): void {
 }
 
 /**
- * A round LED headlamp as on the 2024-on 70 Series, set into the grille: a black bezel,
+ * A round LED headlamp as on the 2024-on 70 Series, standing in its pod in the grille's
+ * surround: a black bezel,
  * a clear lens with the projector behind it and the daytime-running ring round its edge.
  */
 function headlamp(b: VehicleBuilder, x: number, y: number): void {
-  const r = 0.1;
-  b.ring(x, y, F - 0.022, r + 0.012, 0.014, black, M.Rubber, 'z', Z.Front);
+  const r = 0.105,
+    f = F - 0.022;
+  b.ring(x, y, f - 0.022, r + 0.012, 0.014, black, M.Rubber, 'z', Z.Front);
   b.slot = M.Rubber;
   b.tag = Z.Front;
   b.push()
-    .translate(x, y, F - 0.012)
+    .translate(x, y, f - 0.012)
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(r + 0.005, r + 0.005, 0.02, 32), trim);
   b.pop();
-  b.ring(x, y, F - 0.026, r - 0.012, 0.007, lens, M.Headlamp, 'z', Z.Front);
+  b.ring(x, y, f - 0.026, r - 0.012, 0.007, lens, M.Headlamp, 'z', Z.Front);
   b.slot = M.Headlamp;
   b.push()
-    .translate(x, y + 0.01, F - 0.024)
+    .translate(x, y + 0.01, f - 0.024)
     .scale(1, 1, 0.3);
   b.geometry(new THREE.SphereGeometry(0.038, 20, 8), lens);
   b.pop();
-  b.ring(x, y + 0.01, F - 0.027, 0.042, 0.005, chrome, M.Metal, 'z', Z.Front);
+  b.ring(x, y + 0.01, f - 0.027, 0.042, 0.005, chrome, M.Metal, 'z', Z.Front);
   b.slot = M.Glass;
   b.push()
-    .translate(x, y, F - 0.03)
+    .translate(x, y, f - 0.03)
     .scale(1, 1, 0.12);
   b.geometry(new THREE.SphereGeometry(r - 0.004, 20, 8), lens.clone().multiplyScalar(0.9));
   b.pop();
 }
 
+/** Height of the bonnet's raised centre panel above the clip's top. */
+const CROWN = 0.024;
+
 /**
- * Raise an 18 mm crown on the bonnet top, highest on the centre line halfway along and
- * fading out towards the guards, the cowl and the nose. `x0` is where the panel will sit
- * across the car, so x can be measured from the centre line.
+ * The bonnet's raised centre panel, as on the 2024-on 70 Series: a flat-topped section
+ * between two creases that runs from the cowl to the nose, where its front edge stands over
+ * the raised middle of the grille's top edge (front-34-wagon.jpg, side-wagon.jpg).
  */
-function crownBonnet(geometry: THREE.BufferGeometry, x0: number): THREE.BufferGeometry {
-  const g = subdivideSurface(geometry, (p, n) => p.y > 0.8 && n.y > 0.6, 2);
-  const p = g.getAttribute('position'),
-    n = g.getAttribute('normal');
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i) + x0,
-      z = p.getZ(i),
-      y = p.getY(i),
-      u = THREE.MathUtils.clamp((z + 2.36) / 1.39, 0, 1),
-      a = Math.max(0, 1 - (x / 0.73) ** 2),
-      q = Math.sin(Math.PI * u) ** 2,
-      t = THREE.MathUtils.clamp((y - 0.78) / 0.07, 0, 1),
-      fade = t * t * (3 - 2 * t),
-      df = t > 0 && t < 1 ? (6 * t * (1 - t)) / 0.07 : 0;
-    const h = 0.018 * a * a * q * fade,
-      dx = ((-0.072 * x) / (0.73 * 0.73)) * a * q * fade,
-      dz = ((0.018 * a * a * Math.PI * Math.sin(2 * Math.PI * u)) / 1.39) * fade,
-      dy = 0.018 * a * a * q * df;
-    p.setY(i, y + h);
-    const ny = n.getY(i) / (1 + dy),
-      normal = new THREE.Vector3(n.getX(i) - dx * ny, ny, n.getZ(i) - dz * ny).normalize();
-    n.setXYZ(i, normal.x, normal.y, normal.z);
-  }
-  return g;
+function bonnetCentre(b: VehicleBuilder, paint: THREE.Color): void {
+  const z1 = COWL.z - 0.08;
+  extrudeX(
+    b,
+    sideShape([
+      [F - 0.012, clipTop(F) - 0.006],
+      [F - 0.012, clipTop(F) + CROWN, 0.02],
+      [z1, clipTop(z1) + CROWN],
+      [z1, clipTop(z1) - 0.03],
+      [F + 0.05, clipTop(F + 0.05) - 0.04],
+    ]),
+    -0.46,
+    0.46,
+    paint,
+    M.Paint,
+    Z.Front,
+    0.016,
+  );
 }
 
 function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
   // The front clip in one piece: the face, the bonnet and guard tops sloping down to the
-  // nose, the cut-out front wheel openings, and its shoulders and front corners rounded.
+  // nose, the cut-out front wheel openings, and tight shoulders and front corners, square
+  // as the 70 Series' are rather than rolled.
   const R = CLIP.round;
   extrudeX(
     b,
@@ -344,16 +386,16 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
     M.Paint,
     Z.Front,
     R,
-    [[-AXLE, ARCH.cy]],
-    6,
+    [WELL_CENTRE],
+    4,
     CLIP.ratio,
-    (g) => crownBonnet(g, -SIDE - 0.02 + R),
   );
+  bonnetCentre(b, paint);
   // A hollow scoop: separate crown and cheeks, recessed dark throat, no front cap.
   const z0 = F + 0.32,
     z1 = F + 0.9,
-    y0 = clipTop(z0),
-    y1 = clipTop(z1);
+    y0 = clipTop(z0) + CROWN,
+    y1 = clipTop(z1) + CROWN;
   extrudeX(
     b,
     sideShape([
@@ -406,56 +448,66 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
   for (let i = 0; i < 10; i++)
     b.block(-0.45 + i * 0.1, COWL.y + 0.006, COWL.z - 0.04, 0.06, 0.004, 0.05, black, M.Rubber, Z.Front);
 
-  // Front panel as on the 2024-on 70 Series: one wide black mesh grille across the face
-  // with the round LED headlamps set into its ends, a centre badge, and a tall amber
-  // indicator standing in each upper outer corner, outboard of the lamp and level with
-  // its bezel (front-34-single-cab.jpg, front-34-double-cab.jpg).
+  // Front panel as on the 2024-on 70 Series (side-wagon.jpg, front-34-wagon.jpg): one wide
+  // black surround across the face whose top edge rises in the middle under the bonnet's
+  // raised panel, a round LED headlamp in a plain black pod at each end, a thick upright
+  // between each pod and the mesh, and TOYOTA on the mesh. The amber indicators are on the
+  // guards' front corners, outboard of the surround.
   const gy = LAMP_Y,
-    gw = 1.44,
-    gh = 0.3;
-  b.block(0, gy, F - 0.004, gw + 0.04, gh + 0.04, 0.02, trim, M.Rubber, Z.Front, 0.03);
-  b.block(0, gy, F - 0.008, gw, gh, 0.02, black, M.Rubber, Z.Front, 0.025);
-  // Open hexagonal ribs over a recessed backing; keep lamp and lettering zones clear.
-  // Cells of 30 mm radius (6 rows of 28): the real mesh is finer, but at 20 mm the ribs
-  // cost 4,500 triangles and read the same from any distance the game shows them at.
+    low = gy - 0.16,
+    high = gy + 0.14,
+    brow = clipTop(F) - 0.004;
+  const surround = new THREE.Shape(
+    rounded([
+      [-0.74, low, 0.02],
+      [0.74, low, 0.02],
+      [0.74, high, 0.02],
+      [0.44, high],
+      [0.4, brow, 0.01],
+      [-0.4, brow, 0.01],
+      [-0.44, high],
+      [-0.74, high, 0.02],
+    ]),
+  );
+  extrudeZ(b, surround, F - 0.03, F + 0.01, trim, M.Rubber, Z.Front, 0.008);
+  // Recessed mesh between the uprights.
+  b.block(0, gy - 0.005, F - 0.026, 0.74, 0.25, 0.01, black, M.Rubber, Z.Front, 0.006);
+  // Open hexagonal ribs over the recess, clear of the lettering.
+  // Cells of 30 mm radius: the real mesh is finer, but finer ribs cost thousands of
+  // triangles and read the same from any distance the game shows them at.
   const mesh = trim.clone().multiplyScalar(1.7),
     radius = 0.03,
     inner = 0.0252;
   b.slot = M.Rubber;
   b.tag = Z.Front;
-  for (let row = 0; row < 6; row++)
-    for (let col = 0; col < 28; col++) {
-      const x = -0.7 + col * Math.sqrt(3) * radius + ((row % 2) * Math.sqrt(3) * radius) / 2;
-      const y = gy - 0.1125 + row * 0.045;
-      if (
-        Math.abs(x) > 0.69 ||
-        Math.hypot(Math.abs(x) - 0.58, y - gy) < 0.125 ||
-        (Math.abs(x) < 0.315 && Math.abs(y - gy) < 0.043)
-      )
-        continue;
+  for (let row = 0; row < 5; row++)
+    for (let col = 0; col < 14; col++) {
+      const x = -0.34 + col * Math.sqrt(3) * radius + ((row % 2) * Math.sqrt(3) * radius) / 2;
+      const y = gy - 0.095 + row * 0.045;
+      if (Math.abs(x) > 0.345 || (Math.abs(x) < 0.21 && Math.abs(y - gy + 0.005) < 0.04)) continue;
       for (let k = 0; k < 6; k++) {
         const a = Math.PI / 6 + (k * Math.PI) / 3,
           c = a + Math.PI / 3;
         b.quad(
-          v(x + radius * Math.cos(a), y + radius * Math.sin(a), F - 0.022),
-          v(x + inner * Math.cos(a), y + inner * Math.sin(a), F - 0.022),
-          v(x + inner * Math.cos(c), y + inner * Math.sin(c), F - 0.022),
-          v(x + radius * Math.cos(c), y + radius * Math.sin(c), F - 0.022),
+          v(x + radius * Math.cos(a), y + radius * Math.sin(a), F - 0.033),
+          v(x + inner * Math.cos(a), y + inner * Math.sin(a), F - 0.033),
+          v(x + inner * Math.cos(c), y + inner * Math.sin(c), F - 0.033),
+          v(x + radius * Math.cos(c), y + radius * Math.sin(c), F - 0.033),
           mesh,
         );
       }
     }
-  b.block(0, gy, F - 0.023, 0.63, 0.087, 0.012, black, M.Rubber, Z.Front, 0.006);
-  // TOYOTA in stroke capitals; this grille's A has a slightly shorter crossbar.
+  b.block(0, gy - 0.005, F - 0.034, 0.42, 0.075, 0.012, black, M.Rubber, Z.Front, 0.006);
+  // TOYOTA in stroke capitals, 0.36 m across; this grille's A has a slightly shorter crossbar.
   strokeText(b, 'TOYOTA', {
-    x: 0.284,
-    y: gy - 0.025,
-    z: F - 0.033,
+    x: 0.18,
+    y: gy - 0.03,
+    z: F - 0.042,
     dir: -1,
-    w: 0.07,
+    w: 0.05,
     h: 0.05,
-    pitch: 0.098,
-    radius: 0.004,
+    pitch: 0.062,
+    radius: 0.0045,
     colour: PLATE_WHITE,
     slot: M.Metal,
     zone: Z.Front,
@@ -469,9 +521,28 @@ function frontEnd(b: VehicleBuilder, paint: THREE.Color): void {
     },
   });
   for (const side of [-1, 1]) {
-    headlamp(b, side * 0.58, gy);
-    b.block(side * 0.79, gy + 0.04, F - 0.02, 0.11, 0.16, 0.07, black, M.Rubber, Z.Front, 0.009);
-    b.block(side * 0.79, gy + 0.04, F - 0.058, 0.085, 0.14, 0.009, amber, M.Amber, Z.Front, 0.006);
+    // The upright between the mesh and the lamp pod, standing proud of both.
+    b.block(side * 0.395, gy - 0.01, F - 0.04, 0.05, high - low - 0.01, 0.025, trim, M.Rubber, Z.Front, 0.01);
+    headlamp(b, side * 0.585, gy);
+    // Indicator wrapped round the guard's front corner: amber on the face and the side.
+    const ix = side * (SIDE + 0.02 - 0.055),
+      iy = high - 0.055,
+      iz = F + 0.045;
+    b.block(ix, iy, iz, 0.13, 0.14, 0.13, black, M.Rubber, Z.Front, 0.012);
+    b.block(ix + side * 0.004, iy, iz - 0.004, 0.118, 0.118, 0.13, amber, M.Amber, Z.Front, 0.012);
+    // Side repeater on the guard ahead of the door.
+    b.block(
+      side * (SIDE + 0.022),
+      WAIST - 0.15,
+      CLIP.back - 0.12,
+      0.012,
+      0.03,
+      0.06,
+      amber,
+      M.Amber,
+      Z.Sides,
+      0.005,
+    );
   }
   // Three lower cooling slots and the narrow upper hood vent of the updated fascia.
   for (const x of [-0.235, 0, 0.235])
@@ -508,7 +579,10 @@ function windscreen(b: VehicleBuilder, paint: THREE.Color): void {
     b.rod({ x, y: 0.06, z: -0.03 }, { x: x - 0.46, y: 0.09, z: -0.03 }, 0.006, black, M.Rubber, Z.Front);
     b.rod({ x, y: 0.065, z: -0.036 }, { x: x - 0.42, y: 0.095, z: -0.036 }, 0.004, black, M.Rubber, Z.Front);
   }
+  // Rear-view mirror on a stem from a foot on the screen frame's inside, above the glass.
   b.block(0, L - 0.16, 0.05, 0.22, 0.065, 0.02, black, M.Rubber, Z.Trim, 0.01);
+  b.rod({ x: 0, y: L - 0.13, z: 0.045 }, { x: 0, y: L - 0.06, z: 0.03 }, 0.008, black, M.Rubber, Z.Trim);
+  b.block(0, L - 0.06, 0.03, 0.05, 0.035, 0.012, black, M.Rubber, Z.Trim, 0.004);
   b.pop();
 }
 
@@ -578,7 +652,7 @@ function roof(b: VehicleBuilder, paint: THREE.Color): void {
 function flares(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
     const lip = sideShape([
-      ...archPath(-AXLE, SILL - 0.02, GUARD_LOW - 0.02, 0.1).reverse(),
+      ...archPath(-AXLE, SILL - 0.02, GUARD_LOW - 0.02, 0.11).reverse(),
       ...archPath(-AXLE, SILL - 0.02, GUARD_LOW - 0.02, -0.005),
     ]);
     extrudeX(
@@ -589,11 +663,26 @@ function flares(b: VehicleBuilder): void {
       flare,
       M.Rubber,
       Z.Front,
-      0.02,
+      0.012,
     );
-    // Dark wheelhouse: an inner wall and a roof over the tyre.
-    b.block(side * 0.35, 0.2, -AXLE, 0.03, 0.6, ARCH.r * 2, well, M.Rubber, Z.Trim);
-    b.block(side * 0.7, ARCH.cy + ARCH.r + 0.005, -AXLE, 0.4, 0.02, ARCH.r * 1.5, well, M.Rubber, Z.Trim);
+    // Dark wheelhouse: a liner following the opening's edge just inside it (its ends and
+    // roof), and an inner wall across the whole opening so nothing shows through it.
+    const liner = sideShape([
+      ...archPath(-AXLE, SILL - 0.02, GUARD_LOW - 0.02, 0.03).reverse(),
+      ...archPath(-AXLE, SILL - 0.02, GUARD_LOW - 0.02, -0.008),
+    ]);
+    extrudeX(
+      b,
+      liner,
+      side > 0 ? 0.36 : -SIDE - 0.01,
+      side > 0 ? SIDE + 0.01 : -0.36,
+      well,
+      M.Rubber,
+      Z.Trim,
+      0,
+    );
+    const h = ARCH.top + 0.03;
+    b.block(side * 0.35, h / 2, -AXLE, 0.03, h, 2 * archHalf(0), well, M.Rubber, Z.Trim);
   }
 }
 
@@ -615,7 +704,7 @@ function drivingLamp(b: VehicleBuilder, x: number, y: number, z: number, r: numb
 }
 
 /** The spare on the canopy's rear door (its centre), inside the end of the tray. */
-export const LC79_SPARE = { y: 1.13, z: 2.8 };
+export const LC79_SPARE = { y: 1.17, z: 2.8 };
 
 /** Driving lamp lens centres, for the high-beam glow. */
 export const LC79_DRIVING_LAMPS = [-0.21, 0.21].map((x) => ({
@@ -676,29 +765,38 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
       bar,
     );
   tube(
-    [v(-0.4, top - 0.015, zc + 0.01), v(-0.4, 1.0, zt), v(0.4, 1.0, zt), v(0.4, top - 0.015, zc + 0.01)],
+    [v(-0.4, top - 0.015, zc + 0.01), v(-0.4, 0.95, zt), v(0.4, 0.95, zt), v(0.4, top - 0.015, zc + 0.01)],
     0.032,
   );
   b.rod(v(-0.4, 0.74, (zc + zt) / 2), v(0.4, 0.74, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
   for (const side of [-1, 1]) {
-    const foot = v(side * 0.88, top, zc + 0.1);
+    // Outboard of the indicators on the guards' corners, and ahead of them.
+    const foot = v(side * 0.93, top, zc + 0.1);
     b.block(foot.x, top, foot.z, 0.1, 0.025, 0.1, bar, M.Metal, Z.Front, 0.006);
-    tube(
-      [v(foot.x, top - 0.01, foot.z), v(side * 0.88, 0.86, zt + 0.04), v(side * 0.4, 0.88, zt - 0.016)],
-      0.028,
-    );
-    b.rod(v(side * 0.24, 1.0, zt), v(side * 0.24, 1.035, zt), 0.013, bar, M.Metal, Z.Front);
+    tube([v(foot.x, top - 0.01, foot.z), v(side * 0.96, 0.87, zt), v(side * 0.4, 0.88, zt - 0.016)], 0.028);
+    b.rod(v(side * 0.24, 0.95, zt), v(side * 0.24, 0.985, zt), 0.013, bar, M.Metal, Z.Front);
     // Lamp stem meets the middle rail rather than hanging ahead of it.
     b.rod(v(side * 0.21, 0.74, (zc + zt) / 2), v(side * 0.21, 0.775, -2.51), 0.013, bar, M.Metal, Z.Front);
   }
-  b.block(0, 1.06, zt, 0.62, 0.07, 0.07, black, M.Metal, Z.Front, 0.012);
-  b.block(0, 1.06, zt - 0.037, 0.58, 0.045, 0.006, lens, M.DrivingLamp, Z.Front, 0.004);
+  b.block(0, 1.01, zt, 0.62, 0.07, 0.07, black, M.Metal, Z.Front, 0.012);
+  b.block(0, 1.01, zt - 0.037, 0.58, 0.045, 0.006, lens, M.DrivingLamp, Z.Front, 0.004);
   // Driving lamps on the hoop's mid rail, in front of the grille.
   for (const p of LC79_DRIVING_LAMPS) drivingLamp(b, p.x, p.y, p.z, 0.085);
-  // Winch drum behind the pan, the roller fairlead and the hook.
-  b.rod(v(-0.24, top + 0.06, back - 0.02), v(0.24, top + 0.06, back - 0.02), 0.07, trim);
-  for (let i = 0; i < 15; i++)
-    b.ring(-0.18 + i * 0.026, top + 0.06, back - 0.02, 0.07, 0.005, steel, M.Metal, 'x', Z.Front);
+  // The winch sits inside the pan, hidden as in any winch bar: its control box shows on
+  // the pan's top behind the face, and the roller fairlead is let into the face.
+  b.block(0.12, top + 0.04, back - 0.06, 0.24, 0.08, 0.1, black, M.Rubber, Z.Front, 0.012);
+  b.block(
+    0.12,
+    top + 0.081,
+    back - 0.06,
+    0.16,
+    0.006,
+    0.06,
+    trim.clone().multiplyScalar(1.6),
+    M.Rubber,
+    Z.Front,
+  );
+  b.block(-0.1, top + 0.012, back - 0.06, 0.2, 0.024, 0.1, trim, M.Metal, Z.Front, 0.006);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.005, 0.34, 0.12, 0.02, steel, M.Metal, Z.Front, 0.006);
   b.block(m.x, m.y, face - 0.012, 0.2, 0.05, 0.015, black, M.Rubber, Z.Front);
@@ -711,7 +809,8 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.block(x, 0.06, face + 0.02, 0.07, 0.08, 0.06, steel, M.Metal, Z.Trim);
     b.ring(x, 0.02, face - 0.01, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
   }
-  numberPlate(b, 0.0, 0.18, face - 0.008, -1, 'VDJ-79', plateInk);
+  // The plate on the pan's face beside the fairlead (it used to sit behind it).
+  numberPlate(b, -0.4, 0.22, face - 0.022, -1, 'VDJ-79', plateInk);
   // Whip aerial on the bar's right wing.
   b.rod(v(0.9, top + 0.02, zc + 0.14), v(0.92, top + 1.3, zc + 0.2), 0.004, black, M.Rubber, Z.Roof);
 }
@@ -837,7 +936,8 @@ function tray(b: VehicleBuilder): void {
   b.geometry(new THREE.SphereGeometry(0.03, 12, 8), steel);
   b.pop();
   for (const side of [-1, 1]) b.ring(side * 0.62, 0.04, back + 0.1, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
-  numberPlate(b, 0.68, 0.14, back + 0.084, 1, 'VDJ-79', plateInk);
+  // Clear of the right shackle (v1.94: the shackle ran into its lower edge).
+  numberPlate(b, 0.36, 0.15, back + 0.084, 1, 'VDJ-79', plateInk);
 }
 
 /** A spare wheel standing with its face to the back, or lying flat. */

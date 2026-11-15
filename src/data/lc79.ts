@@ -60,7 +60,7 @@ export const lc79Tuning: VehicleTuning = {
     { cx: 0, cy: 0.5, cz: 1.79, hx: 0.93, hy: 0.14, hz: 1.17 },
     { cx: 0, cy: 1.1, cz: 1.77, hx: 0.9, hy: 0.46, hz: 0.81 },
     // The spare on the canopy's rear door, inside the end of the tray.
-    { cx: 0, cy: 1.13, cz: 2.8, hx: 0.47, hy: 0.47, hz: 0.17 },
+    { cx: 0, cy: 1.17, cz: 2.8, hx: 0.47, hy: 0.47, hz: 0.17 },
     // Bull bar with the winch, and the rear bar with its tow hitch.
     { cx: 0, cy: 0.38, cz: -2.53, hx: 0.94, hy: 0.32, hz: 0.1 },
     { cx: 0, cy: 0.12, cz: 2.98, hx: 0.84, hy: 0.07, hz: 0.07 },

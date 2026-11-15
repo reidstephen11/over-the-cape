@@ -1886,3 +1886,27 @@ The last part of the Perentie's list: item 2 and most of what was left of item 1
 - **Not done:** the wheels. The model's have eight square holes; the photographs show plain dished discs with a few small round holes.
 
 **The second look.** A reviewer was given 45 pictures (the standard set, nine close-ups and the 28 audit pictures) and found nothing floating, facing the wrong way, below the ground or gaping. Three of its minor points were acted on: the door tops stood 2 cm outside the windscreen's pillars, so the frame is now as wide as the door tops; each canvas bow's leg has a socket on the shelf; the jerry cans' straps are 8 mm narrower, inside the body sides. Left as they are: the spare's cradle is the lowest part behind the rear axle, 0.2 m up; the rear bow shows under the canvas's rear edge because the back is open; a pale strut above each front tyre is the coil spring's tower.
+## v1.94: the LC79, stage 1 (the front)
+
+The owner asked for the LC79 next. Before any change the 28 audit pictures were taken and compared with `front-34-single-cab.jpg`, `side-wagon.jpg`, `front-34-wagon.jpg`, `front-34-wagon-2.jpg`, `front-34-double-cab.jpg` and `pre-facelift-single-cab.jpg`. The list is in `docs/AUDIT-2026-11.md`; this stage fixes items 1 to 6. Only the LC79 (`lc79`) changes.
+
+**Two photographs were mislabelled.** `side-wagon.jpg` is the 2024 wagon from in front, nearly square-on, not a profile; it is the best view of the new front. `pre-facelift-single-cab.jpg` is a double cab (four doors) with a winch bar, a snorkel and a light bar. `SOURCES.md` now says what each shows. No square-on profile of any 79 is in the folder.
+
+- **Front wheel openings (item 1).** Flat on top with 0.17 m radiused corners and straight sides that splay out 0.3 m per metre down: the top 0.6 m above the origin as before (0.25 m over the tyre), 1.0 m across where the sides would meet it, 1.32 m at the sill. They were half circles of 0.6 m radius. The flares follow the edge, 0.11 m wide. Inside, a dark liner follows the opening just inside its edge and an inner wall closes the whole opening; body colour showed at the top corners and daylight came through from the far side before.
+- **Guards (item 2).** The clip's edges round over 45 mm (were 150 mm), so the shoulders and the front corners are square, as a 70 Series' are.
+- **Bonnet and grille (item 3).** A raised centre panel 0.92 m wide and 24 mm high runs from the cowl to the nose; the scoop stands on it. The grille is a black surround 1.48 m by 0.30 m whose top rises across the middle 0.8 m to just under the panel's front edge. Each headlamp (0.21 m lens, was 0.2 m) stands in a plain black pod at ±0.585 m, beside a thick upright; the hexagon mesh is only between the uprights. TOYOTA is 0.36 m across (was 0.56 m), as in `side-wagon.jpg`. The headlamp beams start at the new lamps.
+- **Indicators (item 4).** On each guard's front corner, amber on the face and on the side, outboard of the surround; a small amber repeater on each guard ahead of the door. They were on the face only.
+- **Winch and plate (item 5).** The winch is inside the bar's pan, as in any winch bar: what shows is its control box on the pan's top behind the face, and the roller fairlead in the face. Its drum and a stack of steel rings stood on the pan in front of the grille. The plate on the bar's face is beside the fairlead (x −0.4 m); it was behind it. The bar's centre hoop is 5 cm lower (0.95 m), with the light bar on it.
+- **Cab's back pillar (item 6).** A black louvred vent just behind each door, under the swage line, and a round fuel flap on the left pillar under the vent, as `front-34-single-cab.jpg` shows.
+
+**Where each part is attached and which way it faces.** The flares are on the guards' and sills' edges round each opening; the liner and inner wall are inside the opening. The indicators are set into the guards' front corners, facing forward and out. The repeaters, vents and fuel flap are on the body sides, facing out. The winch's control box sits on the pan's top plate. The front plate is on the pan's face, facing forward.
+
+**The second look.** A reviewer was given 49 pictures (the standard set, the 28 audit pictures and 13 close-ups of the front) and nothing else. What it found, and what was done:
+
+- The rear plate's lower edge was over the right-hand shackle on the rear bar. The plate is at x 0.36 m (was 0.68), clear of it.
+- The spare on the canopy's door was 2 cm above the tray's deck and looked pressed onto it. It is 4 cm higher (hub at 1.17 m); its collision box moved with it.
+- The cabin's rear-view mirror hung under the roof with nothing holding it. It is on a stem from a foot on the screen frame above the glass.
+- The bar's outer hoop ran down in front of the new corner indicators. Each upright stands outboard of the indicator (0.93 to 0.96 m out) and ahead of it.
+- Not changed: in the pictures from the rear corners above, the door spare looks wider than the canopy, and from the front quarters the side step's front end and the rear mud flap look against the tyres. In the square-on views the spare is 0.47 m in radius against the canopy's 0.93 m half width, the step ends 0.2 m behind the front tyre and the flap is 0.11 m behind the rear one; perspective puts them together.
+
+Each fix was photographed again and read. `tests/spares.test.ts` passes. 59.9k triangles with wheels and boards (body 39.6k).
