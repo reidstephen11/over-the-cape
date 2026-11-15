@@ -18,6 +18,13 @@ export const WALL_STEP = 1.5;
  * keeps its footing on the footprint, so this never applies to it.
  */
 export const WALL_STEP_HANGING = 0.8;
+/**
+ * And for that hanging tyre the ground ahead must stand this many radii above the ground
+ * under the hub, where the tyre would come to rest (v2.01): a hole's floor, far below its edge.
+ * A wheel lifted off the ground over a log or a ledge has ground about level with the log's
+ * or ledge's foot under it, so the log or ledge ahead is no wall.
+ */
+export const WALL_FLOOR_STEP = 2;
 /** Walls are only looked for at a crawl, below this speed (m/s), so a wheel in the air off a bump at speed never meets one. */
 export const WALL_SPEED = 3;
 /** The wall check's rays start this far above the wheel's mounting point (m). */
@@ -38,6 +45,8 @@ export class WheelContacts {
   readonly steerCos = new Float32Array(4);
   /** Per wheel, this step: how far the ground at the tyre's edges stands above its bottom (m; for tests and tuning). */
   readonly wallRise = new Float32Array(4);
+  /** Per wheel, this step: how far the ground at the tyre's edges stands above the ground under its hub (m). */
+  readonly wallFloor = new Float32Array(4);
   private readonly ray: RAPIER.Ray;
   private readonly local = v3();
   private readonly samples: { offset: number; rise: number }[];
@@ -73,6 +82,7 @@ export class WheelContacts {
     rotate(q, 0, -1, 0, this.ray.dir);
     this.walls.fill(0);
     this.wallRise.fill(0);
+    this.wallFloor.fill(0);
     for (let i = 0; i < t.wheels.length; i++) {
       const w = t.wheels[i];
       const steer = controller.wheelSteering(i) ?? 0;
@@ -129,6 +139,25 @@ export class WheelContacts {
       // The wall check: from well above the wheel, so the rays come down onto the far edge of
       // a hole even when the car has tipped into it and the hub is below that edge. Ground at
       // the tyre's leading edge higher than the tyre's bottom by WALL_STEP radii is a wall.
+      // Where the tyre would come to rest: the ground under the hub, found from above too.
+      let floor = Infinity;
+      if (lookForWalls) {
+        rotate(q, contactX, w.y + WALL_LIFT, w.z, this.ray.origin);
+        this.ray.origin.x += p.x;
+        this.ray.origin.y += p.y;
+        this.ray.origin.z += p.z;
+        const hit = this.physics.world.castRay(
+          this.ray,
+          reach + WALL_LIFT + 1.5,
+          true,
+          this.physics.R.QueryFilterFlags.EXCLUDE_SENSORS,
+          filter,
+          undefined,
+          body,
+        );
+        floor = hit ? hit.timeOfImpact - WALL_LIFT - t.wheelRadius : reach + 1.5;
+      }
+      const hanging = grounded[i] === false;
       if (lookForWalls)
         for (const sample of this.wallSamples) {
           rotate(q, contactX + sx * sample, w.y + WALL_LIFT, w.z + sz * sample, this.ray.origin);
@@ -144,12 +173,14 @@ export class WheelContacts {
             undefined,
             body,
           );
-          if (hit)
-            this.wallRise[i] = Math.max(
-              this.wallRise[i],
-              wallFrom - (hit.timeOfImpact - WALL_LIFT - t.wheelRadius),
-            );
-          if (hit && wallFrom - (hit.timeOfImpact - WALL_LIFT - t.wheelRadius) > wallStep) {
+          if (!hit) continue;
+          const ground = hit.timeOfImpact - WALL_LIFT - t.wheelRadius;
+          this.wallRise[i] = Math.max(this.wallRise[i], wallFrom - ground);
+          this.wallFloor[i] = Math.max(this.wallFloor[i], floor - ground);
+          const wall = hanging
+            ? wallFrom - ground > wallStep && floor - ground > WALL_FLOOR_STEP * t.wheelRadius
+            : wallFrom - ground > wallStep;
+          if (wall) {
             this.walls[i] = sample > 0 ? 1 : -1;
             break;
           }
