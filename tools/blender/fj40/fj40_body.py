@@ -365,12 +365,14 @@ def build_sides(M):
     to_coll(prism_x('arch_cut_r', sarch(ARCH_R['y'], ARCH_R['hc'], ARCH_R['a'], ARCH_R['b'], ARCH_R['n'], 0, 2 * math.pi, 96)[:-1], -1, 1), cut)
     # door shut lines and rear barn-door seams (shallow grooves)
     for s in (-1, 1):
-        for yy in (Y_SCREEN - 0.012, DOOR_REAR):
-            to_coll(box('seam', s * HW_TUB - 0.006 * s if s > 0 else -HW_TUB - 0.05, HW_TUB + 0.05 if s > 0 else -HW_TUB + 0.006,
-                        yy - 0.002, yy + 0.002, SILL + 0.03, BELT + 0.1), cut)
+        # Step 8: the door is one outline with rounded lower corners, its foot 45 mm above the
+        # sill (rear-34-left.jpg), instead of two straight grooves down to the sill.
+        to_coll(groove_ring('door', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07), cut)
         # swage line along the tub at door-handle height
         to_coll(box('swage', HW_TUB - 0.004 if s > 0 else -HW_TUB - 0.05, HW_TUB + 0.05 if s > 0 else -HW_TUB + 0.004,
                     Y_TAIL + 0.1, Y_SCREEN + 0.02, 1.10, 1.107), cut)
+    # Fuel filler flap on the right rear quarter, between the door and the arch (front-34-hardtop.jpg).
+    to_coll(groove_ring('filler', 1, DOOR_REAR - 0.135, DOOR_REAR - 0.035, 0.975, 1.075, 0.015, w=0.003), cut)
     for xx in (0.0, -0.73, 0.73):
         to_coll(box('rseam', xx - 0.002, xx + 0.002, Y_TAIL - 0.05, Y_TAIL + 0.006, SILL + 0.06, BELT + 0.1), cut)
     to_coll(box('rseam_b', -0.73, 0.73, Y_TAIL - 0.05, Y_TAIL + 0.006, SILL + 0.058, SILL + 0.062), cut)
@@ -455,6 +457,14 @@ def rbox_y(name, x0, x1, y0, y1, z0, z1, r=0.05, seg=5):
 
 SIDE_WIN = (-1.38, DOOR_REAR - 0.07)      # one opening: two sliding panes and a fixed pane
 DOOR_WIN = (DOOR_REAR + 0.06, Y_SCREEN - 0.08)
+
+def groove_ring(name, s, y0, y1, z0, z1, r, w=0.004):
+    """A w-wide groove round a rounded rectangle on the tub side (s = -1 left, +1 right), 6 mm deep."""
+    xa, xb = (HW_TUB - 0.006, HW_TUB + 0.05) if s > 0 else (-HW_TUB - 0.05, -HW_TUB + 0.006)
+    outer = rbox_x(name, xa, xb, y0 - w / 2, y1 + w / 2, z0 - w / 2, z1 + w / 2, r=r + w / 2)
+    inner = rbox_x(name + '_i', xa - 0.01, xb + 0.01, y0 + w / 2, y1 - w / 2, z0 + w / 2, z1 - w / 2, r=r - w / 2)
+    boolean(outer, inner); kill(inner)
+    return outer
 
 def window_cutters(g=0.0, seg=5):
     W = []

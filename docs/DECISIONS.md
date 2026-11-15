@@ -1735,3 +1735,15 @@ The owner, after v1.85: fix it until it looks like the real thing. This version 
 Each fix was photographed again and read.
 
 **Still open on this car.** The wheels show a white disc on the inside as well as the outside, because all four share one mirrored shape that is not turned for the left side (item 15). The doors are shut lines on a flat side, with no rounded lower corners.
+
+## v1.87: the FJ40's wheels and doors
+
+The owner: finish the FJ. This closes the FJ40's list in `docs/AUDIT-2026-11.md`.
+
+- **Wheels (the last of item 15).** All four wheels share one shape, the outer half of the model's wheel mirrored, so the inside showed a second white disc with its own hub cap. The inner half is now dark, like the back of a wheel and its drum, and the tyre is unchanged. Because the wheel now has an outer and an inner face, the left wheels are turned half a turn about the vertical so their outer face points out (`handedWheels` on the vehicle's look, read in `src/render/vehicleModel.ts`). A turned wheel's own z axis points the other way, so the flat-tyre squash takes its axle angle with the other sign for those wheels. No other vehicle sets `handedWheels`, so their wheels are placed exactly as before. Checked in the studio with a new dev helper, `studio.flat(wheel, angle, drop)`: with the wheel turned one radian about its axle, the flat is at the bottom on the left front wheel and on the right. The roof spare lies white face up; the door spare is the model's own.
+- **Doors.** Each front door was two straight grooves from the belt down to the sill. It is now one grooved outline with rounded lower corners (70 mm) whose foot is 45 mm above the sill, as in `rear-34-left.jpg`. Hinges, handles and the step are where they were.
+- **Fuel filler flap.** An outline on the right rear quarter between the door and the wheel arch, as on the right-hand-drive car in `front-34-hardtop.jpg`.
+
+Compared with `rear-34-left.jpg` and `front-34-hardtop.jpg` beside the studio pictures. No part of the kit was added or moved.
+
+**What still differs from the photographs,** none of it on the audit list: the grille is chrome bars with a badge, where cars from 1975 have a mesh panel; the barn doors have no pressed panels; the front bumper and rear bumperettes are replaced by the game's bars.

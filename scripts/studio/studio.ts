@@ -141,6 +141,7 @@ declare global {
       view: typeof view;
       articulate(height: number, steer?: number): void;
       cockpit(): void;
+      flat(wheel: number, angle?: number, drop?: number): void;
       /** The vehicle's box, its hubs and the ground's height, for framing a camera on it. */
       bounds(): { min: number[]; max: number[]; hubs: number[][]; ground: number };
       ready: boolean;
@@ -174,6 +175,19 @@ window.studio = {
       block.position.set(hub.x, ground.position.y + amount / 2, hub.z);
       articulationBlocks.add(block);
     }
+  },
+  /**
+   * Wheel `wheel` as a flat tyre, turned `angle` about its axle: the flat must be at the bottom
+   * whichever way the wheel is turned or mounted (left wheels with an inner face are turned round).
+   */
+  flat(wheel: number, angle = 1, drop = 0.07) {
+    const w = model.wheels[wheel];
+    w.spin.rotation.x = angle;
+    const squash = model as unknown as {
+      squashWheel(i: number, angle: number, drop: number, flat: number): THREE.BufferGeometry;
+    };
+    w.mesh.geometry = squash.squashWheel(wheel, w.turned ? -angle : angle, drop, 1);
+    renderer.render(scene, camera);
   },
   /** From the driver's seat, as the game's cockpit view sees it. */
   cockpit() {
