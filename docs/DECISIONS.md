@@ -1754,3 +1754,13 @@ Compared with `rear-34-left.jpg` and `front-34-hardtop.jpg` beside the studio pi
 - Not changed, all drawn by the game's suspension on every leaf-sprung vehicle: the rear axle's centre is a ball with a steel ring on its rear face (the differential's cover), which reads as hollow from behind; the rods standing ahead of and behind each wheel are the spring hangers, which meet the chassis rail at their tops; the pair of rods over each axle end is the shock's tower.
 
 **What still differs from the photographs,** none of it on the audit list: the grille is chrome bars with a badge, where cars from 1975 have a mesh panel; the barn doors have no pressed panels; the front bumper and rear bumperettes are replaced by the game's bars.
+
+## v1.88: the FJ40's grille, back doors and seams
+
+The owner asked for the three small differences left after v1.87. All three are in the model; no code or kit changed.
+
+- **Grille.** A mesh panel with TOYOTA across it in chrome letters 58 mm tall, as the cars from 1975 have (`side.jpg`, `rear-34-hardtop.jpg`), in place of four chrome bars and a small badge plate. The mesh is grey wires 14 mm apart, 12 mm in front of the black recess.
+- **Back doors.** Each barn door has the outline of its pressed panel in the lower half, inboard of the tail lamps and under the handle (`front-34-hardtop.jpg`). The right one shows either side of the jerry can; the left one below the spare.
+- **Seams.** The line along each side at door-handle height (the seam between the tub and the hardtop) did not show from eye level: its walls face up and down and its floor was body colour. Every shut line (that seam, the door outlines, the filler flap, the barn-door seams and panels) now has black faces inside the groove, which is how a real shut line reads. The side seam is 4 mm wide and 6 mm deep, like the door lines; the 12 mm groove of v1.87 lost its walls to the body's bevel.
+
+Compared with `side.jpg`, `rear-34-hardtop.jpg`, `front-34-hardtop.jpg` and `rear-34-left.jpg`.

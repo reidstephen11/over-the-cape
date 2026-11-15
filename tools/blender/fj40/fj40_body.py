@@ -219,6 +219,7 @@ def materials():
         white=mat('trim_white', (0.78, 0.78, 0.74), rough=0.35),
         chrome=mat('chrome', (0.92, 0.92, 0.92), rough=0.12, metal=1.0),
         bumper=mat('metal_bumper', (0.55, 0.56, 0.57), rough=0.32, metal=0.85),
+        mesh=mat('grille_mesh', (0.17, 0.17, 0.17), rough=0.5, metal=0.6),
         lens=mat('lamp_lens', (0.86, 0.87, 0.86), rough=0.14, metal=0.35, coat=1.0),
         tyre=mat('tyre_rubber', (0.025, 0.025, 0.025), rough=0.85),
         wheel=mat('wheel_white', (0.82, 0.81, 0.76), rough=0.35, coat=0.3),
@@ -323,7 +324,7 @@ def build_front(M):
     # The door's front shut line runs down the cowl's rear edge, where the cowl covers the tub:
     # cut it here as well, or only a hairline shows (step 8).
     for s in (-1, 1):
-        to_coll(groove_ring('door_c', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07), cut)
+        to_coll(groove_ring('door_c', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07, material=M['black']), cut)
     boolean(cowl, cut)
     for o in list(cut.objects): kill(o)
     bpy.data.collections.remove(cut)
@@ -371,16 +372,27 @@ def build_sides(M):
     for s in (-1, 1):
         # Step 8: the door is one outline with rounded lower corners, its foot 45 mm above the
         # sill (rear-34-left.jpg), instead of two straight grooves down to the sill.
-        to_coll(groove_ring('door', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07), cut)
+        to_coll(groove_ring('door', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07, material=M['black']), cut)
         # swage line along the tub at door-handle height
-        # the seam between the tub and the hardtop: 12 mm wide, 6 mm deep (it was 7 by 4 and broke up)
+        # the seam between the tub and the hardtop. Step 9: 4 mm wide and 6 mm deep, like the door
+        # lines. Wider grooves lose their walls to the 8 mm bevel and shade away to nothing.
         to_coll(box('swage', HW_TUB - 0.006 if s > 0 else -HW_TUB - 0.05, HW_TUB + 0.05 if s > 0 else -HW_TUB + 0.006,
-                    Y_TAIL + 0.1, Y_SCREEN + 0.02, 1.098, 1.110), cut)
+                    Y_TAIL + 0.1, Y_SCREEN + 0.02, 1.100, 1.104, M['black']), cut)
     # Fuel filler flap on the right rear quarter, between the door and the arch (front-34-hardtop.jpg).
-    to_coll(groove_ring('filler', 1, DOOR_REAR - 0.135, DOOR_REAR - 0.035, 0.975, 1.075, 0.015, w=0.003), cut)
+    to_coll(groove_ring('filler', 1, DOOR_REAR - 0.135, DOOR_REAR - 0.035, 0.975, 1.075, 0.015, w=0.003, material=M['black']), cut)
     for xx in (0.0, -0.73, 0.73):
-        to_coll(box('rseam', xx - 0.002, xx + 0.002, Y_TAIL - 0.05, Y_TAIL + 0.006, SILL + 0.06, BELT + 0.1), cut)
-    to_coll(box('rseam_b', -0.73, 0.73, Y_TAIL - 0.05, Y_TAIL + 0.006, SILL + 0.058, SILL + 0.062), cut)
+        to_coll(box('rseam', xx - 0.002, xx + 0.002, Y_TAIL - 0.05, Y_TAIL + 0.006, SILL + 0.06, BELT + 0.1, M['black']), cut)
+    to_coll(box('rseam_b', -0.73, 0.73, Y_TAIL - 0.05, Y_TAIL + 0.006, SILL + 0.058, SILL + 0.062, M['black']), cut)
+    # Step 9: the pressed panel in the lower half of each barn door (front-34-hardtop.jpg), inboard
+    # of the tail lamps and under the handle.
+    for s in (-1, 1):
+        xa, xb = sorted((s * 0.09, s * 0.54))
+        w = 0.004
+        outer = rbox_y('panel', xa - w / 2, xb + w / 2, Y_TAIL - 0.05, Y_TAIL + 0.006, 0.70 - w / 2, 1.06 + w / 2, r=0.04 + w / 2)
+        inner = rbox_y('panel_i', xa + w / 2, xb - w / 2, Y_TAIL - 0.06, Y_TAIL + 0.02, 0.70 + w / 2, 1.06 - w / 2, r=0.04 - w / 2)
+        boolean(outer, inner); kill(inner)
+        outer.data.materials.append(M['black'])
+        to_coll(outer, cut)
     boolean(tub, cut)
     for o in list(cut.objects): kill(o)
     bpy.data.collections.remove(cut)
@@ -463,12 +475,15 @@ def rbox_y(name, x0, x1, y0, y1, z0, z1, r=0.05, seg=5):
 SIDE_WIN = (-1.38, DOOR_REAR - 0.07)      # one opening: two sliding panes and a fixed pane
 DOOR_WIN = (DOOR_REAR + 0.06, Y_SCREEN - 0.08)
 
-def groove_ring(name, s, y0, y1, z0, z1, r, w=0.004):
-    """A w-wide groove round a rounded rectangle on the tub side (s = -1 left, +1 right), 6 mm deep."""
+def groove_ring(name, s, y0, y1, z0, z1, r, w=0.004, material=None):
+    """A w-wide groove round a rounded rectangle on the tub side (s = -1 left, +1 right), 6 mm deep.
+    With a material, the groove's own faces take it (the booleans transfer materials): a dark
+    inside is what makes a shut line show from straight on."""
     xa, xb = (HW_TUB - 0.006, HW_TUB + 0.05) if s > 0 else (-HW_TUB - 0.05, -HW_TUB + 0.006)
     outer = rbox_x(name, xa, xb, y0 - w / 2, y1 + w / 2, z0 - w / 2, z1 + w / 2, r=r + w / 2)
     inner = rbox_x(name + '_i', xa - 0.01, xb + 0.01, y0 + w / 2, y1 - w / 2, z0 + w / 2, z1 - w / 2, r=r - w / 2)
     boolean(outer, inner); kill(inner)
+    if material: outer.data.materials.append(material)
     return outer
 
 def window_cutters(g=0.0, seg=5):
@@ -497,8 +512,8 @@ def build_glass(M):
 
 HL_X, HL_Z, HL_R = 0.335, 0.975, 0.092
 
-def text_mesh(name, body, size, x, y, z, material):
-    cu = bpy.data.curves.new(name, 'FONT'); cu.body = body; cu.size = size
+def text_mesh(name, body, size, x, y, z, material, spacing=1.0):
+    cu = bpy.data.curves.new(name, 'FONT'); cu.body = body; cu.size = size; cu.space_character = spacing
     cu.align_x = 'CENTER'; cu.align_y = 'CENTER'; cu.extrude = 0.0015; cu.resolution_u = 3
     ob = bpy.data.objects.new(name + '_c', cu); bpy.context.scene.collection.objects.link(ob)
     ob.location = (x, y, h(z)); ob.rotation_euler = (math.radians(90), 0, math.radians(180))
@@ -526,20 +541,21 @@ def build_front_details(M):
     bpy.data.collections.remove(cut)
     finish(sur, bevel=0.005, seg=2); out.append(sur)
 
-    # Horizontal grille bars (badge plate sits across the middle).
-    bars = []
-    for z in (0.912, 0.934, 1.016, 1.038):
-        b = box('bar', -0.203, 0.203, yf - 0.03, yf + 0.004, z - 0.005, z + 0.005, M['chrome'])
-        finish(b, bevel=0.002, seg=1); bars.append(b)
-    for x in (-0.205 + 0.137, 0.205 - 0.137):
-        b = box('bar', x - 0.004, x + 0.004, yf - 0.03, yf - 0.002, 0.905, 1.045, M['chrome']); bars.append(b)
-    out.append(join('trim_grille_bars', bars))
-
-    # Badge: black plate with raised TOYOTA lettering (geometry, drawn here, not copied artwork).
-    plate = rbox_y('badge_plate', -0.15, 0.15, yf - 0.012, yf + 0.006, 0.952, 0.998, r=0.008, seg=2)
-    plate.data.materials.append(M['black']); finish(plate, bevel=0.002, seg=1)
-    txt = text_mesh('badge_text', 'TOYOTA', 0.036, 0.0, yf + 0.0075, 0.975, M['chrome'])
-    out.append(join('trim_badge', [plate, txt]))
+    # Step 9: a mesh grille panel with TOYOTA across it, as the cars from 1975 have (side.jpg,
+    # rear-34-hardtop.jpg), in place of four chrome bars and a small badge plate. The mesh is a
+    # grid of thin grey wires 14 mm apart, standing 12 mm in front of the black recess back.
+    mesh = []
+    nx = 28
+    for k in range(1, nx):
+        x = -0.203 + 0.406 * k / nx
+        mesh.append(box('wire', x - 0.0018, x + 0.0018, yf - 0.02, yf - 0.016, 0.907, 1.043, M['mesh']))
+    nz = 10
+    for k in range(1, nz):
+        z = 0.907 + 0.136 * k / nz
+        mesh.append(box('wire', -0.203, 0.203, yf - 0.021, yf - 0.017, z - 0.0018, z + 0.0018, M['mesh']))
+    out.append(join('trim_grille_mesh', mesh))
+    txt = text_mesh('badge_text', 'TOYOTA', 0.058, 0.0, yf - 0.0135, 0.975, M['chrome'], spacing=1.45)
+    txt.name = 'trim_badge'; out.append(txt)
 
     # Headlamps: chrome bezel ring, domed lens, chrome reflector behind.
     for s, sn in ((-1, 'l'), (1, 'r')):
