@@ -184,3 +184,20 @@ Checked 27 October 2026. The map goes west to east from Telegraph Road towards P
 - **Crossings:** [Hema Maps: 4WD Guide to the Frenchmans Track](https://hemamaps.com/blogs/location-guides/frenchmans-track-4wd-guide) describes the testing water crossings, sand tracks and seasonal mud. [Outbackjoe's first-hand crossing account](https://outbackjoe.com/2013/09/25/frenchmans-track-cape-york/) also describes the harder western side of the Pascoe valley. The game does not use guidebook recommendations as a claim that towing this route is advisable in real life.
 - **Game choices:** the 30 November 1986 diary entry, delivery, diesel pump, camps and deadline are fiction. The bars, holes, water depths, current strengths and shower timeline are gameplay choices. The v0.51 bog fork, rutted jump-up, sideling, gullies and switchbacks are authored driving obstacles, not named historical sites or a surveyed reconstruction. No claim is made about what these rivers were doing on that historical date.
 - **Left out:** who first built or named Frenchmans Track; accounts give uncertain explanations. No real person is cast as the delivery recipient.
+
+## Episode 2: the Telegraph Track (v1.96)
+
+Checked on 15 November 2026 by the session that wrote the design (`docs/PLAN-telegraph.md`); the game states nothing else about the line or the track.
+
+### The Telegraph Line (Bramwell Junction note, wrap-up)
+
+- **Claim:** John Bradford led the survey expedition in 1883. The line opened in 1887, linking Laura with Thursday Island. Its poles were galvanised cast iron, made to carry a single wire. It closed in 1987, replaced by microwave transmission, and the wire and then the poles were taken down, many reused in stockyards, gates and sheds.
+- **Source:** [Wikipedia: Cape York Telegraph Line](https://en.wikipedia.org/wiki/Cape_York_Telegraph_Line).
+- **Game choice:** the player drives today, retracing a 1986 trip, so the note calls the poles beside the track the few left standing. Where they stand, and how many, is made up. This settles the closing date SPEC.md §2a left open (1987).
+
+### The crossings (notes)
+
+- **Claim:** Palm Creek is the first major obstacle, with a steep drop in and an exit that is difficult when the clay has softened. Ducie Creek is moderately deep, and drivers hug the left bank before turning back to the exit. The Dulhunty has shallow falls and riverside camping, and an old exit that has become a slide of pale grey clay. Bertie Creek is a run up one side and then a dogleg out, to avoid deep holes in the rock. A right-hand turn-off bypasses Gunshot. The country near Gunshot is pale clay and white sand with washouts.
+- **Source:** [Hema Maps: Old Telegraph Track South](https://hemamaps.com/blogs/location-guides/old-telegraph-track-south).
+- **Game choices:** every height, angle, depth, current and hole is a gameplay choice, as are the sand stretch's whoops and washout, the Dulhunty's ledges and shelf, Bertie's track running up the bed itself, the Chute's shape and the camps. The game's route is about 2 km of a much longer track.
+- **Left out:** the height of Gunshot's drop (one trip report says about 3 m into a sandy bed; not firm enough), and the custom of leaving number plates and parts on a tree there (not sourced).

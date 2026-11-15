@@ -1,6 +1,12 @@
-# Roadmap: make the CREB the whole game
+# Roadmap
 
-The owner finds Episodes 2–4 boring and easy and wants the game to focus on Episode 1, the CREB Track. v0.64 added a scored finish (medal, score out of 1000, best score and time). Build the rest one update at a time, in this order. Wildlife was considered and turned down.
+# The Telegraph Track (Episode 2)
+
+The owner asked for a second level, shorter and harder than the CREB. It is built in three stages from `docs/PLAN-telegraph.md`: stage 1 (the level, playable end to end) in v1.96; stage 2 (Gunshot's Staircase and Slot, tuning, the engine limits the plan lists, traffic and a stranded driver where they make it harder) next; stage 3 (polish from the owner's play test, and the Dulhunty gauging station side trip) after that.
+
+# Make the CREB the heart of the game
+
+The owner found Episodes 2–4 boring and easy and wanted the game to focus on Episode 1, the CREB Track. v0.64 added a scored finish (medal, score out of 1000, best score and time). Build the rest one update at a time, in this order. Wildlife was considered and turned down.
 
 1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. The trailer code stays: the Army supply run (v1.06, a Start option on the welcome screen) tows one and unlocks the Perentie, and test mode can hitch one.
 2. ~~**Section times.**~~ Done in v0.65.
@@ -36,11 +42,11 @@ Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.59). Measure ea
 # Other follow-up work
 
 - **Vehicle audit (November 2026).** `docs/AUDIT-2026-11.md` lists the faults found in the FJ40 and the Perentie by comparing 24 large pictures of each (`scripts/studio-audit.ts`) with their reference photographs. v1.85 to v1.87 closed the FJ40's list; the Perentie's list is being done in three stages (v1.90: what holds the rack, cans, aerial and spare, and the rear panels; v1.91: the front; v1.92: wheel arches and roll bar; v1.93: the cab's width, windscreen and wing intake; only its wheels are still open). Fix those, then review the other thirteen vehicles the same way, one or two at a time (a review is about 260,000 tokens), starting with the ones the owner drives. v1.84 fixed the track and menu faults from the same audit.
-- **Menus, still open after v1.84:** the journey page lists one episode to choose from and its vehicle chooser is a wrapping grid with locked vehicles mixed in; Pause → Vehicle is a long list of paragraphs; Pause → Map → ○ closes the map and the pause menu together. Grass tufts, shrubs and rocks beyond the shadow map take no shade from the trees above them (the ground does since v1.84).
+- **Menus, still open after v1.84:** the journey page's vehicle chooser is a wrapping grid with locked vehicles mixed in; Pause → Vehicle is a long list of paragraphs; Pause → Map → ○ closes the map and the pause menu together. Grass tufts, shrubs and rocks beyond the shadow map take no shade from the trees above them (the ground does since v1.84).
 
 - **More side quests and interesting discoveries off the beaten track on the CREB.** First set in v1.66: the lost-logbook delivery, the last-pole survey with a new clearing beyond the linesman’s hut, and a three-stop falls/lookout scrapbook. Pause → Trip journal tracks directions, observations and camp-saved progress. Still open: more optional recoveries, hidden camps and abandoned equipment, with distinct tasks and worthwhile rewards.
 
-- Episodes 5–7: Telegraph Track South, Telegraph Track North and The Tip (SPEC.md §2).
+- Episodes 6–7: Telegraph Track North and The Tip (SPEC.md §2). Telegraph Track South is being built as the game's Episode 2 (above).
 - A later delivery mission towing another vehicle.
 - The 80 Series stays a Sooty MkII-inspired draft, and **correcting it against the real car is blocked on licensing, not effort**: no photograph of Sooty exists under a licence that allows redistribution here (searched again November 2026 — it appears only in 4WD 24/7 videos, magazine features and retailer pages). v1.41 took what could be taken without pictures: MY4X4's written specification is now in `SOURCES.md`, with the three places the game's car disagrees with it (both diff locks, the snorkel, the rear bar and swing-away spare). The factory body underneath was re-checked against the black VX photographs at the calibrated side camera and matches within the deviations already recorded. To go further the owner would have to supply photographs he has the right to commit, or decide to drop the Sooty framing and call it a built-up 80.
 - The Hilux SR5 Xtra Cab (v1.78): replace its eleven reference photographs with the Commons originals (the committed files are the scaled copies Wikimedia would serve; `reference/vehicles/hilux-sr5-xtracab-1985/manifest.json` has the URLs), find a square-on side view of an Xtracab, and check the fit-out against film stills (IMCDb refused the build container). `SOURCES.md` lists what is not confirmed: 31 or 33 inch tyres, lift or none, the roll bar's hoops, the rear bumper's shape, the hubs.

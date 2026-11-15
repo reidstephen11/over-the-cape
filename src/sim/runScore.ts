@@ -16,7 +16,7 @@ const avg = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0) / xs.length
 /**
  * Scores a finished run out of 1000: time to spare before the deadline (400), the car's
  * condition (400: engine, suspension and tyres) and what's left on board of what was
- * packed (200). Without a deadline,
+ * packed (200), less any fixed penalties (an episode's bypass). Without a deadline,
  * time counts against a target of `targetMinutes` of driving.
  */
 export function scoreRun(input: {
@@ -27,6 +27,8 @@ export function scoreRun(input: {
   /** Hours left before the deadline when you arrived (null: no deadline or untimed). */
   hoursSpare: number | null;
   targetMinutes: number;
+  /** Fixed deductions, such as taking an episode's bypass (each `points` is taken off). */
+  penalties?: readonly { label: string; points: number }[];
 }): RunScore {
   const c = input.condition;
   const timeShare =
@@ -44,7 +46,11 @@ export function scoreRun(input: {
     { label: 'Time', points: Math.round(400 * timeShare) },
     { label: 'Car', points: Math.round(400 * carShare) },
     { label: 'Fuel and kit', points: Math.round(100 * fuelShare + 100 * kitShare) },
+    ...(input.penalties ?? []).map((p) => ({ label: p.label, points: -p.points })),
   ];
-  const points = parts.reduce((a, p) => a + p.points, 0);
+  const points = Math.max(
+    0,
+    parts.reduce((a, p) => a + p.points, 0),
+  );
   return { points, medal: points >= 800 ? 'gold' : points >= 600 ? 'silver' : 'bronze', parts };
 }
