@@ -474,7 +474,8 @@ function fj40Snorkel(b: VehicleBuilder): void {
 
 /** Two round lamps on stalks off the bull bar's hoop, lenses facing forward. */
 function fj40Spots(b: VehicleBuilder): void {
-  const lens = new THREE.Color('#F3E2B8');
+  // Clear glass: a cream lens was the body's colour and read as an empty ring.
+  const lens = new THREE.Color('#E6ECEE');
   for (const lamp of fj40DrivingLamps) {
     // From the centre of the bar's side rail (y 0.69, z -1.794), so no end shows under it.
     b.rod(v(lamp.x, 0.69, -1.794), v(lamp.x, lamp.y, lamp.z + 0.02), 0.014, bar, M.Metal, Z.Front);
@@ -502,18 +503,22 @@ function fj40Flap(b: VehicleBuilder, x: number, z: number): void {
 
 /**
  * Jerry can on the right barn door, its broad side flat against the door skin (it stood
- * end-on until v1.85 and was the rearmost point of the car). It stands in a tray bolted to
- * the door by two flat bars behind the can, with a strap round it; clear of the spare, the
- * tail lamp below and the door handle beside it.
+ * end-on until v1.85 and was the rearmost point of the car). It stands in a tray that two flat
+ * bars behind the can bolt to the door, with a stay under each side and a strap round it;
+ * clear of the door's handle, its outer edge, its window above and the spare.
  */
 function fj40RearCan(b: VehicleBuilder): void {
   const door = 1.89;
-  // The door spare reaches x 0.237; the strap's near side is at 0.26.
-  const x = 0.44,
-    y = 0.59,
+  // The right door runs from the centre seam to x 0.52; its handle ends at x 0.15.
+  const x = 0.35,
+    y = 0.54,
     z = door + 0.03 + 0.08;
-  b.block(x, y - 0.25, door + 0.1, 0.36, 0.03, 0.2, bar, M.Metal, Z.Rear, 0.004);
-  for (const dx of [-0.12, 0.12]) b.block(x + dx, y, door + 0.015, 0.035, 0.5, 0.03, bar, M.Metal, Z.Rear);
+  b.block(x, y - 0.25, door + 0.1, 0.34, 0.03, 0.2, bar, M.Metal, Z.Rear, 0.004);
+  for (const dx of [-0.12, 0.12]) {
+    b.block(x + dx, y, door + 0.015, 0.035, 0.5, 0.03, bar, M.Metal, Z.Rear);
+    // A stay under the tray, from its outer edge back to the door.
+    b.rod(v(x + dx, y - 0.265, door + 0.19), v(x + dx, y - 0.4, door + 0.012), 0.009, bar, M.Metal, Z.Rear);
+  }
   b.push()
     .translate(x, y, z)
     .rotate(0, -Math.PI / 2, 0);
@@ -525,13 +530,29 @@ function fj40RearCan(b: VehicleBuilder): void {
     b.block(x + dx, y + 0.03, door + 0.1, 0.01, 0.03, 0.2, black, M.Rubber, Z.Rear);
 }
 
+/**
+ * What holds the door spare: a swing-away carrier, as rear-34-left.jpg has. A bracket on the
+ * fixed left corner panel carries a tube that runs across behind the wheel, between the door
+ * skin and the tyre, to a latch on the right door; a link drops from the tube to the hub
+ * boss the wheel bolts to. So the spare may stand across the seam between the doors: it
+ * swings clear before they open. Heights are at the body's stock height.
+ */
+function fj40SpareCarrier(b: VehicleBuilder): void {
+  const y = 0.8,
+    z = 1.912;
+  b.block(-0.745, y, 1.905, 0.07, 0.14, 0.03, bar, M.Metal, Z.Rear, 0.004);
+  b.rod(v(-0.745, y, z), v(0.075, y, z), 0.018, bar, M.Metal, Z.Rear);
+  b.block(-0.355, y - 0.03, z, 0.06, 0.08, 0.03, bar, M.Metal, Z.Rear, 0.004);
+  b.block(0.075, y, 1.905, 0.045, 0.07, 0.03, bar, M.Metal, Z.Rear, 0.004);
+}
+
 /** Rear bar under the lamps, with the plate on the right (the spare takes the left) and a tow ball. */
 function fj40RearBar(b: VehicleBuilder): void {
   // Under the tail lamps (their housings start at y 0.19) and clear of the door spare above.
   const y = 0.095;
   b.block(0, y, 2.0, 1.55, 0.12, 0.1, bar, M.Metal, Z.Rear, 0.012);
   for (const x of [-0.5, 0.5]) b.block(x, y, 1.92, 0.06, 0.08, 0.12, bar, M.Metal, Z.Rear);
-  numberPlate(b, 0.48, y + 0.012, 2.06, 1, 'FJ-40', black);
+  numberPlate(b, 0.48, y + 0.022, 2.06, 1, 'FJ-40', black);
   b.slot = M.Metal;
   b.tag = Z.Rear;
   b.push().translate(0, y + 0.07, 2.02);
@@ -562,6 +583,7 @@ export function addFj40GlbEquipment(
     fj40Flap(b, x, 1.6);
   }
   fj40RearCan(b);
+  fj40SpareCarrier(b);
   // Whip aerial on the flat top of the left wing (0.99 m above the ground at stock height,
   // x 0.50 to 0.67). Until v1.85 its base hung 0.3 m above the wing, beside the bonnet.
   b.block(-0.61, 0.49, -1.02, 0.05, 0.03, 0.05, black, M.Rubber, Z.Front);

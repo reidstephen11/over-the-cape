@@ -246,3 +246,15 @@ file as headless Blender: the script rebuilt the committed GLB byte for byte bef
   place of two straight grooves down to the sill (`rear-34-left.jpg`).
 - Fuel filler flap outline on the right rear quarter, between the door and the arch (`front-34-hardtop.jpg`).
 - GLB: 57,310 tris.
+
+## Step 9 — mesh grille, barn-door panels, dark shut lines (v1.88, 15 Nov 2026)
+
+- **Grille:** `trim_grille_mesh` (grey wires 14 mm apart, material `grille_mesh`) replaces `trim_grille_bars`; `trim_badge` is
+  now TOYOTA in chrome letters 58 mm tall across the mesh, with no plate (`side.jpg`, `rear-34-hardtop.jpg`).
+- **Barn doors:** a pressed-panel outline in the lower half of each door (`front-34-hardtop.jpg`).
+- **Shut lines:** the door outlines, the tub-to-hardtop seam, the filler flap, the barn-door seams and panels are cut with
+  a black cutter, so the grooves' own faces are black (`material_mode = TRANSFER`). The side seam is 4 mm wide, 6 mm deep:
+  a wider groove loses its walls to the tub's 8 mm bevel and shades away.
+- **Barn doors' edges** (`REAR_DOOR`) at 0.52 m from the centre (were 0.73 m), inboard of the tail lamps and the corner
+  glass; hinges and seams follow; the rear handle is 50 mm shorter. **Front panel** as wide as the bonnet (±0.53 m).
+- GLB: 59,530 tris.

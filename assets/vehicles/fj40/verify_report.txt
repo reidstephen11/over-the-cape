@@ -1,7 +1,7 @@
-  body_front               tris=  6874 mats=['paint']
-  body_rear                tris=   888 mats=['paint']
+  body_front               tris=  6874 mats=['paint', 'trim_black']
+  body_rear                tris=  1593 mats=['paint', 'trim_black']
   body_roof                tris=   572 mats=['paint_roof']
-  body_sides               tris= 10298 mats=['paint', 'interior']
+  body_sides               tris= 11065 mats=['paint', 'interior', 'trim_black']
   chassis_axle_f           tris=   376 mats=['chassis_black']
   chassis_axle_r           tris=   376 mats=['chassis_black']
   chassis_frame            tris=  1332 mats=['chassis_black']
@@ -32,7 +32,7 @@
   lamp_tail_l              tris=   108 mats=['lamp_red']
   lamp_tail_r              tris=   108 mats=['lamp_red']
   spare                    tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
-  trim_badge               tris=   432 mats=['trim_black', 'chrome']
+  trim_badge               tris=   324 mats=['chrome']
   trim_bezel_head_l        tris=   960 mats=['chrome']
   trim_bezel_head_r        tris=   960 mats=['chrome']
   trim_bonnet_vent         tris=    44 mats=['trim_black']
@@ -42,7 +42,7 @@
   trim_bumper_rear_r       tris=   192 mats=['metal_bumper']
   trim_drip_rail           tris=    88 mats=['paint_roof']
   trim_grille_back         tris=    12 mats=['trim_black']
-  trim_grille_bars         tris=   200 mats=['chrome']
+  trim_grille_mesh         tris=   432 mats=['grille_mesh']
   trim_grille_surround     tris=  1484 mats=['trim_white']
   trim_handle_door_l       tris=    88 mats=['chrome']
   trim_handle_door_r       tris=    88 mats=['chrome']
@@ -65,8 +65,8 @@
   wheel_fr                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
   wheel_rl                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
   wheel_rr                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
-TOTAL TRIS 57934
+TOTAL TRIS 59530
 BBOX (Blender Z-up after import) min (-1.015, -2.145, -0.5) max (1.015, 1.86, 1.45)
 SIZE x(width)=2.030 y(length)=4.005 z(height)=1.950
-MATERIALS ['chassis_black', 'chrome', 'glass', 'interior', 'interior_vinyl', 'lamp_amber', 'lamp_lens', 'lamp_red', 'metal_bumper', 'paint', 'paint_roof', 'trim_black', 'trim_white', 'tyre_rubber', 'wheel_white']
+MATERIALS ['chassis_black', 'chrome', 'glass', 'grille_mesh', 'interior', 'interior_vinyl', 'lamp_amber', 'lamp_lens', 'lamp_red', 'metal_bumper', 'paint', 'paint_roof', 'trim_black', 'trim_white', 'tyre_rubber', 'wheel_white']
 IMAGES/TEXTURES []
