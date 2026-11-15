@@ -375,7 +375,16 @@ function rearDoorGear(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
  * boards. A spine in the slot between the boards carries it from the deck, which is what
  * shows once the boards are put down on a crossing. The door spare is unchanged.
  */
-function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry, lift = 0): void {
+function roofSpare(
+  b: VehicleBuilder,
+  tuning: VehicleTuning,
+  wheel: THREE.BufferGeometry,
+  /**
+   * Where the clamp bar bears on the wheel: how far above the hub its underside is, and how
+   * long it is. Left out, the bar sits over the code wheel's hub cap.
+   */
+  clamp?: { above: number; length: number },
+): void {
   const width = tuning.drawnWheels?.width ?? tuning.wheelWidth;
   const drop = rackDrop();
   const x = -0.24;
@@ -386,8 +395,8 @@ function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
   const plateBottom = plankTop + 0.006;
   const base = plateBottom + plateH;
   // The tyre's sidewall rests on the plate, 4 mm clear; the hub caps sink into its middle.
-  const hubY = base + spareSidewall(wheel) + 0.004 + lift;
-  const top = hubY + width / 2 + 0.044;
+  const hubY = base + spareSidewall(wheel) + 0.004;
+  const top = clamp ? hubY + clamp.above : hubY + width / 2 + 0.044;
   // The slot between the boards is only 60 mm, centred at x -0.28.
   const spineTop = plateBottom + 0.012;
   const spineH = spineTop - deck;
@@ -396,7 +405,7 @@ function roofSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buffer
   b.tag = Z.Roof;
   mountSpare(b, wheel, { x, y: hubY, z }, 'up', black);
   b.rod(v(x, base, z), v(x, top + 0.04, z), 0.014, steel, M.Metal, Z.Roof);
-  b.block(x, top + 0.01, z, 0.24, 0.02, 0.06, bar, M.Metal, Z.Roof, 0.006);
+  b.block(x, top + 0.01, z, clamp?.length ?? 0.24, 0.02, 0.06, bar, M.Metal, Z.Roof, 0.006);
   b.rod(v(x - 0.06, top + 0.04, z), v(x + 0.06, top + 0.04, z), 0.01, steel, M.Metal, Z.Roof);
 }
 
@@ -444,7 +453,14 @@ function fj40Snorkel(b: VehicleBuilder): void {
   b.push()
     .translate(x, 1.395, -0.375)
     .rotate(Math.PI / 2, 0, 0);
-  b.geometry(new THREE.CylinderGeometry(0.058, 0.046, 0.17, 12), rubber);
+  b.geometry(new THREE.CylinderGeometry(0.046, 0.058, 0.17, 12), rubber);
+  b.pop();
+  // The head's mouth: a grey mesh disc set in its front face.
+  b.slot = M.Metal;
+  b.push()
+    .translate(x, 1.395, -0.462)
+    .rotate(Math.PI / 2, 0, 0);
+  b.geometry(new THREE.CylinderGeometry(0.05, 0.05, 0.006, 12), steel.clone().multiplyScalar(0.55));
   b.pop();
   // Each clamp is a band round the tube and a strap back to the pillar's front corner.
   for (const y of [0.95, 1.24]) {
@@ -458,7 +474,8 @@ function fj40Snorkel(b: VehicleBuilder): void {
 function fj40Spots(b: VehicleBuilder): void {
   const lens = new THREE.Color('#F3E2B8');
   for (const lamp of fj40DrivingLamps) {
-    b.rod(v(lamp.x, 0.66, -1.8), v(lamp.x, lamp.y, lamp.z + 0.02), 0.014, bar, M.Metal, Z.Front);
+    // From the centre of the bar's side rail (y 0.69, z -1.794), so no end shows under it.
+    b.rod(v(lamp.x, 0.69, -1.794), v(lamp.x, lamp.y, lamp.z + 0.02), 0.014, bar, M.Metal, Z.Front);
     b.slot = M.Metal;
     b.tag = Z.Front;
     b.push()
@@ -489,10 +506,11 @@ function fj40Flap(b: VehicleBuilder, x: number, z: number): void {
  */
 function fj40RearCan(b: VehicleBuilder): void {
   const door = 1.89;
-  const x = 0.41,
-    y = 0.57,
+  // The door spare reaches x 0.237; the strap's near side is at 0.26.
+  const x = 0.44,
+    y = 0.59,
     z = door + 0.03 + 0.08;
-  b.block(x, y - 0.25, door + 0.1, 0.38, 0.03, 0.2, bar, M.Metal, Z.Rear, 0.004);
+  b.block(x, y - 0.25, door + 0.1, 0.36, 0.03, 0.2, bar, M.Metal, Z.Rear, 0.004);
   for (const dx of [-0.12, 0.12]) b.block(x + dx, y, door + 0.015, 0.035, 0.5, 0.03, bar, M.Metal, Z.Rear);
   b.push()
     .translate(x, y, z)
@@ -500,19 +518,22 @@ function fj40RearCan(b: VehicleBuilder): void {
   jerryCan(b, 0, 0, 0, { colour: new THREE.Color('#667258'), zone: Z.Rear, width: 0.16, ribX: 0.08 });
   b.pop();
   // Strap: across the back of the can and down both sides to the bars.
-  b.block(x, y + 0.03, z + 0.085, 0.37, 0.03, 0.01, black, M.Rubber, Z.Rear);
-  for (const dx of [-0.18, 0.18])
+  b.block(x, y + 0.03, z + 0.085, 0.36, 0.03, 0.01, black, M.Rubber, Z.Rear);
+  for (const dx of [-0.175, 0.175])
     b.block(x + dx, y + 0.03, door + 0.1, 0.01, 0.03, 0.2, black, M.Rubber, Z.Rear);
 }
 
 /** Rear bar under the lamps, with the plate on the right (the spare takes the left) and a tow ball. */
 function fj40RearBar(b: VehicleBuilder): void {
-  b.block(0, 0.12, 2.0, 1.55, 0.12, 0.1, bar, M.Metal, Z.Rear, 0.012);
-  for (const x of [-0.5, 0.5]) b.block(x, 0.12, 1.92, 0.06, 0.08, 0.12, bar, M.Metal, Z.Rear);
-  numberPlate(b, 0.48, 0.12, 2.06, 1, 'FJ-40', black);
+  // Its top (y 0.135) is 21 mm under the door spare's tread (y 0.156), which stands over it.
+  // Until v1.85 the bar was 45 mm higher and the tyre sat 24 mm into it.
+  const y = 0.075;
+  b.block(0, y, 2.0, 1.55, 0.12, 0.1, bar, M.Metal, Z.Rear, 0.012);
+  for (const x of [-0.5, 0.5]) b.block(x, y, 1.92, 0.06, 0.08, 0.12, bar, M.Metal, Z.Rear);
+  numberPlate(b, 0.48, y, 2.06, 1, 'FJ-40', black);
   b.slot = M.Metal;
   b.tag = Z.Rear;
-  b.push().translate(0, 0.16, 2.02);
+  b.push().translate(0, y + 0.07, 2.02);
   b.geometry(new THREE.SphereGeometry(0.028, 10, 8), steel);
   b.pop();
 }
@@ -539,11 +560,14 @@ export function addFj40GlbEquipment(
   fj40RearCan(b);
   b.push().translate(0, FJ40_GEAR_DROP, 0);
   roofGear(b, fj40Rack);
-  roofSpare(b, tuning, wheel);
+  // The Blender wheel's rim flange is 0.21 m out and 93 mm above the hub's plane: the bar
+  // spans it and bears on the tyre's bead on both sides.
+  roofSpare(b, tuning, wheel, { above: 0.098, length: 0.44 });
   b.pop();
-  // Whip aerial on the left guard, standing on the wing rather than inside it.
-  b.block(-0.74, 0.78, -1.02, 0.05, 0.03, 0.05, black, M.Rubber, Z.Front);
-  b.rod({ x: -0.74, y: 0.8, z: -1.02 }, { x: -0.76, y: 1.55, z: -0.98 }, 0.005, trim);
+  // Whip aerial on the flat top of the left wing (0.99 m above the ground, y 0.478 here,
+  // x 0.50 to 0.67). Until v1.85 its base hung 0.3 m above the wing, beside the bonnet.
+  b.block(-0.61, 0.49, -1.02, 0.05, 0.03, 0.05, black, M.Rubber, Z.Front);
+  b.rod({ x: -0.61, y: 0.5, z: -1.02 }, { x: -0.63, y: 1.3, z: -0.98 }, 0.005, trim);
 }
 
 export function buildRackPlank(index: number): THREE.BufferGeometry {

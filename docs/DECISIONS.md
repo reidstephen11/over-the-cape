@@ -1661,7 +1661,7 @@ What remains is grass moving in the wind. `tests/shadowReach.test.ts` checks the
 
 The owner asked for the FJ40 improvements to start. This version takes twelve of the fifteen faults `docs/AUDIT-2026-11.md` lists for the Blender FJ40 (`shortie`), and part of a thirteenth. The earlier hand-coded 40 Series (`forty`), the ute and every other vehicle are unchanged.
 
-**Before and after.** 24 audit pictures (`scripts/studio-audit.ts`) were taken before any change and again after, with the standard studio set and 23 close-ups. The photographs compared were `rear-34-left.jpg` (the nearest to a true side view), `side-1977.jpg`, `front-white.jpg`, `front-34-hardtop.jpg` and `rear-34-hardtop.jpg`.
+**Before and after.** 24 audit pictures (`scripts/studio-audit.ts`) were taken before any change and again after, with the standard studio set and 23 close-ups, and eight more close-ups after the reviewer's findings. The photographs compared were `rear-34-left.jpg` (the nearest to a true side view), `side-1977.jpg`, `front-white.jpg`, `front-34-hardtop.jpg` and `rear-34-hardtop.jpg`.
 
 **The driver's view and the glass (items 1, 2, 3 and part of 15).**
 
@@ -1686,6 +1686,18 @@ The owner asked for the FJ40 improvements to start. This version takes twelve of
 - **Jerry can (item 12).** On the right barn door, its broad side flat against the door skin, standing in a tray that two flat bars behind the can bolt to the door, with a strap round it. Its back is 0.19 m off the door, level with the spare, instead of 0.36 m. It clears the spare, the tail lamp below and the door handle.
 - **Exhaust (item 14).** In the model: a round 60 mm pipe, a muffler ahead of the rear axle, up to 0.62 m over the axle, down to 0.37 m under the rear crossmember, ending 5 cm behind the tail under the rear bar. It was a 48 mm straight pipe at 0.30 m with the muffler where the axle is.
 - **TOYOTA.** The grille had two: the model's badge, and letters the code stroked over it in v1.83. The stroked ones are gone.
+
+**The second look.** A reviewer was given the standard studio set and 22 close-ups (30 pictures) and nothing else. What it found, and what was done:
+
+- The aerial's base hung in the air beside the bonnet, about 0.3 m above the wing (it had since v1.83). It now stands on the flat top of the left wing, facing up.
+- The roof spare's clamp bar was shorter than the rim's opening and higher than the tyre, so it held nothing. The bar is now 0.44 m long, spans the rim and bears on the tyre's bead on both sides, under the T-handle.
+- The jerry can's strap touched the door spare. The can, tray and strap moved 30 mm outboard and 20 mm up; the strap's near side is 23 mm from the tyre.
+- The driving lamps' stalks passed through the bar's side rail and showed underneath. Each now starts at the centre of the rail.
+- The door spare's tread stood 24 mm into the rear bar ("no daylight"). The rear bar, its brackets, plate and tow ball are 45 mm lower; the tread is 21 mm above the bar.
+- The snorkel's head was a closed cylinder with its wide end to the rear. It is turned round, wide end forward, with a grey mesh disc in its mouth.
+- Not changed: the winch's hook rests in the fairlead with no rope showing (the rope is drawn when the winch is in use). The door spare sits across the seam between the two barn doors, where v1.83 moved it to uncover the tail lamp, and its carrier is hidden behind the wheel. The left mirror is close behind the snorkel, not touching.
+
+Each fix was photographed again close up and read.
 
 **Still open on this car.** Item 4 (front wings too deep and round, tyre against the wing on full lock with the axle crossed), item 9 (rear arches: shape, lip, sky showing through), and the rest of 15 (black door hinges, no step, plain wheel discs). Found on the way and not fixed: the bonnet is about 7 cm high at the cowl against `side-1977.jpg` and `rear-34-left.jpg`. `reference/vehicles/landcruiser-fj40/SOURCES.md` now has this body's measures, and four captions there were corrected (`front.jpg` and `rear.jpg` are three-quarter views of a soft top; `front-34-hardtop.jpg` and `rear-34-hardtop.jpg` have each other's angle).
 
