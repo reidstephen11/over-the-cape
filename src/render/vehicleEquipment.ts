@@ -1,4 +1,4 @@
-import { jerryCan, numberPlate, strokeText } from './bodyKit';
+import { jerryCan, numberPlate } from './bodyKit';
 import { ROUND_BEND, continuousTube, cleanGeometry } from './bodyRefinement';
 import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
@@ -82,7 +82,7 @@ function shackle(b: VehicleBuilder, x: number, y: number, z: number, facing: num
  * A period steel bull bar ahead of the grille panel: a deep pan carrying the winch, a centre
  * hoop framing the grille and side loops that run above the headlamps out to the guards.
  */
-function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
+function bullBar(b: VehicleBuilder, tuning: VehicleTuning, lowWinch = false): void {
   const face = tuning.winchMount.z; // the pan's front face carries the fairlead
   const back = NOSE - 0.12;
   const zc = (face + back) / 2;
@@ -129,13 +129,16 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.block(side * 0.85, 0.39, zc + 0.025, 0.075, 0.045, 0.11, bar, M.Metal, Z.Front, 0.005);
     b.block(side * 0.25, 0.39, zc, 0.075, 0.045, 0.11, bar, M.Metal, Z.Front, 0.005);
   }
-  // Winch on a cradle behind the pan; only its top and the roller fairlead show.
-  b.rod(v(-0.2, 0.44, back - 0.05), v(0.2, 0.44, back - 0.05), 0.075, trim);
+  // Winch on a cradle behind the pan; only its top and the roller fairlead show. The low
+  // mount (the Blender FJ40) sinks the drum into the pan, level with the fairlead, with the
+  // motor inside the bar: stood on top, the motor was in front of that car's left headlamp.
+  const wy = lowWinch ? 0.35 : 0.44;
+  b.rod(v(-0.2, wy, back - 0.05), v(0.2, wy, back - 0.05), 0.075, trim);
   for (let i = 0; i < 13; i++)
-    b.ring(-0.15 + i * 0.025, 0.44, back - 0.05, 0.074, 0.005, steel, M.Metal, 'x', Z.Front);
+    b.ring(-0.15 + i * 0.025, wy, back - 0.05, 0.074, 0.005, steel, M.Metal, 'x', Z.Front);
   for (const x of [-0.22, 0.22])
-    b.block(x, 0.44, back - 0.05, 0.03, 0.17, 0.17, black, M.Rubber, Z.Front, 0.012);
-  b.rod(v(-0.38, 0.44, back - 0.05), v(-0.24, 0.44, back - 0.05), 0.06, trim);
+    b.block(x, wy, back - 0.05, 0.03, 0.17, 0.17, black, M.Rubber, Z.Front, 0.012);
+  if (!lowWinch) b.rod(v(-0.38, wy, back - 0.05), v(-0.24, wy, back - 0.05), 0.06, trim);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.005, 0.38, 0.14, 0.02, steel, M.Metal, Z.Front, 0.006);
   b.block(m.x, m.y, face - 0.012, 0.22, 0.06, 0.015, black, M.Rubber, Z.Front);
@@ -188,25 +191,96 @@ function chassis(b: VehicleBuilder): void {
   b.pop();
 }
 
-function roofGear(b: VehicleBuilder): void {
+interface RackLayout {
+  /** Front and rear rails (z). */
+  z0: number;
+  z1: number;
+  /** Where the three pairs of legs stand. */
+  legs: number[];
+  /** The clamp at the end of each leg's outrigger: its centre, out from the centreline and up. */
+  clampX: number;
+  clampY: number;
+  /**
+   * Where each leg's outrigger turns down, when it cannot run straight from the post to the
+   * clamp without passing through the roof's edge.
+   */
+  elbow?: { x: number; y: number };
+  /** How far the posts under the deck rail reach down past the standard rack's. */
+  postReach?: number;
+  /** Stations of the uprights between the deck rail and the top rail. */
+  posts: number[];
+  /** First cross slat and how many, 0.2 m apart. */
+  slat0: number;
+  slats: number;
+}
+
+/** The rack as the code-built 40 Series cars carry it. */
+const standardRack: RackLayout = {
+  z0: -0.4,
+  z1: 1.62,
+  legs: [-0.29, 0.66, 1.52],
+  clampX: 0.835,
+  clampY: 1.545,
+  posts: [-0.4, 0.1, 0.62, 1.12, 1.62],
+  slat0: -0.3,
+  slats: 10,
+};
+
+/**
+ * The Blender FJ40's rack. Its hardtop is narrower, so the clamps come in to grip the gutter
+ * (x 0.763, 1.815 m above the ground) instead of hanging beside the roof; and it is long
+ * enough for the 2.4 m recovery boards, which stuck out 0.2 m at each end of the old one.
+ * It overhangs the windscreen by 0.2 m and the tail by 0.05 m. Heights are before
+ * FJ40_GEAR_DROP and rackDrop().
+ */
+const fj40Rack: RackLayout = {
+  z0: -0.5,
+  z1: 1.94,
+  legs: [-0.17, 0.7, 1.55],
+  clampX: 0.778,
+  clampY: 1.512,
+  elbow: { x: 0.8, y: 1.7 },
+  postReach: 0.03,
+  posts: [-0.5, -0.01, 0.48, 0.96, 1.45, 1.94],
+  slat0: -0.4,
+  slats: 12,
+};
+
+/** How far back the FJ40's boards sit from where the standard rack carries them. */
+export const FJ40_PLANK_SHIFT = 0.13;
+
+function roofGear(b: VehicleBuilder, r: RackLayout = standardRack): void {
   b.push().translate(0, rackDrop(), 0);
   // Feet, basket deck, perimeter rails, uprights and tie-down rings.
   for (const x of [-0.68, 0.68]) {
-    for (const z of [-0.29, 0.66, 1.52]) {
-      b.block(x, 1.695, z, 0.08, 0.15, 0.1, trim, M.Metal, Z.Roof, 0.008);
-      b.rod(v(x, 1.72, z), v(Math.sign(x) * 0.825, 1.55, z), 0.013, trim, M.Metal, Z.Roof);
-      b.block(Math.sign(x) * 0.835, 1.545, z, 0.032, 0.06, 0.1, trim, M.Metal, Z.Roof, 0.006);
+    const side = Math.sign(x);
+    for (const z of r.legs) {
+      const reach = r.postReach ?? 0;
+      b.block(x, 1.695 - reach / 2, z, 0.08, 0.15 + reach, 0.1, trim, M.Metal, Z.Roof, 0.008);
+      if (r.elbow) {
+        // Out over the roof's edge, then straight down to the clamp on the gutter.
+        const knee = v(side * r.elbow.x, r.elbow.y, z);
+        b.rod(v(x, 1.72, z), knee, 0.013, trim, M.Metal, Z.Roof);
+        b.rod(knee, v(side * (r.clampX + 0.012), r.clampY, z), 0.013, trim, M.Metal, Z.Roof);
+        b.slot = M.Metal;
+        b.tag = Z.Roof;
+        b.push().translate(knee.x, knee.y, knee.z);
+        b.geometry(new THREE.SphereGeometry(0.013, 8, 6), trim);
+        b.pop();
+      } else
+        b.rod(v(x, 1.72, z), v(side * (r.clampX - 0.01), r.clampY + 0.005, z), 0.013, trim, M.Metal, Z.Roof);
+      b.block(side * r.clampX, r.clampY, z, 0.032, 0.06, 0.1, trim, M.Metal, Z.Roof, 0.006);
     }
-    b.rod({ x, y: 1.77, z: -0.4 }, { x, y: 1.77, z: 1.62 }, 0.022, trim, M.Metal, Z.Roof);
-    b.rod({ x, y: 1.94, z: -0.4 }, { x, y: 1.94, z: 1.62 }, 0.018, trim, M.Metal, Z.Roof);
-    for (const z of [-0.4, 0.1, 0.62, 1.12, 1.62])
-      b.rod({ x, y: 1.77, z }, { x, y: 1.94, z }, 0.012, trim, M.Metal, Z.Roof);
+    b.rod({ x, y: 1.77, z: r.z0 }, { x, y: 1.77, z: r.z1 }, 0.022, trim, M.Metal, Z.Roof);
+    b.rod({ x, y: 1.94, z: r.z0 }, { x, y: 1.94, z: r.z1 }, 0.018, trim, M.Metal, Z.Roof);
+    for (const z of r.posts) b.rod({ x, y: 1.77, z }, { x, y: 1.94, z }, 0.012, trim, M.Metal, Z.Roof);
   }
-  for (const z of [-0.4, 1.62]) {
+  for (const z of [r.z0, r.z1]) {
     b.rod({ x: -0.68, y: 1.77, z }, { x: 0.68, y: 1.77, z }, 0.022, trim, M.Metal, Z.Roof);
     b.rod({ x: -0.68, y: 1.94, z }, { x: 0.68, y: 1.94, z }, 0.018, trim, M.Metal, Z.Roof);
   }
-  for (let i = 0; i < 10; i++) b.block(0, 1.77, -0.3 + i * 0.2, 1.35, 0.025, 0.028, trim, M.Metal, Z.Roof);
+  for (let i = 0; i < r.slats; i++)
+    b.block(0, 1.77, r.slat0 + i * 0.2, 1.35, 0.025, 0.028, trim, M.Metal, Z.Roof);
   // Strapped canvas luggage and a small latched toolbox leave room for both recovery planks.
   b.block(0.4, 1.91, 1.01, 0.38, 0.25, 0.71, canvas, M.Fabric, Z.Roof, 0.045);
   for (const z of [0.9, 1.3]) {
@@ -345,27 +419,39 @@ export function addVehicleEquipment(
   b.rod({ x: ax, y: 0.67, z: -0.95 }, { x: ax + aerialSide * 0.02, y: 1.5, z: -0.91 }, 0.005, trim);
 }
 
-/** Safari snorkel: the scoop sits on the left guard, the riser is clamped to the A-pillar. */
+/**
+ * Safari snorkel on the left (passenger) side. Its body is a flat box on the cowl side, over
+ * the vent louvres just ahead of the door, where the air goes in to the engine bay. The tube
+ * leaves the top of the box and runs up the windscreen pillar, leaning back with the screen,
+ * to a ram head facing forward beside the roof. Two clamps hold the tube to the pillar.
+ * Until v1.85 the box sat on the wing over the tyre and the tube crossed 1.2 m of air.
+ */
 function fj40Snorkel(b: VehicleBuilder): void {
-  const x = -0.8;
+  const x = -0.85;
   const rubber = new THREE.Color('#202325');
-  // On the vertical face of the guard, behind the headlamp, so the scoop meets the panel.
-  b.block(x, 0.36, -1.22, 0.16, 0.18, 0.22, rubber, M.Rubber, Z.Front, 0.02);
+  // Cowl side skin is at x -0.775, z -0.66..-0.30; the louvres are at z -0.50..-0.40.
+  b.block(-0.825, 0.535, -0.48, 0.1, 0.27, 0.16, rubber, M.Rubber, Z.Front, 0.02);
+  // The screen's face leans from z -0.33 at the belt to -0.26 at the gutter; the tube stays
+  // 55 mm ahead of it and outboard of the frame.
   tubePath(
     b,
-    [v(x, 0.4, -1.12), v(x - 0.02, 0.82, -0.55), v(x, 1.15, -0.34), v(x, 1.48, -0.3)],
+    [v(-0.83, 0.62, -0.465), v(x, 0.76, -0.41), v(x, 0.84, -0.385), v(x, 1.36, -0.315)],
     0.042,
     rubber,
   );
   b.slot = M.Rubber;
   b.tag = Z.Front;
   b.push()
-    .translate(x, 1.48, -0.4)
+    .translate(x, 1.395, -0.375)
     .rotate(Math.PI / 2, 0, 0);
-  b.geometry(new THREE.CylinderGeometry(0.048, 0.042, 0.14, 10), rubber);
+  b.geometry(new THREE.CylinderGeometry(0.058, 0.046, 0.17, 12), rubber);
   b.pop();
-  // The pillar skin is near x -0.75. Each clamp bridges the tube to it.
-  for (const y of [0.95, 1.22]) b.block(-0.775, y, -0.32, 0.07, 0.028, 0.04, rubber, M.Rubber, Z.Front);
+  // Each clamp is a band round the tube and a strap back to the pillar's front corner.
+  for (const y of [0.95, 1.24]) {
+    const tz = -0.385 + ((y - 0.84) / 0.52) * 0.07;
+    b.ring(x, y, tz, 0.045, 0.008, steel, M.Metal, 'y', Z.Front);
+    b.rod(v(x + 0.03, y, tz + 0.02), v(-0.745, y, tz + 0.085), 0.012, steel, M.Metal, Z.Front);
+  }
 }
 
 /** Two round lamps on stalks off the bull bar's hoop, lenses facing forward. */
@@ -380,7 +466,13 @@ function fj40Spots(b: VehicleBuilder): void {
       .rotate(Math.PI / 2, 0, 0);
     b.geometry(new THREE.CylinderGeometry(0.05, 0.055, 0.07, 12), bar);
     b.pop();
-    b.block(lamp.x, lamp.y, lamp.z, 0.08, 0.08, 0.01, lens, M.DrivingLamp, Z.Front);
+    // A round lens just proud of the housing's rim (a square one lay in the rim's plane).
+    b.slot = M.DrivingLamp;
+    b.push()
+      .translate(lamp.x, lamp.y, lamp.z - 0.009)
+      .rotate(Math.PI / 2, 0, 0);
+    b.geometry(new THREE.CylinderGeometry(0.047, 0.047, 0.008, 16), lens);
+    b.pop();
   }
 }
 
@@ -389,15 +481,28 @@ function fj40Flap(b: VehicleBuilder, x: number, z: number): void {
   b.block(x, -0.06, z, 0.18, 0.34, 0.012, black, M.Rubber, Z.Trim);
 }
 
-/** Jerry can in a cradle on the right barn door, clear of the spare and the tail lamp. */
+/**
+ * Jerry can on the right barn door, its broad side flat against the door skin (it stood
+ * end-on until v1.85 and was the rearmost point of the car). It stands in a tray bolted to
+ * the door by two flat bars behind the can, with a strap round it; clear of the spare, the
+ * tail lamp below and the door handle beside it.
+ */
 function fj40RearCan(b: VehicleBuilder): void {
-  const x = 0.38,
-    y = 0.62,
-    z = 2.08;
-  b.block(x, y - 0.26, z - 0.1, 0.22, 0.03, 0.16, bar, M.Metal, Z.Rear);
-  for (const dx of [-0.1, 0.1]) b.block(x + dx, y - 0.04, 1.9, 0.025, 0.34, 0.05, bar, M.Metal, Z.Rear);
-  jerryCan(b, x, y, z, { colour: new THREE.Color('#667258'), zone: Z.Rear, width: 0.16, ribX: 0.08 });
-  b.block(x, y, z + 0.175, 0.17, 0.028, 0.012, black, M.Rubber, Z.Rear);
+  const door = 1.89;
+  const x = 0.41,
+    y = 0.57,
+    z = door + 0.03 + 0.08;
+  b.block(x, y - 0.25, door + 0.1, 0.38, 0.03, 0.2, bar, M.Metal, Z.Rear, 0.004);
+  for (const dx of [-0.12, 0.12]) b.block(x + dx, y, door + 0.015, 0.035, 0.5, 0.03, bar, M.Metal, Z.Rear);
+  b.push()
+    .translate(x, y, z)
+    .rotate(0, -Math.PI / 2, 0);
+  jerryCan(b, 0, 0, 0, { colour: new THREE.Color('#667258'), zone: Z.Rear, width: 0.16, ribX: 0.08 });
+  b.pop();
+  // Strap: across the back of the can and down both sides to the bars.
+  b.block(x, y + 0.03, z + 0.085, 0.37, 0.03, 0.01, black, M.Rubber, Z.Rear);
+  for (const dx of [-0.18, 0.18])
+    b.block(x + dx, y + 0.03, door + 0.1, 0.01, 0.03, 0.2, black, M.Rubber, Z.Rear);
 }
 
 /** Rear bar under the lamps, with the plate on the right (the spare takes the left) and a tow ball. */
@@ -413,28 +518,17 @@ function fj40RearBar(b: VehicleBuilder): void {
 }
 
 /**
- * Touring kit on the Blender FJ40: the code car's bull bar (winch, shackles and front plate),
- * TOYOTA across the grille opening, driving lamps, a snorkel, mud flaps, a rear bar and a
- * jerry can. The roof rack was drawn for the code roof, so it drops onto this one.
+ * Touring kit on the Blender FJ40: the code car's bull bar (shackles and front plate) with the
+ * winch sunk into it, driving lamps, a snorkel, mud flaps, a rear bar and a jerry can. The
+ * rack is this car's own layout (fj40Rack), dropped onto its lower roof. The grille's TOYOTA
+ * is the model's badge; a second one stroked over it was removed in v1.85.
  */
 export function addFj40GlbEquipment(
   b: VehicleBuilder,
   tuning: VehicleTuning,
   wheel: THREE.BufferGeometry,
 ): void {
-  bullBar(b, tuning);
-  b.push().translate(0, 0.56, -1.72);
-  strokeText(b, 'TOYOTA', {
-    w: 0.028,
-    h: 0.046,
-    pitch: 0.044,
-    radius: 0.0035,
-    colour: new THREE.Color('#E8E6DC'),
-    slot: M.Metal,
-    zone: Z.Front,
-    z: 0,
-  });
-  b.pop();
+  bullBar(b, tuning, true);
   fj40Spots(b);
   fj40Snorkel(b);
   for (const x of [-0.7, 0.7]) {
@@ -444,9 +538,8 @@ export function addFj40GlbEquipment(
   fj40RearBar(b);
   fj40RearCan(b);
   b.push().translate(0, FJ40_GEAR_DROP, 0);
-  roofGear(b);
-  // The Blender wheel's tread is thicker than the plate the code spare sits on.
-  roofSpare(b, tuning, wheel, 0.045);
+  roofGear(b, fj40Rack);
+  roofSpare(b, tuning, wheel);
   b.pop();
   // Whip aerial on the left guard, standing on the wing rather than inside it.
   b.block(-0.74, 0.78, -1.02, 0.05, 0.03, 0.05, black, M.Rubber, Z.Front);

@@ -204,3 +204,26 @@ Renders `s4a`, final `s4`. Best composites in `best-step4/`.
 - LOD: not needed. 59,676 tris is under the 60k–150k ceiling, so a single LOD.
 - Final renders: tag `final`, 64 samples → best-final/fj40-final-{front34,side_rear34,front,rear34,ortho}.png.
 - GLB: 59,676 tris, 1.48 MB, 15 materials, no textures; 1.68 m body width (2.03 m over the mirrors) × 4.005 m × 1.95 m.
+
+## Step 6 — glass, exhaust (v1.85, 15 Nov 2026)
+
+Built with the `bpy` 5.3.0 Python module (`pip install bpy`, then `python fj40_body.py -- --out DIR`), which gives the same
+file as headless Blender: the script rebuilt the committed GLB byte for byte before any change.
+
+- **Glass:** `BELT` 1.35 → 1.33, `ROOF_EDGE` 1.82 → 1.835. Window openings `WIN_Z0..WIN_Z1` 1.345–1.795 (were 1.40–1.765),
+  windscreen 1.345–1.80 (was 1.42–1.765), seal 22 → 15 mm. Clear glass 0.32 → 0.42 m. Measured on `rear-34-left.jpg`
+  (door glass 30% of sill-to-roof) and `side-1977.jpg` (34%).
+- **Side windows:** `glass_side_*` and `glass_quarter_*` are one opening per side (`glass_side_*`), with a bar for the fixed
+  rear pane and a thinner one for the sliding panes' overlap; the door glass has a quarter-light bar. The bars are part of
+  `trim_window_rubber`. (`front-34-hardtop.jpg`, which is a rear three-quarter view, and `rear-34-left.jpg`.)
+- **Windscreen frame, wipers, mirrors, drip rail** follow the new heights: the wipers pivot on the frame's lower rail, the
+  mirror arms start on the door skin under the glass.
+- **Exhaust:** round 60 mm pipe, muffler ahead of the rear axle (y −0.14…−0.70 at 0.42 m), up to 0.62 m over the axle,
+  down to 0.37 m under the rear crossmember, ending 5 cm past the tail. It was a 48 mm straight pipe at 0.30 m with the
+  muffler at the axle.
+- GLB: 59,260 tris, same materials, no textures; same overall size.
+
+### Still differs (end of step 6)
+
+- Bonnet about 7 cm high at the cowl (see `reference/vehicles/landcruiser-fj40/SOURCES.md`).
+- Front wings and rear arches: `docs/AUDIT-2026-11.md`, FJ40 items 4 and 9. Hinges, step and wheel discs: item 15.

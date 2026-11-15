@@ -22,7 +22,12 @@ HW_WING = 1.666 / 2         # over the guard lips (published width)
 HW_TUB = 0.775              # slab sides of the tub
 Y_GRILLE, Y_WING_FRONT, Y_TAIL = 1.67, 1.70, -1.89
 Y_SCREEN = 0.33             # windscreen base / door front (A-pillar)
-SILL, BELT, ROOF_EDGE, ROOF_TOP = 0.57, 1.35, 1.82, 1.95   # step 3: white cap deeper (photo)
+SILL, BELT, ROOF_EDGE, ROOF_TOP = 0.57, 1.33, 1.835, 1.95
+# Step 5 (v1.85): the glass is taller and starts lower. Measured on rear-34-left.jpg and
+# side-1977.jpg the door glass is 30-34% of the sill-to-roof height (0.42-0.46 m); it was 0.32 m
+# clear. Openings run WIN_Z0..WIN_Z1 with a SEAL-wide rubber inside them.
+WIN_Z0, WIN_Z1, SEAL = 1.345, 1.795, 0.015
+SCREEN_Z0, SCREEN_Z1 = 1.345, 1.80
 WING_TOP = 0.99
 ARCH_F = dict(y=FA, hc=0.38, r=0.48)   # step 4: lowered 7 cm (side-1977.jpg flare depth)
 ARCH_R = dict(y=RA, hc=0.40, r=0.49, a=0.56, b=0.50, n=2.7)
@@ -433,15 +438,17 @@ def rbox_y(name, x0, x1, y0, y1, z0, z1, r=0.05, seg=5):
         pts += [(cx + r * math.cos(math.radians(a0 + 90 * i / seg)), cz + r * math.sin(math.radians(a0 + 90 * i / seg))) for i in range(seg + 1)]
     return prism_y(name, pts, y0, y1)
 
+SIDE_WIN = (-1.38, DOOR_REAR - 0.07)      # one opening: two sliding panes and a fixed pane
+DOOR_WIN = (DOOR_REAR + 0.06, Y_SCREEN - 0.08)
+
 def window_cutters(g=0.0, seg=5):
     W = []
-    z0, z1 = 1.40 - g, 1.765 + g   # step 3: window tops lowered 5 cm (photo)
-    W.append(('windscreen', rbox_y('w_ws', -0.69 - g, 0.69 + g, 0.15, 0.50, 1.42 - g, 1.765 + g, r=0.04 + g, seg=seg)))
+    z0, z1 = WIN_Z0 - g, WIN_Z1 + g
+    W.append(('windscreen', rbox_y('w_ws', -0.69 - g, 0.69 + g, 0.15, 0.50, SCREEN_Z0 - g, SCREEN_Z1 + g, r=0.04 + g, seg=seg)))
     for s, sn in ((1, 'r'), (-1, 'l')):
         xa, xb = (0.55, 0.95) if s > 0 else (-0.95, -0.55)
-        W.append(('door_' + sn, rbox_x('w_d', xa, xb, DOOR_REAR + 0.06 - g, Y_SCREEN - 0.08 + g, z0, z1, r=0.05 + g, seg=seg)))
-        W.append(('side_' + sn, rbox_x('w_s', xa, xb, -1.07 - g, DOOR_REAR - 0.07 + g, z0, z1, r=0.05 + g, seg=seg)))
-        W.append(('quarter_' + sn, rbox_x('w_q', xa, xb, -1.38 - g, -1.14 + g, z0, z1, r=0.05 + g, seg=seg)))
+        W.append(('door_' + sn, rbox_x('w_d', xa, xb, DOOR_WIN[0] - g, DOOR_WIN[1] + g, z0, z1, r=0.05 + g, seg=seg)))
+        W.append(('side_' + sn, rbox_x('w_s', xa, xb, SIDE_WIN[0] - g, SIDE_WIN[1] + g, z0, z1, r=0.05 + g, seg=seg)))
         W.append(('corner_' + sn, rbox_x('w_c', 0.555 - g if s > 0 else -0.95, 0.95 if s > 0 else -0.555 + g, -2.1, -1.58 + g, z0, z1, r=0.05 + g, seg=seg)))
         W.append(('rear_' + sn, rbox_y('w_r', (0.08 - g) if s > 0 else (-0.475 - g), (0.475 + g) if s > 0 else (-0.08 + g), -2.1, -1.7, z0, z1, r=0.05 + g, seg=seg)))
     for name, ob in W: ob['wname'] = name
@@ -544,6 +551,15 @@ def seg_box(name, p0, p1, w, t, material=None):
     vs = [p + a * u + b * v for p in (p0, p1) for a, b in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
     return make_obj(name, vs, [(0, 1, 2, 3), (7, 6, 5, 4), (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0)], material)
 
+def seg_cyl(name, p0, p1, r, seg=10, material=None):
+    """Round tube from p0 to p1 (absolute coordinates), run on by half a radius at each end so bends close."""
+    p0, p1 = Vector(p0), Vector(p1); d = (p1 - p0).normalized()
+    p0, p1 = p0 - d * r * 0.5, p1 + d * r * 0.5
+    up = Vector((0, 0, 1)) if abs(d.z) < 0.9 else Vector((0, 1, 0))
+    u = d.cross(up).normalized(); v = d.cross(u).normalized()
+    ring = lambda p: [tuple(p + r * (math.cos(2 * math.pi * i / seg) * u + math.sin(2 * math.pi * i / seg) * v)) for i in range(seg)]
+    return loft(name, [ring(p0), ring(p1)], material)
+
 def cyl_z(name, xc, yc, r, z0, z1, seg=12, material=None):
     return prism_z(name, [(xc + r * math.cos(2 * math.pi * i / seg), yc + r * math.sin(2 * math.pi * i / seg)) for i in range(seg)], z0, z1, material)
 
@@ -556,14 +572,15 @@ def shear_to_screen(ob, off=0.0):
 def build_windscreen(M):
     """Separate windscreen frame (body colour, proud of the cabin front) and two parked wipers."""
     out = []
-    fr = rbox_y('trim_windscreen_frame', -0.762, 0.762, 0.0, 0.013, 1.37, 1.80, r=0.03, seg=4)
+    fr = rbox_y('trim_windscreen_frame', -0.762, 0.762, 0.0, 0.013, SCREEN_Z0 - 0.04, SCREEN_Z1 + 0.028, r=0.03, seg=4)
     fr.data.materials.append(M['paint'])
-    boolean(fr, rbox_y('fh', -0.69, 0.69, -0.5, 0.5, 1.42, 1.765, r=0.04, seg=5)); kill(bpy.data.objects['fh'])
+    boolean(fr, rbox_y('fh', -0.69, 0.69, -0.5, 0.5, SCREEN_Z0, SCREEN_Z1, r=0.04, seg=5)); kill(bpy.data.objects['fh'])
     shear_to_screen(fr); finish(fr, bevel=0.004, seg=2); out.append(fr)
     for sn, x0, x1 in (('l', -0.47, -0.08), ('r', 0.10, 0.50)):
-        arm = seg_box('arm', (x0, 0, h(1.425)), (x0 + 0.33, 0, h(1.49)), 0.008, 0.006, M['black'])
-        blade = seg_box('blade', (x0 + 0.02, 0, h(1.452)), (x1, 0, h(1.513)), 0.014, 0.012, M['black'])
-        piv = cyl_y('piv', x0, 1.42, 0.012, -0.004, 0.012, seg=10, material=M['black'])
+        wz = SCREEN_Z0 - 0.018                     # pivots on the frame's lower rail, under the glass
+        arm = seg_box('arm', (x0, 0, h(wz + 0.005)), (x0 + 0.33, 0, h(wz + 0.07)), 0.008, 0.006, M['black'])
+        blade = seg_box('blade', (x0 + 0.02, 0, h(wz + 0.032)), (x1, 0, h(wz + 0.093)), 0.014, 0.012, M['black'])
+        piv = cyl_y('piv', x0, wz, 0.012, -0.004, 0.012, seg=10, material=M['black'])
         for o in (arm, blade, piv): shear_to_screen(o, off=-0.006)
         wp = join('trim_wiper_' + sn, [arm, blade, piv]); out.append(wp)
     return out
@@ -583,7 +600,7 @@ def build_side_hardware(M):
         for o in (esc, pull): finish(o, bevel=0.003, seg=1)
         out.append(join('trim_handle_door_' + sn, [esc, pull]))
         # mirror on the door's front top corner: arm + rear-facing head
-        base = (X, 0.235, h(1.39)); top = (s * 0.94, 0.25, h(1.51))
+        base = (X, 0.235, h(BELT - 0.03)); top = (s * 0.94, 0.25, h(1.51))
         arm = seg_box('marm', base, top, 0.016, 0.016, M['black'])
         x0, x1 = sorted((s * 0.885, s * 1.015))
         head = rbox_y('mhead', x0, x1, 0.24, 0.272, 1.50, 1.68, r=0.025, seg=3); head.data.materials.append(M['black'])
@@ -591,10 +608,11 @@ def build_side_hardware(M):
         for o in (head, glass): finish(o, bevel=0.003, seg=1)
         out.append(join('trim_mirror_' + sn, [arm, head, glass]))
         # roof drip rail along each side, just under the white cap
-        hw = gh_params(h(1.80))[0]
+        zd = ROOF_EDGE - 0.02
+        hw = gh_params(h(zd))[0]
         xi, xo = sorted((s * (hw - 0.004), s * (hw + 0.016)))
-        yfr = gh_params(h(1.80))[1] - 0.01
-        dr = prism_x('drip', [(yfr, 1.792), (-1.62, 1.792), (-1.62, 1.808), (yfr, 1.808)], xi, xo, M['roof'])
+        yfr = gh_params(h(zd))[1] - 0.01
+        dr = prism_x('drip', [(yfr, zd - 0.008), (-1.62, zd - 0.008), (-1.62, zd + 0.008), (yfr, zd + 0.008)], xi, xo, M['roof'])
         finish(dr, bevel=0.003, seg=1); out.append(dr)
     for o in hinges: finish(o, bevel=0.002, seg=1)
     out.append(join('trim_hinges_door', hinges))
@@ -650,8 +668,14 @@ def build_chassis(M):
     parts.append(box('tank', 0.08, 0.38, -0.95, -0.40, 0.36, 0.56, C))
     parts.append(seg_box('prop_f', (0.10, 0.05, h(0.42)), (0.12, FA - 0.12, h(HUB_H + 0.02)), 0.05, 0.05, C))
     parts.append(seg_box('prop_r', (0.0, -0.20, h(0.42)), (0.12, RA + 0.12, h(HUB_H + 0.02)), 0.055, 0.055, C))
-    parts.append(cyl_y('exhaust', -0.30, 0.30, 0.024, Y_TAIL - 0.02, 0.55, seg=10, material=C))
-    parts.append(cyl_y('muffler', -0.30, 0.31, 0.075, -1.15, -0.60, seg=14, material=C))
+    # Exhaust (v1.85): down from the manifold, a muffler ahead of the rear axle, up and over the
+    # axle with room for it to rise, then down under the rear crossmember to the tail. It was a
+    # thin straight pipe at 0.30 m with the muffler where the axle is.
+    ex = -0.30
+    run = [(0.55, 0.42), (-0.12, 0.42), (-0.72, 0.42), (-0.90, 0.62), (-1.40, 0.62), (-1.62, 0.37), (Y_TAIL - 0.05, 0.37)]
+    for (ya, za), (yb, zb_) in zip(run, run[1:]):
+        parts.append(seg_cyl('exhaust', (ex, ya, h(za)), (ex, yb, h(zb_)), 0.03, material=C))
+    parts.append(cyl_y('muffler', ex, 0.42, 0.08, -0.70, -0.14, seg=14, material=C))
     for o in parts: finish(o, bevel=0.004, seg=1)
     out = [join('chassis_frame', parts)]
     for yy, ax in ((FA, 'f'), (RA, 'r')):
@@ -700,12 +724,26 @@ def build_interior(M):
 def build_rubbers(M):
     """Black rubber window seals: a ring inside each opening, in front of the glass."""
     rings = []
-    for c0, c1 in zip(window_cutters(0.0, seg=3), window_cutters(-0.022, seg=3)):
+    for c0, c1 in zip(window_cutters(0.0, seg=3), window_cutters(-SEAL, seg=3)):
         r = loft('rub', greenhouse_loops(0.003, BELT, ROOF_EDGE, n=1), M['black'])
         ri = loft('rubi', greenhouse_loops(0.017, BELT - 0.05, ROOF_EDGE + 0.05, n=1), M['black'])
         boolean(r, ri); kill(ri)
         boolean(r, c0, 'INTERSECT'); boolean(r, c1); kill(c0, c1)
         rings.append(r)
+    # Division bars on the glass: the door's quarter-light, the fixed rear pane and the sliding
+    # panes' overlap (rear-34-left.jpg). Each is a strip of the same shell the seals are cut from.
+    dq = DOOR_WIN[1] - 0.30 * (DOOR_WIN[1] - DOOR_WIN[0])
+    ds = SIDE_WIN[0] + 0.26 * (SIDE_WIN[1] - SIDE_WIN[0])
+    dm = SIDE_WIN[0] + 0.66 * (SIDE_WIN[1] - SIDE_WIN[0])
+    for yc, w in ((dq, 0.018), (ds, 0.026), (dm, 0.014)):
+        for s in (-1, 1):
+            r = loft('bar', greenhouse_loops(0.003, BELT, ROOF_EDGE, n=1), M['black'])
+            ri = loft('bari', greenhouse_loops(0.017, BELT - 0.05, ROOF_EDGE + 0.05, n=1), M['black'])
+            boolean(r, ri); kill(ri)
+            xa, xb = (0.55, 0.95) if s > 0 else (-0.95, -0.55)
+            c = box('barc', xa, xb, yc - w / 2, yc + w / 2, WIN_Z0 + 0.004, WIN_Z1 - 0.004)
+            boolean(r, c, 'INTERSECT'); kill(c)
+            rings.append(r)
     ob = join('trim_window_rubber', rings)
     finish(ob, bevel=0.003, seg=1)
     return ob
