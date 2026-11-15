@@ -833,15 +833,18 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     [v(-0.4, top - 0.015, zc + 0.01), v(-0.4, 0.95, zt), v(0.4, 0.95, zt), v(0.4, top - 0.015, zc + 0.01)],
     0.032,
   );
-  b.rod(v(-0.4, 0.74, (zc + zt) / 2), v(0.4, 0.74, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
+  b.rod(v(-0.4, 0.765, (zc + zt) / 2), v(0.4, 0.765, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
   for (const side of [-1, 1]) {
     // Outboard of the indicators on the guards' corners, and ahead of them.
-    const foot = v(side * 0.93, top, zc + 0.1);
+    const foot = v(side * 0.95, top, zc + 0.1);
     b.block(foot.x, top, foot.z, 0.1, 0.025, 0.1, bar, M.Metal, Z.Front, 0.006);
-    tube([v(foot.x, top - 0.01, foot.z), v(side * 0.96, 0.87, zt), v(side * 0.4, 0.88, zt - 0.016)], 0.028);
+    tube(
+      [v(foot.x, top - 0.01, foot.z), v(side * 0.99, 0.87, zt - 0.02), v(side * 0.4, 0.88, zt - 0.016)],
+      0.028,
+    );
     b.rod(v(side * 0.24, 0.95, zt), v(side * 0.24, 0.985, zt), 0.013, bar, M.Metal, Z.Front);
     // Lamp stem meets the middle rail rather than hanging ahead of it.
-    b.rod(v(side * 0.21, 0.74, (zc + zt) / 2), v(side * 0.21, 0.775, -2.51), 0.013, bar, M.Metal, Z.Front);
+    b.rod(v(side * 0.21, 0.765, (zc + zt) / 2), v(side * 0.21, 0.775, -2.51), 0.013, bar, M.Metal, Z.Front);
   }
   b.block(0, 1.01, zt, 0.62, 0.07, 0.07, black, M.Metal, Z.Front, 0.012);
   b.block(0, 1.01, zt - 0.037, 0.58, 0.045, 0.006, lens, M.DrivingLamp, Z.Front, 0.004);
