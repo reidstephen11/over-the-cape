@@ -449,7 +449,9 @@ def build_sides(M):
 
     # Greenhouse shell (painted sides), window and seam cuts.
     gh = loft('greenhouse', greenhouse_loops(0.0, BELT, ROOF_EDGE + 0.004), M['paint'])
-    inner = loft('gh_inner', greenhouse_loops(0.04, BELT - 0.05, ROOF_EDGE + 0.05), M['interior'])
+    # Step 10: the hardtop is body colour inside, as the real one is. With a dark inside, each
+    # pillar was half dark, half body colour (the window cuts' faces), with a curved edge between.
+    inner = loft('gh_inner', greenhouse_loops(0.04, BELT - 0.05, ROOF_EDGE + 0.05), M['paint'])
     boolean(gh, inner); kill(inner)
     gh.data.materials.append(M['interior']) if M['interior'].name not in gh.data.materials else None
     cut = cutter_coll('gh_cut')
@@ -663,17 +665,16 @@ def build_side_hardware(M):
         glass = rbox_y('mglass', x0 + 0.008, x1 - 0.008, 0.235, 0.241, 1.508, 1.672, r=0.02, seg=3); glass.data.materials.append(M['chrome'])
         for o in (head, glass): finish(o, bevel=0.003, seg=1)
         out.append(join('trim_mirror_' + sn, [arm, head, glass]))
-        # roof drip rail along each side, just under the white cap
-        zd = ROOF_EDGE - 0.02
-        hw = gh_params(h(zd))[0]
-        xi, xo = sorted((s * (hw - 0.004), s * (hw + 0.016)))
-        yfr = gh_params(h(zd))[1] - 0.01
-        dr = prism_x('drip', [(yfr, zd - 0.008), (-1.62, zd - 0.008), (-1.62, zd + 0.008), (yfr, zd + 0.008)], xi, xo, M['roof'])
-        finish(dr, bevel=0.003, seg=1); out.append(dr)
     for o in hinges: finish(o, bevel=0.002, seg=1)
     out.append(join('trim_hinges_door', hinges))
-    drips = [o for o in out if o.name.startswith('drip')]
-    out = [o for o in out if not o.name.startswith('drip')] + [join('trim_drip_rail', drips)]
+    # Roof gutter under the white cap. Step 10: one band along both sides and round the rear corners
+    # (each side's rail used to stop square just before the corner window).
+    zd = ROOF_EDGE - 0.02
+    hw, yf, yr = gh_params(h(zd))
+    rail = loft('trim_drip_rail', [rrect(h(zz), hw + 0.016, yf - 0.01, yr - 0.016, 0.04, 0.216) for zz in (zd - 0.008, zd + 0.008)], M['roof'])
+    core = loft('drip_i', [rrect(h(zz), hw - 0.004, yf + 0.2, yr + 0.004, 0.04, 0.196) for zz in (zd - 0.02, zd + 0.02)])
+    boolean(rail, core); kill(core)
+    finish(rail, bevel=0.003, seg=1); out.append(rail)
     return out
 
 def build_rear_hardware(M):
@@ -695,7 +696,7 @@ def build_rear_hardware(M):
         li = rbox_y('lamp_indicator_r' + sn, x0, x1, Y_TAIL - 0.026, Y_TAIL - 0.016, 0.672, 0.730, r=0.008, seg=2)
         li.data.materials.append(M['amber']); finish(li, bevel=0.003, seg=1); out.append(li)
         # barn doors hinge on their outer edges
-        for zc in (0.80, 1.22):
+        for zc in (0.92, 1.24):                     # step 10: the lower hinge clear of the tail lamp
             xa, xb = sorted((s * (REAR_DOOR - 0.10), s * (REAR_DOOR - 0.003)))
             hinges.append(box('rh', xa, xb, Y_TAIL - 0.012, Y_TAIL + 0.002, zc - 0.03, zc + 0.03, M['paint']))
             hinges.append(cyl_z('rk', s * (REAR_DOOR + 0.003), Y_TAIL - 0.012, 0.012, zc - 0.045, zc + 0.045, material=M['paint']))

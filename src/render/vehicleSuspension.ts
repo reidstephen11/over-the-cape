@@ -6,14 +6,26 @@ import { BodyZone, VehicleBuilder, VehicleMaterial as M, groupVehicleMaterials }
 /** Coil seats, as an offset across from each wheel and a height on the chassis. */
 const COIL = { inboard: 0.24, top: 0.24, axleTop: 0.09 };
 
+/** Height of a leaf-sprung shock's top eye. */
+function leafTop(layout: SuspensionLayout, front: boolean): number {
+  return layout.leafShockTop ? (front ? layout.leafShockTop.front : layout.leafShockTop.rear) : 0.34;
+}
+
 /** Placement for a vehicle whose wide tyres need a different spring and link envelope. */
 export interface SuspensionLayout {
   coilInboard: number;
   radiusArmAxleX: number;
   radiusArmChassisX: number;
   rearDamperOffset: number;
+  /**
+   * Leaf springs only: the height of each shock's top eye when the body gives it somewhere to
+   * hang (an inner wing, a wheel tub). The shock then ends in a bracket there, where it would
+   * otherwise hang from a tower of two braces off the chassis rail, whose top stands in the
+   * open arch.
+   */
+  leafShockTop?: { front: number; rear: number };
 }
-const DEFAULT_LAYOUT: SuspensionLayout = {
+export const DEFAULT_LAYOUT: SuspensionLayout = {
   coilInboard: COIL.inboard,
   radiusArmAxleX: 0.5,
   radiusArmChassisX: 0.42,
@@ -186,10 +198,13 @@ export class VehicleSuspension {
       const offset = w.front ? 0.02 : layout.rearDamperOffset;
       const top =
         springs === 'leaf'
-          ? { x: side * 0.54, y: 0.34, z: w.z + 0.23 }
+          ? { x: side * 0.54, y: leafTop(layout, w.front), z: w.z + 0.23 }
           : { x: side * (Math.abs(w.x) - layout.coilInboard + offset), y: COIL.top + 0.08, z: w.z + dz };
-      for (const brace of [-0.08, 0.08])
-        mounts.rod({ x: side * 0.47, y: 0.07, z: top.z + brace }, top, 0.018, steel);
+      if (springs === 'leaf' && layout.leafShockTop)
+        mounts.block(top.x, top.y + 0.02, top.z, 0.07, 0.05, 0.07, dark, M.Metal, BodyZone.Trim);
+      else
+        for (const brace of [-0.08, 0.08])
+          mounts.rod({ x: side * 0.47, y: 0.07, z: top.z + brace }, top, 0.018, steel);
       if (springs === 'coil') {
         const x = side * (Math.abs(w.x) - layout.coilInboard);
         mounts.block(x, COIL.top + 0.01, w.z, 0.2, 0.02, 0.2, dark, M.Metal, BodyZone.Trim);
@@ -282,7 +297,7 @@ export class VehicleSuspension {
       const wheel = this.tuning.wheels[i],
         side = Math.sign(wheel.x);
       if (this.springs === 'leaf') {
-        this.from.set(side * 0.54, 0.34, wheel.z + 0.23);
+        this.from.set(side * 0.54, leafTop(this.layout, wheel.front), wheel.z + 0.23);
         this.axlePoint(i, side * 0.63, 0.045, wheel.z + 0.05);
       } else {
         // Dampers stand just behind (front) or ahead of (rear) the coils.

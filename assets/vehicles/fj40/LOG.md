@@ -266,4 +266,6 @@ file as headless Blender: the script rebuilt the committed GLB byte for byte bef
   rear corners are round too.
 - **Tail lamps:** 64 mm wide (were 130), on the flat of the rear face between the door's edge and the round corner.
 - **Seam:** the tub-to-hardtop seam is one band along both sides and round the rear corners, stopping at the barn doors.
-- GLB: 60,306 tris.
+- **Hardtop inside** in body colour (the pillars were half dark). **Gutter** (`trim_drip_rail`) one band round the rear
+  corners. **Barn-door hinges** at 0.92 and 1.24 m, clear of the tail lamps.
+- GLB: 60,622 tris.

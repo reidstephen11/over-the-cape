@@ -40,7 +40,7 @@
   trim_bumper_front        tris=   300 mats=['metal_bumper']
   trim_bumper_rear_l       tris=   192 mats=['metal_bumper']
   trim_bumper_rear_r       tris=   192 mats=['metal_bumper']
-  trim_drip_rail           tris=    88 mats=['paint_roof']
+  trim_drip_rail           tris=   404 mats=['paint_roof']
   trim_grille_back         tris=    12 mats=['trim_black']
   trim_grille_mesh         tris=   432 mats=['grille_mesh']
   trim_grille_surround     tris=  1484 mats=['trim_white']
@@ -65,7 +65,7 @@
   wheel_fr                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
   wheel_rl                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
   wheel_rr                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
-TOTAL TRIS 60306
+TOTAL TRIS 60622
 BBOX (Blender Z-up after import) min (-1.015, -2.145, -0.5) max (1.015, 1.86, 1.45)
 SIZE x(width)=2.030 y(length)=4.005 z(height)=1.950
 MATERIALS ['chassis_black', 'chrome', 'glass', 'grille_mesh', 'interior', 'interior_vinyl', 'lamp_amber', 'lamp_lens', 'lamp_red', 'metal_bumper', 'paint', 'paint_roof', 'trim_black', 'trim_white', 'tyre_rubber', 'wheel_white']

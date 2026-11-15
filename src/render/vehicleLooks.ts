@@ -22,7 +22,7 @@ import { buildRangieBody, buildRangiePlank, buildRangieWheel } from './rangieBod
 import { RANGIE_DRIVING_LAMPS } from './rangieGear';
 import { buildXtracabBody, buildXtracabPlank, buildXtracabWheel } from './xtracabBody';
 import { F as XTRACAB_NOSE, XTRACAB_DRIVING_LAMPS } from './xtracabLayout';
-import type { SuspensionLayout } from './vehicleSuspension';
+import { DEFAULT_LAYOUT, type SuspensionLayout } from './vehicleSuspension';
 
 /** How each vehicle is drawn: its body, wheels, carried planks, paint and springs. */
 export interface VehicleLook {
@@ -75,6 +75,11 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'leaf',
     get handedWheels() {
       return fj40GlbActive();
+    },
+    // The Blender body has an inner wing over each front shock and a wheel tub over each rear
+    // one: the shocks hang from brackets there (y 0.335 and 0.40), not from open towers.
+    get suspension() {
+      return fj40GlbActive() ? { ...DEFAULT_LAYOUT, leafShockTop: { front: 0.32, rear: 0.38 } } : undefined;
     },
     get lamps() {
       const glb = fj40GlbActive() ? fj40GlbHeadlamps() : [];

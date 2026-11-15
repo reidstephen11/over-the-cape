@@ -230,20 +230,21 @@ const standardRack: RackLayout = {
 /**
  * The Blender FJ40's rack. Its hardtop is narrower, so the clamps come in to grip the gutter
  * (x 0.763, 1.815 m above the ground) instead of hanging beside the roof; and it is long
- * enough for the 2.4 m recovery boards, which stuck out 0.2 m at each end of the old one.
- * It overhangs the windscreen by 0.2 m and the tail by 0.05 m. Heights are before
+ * enough for the 2.4 m recovery boards, which stuck out 0.2 m at each end of the old one,
+ * with 28 mm between each board end and the rail (at 2 mm they looked run through it).
+ * It overhangs the windscreen by 0.23 m and the tail by 0.08 m. Heights are before
  * FJ40_GEAR_DROP and rackDrop().
  */
 const fj40Rack: RackLayout = {
-  z0: -0.5,
-  z1: 1.94,
+  z0: -0.53,
+  z1: 1.97,
   legs: [-0.17, 0.7, 1.55],
   clampX: 0.778,
   clampY: 1.512,
   elbow: { x: 0.8, y: 1.7 },
   postReach: 0.03,
-  posts: [-0.5, -0.01, 0.48, 0.96, 1.45, 1.94],
-  slat0: -0.4,
+  posts: [-0.53, -0.03, 0.47, 0.97, 1.47, 1.97],
+  slat0: -0.43,
   slats: 12,
 };
 
@@ -531,21 +532,26 @@ function fj40RearCan(b: VehicleBuilder): void {
 }
 
 /**
- * What holds the door spare: a swing-away carrier, as rear-34-left.jpg has. A bracket on the
- * fixed left corner panel carries a tube that runs across behind the wheel, between the door
- * skin and the tyre, to a latch on the right door; a link drops from the tube to the hub
- * boss the wheel bolts to. So the spare may stand across the seam between the doors: it
- * swings clear before they open. Heights are at the body's stock height.
+ * What holds the door spare: a swing-away carrier, as rear-34-left.jpg has. Its arm runs along
+ * the rear sill, under the doors and the tail lamps, from a hinge bracket on the fixed left
+ * corner of the body to a catch on the rear bar. A post stands on the arm, between the door
+ * skin and the tyre, up to a plate and boss the wheel bolts to. Nothing is fixed to a door: the
+ * carrier swings clear of both before they open, so the spare may stand across their seam.
+ * Heights are at the body's stock height (the caller lifts them with the body).
  */
 function fj40SpareCarrier(b: VehicleBuilder): void {
-  const y = 0.8,
-    z = 1.912;
-  // The body's rear corner is round (0.2 m): at x -0.69 its skin is at z 1.85, so the bracket
-  // reaches forward to it.
-  b.block(-0.69, y, 1.885, 0.07, 0.14, 0.09, bar, M.Metal, Z.Rear, 0.004);
-  b.rod(v(-0.69, y, z), v(0.075, y, z), 0.018, bar, M.Metal, Z.Rear);
-  b.block(-0.355, y - 0.03, z, 0.06, 0.08, 0.03, bar, M.Metal, Z.Rear, 0.004);
-  b.block(0.075, y, 1.905, 0.045, 0.07, 0.03, bar, M.Metal, Z.Rear, 0.004);
+  const y = 0.1,
+    z = 1.925,
+    x = -0.365,
+    hub = 0.738;
+  // The body's rear corner is round (0.2 m): at x -0.69 its skin is at z 1.85.
+  b.block(-0.69, y, 1.895, 0.07, 0.1, 0.1, bar, M.Metal, Z.Rear, 0.004);
+  b.rod(v(-0.69, y, z), v(0.12, y, z), 0.016, bar, M.Metal, Z.Rear);
+  // The catch stands on the front of the rear bar, which is the chassis's.
+  b.block(0.12, y, 1.94, 0.05, 0.05, 0.04, bar, M.Metal, Z.Rear, 0.004);
+  tubePath(b, [v(x, y, z), v(x, y + 0.06, 1.91), v(x, hub + 0.02, 1.91)], 0.016, bar);
+  b.block(x, hub, 1.918, 0.15, 0.15, 0.02, bar, M.Metal, Z.Rear, 0.004);
+  b.rod(v(x, hub, 1.92), v(x, hub, 2.03), 0.05, bar, M.Metal, Z.Rear);
 }
 
 /** Rear bar under the lamps, with the plate on the right (the spare takes the left) and a tow ball. */
@@ -581,8 +587,9 @@ export function addFj40GlbEquipment(
   b.push().translate(0, FJ40_BODY_LIFT, 0);
   fj40Snorkel(b);
   for (const x of [-0.7, 0.7]) {
-    fj40Flap(b, x, -0.7);
-    fj40Flap(b, x, 1.6);
+    // 12 cm behind each tyre, at the rear edge of its arch.
+    fj40Flap(b, x, -0.645);
+    fj40Flap(b, x, 1.655);
   }
   fj40RearCan(b);
   fj40SpareCarrier(b);
