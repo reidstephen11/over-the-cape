@@ -8,17 +8,19 @@ export interface InteriorFit {
   cabin: CabinLayout;
   /** How far the fixed parts sit below the code body's (the Blender FJ40's cab is lower). */
   drop: number;
-  /** Outer face of the boxes over the rear wheels; it has to stay inside the body side. */
+  /** Outer face of the boxes over the rear wheels; it has to stay inside the body side. 0 leaves them out. */
   boxOuter: number;
   /** How far the dash runs forward of its face (z -0.22); it has to stop behind the screen. */
   dashDepth: number;
+  /** Width of the floor between the rear wheels; it has to stay out of the wheel tubs. */
+  rearFloor: number;
 }
 
 /** A real cabin behind the glass: seats, instruments, RHD steering and floor levers. */
 export function addVehicleInterior(
   b: VehicleBuilder,
   redlineRpm: number,
-  fit: InteriorFit = { cabin: shortieCabin, drop: 0, boxOuter: 0.79, dashDepth: 0.18 },
+  fit: InteriorFit = { cabin: shortieCabin, drop: 0, boxOuter: 0.79, dashDepth: 0.18, rearFloor: 1.04 },
 ): void {
   const cabin = fit.cabin;
   const boxInner = 0.52;
@@ -30,23 +32,24 @@ export function addVehicleInterior(
     ivory = new THREE.Color('#D9D6BF');
   for (const [z0, z1, w] of [
     [-0.78, 0.65, 1.16],
-    [0.65, 1.65, 1.04],
+    [0.65, 1.65, fit.rearFloor],
     [1.65, 1.72, 1.16],
   ])
     b.block(0, 0.265, (z0 + z1) / 2, w, 0.06, z1 - z0, dark, M.Rubber, Z.Trim);
   for (const side of [-1, 1]) {
-    b.block(
-      (side * (boxInner + fit.boxOuter)) / 2,
-      0.49,
-      1.15,
-      fit.boxOuter - boxInner,
-      0.035,
-      1.06,
-      dark,
-      M.Rubber,
-      Z.Trim,
-      0.01,
-    );
+    if (fit.boxOuter > boxInner)
+      b.block(
+        (side * (boxInner + fit.boxOuter)) / 2,
+        0.49,
+        1.15,
+        fit.boxOuter - boxInner,
+        0.035,
+        1.06,
+        dark,
+        M.Rubber,
+        Z.Trim,
+        0.01,
+      );
     for (const z of [0.84, 1.56])
       b.block(side * 0.56, 0.55, z, 0.025, 0.09, 0.025, new THREE.Color('#858A83'), M.Metal, Z.Trim);
   }

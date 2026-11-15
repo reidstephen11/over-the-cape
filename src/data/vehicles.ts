@@ -101,11 +101,20 @@ export const shortieCabin: CabinLayout = {
 };
 
 /**
+ * How far the Blender FJ40's body stands above where its own hubs would put it (v1.86). At
+ * the model's stock height the roof was 1.95 m and the front tyres were 9 cm under the wings.
+ * Toyota's figure for the 1970s hardtop is 2,000 mm, and the photographs show 13 to 15 cm
+ * over the front tyres. 42 mm more puts the roof at 1.99 m and that gap at 13 cm. The body,
+ * the cab and everything bolted to the body rise together; the axles, wheels and bars do not.
+ */
+export const FJ40_BODY_LIFT = 0.042;
+
+/**
  * The Blender FJ40's roof and glass are 0.12 m lower than the code body's, so its seat, dash,
  * wheel and the driver's eye are too. Until v1.85 they were left at the code body's height: the
  * eye was 13 mm under the top of the glass and the dash stood across the windscreen.
  */
-export const FJ40_CAB_DROP = -0.12;
+export const FJ40_CAB_DROP = -0.12 + FJ40_BODY_LIFT;
 let fj40CabLowered = false;
 /**
  * Called when the Blender body is in use (src/render/fj40Glb.ts). If the model fails to load

@@ -8,10 +8,10 @@ describe('the FJ40 cab', () => {
     expect(vehicles.shortie.cabin).toBe(shortieCabin);
   });
 
-  it('sits 0.12 m lower with the Blender body: eye, dials, lamps, wheel and handbrake together', () => {
+  it('sits 78 mm lower with the Blender body (0.12 m less its 42 mm lift): eye, dials, lamps, wheel and handbrake together', () => {
     useFj40Cab(true);
     const c = vehicles.shortie.cabin;
-    expect(FJ40_CAB_DROP).toBeCloseTo(-0.12);
+    expect(FJ40_CAB_DROP).toBeCloseTo(-0.078);
     expect(c.eye.y).toBeCloseTo(shortieCabin.eye.y + FJ40_CAB_DROP);
     expect(c.dialY).toBeCloseTo(shortieCabin.dialY + FJ40_CAB_DROP);
     expect(c.lamps.y).toBeCloseTo(shortieCabin.lamps.y + FJ40_CAB_DROP);

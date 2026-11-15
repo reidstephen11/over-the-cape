@@ -35,7 +35,7 @@ test('cockpit mirrors capture only while enabled and keep the choice across relo
   await page.keyboard.press('Escape');
   await page.locator('[data-act="settings"]').click();
   await page.locator('[data-mirrors="false"]').click();
-  await expect(page.locator('[data-mirrors="false"]')).toHaveClass('on');
+  await expect(page.locator('[data-mirrors="false"]')).toHaveClass(/\bon\b/);
   await page.reload();
   await page.locator('[data-title-begin]').click();
   await page.locator('[data-group="menu"][data-value="settings"]').click();

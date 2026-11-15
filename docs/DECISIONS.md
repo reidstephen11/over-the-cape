@@ -1702,3 +1702,36 @@ Each fix was photographed again close up and read.
 **Still open on this car.** Item 4 (front wings too deep and round, tyre against the wing on full lock with the axle crossed), item 9 (rear arches: shape, lip, sky showing through), and the rest of 15 (black door hinges, no step, plain wheel discs). Found on the way and not fixed: the bonnet is about 7 cm high at the cowl against `side-1977.jpg` and `rear-34-left.jpg`. `reference/vehicles/landcruiser-fj40/SOURCES.md` now has this body's measures, and four captions there were corrected (`front.jpg` and `rear.jpg` are three-quarter views of a soft top; `front-34-hardtop.jpg` and `rear-34-hardtop.jpg` have each other's angle).
 
 **Tools.** The model was rebuilt with Blender's Python module (`pip install bpy`, version 5.3.0) from `tools/blender/fj40/fj40_body.py`. Run unchanged, the script reproduced the committed model byte for byte, so the script is the source. `tests/fj40Cab.test.ts` checks the lowered cab. `tests/spares.test.ts` passes.
+
+## v1.86: the FJ40's body shape, and its door mirrors
+
+The owner, after v1.85: fix it until it looks like the real thing. This version takes the rest of the FJ40's audit list that is about shape, and one fault the browser tests found. Only the Blender FJ40 (`shortie`) changes.
+
+**Compared with** `rear-34-left.jpg` (side), `side.jpg` and `side-1977.jpg` (front three-quarter), `front-34-hardtop.jpg` (rear three-quarter) and `front-white.jpg`, each put beside the matching studio picture before and after.
+
+- **Ride height.** At the model's own height the roof was 1.95 m and the front tyres were 9 cm under the wings (item 4: "about 3 cm above the tyre" on full lock with the axle crossed). Toyota's figure for the 1970s hardtop is 2,000 mm, and `rear-34-left.jpg` shows about 13 cm over the front tyre. The body now stands 42 mm higher on its axles (`FJ40_BODY_LIFT`): roof 1.99 m, 13 cm over the front tyres. The cab, the glass, the snorkel, the rack and its load, the jerry can, the aerial and the mud flaps rise with the body. The bull bar and the rear bar stay where the winch and the tow point are. The physics is unchanged.
+- **Bonnet.** 1.215 m at the cowl instead of 1.28 m, 1.175 m at the nose, so it is nearly level, as in the photographs, where its rear edge is level with the seam between the tub and the hardtop. A dark air slot sits in its front lip above the grille panel.
+- **Front wings (item 4).** The top rolled into the flare on a 160 mm radius, which read as a round slab. It is 85 mm now: a flat top and an upright side.
+- **Rear arches (item 9).** Flat-topped with radiused corners (a superellipse of exponent 4.6 instead of 2.7, 1.06 m wide and 0.87 m to its top) and no raised lip. A dark box behind each opening, closed on its inner side, stops the cabin and the far side showing through.
+- **Hinges and step (item 15).** The door and barn-door hinges are body colour. The step under each door stands 85 mm out from the side (it was 45 mm and hard to see).
+- **Door mirrors.** `e2e/mirrors.spec.ts` and `e2e/headMotion.spec.ts` failed after v1.85: no mirror was ever drawn in this car. The model's mirror glass is chrome, so it loaded as plain metal and the working mirrors found nothing to reflect in; this had been so since v1.81. The flat chrome face that looks straight back now loads as mirror glass (`markMirrorGlass` in `src/render/fj40Glb.ts`). Both tests pass. One line of `e2e/mirrors.spec.ts` expected a button's class to be exactly `on`; since v1.84 the highlighted button is `on focused`, so the check now looks for `on` among the classes.
+
+**Where the moved parts are.**
+
+- **Door spare.** On the left barn door alone, face to the rear, on the model's carrier plate and boss behind it: 0.19 m higher than modelled and 15 mm further off the door, so it stands above both tail lamps, across the foot of that door's window (as `rear-34-left.jpg` carries its spare) and clear of the door's upper hinge. v1.83 had moved it 0.22 m inboard to uncover the left lamp, which put it across the seam between the two doors where nothing could hold it.
+- **Roof spare.** Unchanged in place, lying flat and face up; its plate is 0.62 m square (was 0.4 m), out to where the sidewall is widest, so the tyre is seen to rest on it.
+- **Rear bar.** 20 mm higher than in v1.85, under the tail lamps, its brackets reaching the body's lower edge; the plate sits 12 mm higher on it so it no longer hangs below.
+- Everything else that moved rose 42 mm with the body it is bolted to.
+
+**The second look.** A reviewer was given the standard studio set and 16 close-ups and nothing else. What it found, and what was done:
+
+- The door spare had no visible carrier and sat across the door seam: moved, as above.
+- Thin pale slivers in the lower corners of the rear arches: the cut faces of the floor showed for 10 mm under the dark boxes. The boxes now reach 6 mm below the body's lower edge.
+- A flat bar across each rear arch that stopped short: the code cabin's floor, 1.04 m wide, reaching into the wheel tubs. On this car it is 0.78 m wide between the rear wheels. The cabin's own boxes over the wheels are left out on this car too, since the model now has them.
+- The roof spare looked held up by a block under its middle: the wider plate, as above.
+- The rear plate hung below the bar: raised.
+- Not changed: the pair of rods above each axle end is the shock's tower, two braces from the chassis rail to the shock's top eye, which the game draws on every leaf-sprung vehicle; the leaf springs' leaves are drawn apart for the same reason. The snorkel's box covers the left cowl louvres, where a real one sits. The front door's shut line is two fine grooves close together.
+
+Each fix was photographed again and read.
+
+**Still open on this car.** The wheels show a white disc on the inside as well as the outside, because all four share one mirrored shape that is not turned for the left side (item 15). The doors are shut lines on a flat side, with no rounded lower corners.

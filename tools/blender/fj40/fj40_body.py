@@ -30,7 +30,7 @@ WIN_Z0, WIN_Z1, SEAL = 1.345, 1.795, 0.015
 SCREEN_Z0, SCREEN_Z1 = 1.345, 1.80
 WING_TOP = 0.99
 ARCH_F = dict(y=FA, hc=0.38, r=0.48)   # step 4: lowered 7 cm (side-1977.jpg flare depth)
-ARCH_R = dict(y=RA, hc=0.40, r=0.49, a=0.56, b=0.50, n=2.7)
+ARCH_R = dict(y=RA, hc=0.40, r=0.49, a=0.53, b=0.47, n=4.6)   # step 7: flat-topped, radiused corners (rear-34-left.jpg)
 DOOR_REAR = -0.45
 
 # ---------------------------------------------------------------- helpers
@@ -227,6 +227,8 @@ def materials():
     )
 
 # ---------------------------------------------------------------- parts
+BONNET_REAR = 1.215        # bonnet top at the cowl; level with the tub/hardtop seam in side-1977.jpg
+
 def build_front(M):
     parts = []
     # Bonnet: crowned, slopes down to the front, rounded edges.
@@ -235,7 +237,7 @@ def build_front(M):
     # bonnet is a lid: full-depth sides back to the cowl, but only a thin lip over the front panel
     for i, y in enumerate([0.42, 0.9, 1.4, 1.575, 1.585, 1.64, 1.675, 1.69]):
         t = (y - 0.42) / (1.69 - 0.42)
-        top = 1.28 - 0.10 * t
+        top = BONNET_REAR - (BONNET_REAR - 1.175) * t   # step 7: 1.28 at the cowl was 7 cm high
         drop = [0, 0, 0, 0, 0, 0.012, 0.03, 0.06][i]       # front edge rolls down over the grille
         inset = [0, 0, 0, 0, 0, 0.002, 0.008, 0.02][i]
         zbot = [0.95, 0.95, 0.95, 0.95, 1.10, 1.10, 1.10, 1.10][i]
@@ -291,7 +293,7 @@ def build_front(M):
     for s in (-1, 1):
         x0, x1 = (0.50, HW_WING) if s > 0 else (-HW_WING, -0.50)
         w = prism_x('wing_' + ('r' if s > 0 else 'l'), prof, x0, x1, M['paint'])
-        rr = 0.16                                   # roll radius from the top into the flare
+        rr = 0.085                                  # step 7: a crisper roll from the flat top into the flare (was 0.16)
         xs = [(0.50, SILL - 0.1), (0.50, WING_TOP)]
         xs += [(HW_WING - rr + rr * math.cos(math.radians(a)), WING_TOP - rr + rr * math.sin(math.radians(a))) for a in range(90, -1, -10)]
         xs += [(HW_WING, SILL - 0.1)]
@@ -306,7 +308,7 @@ def build_front(M):
 
     # Cowl / scuttle sides between the wing and the door.
     q = lambda t: ((1 - t) ** 2 * 0.66 + 2 * (1 - t) * t * 0.60 + t * t * 0.42,
-                   (1 - t) ** 2 * WING_TOP + 2 * (1 - t) * t * 1.30 + t * t * 1.31)
+                   (1 - t) ** 2 * WING_TOP + 2 * (1 - t) * t * (BONNET_REAR + 0.02) + t * t * (BONNET_REAR + 0.03))
     cowl_prof = [(0.30, SILL), (0.66, SILL)] + [q(i / 10) for i in range(11)] + [(0.30, BELT)]
     cowl = prism_x('cowl', cowl_prof, -HW_TUB, HW_TUB, M['paint'])
     boolean(cowl, cyl_x('arch_cut_f', A['y'], A['hc'], A['r'] + 0.005, -1, 1))
@@ -329,8 +331,10 @@ def build_front(M):
             finish(p, bevel=0.022, seg=3, angle=30)
         else:
             finish(p, bevel=0.006)
-    finish(rec, bevel=0); finish(val, bevel=0.01)
-    return join('body_front', parts), [rec, val]
+    # The air slot in the bonnet's front lip, above the grille panel (side.jpg, front-white.jpg).
+    vent = box('trim_bonnet_vent', -0.22, 0.22, 1.672, 1.693, 1.104, 1.128, M['black'])
+    finish(rec, bevel=0); finish(val, bevel=0.01); finish(vent, bevel=0.004, seg=1)
+    return join('body_front', parts), [rec, val, vent]
 
 def gh_params(z_abs):
     """Greenhouse cross-section at absolute height z."""
@@ -386,18 +390,29 @@ def build_sides(M):
     t0 = sarch_t(A['hc'], A['b'] + L, A['n'], zb); t1 = sarch_t(A['hc'], A['b'], A['n'], zb)
     outer = sarch(A['y'], A['hc'], A['a'] + L, A['b'] + L, A['n'], t0, math.pi - t0, 48)
     inner = sarch(A['y'], A['hc'], A['a'], A['b'], A['n'], math.pi - t1, t1, 48)
-    lips = []
+    lips = []; tubs = []
     for s in (-1, 1):
         x0, x1 = (HW_TUB - 0.01, HW_TUB + 0.022) if s > 0 else (-HW_TUB - 0.022, -HW_TUB + 0.01)
         lip = prism_x('lip', outer + inner, x0, x1, M['paint'])
         b = lip.modifiers.new('bevel', 'BEVEL'); b.width = 0.012; b.segments = 3
         b.limit_method = 'ANGLE'; b.angle_limit = math.radians(40); b.use_clamp_overlap = True
         apply_all(lip); lip.data.shade_smooth(); lip.data.set_sharp_from_angle(angle=math.radians(40))
-        lips.append(lip)
+        kill(lip)                                   # step 7: the real arch has a folded edge, no raised lip
+
+    # Wheel tubs: a dark box inside each rear arch, closed on its inner side, so the cabin and
+    # the far side do not show through the opening.
+    for s_ in (-1, 1):
+        x0, x1 = (0.40, HW_TUB - 0.012) if s_ > 0 else (-HW_TUB + 0.012, -0.40)
+        tb = box('tubbox', x0, x1, A['y'] - A['a'] - 0.05, A['y'] + A['a'] + 0.05, SILL - 0.006, A['hc'] + A['b'] + 0.05, M['chassis'])
+        cx0, cx1 = (0.43, 1.0) if s_ > 0 else (-1.0, -0.43)
+        boolean(tb, prism_x('tubcut', sarch(A['y'], A['hc'], A['a'] - 0.004, A['b'] - 0.004, A['n'], 0, 2 * math.pi, 64)[:-1], cx0, cx1))
+        kill(bpy.data.objects['tubcut'])
+        tb.name = 'chassis_tub_' + ('r' if s_ > 0 else 'l')
+        tubs.append(tb)
 
     # Running-board step under each door: the front flare tail runs into it.
     for s_ in (-1, 1):
-        x0, x1 = (HW_TUB - 0.03, HW_TUB + 0.045) if s_ > 0 else (-HW_TUB - 0.045, -HW_TUB + 0.03)
+        x0, x1 = (HW_TUB - 0.03, HW_TUB + 0.085) if s_ > 0 else (-HW_TUB - 0.085, -HW_TUB + 0.03)   # step 7: 85 mm proud (was 45)
         st = prism_x('step', [(0.36, SILL - 0.02), (DOOR_REAR - 0.02, SILL - 0.02), (DOOR_REAR - 0.02, SILL + 0.01),
                               (DOOR_REAR - 0.05, SILL + 0.025), (0.36, SILL + 0.025)], x0, x1, M['paint'])
         finish(st, bevel=0.006)
@@ -423,7 +438,7 @@ def build_sides(M):
     for o in list(cut.objects): kill(o)
     bpy.data.collections.remove(cut)
     finish(gh, bevel=0.006)
-    return tub, gh, lips
+    return tub, gh, lips, tubs
 
 def rbox_x(name, x0, x1, y0, y1, z0, z1, r=0.05, seg=5):
     """Window cutter rounded in side view (y, z), extruded across x."""
@@ -592,8 +607,8 @@ def build_side_hardware(M):
         X = s * HW_TUB
         # exposed door hinges at the door's front edge
         for zc in (0.82, 1.22):
-            hinges.append(box('hl', min(X, X + s * 0.008), max(X, X + s * 0.008), Y_SCREEN - 0.075, Y_SCREEN + 0.06, zc - 0.035, zc + 0.035, M['black']))
-            hinges.append(cyl_z('hk', X + s * 0.012, Y_SCREEN - 0.012, 0.012, zc - 0.045, zc + 0.045, material=M['black']))
+            hinges.append(box('hl', min(X, X + s * 0.008), max(X, X + s * 0.008), Y_SCREEN - 0.075, Y_SCREEN + 0.06, zc - 0.035, zc + 0.035, M['paint']))
+            hinges.append(cyl_z('hk', X + s * 0.012, Y_SCREEN - 0.012, 0.012, zc - 0.045, zc + 0.045, material=M['paint']))
         # door handle: escutcheon + pull, at the rear of the door just above the swage line
         esc = box('esc', min(X, X + s * 0.006), max(X, X + s * 0.006), -0.385, -0.255, 1.118, 1.152, M['chrome'])
         pull = box('pull', min(X, X + s * 0.018), max(X, X + s * 0.018), -0.37, -0.27, 1.126, 1.142, M['chrome'])
@@ -640,8 +655,8 @@ def build_rear_hardware(M):
         # barn doors hinge on their outer edges
         for zc in (0.80, 1.22):
             xa, xb = sorted((s * 0.625, s * 0.722))
-            hinges.append(box('rh', xa, xb, Y_TAIL - 0.012, Y_TAIL + 0.002, zc - 0.03, zc + 0.03, M['black']))
-            hinges.append(cyl_z('rk', s * 0.728, Y_TAIL - 0.012, 0.012, zc - 0.045, zc + 0.045, material=M['black']))
+            hinges.append(box('rh', xa, xb, Y_TAIL - 0.012, Y_TAIL + 0.002, zc - 0.03, zc + 0.03, M['paint']))
+            hinges.append(cyl_z('rk', s * 0.728, Y_TAIL - 0.012, 0.012, zc - 0.045, zc + 0.045, material=M['paint']))
     for o in hinges: finish(o, bevel=0.002, seg=1)
     out.append(join('trim_hinges_rear', hinges))
     housings = [o for o in out if o.name.startswith('tail_h')]
@@ -900,7 +915,7 @@ def build():
     clean_scene()
     M = materials()
     front, front_trim = build_front(M)
-    tub, gh, lips = build_sides(M)
+    tub, gh, lips, tubs = build_sides(M)
     sides = join('body_sides', [tub, gh] + lips)
     rear = split_rear(sides, 'body_rear')
     roof = build_roof(M)
