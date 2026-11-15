@@ -37,7 +37,7 @@ import { floodPower, updateFlood, type FloodEvent } from './flooding';
 import { sandPressure } from './tyrePressure';
 import { mulberry32 } from '../world/rng';
 import { type Quat, type Vec3, dot, headingToYaw, rotate, v3, yawQuat } from './math';
-import { WheelContacts } from './wheelContacts';
+import { WALL_SPEED, WheelContacts } from './wheelContacts';
 import { axleDriveCapacity } from './differential';
 import {
   createTransferState,
@@ -390,6 +390,45 @@ export class Vehicle {
   }
 
   /** World position of a local point. */
+  /**
+   * A tyre against a wall (the far edge of a hole it dropped into, `WheelContacts.walls`):
+   * stop that corner moving into it, as the tyre's face against the edge would. Only the
+   * part of the corner's velocity along the tyre's rolling direction, into the wall, is
+   * taken away; the car can still back out, or be winched or driven sideways.
+   */
+  private meetWalls(q: Quat): void {
+    const walls = this.wheelContacts.walls;
+    const t = this.tuning;
+    const lin = this.body.linvel();
+    const ang = this.body.angvel();
+    const com = this.body.worldCom();
+    for (let i = 0; i < t.wheels.length; i++) {
+      const side = walls[i];
+      if (side === 0) continue;
+      const w = t.wheels[i];
+      const hub = this.localToWorld(w.x, w.y - this.wheels[i].suspension, w.z, this.wallHub);
+      // The rolling direction, level: the body's forward turned by the steering.
+      const d = rotate(q, this.wheelContacts.steerSin[i], 0, this.wheelContacts.steerCos[i], this.wallDir);
+      d.y = 0;
+      const len = Math.hypot(d.x, d.z) || 1;
+      d.x = (d.x / len) * side;
+      d.z = (d.z / len) * side;
+      // Velocity of the hub point.
+      const rx = hub.x - com.x,
+        ry = hub.y - com.y,
+        rz = hub.z - com.z;
+      const vx = lin.x + ang.y * rz - ang.z * ry;
+      const vz = lin.z + ang.x * ry - ang.y * rx;
+      const into = vx * d.x + vz * d.z;
+      if (into <= 0) continue;
+      // Enough to stop the corner: the whole car's mass, since its other wheels push it on.
+      const j = into * this.mass;
+      this.body.applyImpulseAtPoint({ x: -d.x * j, y: 0, z: -d.z * j }, hub, true);
+    }
+  }
+  private readonly wallHub = v3();
+  private readonly wallDir = v3();
+
   localToWorld(x: number, y: number, z: number, out: Vec3 = v3()): Vec3 {
     const p = this.body.translation();
     rotate(this.body.rotation(), x, y, z, out);
@@ -903,8 +942,20 @@ export class Vehicle {
       c.setWheelRadius(i, t.wheelRadius - tyreDrop(this.condition, i, w.rotation));
     }
 
-    this.wheelContacts.update(this.body, c, WHEEL_FILTER, this.wheelX);
+    // At a crawl, with the car on at least two wheels, a tyre meets the far edge of a hole
+    // as a wall (v2.01) rather than climbing it.
+    const grounded = this.wheels.reduce((n, w) => n + (w.contact ? 1 : 0), 0);
+    const lookForWalls = Math.abs(this.speed) < WALL_SPEED && grounded >= 2;
+    this.wheelContacts.update(
+      this.body,
+      c,
+      WHEEL_FILTER,
+      this.wheelX,
+      lookForWalls,
+      this.wheels.map((w) => w.contact),
+    );
     c.updateVehicle(dt, this.physics.R.QueryFilterFlags.EXCLUDE_SENSORS, WHEEL_FILTER);
+    this.meetWalls(q);
     this.addRollTorque(q);
     this.pushDynamicGround(q, dt);
 

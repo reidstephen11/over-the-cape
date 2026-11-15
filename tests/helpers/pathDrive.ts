@@ -148,6 +148,27 @@ export async function drivePath(world: World, path: Path, o: PathDriveOptions = 
         break;
       }
       if (v.tiltDeg() > 100) break;
+      if (process.env.WALL_PROBE && n % 15 === 0) {
+        const wc = (v as unknown as { wheelContacts: { walls: Int8Array; wallRise: Float32Array } })
+          .wheelContacts;
+        const walls = wc.walls;
+        if (walls.some((x) => x !== 0) || v.wheels.some((w) => !w.contact))
+          console.log(
+            time.toFixed(1),
+            v.position.x.toFixed(1),
+            v.position.z.toFixed(1),
+            'speed',
+            v.speed.toFixed(2),
+            'walls',
+            [...walls].join(','),
+            'contact',
+            v.wheels.map((w) => (w.contact ? 1 : 0)).join(''),
+            'water',
+            v.wheels.map((w) => w.water.toFixed(2)).join(','),
+            'rise',
+            [...wc.wallRise].map((x) => x.toFixed(2)).join(','),
+          );
+      }
     }
     const c = v.condition;
     return {
