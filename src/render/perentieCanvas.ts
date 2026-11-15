@@ -190,6 +190,8 @@ export function addCanvasHoops(b: VehicleBuilder): void {
     }
     pts.push(v(leg, 1.385, z), v(leg, 0.79, z));
     continuousTube(b, pts, 0.012, galv, Z.Trim, M.Paint);
+    // A socket on the waist shelf under each leg.
+    for (const side of [-1, 1]) b.block(side * leg, 0.807, z, 0.05, 0.03, 0.05, galv, M.Paint, Z.Trim, 0.004);
   }
 }
 /**

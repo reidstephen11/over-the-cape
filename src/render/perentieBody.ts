@@ -387,10 +387,11 @@ function windscreen(b: VehicleBuilder): void {
     .translate(0, WAIST, SCUTTLE + 0.01)
     .rotate(lean, 0, 0);
   const h = SCREEN_TOP - WAIST;
-  const w = 2 * CAB - 0.04;
+  // As wide as the door tops, so the pillars and the doors' front edges are flush.
+  const w = 2 * CAB;
   b.block(0, 0.03, 0, w, 0.06, 0.07, paint, M.Paint, Z.Front, 0.01);
   b.block(0, h - 0.03, 0, w, 0.07, 0.08, paint, M.Paint, Z.Front, 0.01);
-  for (const x of [-(CAB - 0.055), CAB - 0.055])
+  for (const x of [-(CAB - 0.035), CAB - 0.035])
     b.block(x, h / 2, 0, 0.07, h, 0.07, paint, M.Paint, Z.Front, 0.01);
   b.block(0, h / 2 + 0.005, 0, w - 0.13, h - 0.11, 0.012, glass, M.Glass, Z.Glass);
   for (const y of [0.065, h - 0.07]) b.block(0, y, -0.012, w - 0.12, 0.012, 0.01, rubber, M.Rubber, Z.Front);
@@ -701,8 +702,8 @@ function canOnRear(b: VehicleBuilder, side: number): void {
     .rotate(0, -Math.PI / 2, 0);
   jerryCan(b, 0, 0, 0, { colour: new THREE.Color('#5B6640'), zone: Z.Rear, width: 0.165, ribX: 0.085 });
   b.pop();
-  b.block(x, y + 0.05, z + 0.088, 0.36, 0.04, 0.012, black, M.Rubber, Z.Rear);
-  for (const dx of [-0.176, 0.176])
+  b.block(x, y + 0.05, z + 0.088, 0.352, 0.04, 0.012, black, M.Rubber, Z.Rear);
+  for (const dx of [-0.172, 0.172])
     b.block(x + dx, y + 0.05, skin + 0.105, 0.012, 0.04, 0.21, black, M.Rubber, Z.Rear);
 }
 
