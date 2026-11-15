@@ -10,6 +10,8 @@ import { scoreRun } from '../src/sim/runScore';
 import { createCondition } from '../src/sim/vehicle/condition';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
 import { steepest } from './helpers/drive';
+import { planSurprises } from '../src/sim/world/surprisePlan';
+import { segmentDistance } from '../src/sim/world/polyline';
 import { telegraphWorld } from './world';
 
 /** Episode 2, the Telegraph Track (v1.96): the map's layout and the episode's facts. */
@@ -153,6 +155,34 @@ describe('the Telegraph Track map', () => {
   });
 });
 
+describe('Gunshot’s three lines (v1.99)', () => {
+  it('branches the Chute, the Staircase and the Slot from the top of the approach, all to the bed below', () => {
+    const top = trailPoint(track('gunshot-approach'), track('gunshot-approach').poly.length);
+    const chute = track('gunshot-chute');
+    for (const id of ['gunshot-staircase', 'gunshot-slot']) {
+      const line = track(id);
+      const a = trailPoint(line, 0);
+      expect(Math.hypot(a.x - top.x, a.z - top.z), id).toBeLessThan(0.5);
+      // It ends on the bed run below the Chute, level with it.
+      const b = trailPoint(line, line.poly.length);
+      const on = trailProgress(chute, b.x, b.z);
+      expect(on.distance, id).toBeLessThan(0.6);
+      const q = trailPoint(chute, on.along);
+      expect(Math.abs(t.heightAt(b.x, b.z) - t.heightAt(q.x, q.z)), id).toBeLessThan(0.3);
+      // Down the 4 m bank steeply.
+      expect(steepest(line, 4), id).toBeGreaterThan(30);
+    }
+    const stair = track('gunshot-staircase');
+    expect(stair.def.stones?.filter((st) => st.shape === 'ridge')).toHaveLength(2);
+    expect(stair.def.cant?.some(([, deg]) => Math.abs(deg) >= 6)).toBe(true);
+    const slot = track('gunshot-slot');
+    expect(slot.def.width).toBeLessThan(3);
+    const ruts = slot.def.erosion ?? [];
+    expect(ruts.some((e) => e.depth > 0 && e.path[0][1] < 0)).toBe(true);
+    expect(ruts.some((e) => e.depth < 0 && e.path[0][1] > 0)).toBe(true);
+  });
+});
+
 describe('the Telegraph Track episode', () => {
   it('is episode 2 on its own map, open from the start, with a lean load and one camp', () => {
     expect(episodes.telegraph).toBe(telegraphEpisode);
@@ -193,6 +223,29 @@ describe('the Telegraph Track episode', () => {
     expect(wet.creekRise).toBeGreaterThan(reopened.creekRise);
     expect(wet.flowScale).toBeGreaterThan(reopened.flowScale);
     expect(conditionFor(conditionById('wet'), telegraphEpisode.conditions).briefing).toMatch(/Ducie/);
+  });
+
+  it('sends a 4WD the other way, strands a driver for a small reward and drops a tree in the creek forest (v1.99)', () => {
+    expect(telegraphEpisode.traffic?.map((x) => x.track)).toEqual(['palm-ducie']);
+    const stranded = telegraphEpisode.stranded ?? [];
+    expect(stranded).toHaveLength(1);
+    const reward = stranded[0].reward;
+    expect((reward.jerryCans ?? 0) + (reward.spares ?? 0)).toBe(0);
+    expect(reward.plugs).toBe(1);
+    for (let seed = 1; seed <= 8; seed++) {
+      const plan = planSurprises(world, telegraphEpisode.surprises!, seed);
+      expect(plan, `seed ${seed}`).toHaveLength(1);
+      expect(plan[0].kind).toBe('treefall');
+      // In the gallery forest by a creek: 22 m (the planner's clearance) to 60 m from its water.
+      const near = telegraphMap.creeks.some((c) =>
+        c.points.some((p, i) => {
+          const q = c.points[i + 1];
+          return q && segmentDistance(plan[0].x, plan[0].z, p.x, p.z, q.x, q.z).d < p.halfWidth + 60;
+        }),
+      );
+      expect(near).toBe(true);
+      expect(t.waterDepthAt(plan[0].x, plan[0].z)).toBe(0);
+    }
   });
 
   it('takes a fixed share of the score for the bypass', () => {

@@ -5,8 +5,8 @@ The owner asked for a new level, "shorter but more challenging" than the CREB Tr
 ## Status
 
 - **Stage 1 (v1.96): built.** The episode, map, route with all five obstacles, Gunshot's Chute and the bypass, the camp, mission, briefing, notes with sourced history, and tests (`tests/telegraph.test.ts`, `tests/telegraphDrive.test.ts`).
-- **Stage 2: next.** The Staircase and the Slot at Gunshot, tuning from driving, and the three engine limits left open below (Bertie's holes, Palm Creek's rut, the Chute taken crooked). Oncoming traffic, a stranded driver (small reward) and surprises, where they make it harder.
-- **Stage 3: after the owner's play test.** Polish, and the side trip to the old water gauging station at the Dulhunty.
+- **Stage 2 (v1.99): built.** The Staircase and the Slot at Gunshot, an oncoming Troopy, a stranded HiLux paying one plug, and a dead tree down across the track by Ducie or Bertie. The three engine limits (Bertie's holes, Palm Creek's rut, the Chute taken crooked) are still open: see below.
+- **Stage 3: after the owner's play test.** Polish (including the three engine limits, the gallery forest's density and Bertie's holes from the seat), and the side trip to the old water gauging station at the Dulhunty.
 
 ## The design
 
@@ -66,6 +66,13 @@ Measured on the generated map and in the scripted drives (`tests/telegraphDrive.
 - **Gunshot:** the plain to the creek bed is 4 m; the ground falls about 1.9 m in 3 m below the lip under a 0.55 m band of rock (a face of about 2.4 m), into 0.45–0.6 m of water; 20 m along a muddy bed; out at 21–28°.
 - **Load and clock:** 16 L of fuel, no jerry cans, one spare, two plugs, `fuelScale` 12 (a scripted clean run burns about 12 L). 3 pm start, dark at 6:15 pm, one hour's grace, `clockRate` 7: 13 minutes of driving uses 1.5 of the 3.25 hours of light.
 
+## As built (v1.99, stage 2)
+
+- **The Staircase** (`gunshot-staircase`), east of the Chute: from the top of the approach round to the bank, then 4 m down in about 7 m (about 30° on average, past 40° at the foot) over two 0.45 m rock ledges with their risers on the creek side, leaning 8° towards the creek, with a rut down the right wheel line. It crosses the creek to the bed below the Chute.
+- **The Slot** (`gunshot-slot`), west of the Chute: 2.8 m wide between clay walls (batter 2.4), twisting 4 m down in about 7 m, with a 0.45 m hole under the left wheels and a 0.35 m hump under the right at the same spot, so a front wheel and the opposite rear lift in turn. It crosses to the bed run.
+- **Driven:** both at a crawl with both lockers in the short 40, the LC79 and the Troop Carrier on the dry day; both stop in high range on a just-reopened day.
+- **Traffic:** a Troopy along `palm-ducie`. **Stranded:** a HiLux 8 m off `dulhunty-bertie`, paying one plug. **Surprise:** one dead tree a run, on the Ducie or Bertie end of the sand track (`planSurprises` keeps falls 22 m clear of water). No rockfalls: the plain has no cutting banks for rocks to come off.
+
 ## Differences from the design
 
 - **Episode number.** SPEC.md §2 calls the southern Telegraph Track Episode 5; the design builds it as the game's second episode, number 2.
@@ -81,4 +88,6 @@ Measured on the generated map and in the scripted drives (`tests/telegraphDrive.
 - **The falls** are a drop in the river's water level (1.2 m over about 12 m) downstream of the shelf; there is no falling-water effect.
 - **Bertie's holes from the driver's seat** show as darker water through a darker deep-water colour for this map, but they are blocky (1 m cells) and faint at a low angle. Check in the play test.
 - **The bypass** costs 250 points, a fixed deduction in `scoreRun` (the simpler of the two choices): the other parts sum to 1000, so a bypass run scores 750 at most and cannot reach gold (800).
+- **The Staircase and the Slot are gentler than the design's 45° and 40°** on average (about 30° each over the 4 m bank), because the 1 m ground grid rounds a 4 m drop over 4 m into a slope over about 7 m; their steepest metres are past 40°. The design's "off-camber" Staircase leans 8°.
+- **The fallen tree can be driven round.** The design wants surprises that make the track harder. The gallery forest by the creeks renders as open woodland in the game, so a car can leave the track and go round the tree: it costs time, not a winch. Thicker forest along the creeks is for stage 3.
 - **History left out:** Gunshot's drop height and the number plates tree (not sourced).

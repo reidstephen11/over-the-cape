@@ -279,6 +279,17 @@ export const gunshotChute: Waypoint[] = [
   [-22, -964],
   [-4, -970, PLAIN],
 ];
+/** Metres along a track's points to its control point `i`. */
+export function arcAtPoint(points: readonly Waypoint[], i: number): number {
+  const poly = densify(
+    points.map((p) => [p[0], p[1]] as XZ),
+    0.25,
+  );
+  let k = 0;
+  while (k + 1 < poly.count && poly.u[k + 1] <= i) k++;
+  return poly.s[k];
+}
+
 /** Metres along `gunshotChute` to the lip. */
 export const gunshotLip = (() => {
   const poly = densify(
@@ -297,6 +308,41 @@ export const gunshotLip = (() => {
   }
   return best;
 })();
+
+/**
+ * The Staircase, east of the Chute: about 40° of clay down the bank over two ledges of rock,
+ * leaning towards the creek and rutted, into the creek and across it to the bed below the
+ * Chute. Laid from the top of the approach.
+ */
+export const gunshotStaircase: Waypoint[] = [
+  [-3.5, -898, PLAIN],
+  [3, -901.5],
+  [10, -905.5],
+  [13, -909, PLAIN],
+  [13.6, -913.6, PLAIN],
+  [14, -918.6, levels.gunshot],
+  [12.5, -922],
+  [8, -925.6, levels.gunshot + 0.05],
+  [0, -926],
+  [-6.5, -925, levels.gunshot + 0.05],
+];
+
+/**
+ * The Slot, west of the Chute: a narrow rut twisting down the bank between clay walls at
+ * about 40°, with a hole under one front wheel and a hump under the other, then into the
+ * creek and across to the bed.
+ */
+export const gunshotSlot: Waypoint[] = [
+  [-3.5, -898, PLAIN],
+  [-10, -901.5],
+  [-16.5, -905.5],
+  [-18.5, -909, PLAIN],
+  [-19, -912.4, PLAIN],
+  [-20.6, -915.2],
+  [-19.2, -918.6, levels.gunshot],
+  [-20.2, -922],
+  [-22, -926.6, levels.gunshot + 0.05],
+];
 
 /** The bypass: right at the fork and round on easy sand to the north bank. */
 export const gunshotBypass: Waypoint[] = [

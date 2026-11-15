@@ -34,6 +34,16 @@ const lines: Record<string, () => Path> = {
     ]),
   bertie: () => along(world, [['bertie-bed', 0, 121]]),
   chute: () => along(world, [['gunshot-chute', 0, 90]]),
+  staircase: () =>
+    along(world, [
+      ['gunshot-staircase', 0, 60],
+      ['gunshot-chute', 30, 90],
+    ]),
+  slot: () =>
+    along(world, [
+      ['gunshot-slot', 0, 40],
+      ['gunshot-chute', 46, 90],
+    ]),
 };
 const SLOW = 300_000;
 
@@ -69,7 +79,7 @@ describe('the Telegraph Track on the right line', () => {
 });
 
 describe('the Telegraph Track the wrong way', () => {
-  for (const id of ['palm', 'ducie', 'dulhunty', 'bertie'])
+  for (const id of ['palm', 'ducie', 'dulhunty', 'bertie', 'staircase', 'slot'])
     it(
       `stops ${id} in high range with open diffs`,
       async () => {
@@ -146,6 +156,17 @@ describe('the Telegraph Track the wrong way', () => {
       const hard = await drivePath(world, path, { mode: 'high', speed: 6, psi: 36, day: dry, limit: 90 });
       expect(soft.done).toBe(true);
       expect(hard.done).toBe(false);
+    },
+    SLOW,
+  );
+
+  it(
+    'takes the Troopy down the Staircase and the Slot, its ways across Gunshot (v1.99)',
+    async () => {
+      for (const id of ['staircase', 'slot']) {
+        const r = await drivePath(world, lines[id](), { tuning: troopyTuning, day: dry, psi: 18 });
+        expect(r.done, id).toBe(true);
+      }
     },
     SLOW,
   );
