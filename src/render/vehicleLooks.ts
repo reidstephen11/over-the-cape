@@ -77,9 +77,12 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
       return fj40GlbActive();
     },
     // The Blender body has an inner wing over each front shock and a wheel tub over each rear
-    // one: the shocks hang from brackets there (y 0.335 and 0.40), not from open towers.
+    // one: the shocks hang from brackets there (y 0.335 and 0.40), not from open towers. Their
+    // lower eyes are 0.52 m out on the axle, 75 mm inboard of the tyres' inner faces.
     get suspension() {
-      return fj40GlbActive() ? { ...DEFAULT_LAYOUT, leafShockTop: { front: 0.32, rear: 0.38 } } : undefined;
+      return fj40GlbActive()
+        ? { ...DEFAULT_LAYOUT, leafShockTop: { front: 0.32, rear: 0.38, axleX: 0.52 } }
+        : undefined;
     },
     get lamps() {
       const glb = fj40GlbActive() ? fj40GlbHeadlamps() : [];

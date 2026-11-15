@@ -23,7 +23,11 @@ export interface SuspensionLayout {
    * otherwise hang from a tower of two braces off the chassis rail, whose top stands in the
    * open arch.
    */
-  leafShockTop?: { front: number; rear: number };
+  leafShockTop?: {
+    front: number;
+    rear: number;
+    /** Where its lower eye is on the axle, out from the centre. */ axleX: number;
+  };
 }
 export const DEFAULT_LAYOUT: SuspensionLayout = {
   coilInboard: COIL.inboard,
@@ -298,7 +302,8 @@ export class VehicleSuspension {
         side = Math.sign(wheel.x);
       if (this.springs === 'leaf') {
         this.from.set(side * 0.54, leafTop(this.layout, wheel.front), wheel.z + 0.23);
-        this.axlePoint(i, side * 0.63, 0.045, wheel.z + 0.05);
+        // 0.63 m out is inside a tyre whose inner face is at 0.595 m; a layout can bring it in.
+        this.axlePoint(i, side * (this.layout.leafShockTop?.axleX ?? 0.63), 0.045, wheel.z + 0.05);
       } else {
         // Dampers stand just behind (front) or ahead of (rear) the coils.
         const dz = wheel.front ? 0.16 : -0.16;

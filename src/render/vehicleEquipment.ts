@@ -439,18 +439,15 @@ export function addVehicleEquipment(
  * Until v1.85 the box sat on the wing over the tyre and the tube crossed 1.2 m of air.
  */
 function fj40Snorkel(b: VehicleBuilder): void {
-  const x = -0.85;
+  // 0.825 m out: inboard of the left mirror's head (from 0.885 m) with a gap that shows from
+  // the front, and clear of the gutter (0.763 m) and the rack's clamps.
+  const x = -0.825;
   const rubber = new THREE.Color('#202325');
   // Cowl side skin is at x -0.775, z -0.66..-0.30; the louvres are at z -0.50..-0.40.
   b.block(-0.825, 0.535, -0.48, 0.1, 0.27, 0.16, rubber, M.Rubber, Z.Front, 0.02);
   // The screen's face leans from z -0.33 at the belt to -0.26 at the gutter; the tube stays
   // 55 mm ahead of it and outboard of the frame.
-  tubePath(
-    b,
-    [v(-0.83, 0.62, -0.465), v(x, 0.76, -0.41), v(x, 0.84, -0.385), v(x, 1.36, -0.315)],
-    0.042,
-    rubber,
-  );
+  tubePath(b, [v(x, 0.62, -0.465), v(x, 0.76, -0.41), v(x, 0.84, -0.385), v(x, 1.36, -0.315)], 0.042, rubber);
   b.slot = M.Rubber;
   b.tag = Z.Front;
   b.push()
@@ -546,10 +543,13 @@ function fj40SpareCarrier(b: VehicleBuilder): void {
     hub = 0.738;
   // The body's rear corner is round (0.2 m): at x -0.69 its skin is at z 1.85.
   b.block(-0.69, y, 1.895, 0.07, 0.1, 0.1, bar, M.Metal, Z.Rear, 0.004);
-  b.rod(v(-0.69, y, z), v(0.12, y, z), 0.016, bar, M.Metal, Z.Rear);
+  // Arm and post are 50 mm box section; the post is 30 mm deep to pass between door and tyre.
+  b.block((-0.69 + 0.12) / 2, y, z, 0.81, 0.05, 0.035, bar, M.Metal, Z.Rear, 0.004);
   // The catch stands on the front of the rear bar, which is the chassis's.
   b.block(0.12, y, 1.94, 0.05, 0.05, 0.04, bar, M.Metal, Z.Rear, 0.004);
-  tubePath(b, [v(x, y, z), v(x, y + 0.06, 1.91), v(x, hub + 0.02, 1.91)], 0.016, bar);
+  b.block(x, (y + hub) / 2 + 0.01, 1.908, 0.06, hub - y + 0.02, 0.03, bar, M.Metal, Z.Rear, 0.004);
+  // A gusset from the arm up to the post on each side.
+  for (const dx of [-0.16, 0.16]) b.rod(v(x + dx, y, z), v(x, y + 0.2, 1.908), 0.012, bar, M.Metal, Z.Rear);
   b.block(x, hub, 1.918, 0.15, 0.15, 0.02, bar, M.Metal, Z.Rear, 0.004);
   b.rod(v(x, hub, 1.92), v(x, hub, 2.03), 0.05, bar, M.Metal, Z.Rear);
 }
