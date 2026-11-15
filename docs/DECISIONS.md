@@ -1845,3 +1845,10 @@ Items 6 and 8 of the Perentie's list. Only the Perentie changes.
 - **Lamps (item 6).** Each headlamp is inboard (0.58 m out), with the white side lamp over the amber indicator stacked outboard of it (0.775 m out). The two small lamps were side by side under the headlamp. The convoy lamp stays above the headlamp.
 - **Brush guard (item 6).** One loop of tube standing on the bumper beam near its ends and running across above the lamps and grille, with a flat centre post and a cross rail under the lamps, painted with the body as both trucks' are. It was three black hoops on a black beam. The beam is still the bumper, with the towing eyes under it, the plate on its face and the winch behind it.
 - The 1990 truck's grille is black; the 1988 truck's is the body's colour. The game follows the 1988 one, as the audit asked.
+
+**The second look.** A reviewer was given 42 pictures (the standard set, six close-ups of the front and the 28 audit pictures) and found nothing broken or impossible. Two of its points were acted on:
+
+- The winch's drum was a black cylinder half sunk into the top of the beam, which read from above as a hole. It is a steel drum with its cable, standing on the beam in two cheek plates, behind the guard's rail and in line with the fairlead in the beam's face.
+- The jerry cans' stays crossed in front of the rear reflectors. The reflectors are on the ends of the rear crossmember.
+
+Left for stage 3, all there before this stage: two grey blocks at the foot of the windscreen (its hinges), a slab ahead of each front tyre and a small cone inside each front arch. The guard's centre post hides the grille's badge from straight ahead, as the real one does.

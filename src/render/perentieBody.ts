@@ -488,7 +488,8 @@ function rearBody(b: VehicleBuilder): void {
     b.block(side * 0.76, 0.2, TAIL + 0.035, 0.13, 0.18, 0.04, black, M.Rubber, Z.Rear, 0.01);
     b.block(side * 0.76, 0.24, TAIL + 0.058, 0.1, 0.06, 0.012, red, M.Red, Z.Rear, 0.005);
     b.block(side * 0.76, 0.17, TAIL + 0.058, 0.1, 0.05, 0.012, amber, M.Amber, Z.Rear, 0.005);
-    b.ring(side * 0.63, 0.2, TAIL + 0.03, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
+    // Reflector on the end of the rear crossmember, clear of the can's tray and stays.
+    b.ring(side * 0.66, 0.02, 2.415, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
     // Jerry can in a holder on the corner panel, above the lamps, its broad side to the panel.
     canOnRear(b, side);
   }
@@ -814,14 +815,20 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     b.ring(side * 0.55, -0.06, face + 0.06, 0.04, 0.012, bar, M.Metal, 'x', Z.Front);
   armyPlate(b, -0.55, 0.06, face - 0.01, -1);
   // Winch drum tucked behind the bar, with a roller fairlead at the cable exit.
+  // The drum stands on the beam in two cheek plates, behind the guard's rail and in line with
+  // the fairlead in the beam's face. Half sunk into the beam and all black, it read as a hole.
+  const drum = { y: 0.205, z: face + 0.125 };
   b.rod(
-    { x: -0.2, y: 0.14, z: face + 0.06 },
-    { x: 0.2, y: 0.14, z: face + 0.06 },
-    0.065,
-    black,
+    { x: -0.19, y: drum.y, z: drum.z },
+    { x: 0.19, y: drum.y, z: drum.z },
+    0.052,
+    steel,
     M.Metal,
     Z.Front,
   );
+  for (let i = 0; i < 12; i++)
+    b.ring(-0.165 + i * 0.03, drum.y, drum.z, 0.052, 0.005, black, M.Metal, 'x', Z.Front);
+  for (const x of [-0.21, 0.21]) b.block(x, 0.2, drum.z, 0.03, 0.14, 0.13, black, M.Metal, Z.Front, 0.008);
   const mount = tuning.winchMount;
   for (const y of [mount.y - 0.035, mount.y + 0.035])
     b.rod({ x: -0.12, y, z: mount.z }, { x: 0.12, y, z: mount.z }, 0.014, steel, M.Metal, Z.Front);
