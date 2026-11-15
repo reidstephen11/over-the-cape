@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { HudState } from '../ui/hud';
 import type { ToolOption } from '../ui/toolMenu';
+import { toolShortLabels } from '../data/toolMenu';
 
 const W = 1024;
 const H = 512;
@@ -182,14 +183,15 @@ export class VrDash {
       const y = cy + Math.sin(a) * 190;
       const on = i === t.selected;
       c.font = `${on ? 700 : 500} ${on ? 34 : 28}px Barlow, system-ui, sans-serif`;
-      const w = Math.min(250, c.measureText(o.label).width + 28);
+      const label = toolShortLabels[o.id] ?? o.label;
+      const w = Math.min(250, c.measureText(label).width + 28);
       if (on) {
         roundRect(c, x - w / 2, y - 24, w, 48, 12);
         c.fillStyle = o.enabled ? '#e0a440' : '#6b6658';
         c.fill();
       }
       c.fillStyle = on ? '#1c1f18' : o.enabled ? '#f4efe4' : '#7d786b';
-      c.fillText(fit(c, o.label, 236), x, y + 1);
+      c.fillText(fit(c, label, 236), x, y + 1);
     });
     const o = t.options[t.selected];
     c.font = '600 30px Barlow, system-ui, sans-serif';

@@ -71,6 +71,16 @@ test('headset play: in the seat, driven by the hand controllers, menus in the wi
   writeFileSync(`${SHOTS}/vr-dash.png`, Buffer.from(s.dash.split(',')[1], 'base64'));
   await page.screenshot({ path: `${SHOTS}/vr-seat.png` });
 
+  // Holding the left grip opens the tool wheel on the dash card; the right stick points.
+  await xr(page, 'left', 'squeeze', 1);
+  await xr(page, 'right', 'thumbstick', [0.9, 0]);
+  await page.waitForTimeout(1500);
+  const tools = await vr(page);
+  writeFileSync(`${SHOTS}/vr-tools.png`, Buffer.from(tools.dash.split(',')[1], 'base64'));
+  await xr(page, 'right', 'thumbstick', [0, 0]);
+  await page.waitForTimeout(300);
+  await xr(page, 'left', 'squeeze', 0);
+
   // Left stick click pauses: the headset session ends so the menu shows in the browser window.
   await xr(page, 'left', 'thumbstick', 1);
   await page.waitForTimeout(500);
