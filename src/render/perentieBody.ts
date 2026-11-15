@@ -44,6 +44,22 @@ const WAIST = 0.78;
 const SILL = 0.07;
 const ARCH = { radius: 0.51, cy: -0.05 };
 /**
+ * The wheel openings (v1.92): flat-topped, with radiused corners and sides that splay out to the
+ * sill, 12 cm over the tyre, under a black eyebrow (side-right-county-1990.jpg,
+ * rear-34-right-county-1990.jpg). They were half circles 0.51 m in radius under a thick lip.
+ * `top` is the flat's height, `flat` and `foot` its half-widths at the top and at the sill.
+ */
+const OPENING = { top: 0.4, flat: 0.37, foot: 0.5, corner: 0.11 };
+/** Height of the opening's edge `d` metres along the truck from the axle. */
+function openingAt(d: number): number {
+  const { top, flat, foot, corner } = OPENING;
+  d = Math.abs(d);
+  if (d >= foot) return SILL;
+  if (d <= flat - corner) return top;
+  if (d <= flat) return top - corner + Math.sqrt(corner * corner - (d - (flat - corner)) ** 2);
+  return top - corner - ((d - flat) * (top - corner - SILL)) / (foot - flat);
+}
+/**
  * The grille's face. v1.91: 0.50 m ahead of the front axle, as sheet A of drawing-variants.png
  * measures it (35 px at 14.55 mm a pixel); at -2.02 the nose was 0.12 m too long.
  */
@@ -79,9 +95,8 @@ function archPanel(
 ): void {
   const outer = side * SIDE,
     inner = side * (SIDE - 0.05);
-  const steps = 30;
-  const low = (z: number) =>
-    Math.max(SILL, Math.sqrt(Math.max(0, ARCH.radius ** 2 - (z - axle) ** 2)) + ARCH.cy);
+  const steps = 72;
+  const low = (z: number) => openingAt(z - axle);
   b.slot = M.Paint;
   b.tag = zone;
   for (let i = 0; i < steps; i++) {
@@ -106,18 +121,18 @@ function archPanel(
     if (side > 0) b.quad(d, c, ci, di, paint);
     else b.quad(di, ci, c, d, paint);
   }
-  // A shallow rubber lip follows the opening and terminates at the sill.
-  const arc = (radius: number) =>
-    Array.from({ length: 33 }, (_, i) => {
-      const a = Math.asin((SILL - ARCH.cy) / radius),
-        theta = a + ((Math.PI - 2 * a) * i) / 32;
-      return [axle + radius * Math.cos(theta), ARCH.cy + radius * Math.sin(theta)] as Vtx;
+  // The eyebrow: a black moulding along the flat and down both corners to the sill.
+  const edge = (grow: number) =>
+    Array.from({ length: 49 }, (_, i) => {
+      const d = -OPENING.foot + (2 * OPENING.foot * i) / 48;
+      const k = 1 + grow / OPENING.foot;
+      return [axle + d * k, Math.max(SILL, openingAt(d) + grow)] as Vtx;
     });
   extrudeX(
     b,
-    sideShape([...arc(ARCH.radius + 0.045), ...arc(ARCH.radius - 0.005).reverse()]),
-    side > 0 ? SIDE - 0.006 : -SIDE - 0.038,
-    side > 0 ? SIDE + 0.038 : -SIDE + 0.006,
+    sideShape([...edge(0.05), ...edge(-0.004).reverse()]),
+    side > 0 ? SIDE - 0.006 : -SIDE - 0.04,
+    side > 0 ? SIDE + 0.04 : -SIDE + 0.006,
     black,
     M.Rubber,
     zone,
@@ -125,14 +140,24 @@ function archPanel(
   );
   // Inner wheel box, so the opening shows a dark well rather than the far side; the front
   // ones sit further in, clear of the wheels at full lock.
-  b.block(side * wellX, ARCH.cy + 0.2, axle, 0.03, 0.62, ARCH.radius * 2, black, M.Rubber, Z.Trim);
+  b.block(
+    side * wellX,
+    (SILL + OPENING.top) / 2 + 0.03,
+    axle,
+    0.03,
+    OPENING.top - SILL + 0.1,
+    OPENING.foot * 2,
+    black,
+    M.Rubber,
+    Z.Trim,
+  );
   b.block(
     (side * (wellX + SIDE - 0.025)) / 2,
-    ARCH.cy + ARCH.radius + 0.015,
+    OPENING.top + 0.02,
     axle,
     SIDE - wellX - 0.025,
     0.03,
-    ARCH.radius * 1.6,
+    OPENING.foot * 2,
     black,
     M.Rubber,
     Z.Trim,
@@ -644,6 +669,46 @@ function tilt(b: VehicleBuilder): void {
   addCanvasTilt(b);
 }
 
+/**
+ * The roll bar behind the cab (rear-34-right-county-1990.jpg, front-34-county.jpg): a hoop of
+ * tube standing on the load floor just behind the seats, inside the canvas bows, with a brace
+ * from each top corner back and down to the tub's capping rail. Painted with the body.
+ */
+function rollBar(b: VehicleBuilder): void {
+  const z = B_PILLAR + 0.12,
+    x = 0.72,
+    top = 1.38;
+  const tube = (pts: [number, number, number][], r: number) =>
+    continuousTube(
+      b,
+      pts.map((p) => new THREE.Vector3(...p)),
+      r,
+      paint,
+      Z.Trim,
+      M.Paint,
+    );
+  tube(
+    [
+      [-x, 0.215, z],
+      [-x, top, z],
+      [x, top, z],
+      [x, 0.215, z],
+    ],
+    0.03,
+  );
+  for (const side of [-1, 1]) {
+    b.block(side * x, 0.225, z, 0.11, 0.02, 0.11, paint, M.Paint, Z.Trim, 0.004);
+    tube(
+      [
+        [side * x, top - 0.06, z],
+        [side * 0.8, WAIST + 0.03, 1.45],
+      ],
+      0.024,
+    );
+    b.block(side * 0.81, WAIST + 0.03, 1.45, 0.07, 0.03, 0.1, paint, M.Paint, Z.Trim, 0.004);
+  }
+}
+
 function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   // Galvanised ladder frame, crossmembers, outriggers and the rear crossmember.
   for (const side of [-1, 1]) {
@@ -679,7 +744,8 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   }
   for (const z of [FRONT_FACE + 0.06, -0.62, 0.62])
     b.block(0, 0.02, z, 0.86, 0.1, 0.1, galv, M.Paint, Z.Trim);
-  b.block(0, 0.02, 2.36, 1.48, 0.14, 0.1, galv, M.Paint, Z.Trim);
+  // The rear crossmember is painted with the body (front-34-left-county.jpg); it was bare galvanised.
+  b.block(0, 0.02, 2.36, 1.48, 0.14, 0.1, paint, M.Paint, Z.Rear);
   // Gearbox and transfer case, propshafts, fuel tank and the exhaust out the back.
   b.block(0.08, -0.02, -0.28, 0.4, 0.2, 0.6, black, M.Metal, Z.Trim, 0.03);
   b.rod(
@@ -863,6 +929,7 @@ export function buildPerentieBody(tuning: VehicleTuning, wheel: THREE.BufferGeom
   doors(b);
   rearBody(b);
   tilt(b);
+  rollBar(b);
   chassisAndRecovery(b, tuning, wheel);
   addPerentieInterior(b, tuning.engine.redlineRpm);
   addCanvasHoops(b);
