@@ -5,6 +5,7 @@
  *   shot:<name>                 screenshot
  *   cam:x,y,z,tx,ty,tz          free camera
  *   chase                       chase camera
+ *   preset:<name>               chase camera preset (cockpit, ...)
  *   tp:<poiId> | tpxz:x,z,h     teleport vehicle
  *   hour:<h>                    set the clock (the light follows)
  *   input:<json>                scripted input ({} clears)
@@ -24,7 +25,8 @@ const browser = await chromium.launch({
 });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 // Low graphics and every vehicle open, as the end-to-end tests start (the software renderer is slow).
-await page.addInitScript(() => {
+// EPISODE=telegraph starts that episode (the save's last episode is the welcome screen's choice).
+await page.addInitScript((episode) => {
   if (!localStorage.getItem('overthecape.save.v1'))
     localStorage.setItem(
       'overthecape.save.v1',
@@ -32,9 +34,10 @@ await page.addInitScript(() => {
         version: 1,
         settings: { quality: 'low' },
         unlocked: ['perentie', 'hilux', 'unimog', 'troopy', 'patrol', 'lc79', 'sooty80'],
+        ...(episode ? { episode } : {}),
       }),
     );
-});
+}, process.env.EPISODE ?? '');
 const errors: string[] = [];
 page.on('console', (m) => {
   if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`);
@@ -63,6 +66,7 @@ for (const s of steps) {
     const c = arg.split(',').map(Number);
     await page.evaluate((c) => window.__game?.setCamera(c[0], c[1], c[2], c[3], c[4], c[5]), c);
   } else if (cmd === 'chase') await page.evaluate(() => window.__game?.useChaseCamera());
+  else if (cmd === 'preset') await page.evaluate((p) => window.__game?.cameraPreset(p as never), arg);
   else if (cmd === 'tp') await page.evaluate((id) => window.__game?.teleportPoi(id), arg);
   else if (cmd === 'hour') await page.evaluate((h) => window.__game?.setHour(h), Number(arg));
   else if (cmd === 'tpxz') {

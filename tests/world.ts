@@ -2,6 +2,7 @@ import { highCountryMap } from './fixtures/maps/map';
 import { ironbarkParkMap } from './fixtures/maps/park';
 import { crawlerCreekMap } from './fixtures/maps/crawlerCreek';
 import { crebMap } from '../src/data/episodes/crebMap';
+import { telegraphMap } from '../src/data/episodes/telegraphMap';
 import { buildWorld, type World } from '../src/sim/world/world';
 
 let cached: World | null = null;
@@ -34,4 +35,12 @@ export function crawlerCreekWorld(): World {
 export function crebWorld(): World {
   creb ??= buildWorld(crebMap);
   return creb;
+}
+
+let telegraph: World | null = null;
+
+/** The Telegraph Track, shared the same way. */
+export function telegraphWorld(): World {
+  telegraph ??= buildWorld(telegraphMap);
+  return telegraph;
 }

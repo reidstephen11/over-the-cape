@@ -3,16 +3,19 @@ import type { MapId } from './maps';
 import type { Weather } from './environment';
 import type { WeatherTimeline } from './weatherTimeline';
 import { crebEpisode } from './episodes/creb';
+import { telegraphEpisode } from './episodes/telegraph';
 import type { SurpriseSetDef } from '../sim/world/surprisePlan';
 import type { StrandedDef } from '../sim/stranded';
 import type { SideTripDef } from '../sim/sideTrips';
 import type { VehicleId } from './vehicle';
+import type { TrackCondition, TrackConditionId } from './trackConditions';
 
 /**
  * Episodes: each has its own map, a core mission, the conditions the story sets and a
- * fixed load of fuel and spares. Since v0.73 the game is the CREB Track alone.
+ * fixed load of fuel and spares. From v0.73 the game was the CREB Track alone; v1.96 added
+ * the Telegraph Track beside it.
  */
-export type EpisodeId = 'creb';
+export type EpisodeId = 'creb' | 'telegraph';
 
 /** Why an episode can end early. */
 export type FailReason = 'time' | 'fuel' | 'tyre' | 'engine' | 'swept';
@@ -79,6 +82,18 @@ export interface EpisodeDef {
   loadout: EpisodeLoadout;
   /** One-off events on the way, placed afresh each run (a tree coming down, rocks off a bank). */
   surprises?: SurpriseSetDef;
+  /**
+   * This episode's own numbers for the rolled track conditions (src/data/trackConditions.ts),
+   * over the shared ones: its briefing line, how far the creeks stand up or down, and so on.
+   */
+  conditions?: Partial<
+    Record<
+      TrackConditionId,
+      Partial<Pick<TrackCondition, 'briefing' | 'creekRise' | 'groundBefore' | 'bogDepth' | 'storm'>>
+    >
+  >;
+  /** A way round the main obstacle that costs score: reaching `poi` takes `penalty` points off the finish. */
+  bypass?: { poi: string; penalty: number; label: string };
   /** Paragraphs shown before the episode. */
   briefing: string[];
   /** History notes shown on reaching a place (by POI id). */
@@ -90,9 +105,10 @@ export interface EpisodeDef {
 
 export const episodes: Record<EpisodeId, EpisodeDef> = {
   creb: crebEpisode,
+  telegraph: telegraphEpisode,
 };
 
-export const episodeOrder: readonly EpisodeId[] = ['creb'];
+export const episodeOrder: readonly EpisodeId[] = ['creb', 'telegraph'];
 
 export function isEpisodeId(x: unknown): x is EpisodeId {
   return typeof x === 'string' && x in episodes;

@@ -77,6 +77,15 @@ export const isTrackConditionId = (x: unknown): x is TrackConditionId =>
 export const conditionById = (id: TrackConditionId): TrackCondition =>
   trackConditions.find((c) => c.id === id) ?? trackConditions[1];
 
+/** A condition with an episode's own numbers for it laid over the shared ones. */
+export function conditionFor(
+  condition: TrackCondition,
+  own?: Partial<Record<TrackConditionId, Partial<TrackCondition>>>,
+): TrackCondition {
+  const o = own?.[condition.id];
+  return o ? { ...condition, ...o } : condition;
+}
+
 /** The condition for a run's seed. The same seed always gives the same day. */
 export function rollTrackCondition(seed: number): TrackCondition {
   // A seed of its own, so adding or moving a surprise does not change the weather.

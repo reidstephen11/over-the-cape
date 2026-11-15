@@ -283,10 +283,12 @@ function readBests(raw: unknown): CrawlBests {
   return out;
 }
 
-/** Episodes open to play: the first, and each one after a finished episode. */
-export function unlocked(save: SaveData | null, id: EpisodeId): boolean {
-  const i = episodeOrder.indexOf(id);
-  return i <= 0 || save?.episodes[episodeOrder[i - 1]]?.completed === true;
+/**
+ * Episodes open to play. Since v1.96 every episode is open from the start: the owner is
+ * the only player and tests each new one at once.
+ */
+export function unlocked(_save: SaveData | null, id: EpisodeId): boolean {
+  return episodeOrder.includes(id);
 }
 
 /** Write the save. Returns false (and never throws) if storage is unavailable. */

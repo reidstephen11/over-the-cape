@@ -362,7 +362,17 @@ export class WelcomeScreen {
             <p class="welcome-mission">${def.mission}</p>
             <div class="welcome-options seg welcome-start">${
               camp ? option('start', 'resume', 'Continue', `From ${camp.name}`) : ''
-            }${option('start', 'new', camp ? 'Start again' : 'Start')}${option('start', 'supply', 'Army supply run', `Tow ${supplyRun.drums} fuel drums to Wujal Wujal`)}</div>
+            }${option('start', 'new', camp ? 'Start again' : 'Start')}${
+              // The Army supply run is on the CREB.
+              this.choice.episode === 'creb'
+                ? option(
+                    'start',
+                    'supply',
+                    'Army supply run',
+                    `Tow ${supplyRun.drums} fuel drums to Wujal Wujal`,
+                  )
+                : ''
+            }</div>
             <button type="button" class="welcome-drive" data-group="drive" data-welcome-drive>${camp && this.choice.resume ? 'Continue' : 'Drive'}</button>
           </section>
         </div>

@@ -174,9 +174,31 @@ describe('exploration and saving', () => {
     expect(c.checkpoint!.tyreFault).toEqual(['none', 'none', 'none', 'none']);
   });
 
-  it('always opens the CREB', () => {
+  it('opens every episode from the start, the Telegraph Track beside the CREB (v1.96)', () => {
     expect(unlocked(null, 'creb')).toBe(true);
     expect(unlocked(saveData(), 'creb')).toBe(true);
+    expect(unlocked(null, 'telegraph')).toBe(true);
+    expect(unlocked(saveData(), 'telegraph')).toBe(true);
+  });
+
+  it('keeps each episode’s progress, bests and camp apart', () => {
+    const s = new MemoryStore();
+    s.setItem(
+      SAVE_KEY,
+      JSON.stringify({
+        ...saveData(),
+        episode: 'telegraph',
+        episodes: {
+          creb: { completed: true, bestScore: 700, bestMinutes: 40 },
+          telegraph: { completed: false, bestScore: 500, checkpoint: { camp: 'dulhunty-camp' } },
+        },
+      }),
+    );
+    const loaded = loadSave(s)!;
+    expect(loaded.episode).toBe('telegraph');
+    expect(loaded.episodes.creb).toMatchObject({ completed: true, bestScore: 700, bestMinutes: 40 });
+    expect(loaded.episodes.telegraph).toMatchObject({ completed: false, bestScore: 500 });
+    expect(loaded.episodes.telegraph!.checkpoint?.camp).toBe('dulhunty-camp');
   });
 
   it('sends a save from a removed episode back to the CREB, keeping the CREB progress', () => {
