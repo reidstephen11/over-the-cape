@@ -105,6 +105,7 @@ export class Sky {
   }
 
   update(camera: THREE.Camera): void {
-    this.mesh.position.copy(camera.position);
+    // World position: with a headset on the camera rides in a rig.
+    camera.getWorldPosition(this.mesh.position);
   }
 }

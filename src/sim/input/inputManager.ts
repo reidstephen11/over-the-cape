@@ -23,6 +23,13 @@ export class InputManager {
   gearboxMode: GearboxMode = 'automatic';
   /** A gamepad was connected at the last poll(). */
   gamepadConnected = false;
+  /**
+   * The headset's hand controllers as a standard pad (v1.96), read in place of any gamepad
+   * while a headset is on; null otherwise.
+   */
+  headsetPad:
+    | (() => { buttons: readonly { pressed: boolean; value: number }[]; axes: readonly number[] } | null)
+    | null = null;
   private readonly keys = new Set<string>();
   private readonly vehicleEdges = new Set<Action>();
   /** UI presses since the last frame, counted so quick taps in one slow frame aren't lost. */
@@ -160,7 +167,7 @@ export class InputManager {
     const first = !this.polled;
     this.polled = true;
     const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
-    const pad = [...pads].find((p) => p && p.connected) ?? null;
+    const pad = this.headsetPad?.() ?? [...pads].find((p) => p && p.connected) ?? null;
     this.gamepadConnected = !!pad;
     if (!pad) {
       this.padButtons = [];

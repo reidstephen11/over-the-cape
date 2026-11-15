@@ -142,6 +142,8 @@ export class Hud {
   readonly el: HTMLElement;
   private controller: ControllerType = defaultController;
   onCameraReset: (() => void) | null = null;
+  /** Every message card as it is shown (the headset's dash panel repeats them, v1.96). */
+  onToast: ((text: string, ms: number) => void) | null = null;
   onCameraPreset: (() => void) | null = null;
   private readonly status: HTMLElement;
   /** Lamps, phone warnings, the place name and the mission: short lines by the dials. */
@@ -609,6 +611,7 @@ export class Hud {
 
   /** Short message card (range change, winch attached...). On a phone it is one short line. */
   toast(text: string, ms = 2200): void {
+    this.onToast?.(text, ms);
     const el = document.createElement('div');
     el.className = 'toast paper';
     const touch = document.body.classList.contains('touch-mode');

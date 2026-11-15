@@ -60,6 +60,10 @@ export class GameRenderer {
   private reflection: { scene: THREE.Scene; sky: Sky; pmrem: THREE.PMREMGenerator } | null = null;
   /** Point the shadow camera follows (the vehicle). */
   readonly focus = new THREE.Vector3();
+  /** Where the viewer is in the world (the camera rides in a rig while a headset is on). */
+  private readonly eye = new THREE.Vector3();
+  /** The headset's eye as a plain world-space camera, for the mirrors to reflect (v1.96). */
+  private readonly headsetEye = new THREE.PerspectiveCamera(90, 1, 0.05, 180);
 
   constructor(
     readonly container: HTMLElement,
@@ -133,12 +137,14 @@ export class GameRenderer {
     this.quality = q;
     this.mirrors.setQuality(q);
     this.renderScale = new RenderScale(q.minRenderScale);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
+    if (!this.renderer.xr.isPresenting)
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q.pixelRatio));
     this.renderer.shadowMap.enabled = q.shadows;
     this.lighting.setQuality(q);
     this.camera.far = q.drawDistance;
     this.horizon.setReach(q.drawDistance * 0.9);
-    this.camera.updateProjectionMatrix();
+    // While a headset is on, it supplies the projection each frame.
+    if (!this.renderer.xr.isPresenting) this.camera.updateProjectionMatrix();
     this.terrainMesh.setLodDistances(q.terrainLod);
     this.vegetation?.setQuality(q);
     this.particles?.setQuality(q);
@@ -216,6 +222,7 @@ export class GameRenderer {
    * again when they keep up (frameDt in s, cpuMs the game's own code per frame).
    */
   adaptResolution(frameDt: number, cpuMs: number): void {
+    if (this.renderer.xr.isPresenting) return;
     if (!this.renderScale.update(frameDt, cpuMs)) return;
     const base = Math.min(window.devicePixelRatio || 1, this.quality.pixelRatio);
     this.renderer.setPixelRatio(base * this.renderScale.scale);
@@ -230,6 +237,8 @@ export class GameRenderer {
   }
 
   resize(): void {
+    // A headset sets its own size; Three.js refuses (and warns) while one is on.
+    if (this.renderer.xr.isPresenting) return;
     const w = this.container.clientWidth || window.innerWidth;
     const h = this.container.clientHeight || window.innerHeight;
     this.renderer.setSize(w, h, false);
@@ -292,21 +301,36 @@ export class GameRenderer {
     return true;
   }
 
+  /**
+   * The eye the mirrors reflect: the camera, or with a headset on (the camera then rides in
+   * the seat rig and the headset sets its projection) the head's pose in the world.
+   */
+  private mirrorEye(): THREE.PerspectiveCamera {
+    if (!this.renderer.xr.isPresenting) return this.camera;
+    const e = this.headsetEye;
+    this.camera.matrixWorld.decompose(e.position, e.quaternion, e.scale);
+    e.near = this.camera.near;
+    e.updateProjectionMatrix();
+    e.updateMatrixWorld();
+    return e;
+  }
+
   /** Draw a frame; `alpha` places moving bodies between physics steps (0 = before the last, 1 = after). */
   render(alpha = 1, mirrors = false): void {
     const now = performance.now();
     const dt = Math.min(0.25, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
-    this.terrainMesh.update(this.camera.position, this.firstFrame);
-    this.vegetation.update(this.camera.position, this.firstFrame ? 1 : dt);
+    const eye = this.camera.getWorldPosition(this.eye);
+    this.terrainMesh.update(eye, this.firstFrame);
+    this.vegetation.update(eye, this.firstFrame ? 1 : dt);
     this.props.update(alpha);
-    this.ruts.update(this.camera.position, 420);
+    this.ruts.update(eye, 420);
     this.firstFrame = false;
     this.lighting.follow(this.focus);
     this.sky.update(this.camera);
     this.water.update(dt);
-    this.rain?.update(this.camera.position, this.shelter, dt);
-    this.mirrors.update(this.renderer, this.scene, this.camera, mirrors, now);
+    this.rain?.update(eye, this.shelter, dt);
+    this.mirrors.update(this.renderer, this.scene, this.mirrorEye(), mirrors, now);
     this.renderer.render(this.scene, this.camera);
   }
 }

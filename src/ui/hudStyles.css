@@ -2630,3 +2630,23 @@ body:not(.touch-mode) #ui[data-hud] .history-card .history-hint {
     max-width: calc(100vw - min(calc(200 * var(--u)), 44vw) - calc(40 * var(--u)));
   }
 }
+
+/* Headset play (v1.96): offered only by a browser with a headset session. */
+.vr-enter {
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right));
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 40;
+  padding: 14px 22px;
+  font:
+    600 20px/1 'Barlow Condensed',
+    system-ui,
+    sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 2px solid rgba(84, 97, 75, 0.7);
+}
+.vr-enter.hidden {
+  display: none;
+}

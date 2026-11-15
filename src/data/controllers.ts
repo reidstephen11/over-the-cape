@@ -1,5 +1,7 @@
 /** Button names are a display preference; physical indices use the standard gamepad mapping. */
-export type ControllerType = 'playstation' | 'xbox' | 'generic';
+/** `quest`: the headset's hand controllers, used only while a headset is on (not a menu choice). */
+export type ControllerType = 'playstation' | 'xbox' | 'generic' | 'quest';
+/** The choices the Settings menus offer. */
 export const controllerTypes: readonly ControllerType[] = ['playstation', 'xbox', 'generic'];
 export const defaultController: ControllerType = 'playstation';
 
@@ -72,6 +74,23 @@ export const controllers: Record<ControllerType, ControllerLabels> = {
     pause: 'Button 10',
     horn: 'Button 11',
     cameraReset: 'Button 12',
+  },
+  quest: {
+    label: 'Headset controllers',
+    confirm: 'A',
+    confirmName: 'A',
+    back: 'B',
+    backName: 'B',
+    handbrake: 'X',
+    range: 'Y',
+    toolMenu: 'Left grip',
+    winch: 'Right grip',
+    brake: 'Left trigger',
+    accelerate: 'Right trigger',
+    map: '—',
+    pause: 'Left stick click',
+    horn: 'Right stick click',
+    cameraReset: 'Hold Meta button',
   },
 };
 

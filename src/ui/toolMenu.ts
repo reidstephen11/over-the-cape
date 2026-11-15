@@ -153,6 +153,11 @@ export class ToolMenu {
     this.el.querySelector('.tool-centre')!.classList.toggle('unavailable', !!o && !o.enabled);
   }
 
+  /** What is on offer and what is highlighted (the headset's dash panel draws it, v1.96). */
+  get view(): { options: readonly ToolOption[]; selected: number } | null {
+    return this.isOpen ? { options: this.options, selected: this.selected } : null;
+  }
+
   close(pick: boolean): void {
     if (!this.isOpen) return;
     this.isOpen = false;
