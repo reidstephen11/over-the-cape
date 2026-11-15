@@ -43,7 +43,14 @@ const SIDE = 0.895;
 const WAIST = 0.78;
 const SILL = 0.07;
 const ARCH = { radius: 0.51, cy: -0.05 };
-const FRONT_FACE = -2.02;
+/**
+ * The grille's face. v1.91: 0.50 m ahead of the front axle, as sheet A of drawing-variants.png
+ * measures it (35 px at 14.55 mm a pixel); at -2.02 the nose was 0.12 m too long.
+ */
+const FRONT_FACE = -1.9;
+/** Headlamp centres: inboard, with the side lamp and indicator stacked outboard of each. */
+const LAMP_X = 0.58;
+const SMALL_LAMP_X = 0.775;
 const SCUTTLE = -0.8;
 const B_PILLAR = 0.21;
 const TAIL = 2.3;
@@ -155,10 +162,10 @@ function frontEnd(b: VehicleBuilder): void {
     b.block(
       side * ((BONNET.half + SIDE) / 2),
       0.59,
-      -1.41,
+      (F + SCUTTLE) / 2,
       SIDE - BONNET.half + 0.01,
       0.04,
-      1.22,
+      SCUTTLE - F,
       paint,
       M.Paint,
       Z.Front,
@@ -171,20 +178,20 @@ function frontEnd(b: VehicleBuilder): void {
     b.slot = M.Rubber;
     b.tag = Z.Front;
     b.push()
-      .translate(side * 0.625, 0.39, F - 0.005)
+      .translate(side * LAMP_X, 0.39, F - 0.005)
       .rotate(Math.PI / 2, 0, 0);
     b.geometry(new THREE.CylinderGeometry(0.115, 0.115, 0.03, 28), black);
     b.pop();
-    b.ring(side * 0.625, 0.39, F - 0.022, 0.093, 0.012, steel, M.Metal, 'z', Z.Front);
+    b.ring(side * LAMP_X, 0.39, F - 0.022, 0.093, 0.012, steel, M.Metal, 'z', Z.Front);
     b.slot = M.Metal;
     b.push()
-      .translate(side * 0.625, 0.39, F - 0.025)
+      .translate(side * LAMP_X, 0.39, F - 0.025)
       .scale(1, 1, 0.22);
     b.geometry(new THREE.SphereGeometry(0.088, 20, 8), steel);
     b.pop();
     b.slot = M.Headlamp;
     b.push()
-      .translate(side * 0.625, 0.39, F - 0.036)
+      .translate(side * LAMP_X, 0.39, F - 0.036)
       .scale(1, 1, 0.12);
     b.geometry(new THREE.SphereGeometry(0.079, 20, 8), lens.clone().multiplyScalar(0.78));
     b.pop();
@@ -192,8 +199,8 @@ function frontEnd(b: VehicleBuilder): void {
     for (const dx of [-0.06, -0.04, -0.02, 0, 0.02, 0.04, 0.06]) {
       const h = Math.sqrt(0.079 ** 2 - dx ** 2);
       b.rod(
-        { x: side * 0.625 + dx, y: 0.39 - h, z: F - 0.047 },
-        { x: side * 0.625 + dx, y: 0.39 + h, z: F - 0.047 },
+        { x: side * LAMP_X + dx, y: 0.39 - h, z: F - 0.047 },
+        { x: side * LAMP_X + dx, y: 0.39 + h, z: F - 0.047 },
         0.0012,
         glass,
         M.Glass,
@@ -201,24 +208,27 @@ function frontEnd(b: VehicleBuilder): void {
       );
     }
     // Army convoy lamp above the headlamp: a small hooded box with a narrow slit lens.
-    b.block(side * 0.625, 0.548, F - 0.018, 0.1, 0.05, 0.05, black, M.Rubber, Z.Front, 0.008);
-    b.block(side * 0.625, 0.578, F - 0.03, 0.11, 0.008, 0.07, black, M.Rubber, Z.Front, 0.003);
-    b.block(side * 0.625, 0.545, F - 0.044, 0.06, 0.012, 0.004, lens, M.Rubber, Z.Front);
-    for (const [offset, col, slot] of [
-      [0.72, amber, M.Amber],
-      [0.535, lens, M.Headlamp],
+    b.block(side * LAMP_X, 0.548, F - 0.018, 0.1, 0.05, 0.05, black, M.Rubber, Z.Front, 0.008);
+    b.block(side * LAMP_X, 0.578, F - 0.03, 0.11, 0.008, 0.07, black, M.Rubber, Z.Front, 0.003);
+    b.block(side * LAMP_X, 0.545, F - 0.044, 0.06, 0.012, 0.004, lens, M.Rubber, Z.Front);
+    // Side lamp over indicator, stacked outboard of the headlamp (front.jpg). They were side
+    // by side under it.
+    for (const [ly, col, slot] of [
+      [0.455, lens, M.Headlamp],
+      [0.335, amber, M.Amber],
     ] as const) {
+      const offset = SMALL_LAMP_X;
       b.slot = M.Rubber;
       b.tag = Z.Front;
       b.push()
-        .translate(side * offset, 0.18, F - 0.012)
+        .translate(side * offset, ly, F - 0.012)
         .rotate(Math.PI / 2, 0, 0);
       b.geometry(new THREE.CylinderGeometry(0.041, 0.041, 0.027, 24), black);
       b.pop();
-      b.ring(side * offset, 0.18, F - 0.029, 0.034, 0.004, steel, M.Metal, 'z', Z.Front);
+      b.ring(side * offset, ly, F - 0.029, 0.034, 0.004, steel, M.Metal, 'z', Z.Front);
       b.slot = slot;
       b.push()
-        .translate(side * offset, 0.18, F - 0.031)
+        .translate(side * offset, ly, F - 0.031)
         .scale(1, 1, 0.32);
       b.geometry(new THREE.SphereGeometry(0.032, 12, 6), col);
       b.pop();
@@ -230,11 +240,12 @@ function frontEnd(b: VehicleBuilder): void {
         b.block(-SIDE - 0.011, 0.4 + i * 0.024, -1.02, 0.006, 0.006, 0.23, rubber, M.Rubber, Z.Front);
     }
   }
-  // Recessed horizontal grille louvers, with a small two-line oval identity badge.
-  b.block(0, 0.33, F + 0.008, 0.84, 0.46, 0.028, black, M.Rubber, Z.Front, 0.009);
-  for (let i = 0; i < 14; i++)
-    b.block(0, 0.137 + i * 0.0295, F - 0.012, 0.797, 0.012, 0.018, rubber, M.Rubber, Z.Front, 0.002);
-  for (const x of [-0.29, 0.29]) b.block(x, 0.33, F - 0.003, 0.009, 0.43, 0.012, black, M.Rubber, Z.Front);
+  // The Perentie's grille: a body-colour panel of seven chunky louvres (front.jpg), with a
+  // small two-line oval identity badge above. It was a black panel of fourteen fine slats.
+  const shade = paint.clone().multiplyScalar(0.5);
+  b.block(0, 0.33, F + 0.008, 0.84, 0.46, 0.028, shade, M.Paint, Z.Front, 0.009);
+  for (let i = 0; i < 7; i++)
+    b.block(0, 0.15 + i * 0.058, F - 0.014, 0.8, 0.034, 0.03, paint, M.Paint, Z.Front, 0.006);
   const oval = new THREE.Shape();
   oval.absellipse(0, 0, 0.078, 0.038, 0, Math.PI * 2, false, 0);
   b.push().translate(0, 0.496, F - 0.025);
@@ -314,7 +325,7 @@ function frontEnd(b: VehicleBuilder): void {
   b.pop();
   // Sump, steering box and the front crossmember below the grille.
   b.block(0, -0.04, -1.62, 0.36, 0.16, 0.5, black, M.Metal, Z.Trim, 0.02);
-  b.block(0.36, 0.02, -1.86, 0.14, 0.16, 0.16, black, M.Metal, Z.Trim, 0.02);
+  b.block(0.36, 0.02, FRONT_FACE + 0.16, 0.14, 0.16, 0.16, black, M.Metal, Z.Trim, 0.02);
 }
 
 function windscreen(b: VehicleBuilder): void {
@@ -582,7 +593,7 @@ function tailgateTools(b: VehicleBuilder): void {
 
 /** The second spare lying flat on a mounting plate on the bonnet, held by a centre clamp. */
 function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
-  const z = -1.42,
+  const z = (FRONT_FACE + SCUTTLE) / 2 - 0.01,
     base = crownAt(0) + 0.04,
     // The tyre's sidewall rests on the plate, 4 mm clear.
     hubY = base + spareSidewall(wheel) + 0.004,
@@ -635,7 +646,17 @@ function tilt(b: VehicleBuilder): void {
 function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
   // Galvanised ladder frame, crossmembers, outriggers and the rear crossmember.
   for (const side of [-1, 1]) {
-    b.block(side * 0.355, 0.03, -1.51, 0.1, 0.18, 0.9, galv, M.Paint, Z.Trim);
+    b.block(
+      side * 0.355,
+      0.03,
+      (FRONT_FACE + 0.06 - 1.06) / 2,
+      0.1,
+      0.18,
+      -1.06 - FRONT_FACE - 0.06,
+      galv,
+      M.Paint,
+      Z.Trim,
+    );
     b.rod(
       { x: side * 0.355, y: 0.03, z: -1.08 },
       { x: side * 0.43, y: 0.03, z: -0.86 },
@@ -655,7 +676,8 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     );
     b.block(side * 0.495, 0.03, 2.01, 0.1, 0.18, 0.6, galv, M.Paint, Z.Trim);
   }
-  for (const z of [-1.96, -0.62, 0.62]) b.block(0, 0.02, z, 0.86, 0.1, 0.1, galv, M.Paint, Z.Trim);
+  for (const z of [FRONT_FACE + 0.06, -0.62, 0.62])
+    b.block(0, 0.02, z, 0.86, 0.1, 0.1, galv, M.Paint, Z.Trim);
   b.block(0, 0.02, 2.36, 1.48, 0.14, 0.1, galv, M.Paint, Z.Trim);
   // Gearbox and transfer case, propshafts, fuel tank and the exhaust out the back.
   b.block(0.08, -0.02, -0.28, 0.4, 0.2, 0.6, black, M.Metal, Z.Trim, 0.03);
@@ -707,8 +729,9 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.pop();
 
   // The Army brushguard: a heavy beam that serves as the bumper, with towing eyes under it,
-  // and three hoops over the grille and headlamps.
-  const face = -2.22;
+  // and one tube loop over the grille and headlamps. Painted with the body, as both trucks in
+  // the photographs are (it was black).
+  const face = FRONT_FACE - 0.2;
   const pan = new THREE.Shape();
   pan.moveTo(-0.78, -face);
   pan.lineTo(0.78, -face);
@@ -729,9 +752,9 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   });
   beam.rotateX(-Math.PI / 2);
   beam.translate(0, -0.013, 0);
-  b.slot = M.Metal;
+  b.slot = M.Paint;
   b.tag = Z.Front;
-  b.geometry(beam, bar);
+  b.geometry(beam, paint);
   const beamTop = 0.145,
     zb = face + 0.05,
     zAt = (y: number) => zb + ((y - beamTop) * 0.06) / (0.67 - beamTop);
@@ -740,32 +763,50 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
       b,
       pts.map((p) => new THREE.Vector3(...(p as [number, number, number]))),
       0.03,
-      bar,
+      paint,
+      Z.Front,
+      M.Paint,
     );
+  // One loop of tube, standing on the beam near its ends and running across above the lamps
+  // and the grille, with a flat centre post and a cross rail under the lamps
+  // (side-right-county-1990.jpg, rear-34-left-county.jpg). It was three hoops.
+  const out = 0.82,
+    topY = 0.62;
   tube([
-    [-0.4, beamTop - 0.012, zb],
-    [-0.4, 0.67, zAt(0.67)],
-    [0.4, 0.67, zAt(0.67)],
-    [0.4, beamTop - 0.012, zb],
+    [-out, beamTop - 0.012, zb],
+    [-out, topY, zAt(topY)],
+    [out, topY, zAt(topY)],
+    [out, beamTop - 0.012, zb],
   ]);
-  const mid = 0.4275;
-  b.rod({ x: -0.4, y: mid, z: zAt(mid) }, { x: 0.4, y: mid, z: zAt(mid) }, 0.024, bar, M.Metal, Z.Front);
+  const railY = 0.265;
+  b.rod(
+    { x: -out, y: railY, z: zAt(railY) },
+    { x: out, y: railY, z: zAt(railY) },
+    0.022,
+    paint,
+    M.Paint,
+    Z.Front,
+  );
+  b.block(
+    0,
+    (beamTop + topY) / 2,
+    zAt((beamTop + topY) / 2),
+    0.09,
+    topY - beamTop,
+    0.02,
+    paint,
+    M.Paint,
+    Z.Front,
+    0.004,
+  );
   for (const side of [-1, 1]) {
-    const x = side * 0.86,
-      footZ = face + 0.14;
-    tube([
-      [side * 0.4, 0.6, zAt(0.6)],
-      [x, 0.6, zAt(0.6) + 0.025],
-      [x, beamTop - 0.01, footZ],
-    ]);
-    b.block(x, beamTop, footZ, 0.09, 0.025, 0.09, bar, M.Metal, Z.Front, 0.005);
-    b.block(side * 0.4, beamTop, zb, 0.09, 0.025, 0.09, bar, M.Metal, Z.Front, 0.005);
+    b.block(side * out, beamTop, zb, 0.09, 0.025, 0.09, paint, M.Paint, Z.Front, 0.005);
     b.rod(
       { x: side * 0.36, y: 0.055, z: face + 0.1 },
-      { x: side * 0.36, y: 0.015, z: -1.91 },
+      { x: side * 0.36, y: 0.015, z: FRONT_FACE + 0.11 },
       0.028,
-      bar,
-      M.Metal,
+      paint,
+      M.Paint,
       Z.Trim,
     );
   }
@@ -773,7 +814,14 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     b.ring(side * 0.55, -0.06, face + 0.06, 0.04, 0.012, bar, M.Metal, 'x', Z.Front);
   armyPlate(b, -0.55, 0.06, face - 0.01, -1);
   // Winch drum tucked behind the bar, with a roller fairlead at the cable exit.
-  b.rod({ x: -0.2, y: 0.14, z: -2.16 }, { x: 0.2, y: 0.14, z: -2.16 }, 0.065, black, M.Metal, Z.Front);
+  b.rod(
+    { x: -0.2, y: 0.14, z: face + 0.06 },
+    { x: 0.2, y: 0.14, z: face + 0.06 },
+    0.065,
+    black,
+    M.Metal,
+    Z.Front,
+  );
   const mount = tuning.winchMount;
   for (const y of [mount.y - 0.035, mount.y + 0.035])
     b.rod({ x: -0.12, y, z: mount.z }, { x: 0.12, y, z: mount.z }, 0.014, steel, M.Metal, Z.Front);

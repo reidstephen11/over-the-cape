@@ -1831,3 +1831,17 @@ Before any change, the 28 audit pictures were taken, including the four that loo
 - Left for the later stages: a pale wedge above each front tyre inside the arch (stage 3, with the arches); two grey blocks at the foot of the windscreen, which are its hinges. The spare's cradle is the lowest thing behind the rear axle, 0.2 m off the ground, as the real one is.
 
 Each fix was photographed again and read.
+
+## v1.91: the Perentie, stage 2 of 3 (the front)
+
+Items 6 and 8 of the Perentie's list. Only the Perentie changes.
+
+**The photographs were mislabelled.** Seven files named `*county*` were captioned as ex-Army County wagons, to be used for the front clip only. Opened one by one, they are two Army GS soft tops in camouflage (a 1988 truck, 63A, and a 1990 one): the truck the game copies, from the front quarters, the rear quarters and directly behind. `SOURCES.md` now says what each shows. They settle the open question from v1.90: `front-34-left-county.jpg` and `front-34-county.jpg` show a jerry can on each rear corner panel above the lamps, where v1.90 put them.
+
+**Compared with** `side-right-county-1990.jpg`, `rear-34-left-county.jpg`, `front.jpg` and sheet A of `drawing-variants.png`.
+
+- **Nose (item 8).** On the drawing the grille's face is 35 px ahead of the front axle at 14.55 mm a pixel: 0.51 m. The model's was 0.62 m. `FRONT_FACE` moves from −2.02 to −1.90; the bonnet, wings, lamps, chassis horns, front crossmember, steering box and bonnet spare move with it. The winch's rope leaves 0.12 m further back (`winchMount` z −2.13) and the headlamp beams start at the new lamps.
+- **Grille (item 6).** The body's colour, seven chunky louvres over a shaded recess. It was a black panel of fourteen fine slats with two black uprights.
+- **Lamps (item 6).** Each headlamp is inboard (0.58 m out), with the white side lamp over the amber indicator stacked outboard of it (0.775 m out). The two small lamps were side by side under the headlamp. The convoy lamp stays above the headlamp.
+- **Brush guard (item 6).** One loop of tube standing on the bumper beam near its ends and running across above the lamps and grille, with a flat centre post and a cross rail under the lamps, painted with the body as both trucks' are. It was three black hoops on a black beam. The beam is still the bumper, with the towing eyes under it, the plate on its face and the winch behind it.
+- The 1990 truck's grille is black; the 1988 truck's is the body's colour. The game follows the 1988 one, as the audit asked.
