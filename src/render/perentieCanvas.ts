@@ -11,7 +11,8 @@ const { canvas, galv, bar } = perentieColors;
 const seam = canvas.clone().multiplyScalar(0.73),
   inside = canvas.clone().multiplyScalar(0.83);
 const bows = [FRONT, 0.23, 0.95, 1.62, BACK];
-export const TILT_RACK_Z = [0.23, 1.62];
+/** The rack's two crossbars. The front one is 0.09 m behind the first bow, so its legs land on the tub. */
+export const TILT_RACK_Z = [0.32, 1.62];
 export const TILT_BOARD_Y = 1.6;
 export const TILT_BOARD_Z = (TILT_RACK_Z[0] + TILT_RACK_Z[1]) / 2;
 /** Rounded shoulders, with a small tension sag between support bows. */
@@ -182,14 +183,39 @@ export function addCanvasHoops(b: VehicleBuilder): void {
     continuousTube(b, pts, 0.012, galv, Z.Trim, M.Paint);
   }
 }
+/**
+ * The rack for the recovery boards. Each crossbar reaches out past the rolled side curtains
+ * (their outer face is 0.955 m out) to a leg that drops outside the canvas and cranks in to a
+ * foot bolted over the tub's capping rail (0.845 to 0.905 m out, 0.79 m up). Until v1.90 the
+ * legs stopped on the canvas and nothing reached the body.
+ */
 export function addTiltRack(b: VehicleBuilder): void {
+  const out = 0.985;
   for (const z of TILT_RACK_Z) {
-    b.block(0, 1.56, z, 1.73, 0.03, 0.045, bar, M.Metal, Z.Roof, 0.004);
+    b.block(0, 1.56, z, 2 * out + 0.03, 0.03, 0.045, bar, M.Metal, Z.Roof, 0.004);
     for (const side of [-1, 1]) {
-      b.block(side * 0.8, 1.47, z, 0.035, 0.18, 0.045, bar, M.Metal, Z.Roof, 0.004);
-      b.block(side * 0.8, 1.39, z, 0.065, 0.035, 0.1, bar, M.Metal, Z.Roof, 0.004);
+      continuousTube(
+        b,
+        [v(side * out, 1.56, z), v(side * out, 1.26, z), v(side * 0.915, 0.83, z)],
+        0.016,
+        bar,
+        Z.Roof,
+        M.Metal,
+      );
+      b.block(side * 0.905, 0.805, z, 0.075, 0.06, 0.11, bar, M.Metal, Z.Roof, 0.004);
     }
   }
   for (const x of [-0.54, 0.54])
-    b.block(x, 1.56, TILT_BOARD_Z, 0.035, 0.03, 1.58, bar, M.Metal, Z.Roof, 0.004);
+    b.block(
+      x,
+      1.56,
+      TILT_BOARD_Z,
+      0.035,
+      0.03,
+      TILT_RACK_Z[1] - TILT_RACK_Z[0] + 0.05,
+      bar,
+      M.Metal,
+      Z.Roof,
+      0.004,
+    );
 }
