@@ -320,6 +320,10 @@ def build_front(M):
             zz = 0.93 + k * 0.022
             to_coll(box('lv', s * HW_TUB - 0.006, s * HW_TUB + 0.006, 0.40, 0.50, zz, zz + 0.008) if s > 0 else
                     box('lv', -HW_TUB - 0.006, -HW_TUB + 0.006, 0.40, 0.50, zz, zz + 0.008), cut)
+    # The door's front shut line runs down the cowl's rear edge, where the cowl covers the tub:
+    # cut it here as well, or only a hairline shows (step 8).
+    for s in (-1, 1):
+        to_coll(groove_ring('door_c', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07), cut)
     boolean(cowl, cut)
     for o in list(cut.objects): kill(o)
     bpy.data.collections.remove(cut)
@@ -369,8 +373,9 @@ def build_sides(M):
         # sill (rear-34-left.jpg), instead of two straight grooves down to the sill.
         to_coll(groove_ring('door', s, DOOR_REAR, Y_SCREEN - 0.012, SILL + 0.045, BELT + 0.25, 0.07), cut)
         # swage line along the tub at door-handle height
-        to_coll(box('swage', HW_TUB - 0.004 if s > 0 else -HW_TUB - 0.05, HW_TUB + 0.05 if s > 0 else -HW_TUB + 0.004,
-                    Y_TAIL + 0.1, Y_SCREEN + 0.02, 1.10, 1.107), cut)
+        # the seam between the tub and the hardtop: 12 mm wide, 6 mm deep (it was 7 by 4 and broke up)
+        to_coll(box('swage', HW_TUB - 0.006 if s > 0 else -HW_TUB - 0.05, HW_TUB + 0.05 if s > 0 else -HW_TUB + 0.006,
+                    Y_TAIL + 0.1, Y_SCREEN + 0.02, 1.098, 1.110), cut)
     # Fuel filler flap on the right rear quarter, between the door and the arch (front-34-hardtop.jpg).
     to_coll(groove_ring('filler', 1, DOOR_REAR - 0.135, DOOR_REAR - 0.035, 0.975, 1.075, 0.015, w=0.003), cut)
     for xx in (0.0, -0.73, 0.73):

@@ -1746,4 +1746,11 @@ The owner: finish the FJ. This closes the FJ40's list in `docs/AUDIT-2026-11.md`
 
 Compared with `rear-34-left.jpg` and `front-34-hardtop.jpg` beside the studio pictures. No part of the kit was added or moved.
 
+**The second look.** A reviewer was given the standard studio set and nine close-ups and nothing else. It found nothing floating, below the ground or facing the wrong way. What it did find, and what was done:
+
+- The door's outline was bold at the back and foot but a hairline at the front. The front edge runs where the cowl covers the tub, and only the tub was cut; the outline is now cut into the cowl as well.
+- The door spare stood a little outside the body's left side. It is centred on its door, 30 mm further in, inside the body's side.
+- The line along the side at door-handle height was faint and broken. That groove, the seam between the tub and the hardtop, is 12 mm wide and 6 mm deep (was 7 by 4). It is still a fine line.
+- Not changed, all drawn by the game's suspension on every leaf-sprung vehicle: the rear axle's centre is a ball with a steel ring on its rear face (the differential's cover), which reads as hollow from behind; the rods standing ahead of and behind each wheel are the spring hangers, which meet the chassis rail at their tops; the pair of rods over each axle end is the shock's tower.
+
 **What still differs from the photographs,** none of it on the audit list: the grille is chrome bars with a badge, where cars from 1975 have a mesh panel; the barn doors have no pressed panels; the front bumper and rear bumperettes are replaced by the game's bars.

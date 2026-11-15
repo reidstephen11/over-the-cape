@@ -33,10 +33,10 @@ const LIFT = -0.012 + FJ40_BODY_LIFT;
  * The rear spare, as modelled, covered the left tail lamp. v1.83 moved it 0.22 m inboard, which
  * put it across the seam between the two barn doors, where no carrier could hold it. Since
  * v1.86 it is on the left door alone, 0.19 m higher: over the lamp and across the foot of that
- * door's window, as rear-34-left.jpg carries its spare. 15 mm further off the door, the tyre
- * clears the door's upper hinge.
+ * door's window, as rear-34-left.jpg carries its spare, centred on the door so it stays inside
+ * the body's side. 15 mm further off the door, the tyre clears the door's upper hinge.
  */
-const SPARE_SHIFT = { x: -0.02, y: 0.19, z: 0.015 };
+const SPARE_SHIFT = { x: 0.01, y: 0.19, z: 0.015 };
 const GLB_TYRE_R = 0.392;
 
 let gltfRoot: THREE.Object3D | null = null;
