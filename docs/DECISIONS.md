@@ -1886,6 +1886,7 @@ The last part of the Perentie's list: item 2 and most of what was left of item 1
 - **Not done:** the wheels. The model's have eight square holes; the photographs show plain dished discs with a few small round holes.
 
 **The second look.** A reviewer was given 45 pictures (the standard set, nine close-ups and the 28 audit pictures) and found nothing floating, facing the wrong way, below the ground or gaping. Three of its minor points were acted on: the door tops stood 2 cm outside the windscreen's pillars, so the frame is now as wide as the door tops; each canvas bow's leg has a socket on the shelf; the jerry cans' straps are 8 mm narrower, inside the body sides. Left as they are: the spare's cradle is the lowest part behind the rear axle, 0.2 m up; the rear bow shows under the canvas's rear edge because the back is open; a pale strut above each front tyre is the coil spring's tower.
+
 ## v1.94: the LC79, stage 1 (the front)
 
 The owner asked for the LC79 next. Before any change the 28 audit pictures were taken and compared with `front-34-single-cab.jpg`, `side-wagon.jpg`, `front-34-wagon.jpg`, `front-34-wagon-2.jpg`, `front-34-double-cab.jpg` and `pre-facelift-single-cab.jpg`. The list is in `docs/AUDIT-2026-11.md`; this stage fixes items 1 to 6. Only the LC79 (`lc79`) changes.
