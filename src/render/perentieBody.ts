@@ -477,7 +477,7 @@ function rearBody(b: VehicleBuilder): void {
     b.block(side * 0.76, 0.2, TAIL + 0.035, 0.13, 0.18, 0.04, black, M.Rubber, Z.Rear, 0.01);
     b.block(side * 0.76, 0.24, TAIL + 0.058, 0.1, 0.06, 0.012, red, M.Red, Z.Rear, 0.005);
     b.block(side * 0.76, 0.17, TAIL + 0.058, 0.1, 0.05, 0.012, amber, M.Amber, Z.Rear, 0.005);
-    b.ring(side * 0.61, 0.2, TAIL + 0.03, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
+    b.ring(side * 0.63, 0.2, TAIL + 0.03, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
     // Jerry can in a holder on the corner panel, above the lamps, its broad side to the panel.
     canOnRear(b, side);
   }
@@ -491,6 +491,8 @@ function rearBody(b: VehicleBuilder): void {
   b.pop();
   // Drop-down tailgate on two bottom hinges, held by chains, with pressed ribs.
   b.block(0, 0.44, TAIL + 0.005, 2 * GATE, 0.62, 0.05, paint, M.Paint, Z.Rear, 0.01);
+  // The sill under the gate, down to the rear crossmember: a 4 cm slot was open there.
+  b.block(0, 0.1, TAIL - 0.005, 2 * GATE, 0.07, 0.04, paint, M.Paint, Z.Rear);
   for (const y of [0.3, 0.58])
     b.block(0, y, TAIL + 0.034, 2 * GATE - 0.12, 0.04, 0.012, paint, M.Paint, Z.Rear, 0.006);
   for (const side of [-1, 1]) {
@@ -556,17 +558,17 @@ function tailgateTools(b: VehicleBuilder): void {
     b.block(x, y, TAIL + 0.055, 0.035, 0.07, 0.05, black, M.Metal, Z.Rear, 0.006);
   // Shovel: blade on the right, socket, handle and D grip towards the left.
   let y = 0.655;
-  b.block(0.38, y, z, 0.27, 0.2, 0.012, head, M.Metal, Z.Rear, 0.004);
-  b.rod({ x: 0.25, y, z }, { x: 0.14, y, z }, 0.02, head, M.Metal, Z.Rear);
-  b.rod({ x: 0.14, y, z }, { x: -0.4, y, z }, 0.016, wood, M.Fabric, Z.Rear);
-  b.ring(-0.445, y, z, 0.045, 0.01, black, M.Metal, 'z', Z.Rear);
-  clamp(0.38, y);
+  b.block(0.35, y, z, 0.27, 0.2, 0.012, head, M.Metal, Z.Rear, 0.004);
+  b.rod({ x: 0.22, y, z }, { x: 0.11, y, z }, 0.02, head, M.Metal, Z.Rear);
+  b.rod({ x: 0.11, y, z }, { x: -0.37, y, z }, 0.016, wood, M.Fabric, Z.Rear);
+  b.ring(-0.415, y, z, 0.045, 0.01, black, M.Metal, 'z', Z.Rear);
+  clamp(0.35, y);
   clamp(-0.2, y);
   // Pick: helve across the middle with the head upright at its left end.
   y = 0.44;
-  b.rod({ x: -0.48, y, z }, { x: 0.42, y, z }, 0.019, wood, M.Fabric, Z.Rear);
-  b.rod({ x: -0.48, y: 0.3, z }, { x: -0.48, y: 0.58, z }, 0.016, head, M.Metal, Z.Rear);
-  b.block(-0.48, y, z, 0.06, 0.07, 0.05, head, M.Metal, Z.Rear, 0.01);
+  b.rod({ x: -0.45, y, z }, { x: 0.42, y, z }, 0.019, wood, M.Fabric, Z.Rear);
+  b.rod({ x: -0.45, y: 0.3, z }, { x: -0.45, y: 0.58, z }, 0.016, head, M.Metal, Z.Rear);
+  b.block(-0.45, y, z, 0.06, 0.07, 0.05, head, M.Metal, Z.Rear, 0.01);
   clamp(-0.3, y);
   clamp(0.25, y);
   // Axe: helve along the bottom, its head at the right end with the blade turned down.
@@ -585,7 +587,9 @@ function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
     // The tyre's sidewall rests on the plate, 4 mm clear.
     hubY = base + spareSidewall(wheel) + 0.004,
     top = hubY + tuning.wheelWidth / 2;
-  b.block(0, crownAt(0) + 0.02, z, 0.36, 0.04, 0.36, black, M.Metal, Z.Front, 0.01);
+  // 0.66 m square, out to where the sidewall is widest, so the tyre is seen to rest on it
+  // (on the 0.36 m plate it looked held up by a plinth under its middle).
+  b.block(0, crownAt(0) + 0.02, z, 0.66, 0.04, 0.66, black, M.Metal, Z.Front, 0.01);
   b.tag = Z.Front;
   mountSpare(b, wheel, { x: 0, y: hubY, z }, 'up', black);
   b.rod({ x: 0, y: base, z }, { x: 0, y: top + 0.05, z }, 0.014, steel, M.Metal, Z.Front);
@@ -669,7 +673,7 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   );
   b.block(0.64, 0.06, 0.15, 0.22, 0.24, 0.72, black, M.Metal, Z.Trim, 0.03);
   b.rod({ x: -0.3, y: -0.06, z: -0.75 }, { x: -0.3, y: -0.08, z: 1.0 }, 0.028, steel);
-  b.rod({ x: -0.3, y: -0.08, z: 1.0 }, { x: -0.6, y: -0.06, z: 2.25 }, 0.028, steel);
+  b.rod({ x: -0.3, y: -0.08, z: 1.0 }, { x: -0.62, y: -0.09, z: 2.4 }, 0.028, steel);
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()

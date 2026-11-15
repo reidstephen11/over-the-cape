@@ -11,8 +11,11 @@ const { canvas, galv, bar } = perentieColors;
 const seam = canvas.clone().multiplyScalar(0.73),
   inside = canvas.clone().multiplyScalar(0.83);
 const bows = [FRONT, 0.23, 0.95, 1.62, BACK];
-/** The rack's two crossbars. The front one is 0.09 m behind the first bow, so its legs land on the tub. */
-export const TILT_RACK_Z = [0.32, 1.62];
+/**
+ * The rack's two crossbars. Each is 0.09 to 0.1 m behind a bow (at 0.23 and 1.62), so its feet land
+ * on the tub's rail clear of the bow's own foot, and the front one is behind the cab.
+ */
+export const TILT_RACK_Z = [0.32, 1.72];
 export const TILT_BOARD_Y = 1.6;
 export const TILT_BOARD_Z = (TILT_RACK_Z[0] + TILT_RACK_Z[1]) / 2;
 /** Rounded shoulders, with a small tension sag between support bows. */

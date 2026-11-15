@@ -1820,3 +1820,14 @@ Before any change, the 28 audit pictures were taken, including the four that loo
 - **Jerry cans (item 4).** One on each rear corner panel, above the lamps, its broad side flat against the panel, in a tray held by two flat bars bolted to the panel, with a stay under each side and a strap round it. They hung outside the body sides, which made the truck 2.2 m wide. The audit said the real truck carries them on the rear face. The photographs here do not show an Army GS from behind, so that is not confirmed; some Perenties carry them in lockers let into the body sides behind the rear wheels.
 - **Reflectors.** Inboard of each lamp cluster, where the can does not cover them.
 - **Spare under the rear floor (item 9).** It was there, tucked up between the chassis rails where it could not be seen from any side, with its front edge inside the differential. It hangs 0.2 m lower and 80 mm further back, flat, outer face down, in a cradle of two rails and two crossbars hung from the chassis rails by four hangers. Its tread passes under the rear crossmember and shows below it from behind. Placed with `mountSpare()`; `tests/spares.test.ts` passes (the first cradle stood 2 cm into the tyre and the test caught it).
+
+**The second look.** A reviewer was given 46 pictures (the standard set, ten close-ups and the 28 audit pictures) and nothing else. It found nothing floating, upside down or below the ground. What it did find, and what was done:
+
+- The rear crossbar's feet shared a spot on the tub's rail with a canvas bow's foot. The crossbar is 0.1 m behind that bow now, as the front one already was.
+- A 4 cm slot was open between the tailgate's foot and the rear crossmember. A sill closes it.
+- The bonnet spare stood on a 0.36 m plate under its middle. The plate is 0.66 m square, out to where the sidewall is widest; the spare still lies flat, face up, under its centre clamp.
+- The shovel, the pick's head and the reflectors were hard against the cans' bars and stays. Each moved 20 to 30 mm clear.
+- The exhaust's tip ended beside the cradle's left rear hanger. It runs on 0.15 m to end under the rear crossmember.
+- Left for the later stages: a pale wedge above each front tyre inside the arch (stage 3, with the arches); two grey blocks at the foot of the windscreen, which are its hinges. The spare's cradle is the lowest thing behind the rear axle, 0.2 m off the ground, as the real one is.
+
+Each fix was photographed again and read.
