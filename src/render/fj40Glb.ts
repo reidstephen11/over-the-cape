@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { Vec3 } from '../sim/vehicle/math';
 import type { VehicleTuning } from '../data/vehicle';
-import { FJ40_CAB_DROP, useFj40Cab, vehicles } from '../data/vehicles';
+import { FJ40_BODY_LIFT, FJ40_CAB_DROP, useFj40Cab, vehicles } from '../data/vehicles';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { addVehicleInterior } from './vehicleInterior';
 import { addFj40GlbEquipment } from './vehicleEquipment';
@@ -24,10 +24,11 @@ import { standardLivery, type Livery } from './vehicleBody';
 
 /**
  * GLB hubs are at y = -0.108 and the tyres meet the ground. The game parks its hubs at
- * y = -0.12, so the body drops 12 mm and the wheels sit in the arches. The previous
- * +0.108 lift lined the roof up with the code body and left a 120 mm gap above each tyre.
+ * y = -0.12, so 12 mm down would put the model's hubs on the axles. Since v1.86 the body
+ * stands FJ40_BODY_LIFT above that (see its note). The +0.108 of v1.81 lined the roof up with
+ * the code body and left a 120 mm gap above each tyre.
  */
-const LIFT = -0.012;
+const LIFT = -0.012 + FJ40_BODY_LIFT;
 /** The rear spare, as modelled, covered the left tail lamp. It and its carrier move inboard. */
 const SPARE_INBOARD = 0.22;
 const GLB_TYRE_R = 0.392;
@@ -118,6 +119,7 @@ function addMesh(
   const v = new THREE.Vector3(),
     nv = new THREE.Vector3();
   const zone = zoneOf(part);
+  const first = soup.slot.length;
   for (const g of groups) {
     const [slot, colour] = slotAndColour(
       part,
@@ -136,7 +138,27 @@ function addMesh(
       soup.slot.push(slot);
     }
   }
+  if (part.startsWith('trim_mirror')) markMirrorGlass(soup, first);
   if (geo !== mesh.geometry) geo.dispose();
+}
+
+/**
+ * The door mirrors' glass is chrome in the model, so it loaded as plain metal and the working
+ * mirrors (which look for the Mirror slot) found nothing on this car. The flat chrome face that
+ * looks straight back is the glass; its bevels and the reflector's edge stay metal, or each
+ * would count as a mirror of its own.
+ */
+function markMirrorGlass(soup: Soup, first: number): void {
+  const a = new THREE.Vector3(),
+    b = new THREE.Vector3(),
+    c = new THREE.Vector3();
+  for (let i = first; i + 2 < soup.slot.length; i += 3) {
+    if (soup.slot[i] !== M.Metal) continue;
+    a.fromArray(soup.pos, i * 3);
+    b.fromArray(soup.pos, i * 3 + 3).sub(a);
+    c.fromArray(soup.pos, i * 3 + 6).sub(a);
+    if (b.cross(c).normalize().z > 0.99) soup.slot[i] = soup.slot[i + 1] = soup.slot[i + 2] = M.Mirror;
+  }
 }
 
 function soupGeometry(s: Soup): THREE.BufferGeometry {

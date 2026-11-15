@@ -2,6 +2,7 @@ import { jerryCan, numberPlate } from './bodyKit';
 import { ROUND_BEND, continuousTube, cleanGeometry } from './bodyRefinement';
 import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
+import { FJ40_BODY_LIFT } from '../data/vehicles';
 import { pal } from './colors';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
 import { HW, NOSE, ROOF, TAIL } from './vehicleBody';
@@ -14,7 +15,7 @@ const rackDrop = () => ROOF - 1.64;
  * The Blender FJ40's roof is 0.12 m under the code body's, once its hubs sit on the game's
  * axles. The rack, the roof spare and the recovery boards drop by this much on that car only.
  */
-export const FJ40_GEAR_DROP = -0.12;
+export const FJ40_GEAR_DROP = -0.12 + FJ40_BODY_LIFT;
 
 /** Round driving lamps on the bull bar, in the game frame. They come on with high beam. */
 export const fj40DrivingLamps: { x: number; y: number; z: number }[] = [-0.55, 0.55].map((x) => ({
@@ -525,9 +526,9 @@ function fj40RearCan(b: VehicleBuilder): void {
 
 /** Rear bar under the lamps, with the plate on the right (the spare takes the left) and a tow ball. */
 function fj40RearBar(b: VehicleBuilder): void {
-  // Its top (y 0.135) is 21 mm under the door spare's tread (y 0.156), which stands over it.
-  // Until v1.85 the bar was 45 mm higher and the tyre sat 24 mm into it.
-  const y = 0.075;
+  // Its top (y 0.155) is 43 mm under the door spare's tread (y 0.198), which stands over it.
+  // Until v1.85 the tyre sat 24 mm into the bar.
+  const y = 0.095;
   b.block(0, y, 2.0, 1.55, 0.12, 0.1, bar, M.Metal, Z.Rear, 0.012);
   for (const x of [-0.5, 0.5]) b.block(x, y, 1.92, 0.06, 0.08, 0.12, bar, M.Metal, Z.Rear);
   numberPlate(b, 0.48, y, 2.06, 1, 'FJ-40', black);
@@ -551,23 +552,27 @@ export function addFj40GlbEquipment(
 ): void {
   bullBar(b, tuning, true);
   fj40Spots(b);
+  fj40RearBar(b);
+  // Everything bolted to the body stands FJ40_BODY_LIFT higher with it; the bars are on the
+  // chassis at the height the winch and the tow point need.
+  b.push().translate(0, FJ40_BODY_LIFT, 0);
   fj40Snorkel(b);
   for (const x of [-0.7, 0.7]) {
     fj40Flap(b, x, -0.7);
     fj40Flap(b, x, 1.6);
   }
-  fj40RearBar(b);
   fj40RearCan(b);
+  // Whip aerial on the flat top of the left wing (0.99 m above the ground at stock height,
+  // x 0.50 to 0.67). Until v1.85 its base hung 0.3 m above the wing, beside the bonnet.
+  b.block(-0.61, 0.49, -1.02, 0.05, 0.03, 0.05, black, M.Rubber, Z.Front);
+  b.rod({ x: -0.61, y: 0.5, z: -1.02 }, { x: -0.63, y: 1.3, z: -0.98 }, 0.005, trim);
+  b.pop();
   b.push().translate(0, FJ40_GEAR_DROP, 0);
   roofGear(b, fj40Rack);
   // The Blender wheel's rim flange is 0.21 m out and 93 mm above the hub's plane: the bar
   // spans it and bears on the tyre's bead on both sides.
   roofSpare(b, tuning, wheel, { above: 0.098, length: 0.44 });
   b.pop();
-  // Whip aerial on the flat top of the left wing (0.99 m above the ground, y 0.478 here,
-  // x 0.50 to 0.67). Until v1.85 its base hung 0.3 m above the wing, beside the bonnet.
-  b.block(-0.61, 0.49, -1.02, 0.05, 0.03, 0.05, black, M.Rubber, Z.Front);
-  b.rod({ x: -0.61, y: 0.5, z: -1.02 }, { x: -0.63, y: 1.3, z: -0.98 }, 0.005, trim);
 }
 
 export function buildRackPlank(index: number): THREE.BufferGeometry {

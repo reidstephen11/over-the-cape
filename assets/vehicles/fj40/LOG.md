@@ -227,3 +227,15 @@ file as headless Blender: the script rebuilt the committed GLB byte for byte bef
 
 - Bonnet about 7 cm high at the cowl (see `reference/vehicles/landcruiser-fj40/SOURCES.md`).
 - Front wings and rear arches: `docs/AUDIT-2026-11.md`, FJ40 items 4 and 9. Hinges, step and wheel discs: item 15.
+
+## Step 7 — bonnet, wings, arches (v1.86, 15 Nov 2026)
+
+- **Bonnet:** 1.215 m at the cowl (was 1.28), 1.175 m at the nose; the cowl's curve follows it. A black air slot
+  (`trim_bonnet_vent`) in the front lip above the grille panel.
+- **Front wings:** the roll from the flat top into the flare is 85 mm (was 160 mm), so the top reads flat and the side upright.
+- **Rear arches:** superellipse a 0.53, b 0.47, n 4.6 (was 0.56, 0.50, 2.7): flat top, radiused corners. The raised lip is
+  gone. `chassis_tub_l/r` is a dark box behind each opening, closed on its inner side.
+- **Step** under each door 85 mm proud (was 45). **Hinges** (`trim_hinges_door`, `trim_hinges_rear`) in body colour.
+- Ride height is not in the model: the game stands the body 42 mm higher on its axles (`FJ40_BODY_LIFT` in
+  `src/data/vehicles.ts`).
+- GLB: 56,312 tris.
