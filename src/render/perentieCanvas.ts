@@ -3,10 +3,16 @@ import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGe
 import { perentieColors } from './perentiePaint';
 import { continuousTube } from './bodyRefinement';
 
-const FRONT = -0.73,
+const FRONT = -0.7,
   BACK = 2.31,
-  HALF = 0.905,
   TOP = 1.51;
+/**
+ * Half the width of the cab and the tilt above the waist (v1.93). The real truck steps in at the
+ * waist: its cab is about 1.5 m wide on a 1.79 m body (side-right-county-1990.jpg). At 0.905
+ * the tilt was as wide as the body.
+ */
+export const TILT_HALF = 0.79;
+const HALF = TILT_HALF;
 const { canvas, galv, bar } = perentieColors;
 const seam = canvas.clone().multiplyScalar(0.73),
   inside = canvas.clone().multiplyScalar(0.83);
@@ -117,10 +123,10 @@ export function addCanvasTilt(b: VehicleBuilder): void {
     for (const z of [0.39, 0.95, 1.62, 2.18]) {
       const y = canvasY(HALF, z) - 0.035;
       b.ring(side * (HALF + 0.006), y, z, 0.046, 0.0045, seam, M.Fabric, 'z', Z.Sides);
-      b.block(side * 0.903, y + 0.012, z, 0.01, 0.025, 0.022, galv, M.Metal, Z.Sides, 0.002);
+      b.block(side * (HALF - 0.002), y + 0.012, z, 0.01, 0.025, 0.022, galv, M.Metal, Z.Sides, 0.002);
       b.rod(
         v(side * (HALF + 0.006), y + 0.045, z),
-        v(side * 0.837, canvasY(0.837, z) + 0.003, z),
+        v(side * (HALF - 0.068), canvasY(HALF - 0.068, z) + 0.003, z),
         0.004,
         seam,
         M.Fabric,
@@ -129,7 +135,7 @@ export function addCanvasTilt(b: VehicleBuilder): void {
     }
   }
   const rearPoints = Array.from({ length: 17 }, (_, i) => {
-    const x = -0.8 + i * 0.1;
+    const x = (-1 + i / 8) * (HALF - 0.105);
     return v(x, canvasY(x, BACK) - 0.065, BACK - 0.005);
   });
   continuousTube(b, rearPoints, 0.043, canvas, Z.Rear, M.Fabric);
@@ -184,28 +190,22 @@ export function addCanvasHoops(b: VehicleBuilder): void {
     }
     pts.push(v(leg, 1.385, z), v(leg, 0.79, z));
     continuousTube(b, pts, 0.012, galv, Z.Trim, M.Paint);
+    // A socket on the waist shelf under each leg.
+    for (const side of [-1, 1]) b.block(side * leg, 0.807, z, 0.05, 0.03, 0.05, galv, M.Paint, Z.Trim, 0.004);
   }
 }
 /**
  * The rack for the recovery boards. Each crossbar reaches out past the rolled side curtains
- * (their outer face is 0.955 m out) to a leg that drops outside the canvas and cranks in to a
- * foot bolted over the tub's capping rail (0.845 to 0.905 m out, 0.79 m up). Until v1.90 the
+ * to a leg that drops straight down outside the canvas to a foot on the body's waist shelf. Until v1.90 the
  * legs stopped on the canvas and nothing reached the body.
  */
 export function addTiltRack(b: VehicleBuilder): void {
-  const out = 0.985;
+  const out = HALF + 0.085;
   for (const z of TILT_RACK_Z) {
     b.block(0, 1.56, z, 2 * out + 0.03, 0.03, 0.045, bar, M.Metal, Z.Roof, 0.004);
     for (const side of [-1, 1]) {
-      continuousTube(
-        b,
-        [v(side * out, 1.56, z), v(side * out, 1.26, z), v(side * 0.915, 0.83, z)],
-        0.016,
-        bar,
-        Z.Roof,
-        M.Metal,
-      );
-      b.block(side * 0.905, 0.805, z, 0.075, 0.06, 0.11, bar, M.Metal, Z.Roof, 0.004);
+      continuousTube(b, [v(side * out, 1.56, z), v(side * out, 0.84, z)], 0.016, bar, Z.Roof, M.Metal);
+      b.block(side * out, 0.815, z, 0.075, 0.05, 0.11, bar, M.Metal, Z.Roof, 0.004);
     }
   }
   for (const x of [-0.54, 0.54])

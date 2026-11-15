@@ -1871,3 +1871,18 @@ Stage 3 is split in two so each part is finished and shipped. This part is item 
 - The eyebrow crossed the wing's intake grille. The grille is a low slot above the eyebrow until stage 3b settles where it belongs.
 - The shovel's blade stood above the tailgate's top edge. It is 25 mm lower.
 - Not changed: the roll bar's feet are on the load floor 9 cm ahead of the benches' ends, which hide them from behind. A pale strut above each front tyre is the coil spring's tower, drawn by the suspension. The blocks at the foot of the windscreen are for stage 3b.
+
+## v1.93: the Perentie, stage 3b (the cab's width)
+
+The last part of the Perentie's list: item 2 and most of what was left of item 10. Only the Perentie changes.
+
+**Compared with** `side-right-county-1990.jpg`, `side-county.jpg` and `rear-34-right-county-1990.jpg`, cropped at full size at the wing, the cab and a front wheel.
+
+- **Cab width (item 2).** The cab, the windscreen, the door tops and the canvas tilt are 1.58 m wide above the waist (`TILT_HALF` 0.79) on the 1.79 m body. They were 1.81 m, as wide as the body. A flat shelf at the waist runs along the top of each door and along the tub, from the cab's side out to the body's.
+- **What stands on the shelf, and how.** The tilt's four bows stand on it 0.735 m out. The rack's four legs drop straight down outside the rolled curtains to feet on it 0.875 m out (they no longer crank inwards). The roll bar's hoop stands on the load floor 0.66 m out, inside the bows, and its two braces land on the shelf 0.76 m out. The rolled curtains hang under the canvas's edges 0.796 m out. The aerial is unchanged on the left wing.
+- **Windscreen (item 10).** It leans back 10 cm in its 58 cm, about 10 degrees (it was 7 cm). The canvas's front edge moved back 3 cm to meet its top rail. The two steel cubes at the foot of the glass, which each review took for loose parts, are small painted brackets on the lower rail.
+- **Wing intake (item 10).** A grille let into the top of the right wing, towards the scuttle, as `side-right-county-1990.jpg` shows. It was a louvred panel on the left wing's side. Each wing has an amber repeater on its side.
+- **Arch mouldings.** Painted with the body, a shade darker so the edge reads; both photographed trucks' are camouflaged with the body. v1.92 had them black.
+- **Not done:** the wheels. The model's have eight square holes; the photographs show plain dished discs with a few small round holes.
+
+**The second look.** A reviewer was given 45 pictures (the standard set, nine close-ups and the 28 audit pictures) and found nothing floating, facing the wrong way, below the ground or gaping. Three of its minor points were acted on: the door tops stood 2 cm outside the windscreen's pillars, so the frame is now as wide as the door tops; each canvas bow's leg has a socket on the shelf; the jerry cans' straps are 8 mm narrower, inside the body sides. Left as they are: the spare's cradle is the lowest part behind the rear axle, 0.2 m up; the rear bow shows under the canvas's rear edge because the back is open; a pale strut above each front tyre is the coil spring's tower.

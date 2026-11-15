@@ -20,7 +20,7 @@ The 110's civilian figures are the Defender infobox on [Land Rover Defender](htt
 | --------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | Wheelbase | 2,794 mm (110 in)                                | 2.794 m                                                                                               |
 | Length    | 4,600 mm (181.1 in), civilian, before a bull bar | about 4.20 m for the body skin (`FRONT_FACE` −1.90 since v1.91, to `TAIL` 2.30); the brush guard's beam is 0.2 m further forward |
-| Width     | 1,791 mm (70.5 in)                               | 1.79 m (`SIDE` 0.895, v1.22; the tilt's `HALF` 0.905)                                                 |
+| Width     | 1,791 mm (70.5 in)                               | 1.79 m body (`SIDE` 0.895, v1.22); the cab and tilt above the waist are 1.58 m (`TILT_HALF` 0.79, v1.93)                                                 |
 | Track     | the game uses 1.486 m                            | 1.486 m                                                                                               |
 | Tyres     | the game uses 7.50R16                            | radius 0.40 m                                                                                         |
 

@@ -8,6 +8,7 @@ import { cleanGeometry, continuousTube } from './bodyRefinement';
 import {
   addCanvasTilt,
   addTiltRack,
+  TILT_HALF as CAB,
   addCanvasHoops,
   TILT_BOARD_Y,
   TILT_BOARD_Z,
@@ -131,7 +132,8 @@ function archPanel(
     if (side > 0) b.quad(d, c, ci, di, paint);
     else b.quad(di, ci, c, d, paint);
   }
-  // The eyebrow: a black moulding along the flat and down both corners to the sill.
+  // The eyebrow: a moulding along the flat and down both corners to the sill, painted with the
+  // body (the photographs' are camouflaged with it), a shade darker so its edge reads.
   const edge = (grow: number) =>
     Array.from({ length: 49 }, (_, i) => {
       const d = -o.foot + (2 * o.foot * i) / 48;
@@ -143,8 +145,8 @@ function archPanel(
     sideShape([...edge(0.05), ...edge(-0.004).reverse()]),
     side > 0 ? SIDE - 0.006 : -SIDE - 0.028,
     side > 0 ? SIDE + 0.028 : -SIDE + 0.006,
-    black,
-    M.Rubber,
+    paint.clone().multiplyScalar(0.86),
+    M.Paint,
     zone,
     0.006,
   );
@@ -273,13 +275,16 @@ function frontEnd(b: VehicleBuilder): void {
       b.geometry(new THREE.SphereGeometry(0.032, 12, 6), col);
       b.pop();
     }
-    // Air intake grille on the left wing; the right wing is plain.
-    if (side < 0) {
-      // A low slot between the eyebrow and the wing top; lower down the eyebrow crossed it.
-      b.block(-SIDE - 0.004, 0.55, -1.02, 0.012, 0.05, 0.26, black, M.Rubber, Z.Front, 0.006);
-      for (let i = 0; i < 2; i++)
-        b.block(-SIDE - 0.011, 0.538 + i * 0.024, -1.02, 0.006, 0.006, 0.23, rubber, M.Rubber, Z.Front);
+    // The engine's air intake: a grille let into the top of the right wing, towards the scuttle
+    // (side-right-county-1990.jpg). It was a louvred panel on the left wing's side.
+    if (side > 0) {
+      const ix = (BONNET.half + SIDE) / 2;
+      b.block(ix, 0.611, -1.08, 0.2, 0.006, 0.34, black, M.Rubber, Z.Front, 0.002);
+      for (let i = 0; i < 6; i++)
+        b.block(ix, 0.616, -1.22 + i * 0.056, 0.18, 0.005, 0.012, rubber, M.Rubber, Z.Front);
     }
+    // Amber repeater on each wing's side.
+    b.block(side * (SIDE + 0.005), 0.535, -1.25, 0.012, 0.028, 0.06, amber, M.Amber, Z.Front, 0.004);
   }
   // The Perentie's grille: a body-colour panel of seven chunky louvres (front.jpg), with a
   // small two-line oval identity badge above. It was a black panel of fourteen fine slats.
@@ -376,22 +381,28 @@ function windscreen(b: VehicleBuilder): void {
     b.block(x, 0.7, SCUTTLE - 0.058, 0.44, 0.1, 0.02, paint, M.Paint, Z.Front, 0.008);
     b.block(x, 0.752, SCUTTLE - 0.062, 0.44, 0.008, 0.016, black, M.Rubber, Z.Front);
   }
-  const lean = Math.atan2(0.07, SCREEN_TOP - WAIST);
+  // It leans back 10 cm in its 58 cm (10 degrees); at 7 cm it stood too upright.
+  const lean = Math.atan2(0.1, SCREEN_TOP - WAIST);
   b.push()
     .translate(0, WAIST, SCUTTLE + 0.01)
     .rotate(lean, 0, 0);
   const h = SCREEN_TOP - WAIST;
-  b.block(0, 0.03, 0, 1.76, 0.06, 0.07, paint, M.Paint, Z.Front, 0.01);
-  b.block(0, h - 0.03, 0, 1.76, 0.07, 0.08, paint, M.Paint, Z.Front, 0.01);
-  for (const x of [-0.85, 0.85]) b.block(x, h / 2, 0, 0.07, h, 0.07, paint, M.Paint, Z.Front, 0.01);
-  b.block(0, h / 2 + 0.005, 0, 1.63, h - 0.11, 0.012, glass, M.Glass, Z.Glass);
-  for (const y of [0.065, h - 0.07]) b.block(0, y, -0.012, 1.64, 0.012, 0.01, rubber, M.Rubber, Z.Front);
+  // As wide as the door tops, so the pillars and the doors' front edges are flush.
+  const w = 2 * CAB;
+  b.block(0, 0.03, 0, w, 0.06, 0.07, paint, M.Paint, Z.Front, 0.01);
+  b.block(0, h - 0.03, 0, w, 0.07, 0.08, paint, M.Paint, Z.Front, 0.01);
+  for (const x of [-(CAB - 0.035), CAB - 0.035])
+    b.block(x, h / 2, 0, 0.07, h, 0.07, paint, M.Paint, Z.Front, 0.01);
+  b.block(0, h / 2 + 0.005, 0, w - 0.13, h - 0.11, 0.012, glass, M.Glass, Z.Glass);
+  for (const y of [0.065, h - 0.07]) b.block(0, y, -0.012, w - 0.12, 0.012, 0.01, rubber, M.Rubber, Z.Front);
   for (const x of [0.5, -0.18]) {
     b.rod({ x, y: 0.07, z: -0.03 }, { x: x - 0.42, y: 0.1, z: -0.03 }, 0.007, black, M.Rubber, Z.Front);
     b.rod({ x, y: 0.07, z: -0.034 }, { x: x - 0.38, y: 0.1, z: -0.034 }, 0.004, black, M.Rubber, Z.Front);
   }
   // Fold-down screen clamps either side.
-  for (const x of [-0.79, 0.79]) b.block(x, 0.1, -0.05, 0.05, 0.05, 0.05, steel, M.Metal, Z.Front);
+  // Small painted brackets on the lower rail; as 5 cm steel cubes over the glass they read as loose.
+  for (const x of [-(CAB - 0.13), CAB - 0.13])
+    b.block(x, 0.03, -0.042, 0.06, 0.04, 0.02, paint, M.Paint, Z.Front, 0.004);
   b.pop();
 }
 
@@ -441,7 +452,20 @@ function doors(b: VehicleBuilder): void {
     b.block(side * (SIDE + 0.03), 0.68, back - 0.06, 0.012, 0.022, 0.028, steel, M.Metal, Z.Sides, 0.004);
     b.block(side * (SIDE - 0.025), 0.02, mid, 0.05, 0.1, len + 0.12, paint, M.Paint, Z.Sides, 0.008);
     // Canvas door top: a frame round a clear window (the glass hides in the driver's view).
-    const x = side * (SIDE - 0.02);
+    // The waist shelf: the door's top, from the cab's side out to the body's.
+    b.block(
+      (side * (CAB + SIDE)) / 2,
+      WAIST - 0.004,
+      mid,
+      SIDE - CAB + 0.04,
+      0.03,
+      len,
+      paint,
+      M.Paint,
+      Z.Sides,
+      0.006,
+    );
+    const x = side * (CAB - 0.012);
     const y0 = WAIST - 0.01,
       y1 = SCREEN_TOP + 0.05;
     const z0 = front + 0.01,
@@ -487,12 +511,14 @@ function doors(b: VehicleBuilder): void {
 function rearBody(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
     archPanel(b, side, B_PILLAR + 0.01, TAIL, 1.397, WAIST, Z.Rear, 0.56, REAR_OPENING);
-    // Capping rail and the rope cleats the tilt is lashed to.
+    // The waist shelf along the tub (the cab and tilt are narrower than the body since v1.93),
+    // which the tilt's bows, the rack's feet and the roll bar's braces stand on, and the rope
+    // cleats the tilt is lashed to.
     b.block(
-      side * (SIDE - 0.02),
+      (side * (CAB - 0.09 + SIDE + 0.01)) / 2,
       WAIST + 0.012,
       (B_PILLAR + TAIL) / 2,
-      0.06,
+      SIDE + 0.01 - (CAB - 0.09),
       0.025,
       TAIL - B_PILLAR,
       paint,
@@ -676,8 +702,8 @@ function canOnRear(b: VehicleBuilder, side: number): void {
     .rotate(0, -Math.PI / 2, 0);
   jerryCan(b, 0, 0, 0, { colour: new THREE.Color('#5B6640'), zone: Z.Rear, width: 0.165, ribX: 0.085 });
   b.pop();
-  b.block(x, y + 0.05, z + 0.088, 0.36, 0.04, 0.012, black, M.Rubber, Z.Rear);
-  for (const dx of [-0.176, 0.176])
+  b.block(x, y + 0.05, z + 0.088, 0.352, 0.04, 0.012, black, M.Rubber, Z.Rear);
+  for (const dx of [-0.172, 0.172])
     b.block(x + dx, y + 0.05, skin + 0.105, 0.012, 0.04, 0.21, black, M.Rubber, Z.Rear);
 }
 
@@ -692,8 +718,8 @@ function tilt(b: VehicleBuilder): void {
  */
 function rollBar(b: VehicleBuilder): void {
   const z = B_PILLAR + 0.12,
-    x = 0.72,
-    top = 1.38;
+    x = 0.66,
+    top = 1.37;
   const tube = (pts: [number, number, number][], r: number) =>
     continuousTube(
       b,
@@ -717,11 +743,11 @@ function rollBar(b: VehicleBuilder): void {
     tube(
       [
         [side * x, top - 0.06, z],
-        [side * 0.8, WAIST + 0.03, 1.45],
+        [side * 0.76, WAIST + 0.03, 1.45],
       ],
       0.024,
     );
-    b.block(side * 0.81, WAIST + 0.03, 1.45, 0.07, 0.03, 0.1, paint, M.Paint, Z.Trim, 0.004);
+    b.block(side * 0.76, WAIST + 0.03, 1.45, 0.07, 0.03, 0.1, paint, M.Paint, Z.Trim, 0.004);
   }
 }
 
