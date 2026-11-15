@@ -180,9 +180,12 @@ function soupGeometry(s: Soup): THREE.BufferGeometry {
 
 /**
  * Wheels, the code cabin and the moving axles stay out. The stock bumpers are left out too:
- * the touring bull bar and the rear bar take their place, and the two together z-fought.
+ * the touring bull bar and the rear bar take their place, and the two together z-fought. So
+ * is the model's door-mounted spare carrier: the spare hangs on the swing-away carrier in
+ * vehicleEquipment.ts.
  */
-const skipInBody = /^(wheel_|interior_|chassis_axle|chassis_spring|trim_bumper_|trim_reflector)/;
+const skipInBody =
+  /^(wheel_|interior_|chassis_axle|chassis_spring|trim_bumper_|trim_reflector|trim_spare_carrier)/;
 
 /** The GLB body in the game's attributes, with the code cabin, rack, roof spare and aerial. */
 export function buildFj40GlbBody(
@@ -201,11 +204,10 @@ export function buildFj40GlbBody(
     if (skipInBody.test(part)) return;
     addMesh(soup, o as THREE.Mesh, part, livery, (v) => {
       v.y += LIFT;
-      const carrier = part === 'trim_spare_carrier';
-      if (part.startsWith('spare') || carrier) {
+      if (part.startsWith('spare')) {
         v.x += SPARE_SHIFT.x;
         v.y += SPARE_SHIFT.y;
-        if (!carrier) v.z += SPARE_SHIFT.z;
+        v.z += SPARE_SHIFT.z;
       }
     });
   });

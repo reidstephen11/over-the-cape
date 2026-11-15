@@ -1776,3 +1776,32 @@ Compared with `side.jpg`, `rear-34-hardtop.jpg`, `front-34-hardtop.jpg` and `rea
 - Not changed: the left mirror is 47 mm behind the snorkel's tube, so the two overlap from the front without touching. A few faint marks on the side panels (a short line behind each door, a tick ahead of the right rear arch) are shading on the cut panels, not parts. The shock towers and the winch hook are as noted under v1.86 and v1.85.
 
 Each fix was photographed again and read.
+
+## v1.89: the FJ40's rear corners
+
+The owner sent a picture from the game of the right rear corner, taken from behind and above, and asked how things were still being missed. Under the curved corner window the lower body stood out past the hardtop and its top showed as a black ledge.
+
+**What was wrong.** The hardtop's rear corners have a 0.20 m radius; the tub under it had 0.06 m. At the corner the tub stood up to 58 mm outside the hardtop, and the top of the tub, which is dark because it is inside the cabin everywhere else, showed there. It had been so since the model was first used (v1.81).
+
+**Why it was missed.** The standard studio set and the 24 audit pictures look at the car from the side, the ends, level three-quarter views and straight above. None looks down at an upper corner from close by. The close-ups in v1.85 to v1.88 were aimed at the parts being changed. The reviewer sees only the pictures it is given. So nothing had looked at this join.
+
+**What was done.**
+
+- The tub's rear corners have the hardtop's radius, so the two are flush. The cabin's hollow has round rear corners to match.
+- The tail lamps were 130 mm wide and would have hung off the new round corner. They are 64 mm wide and as tall as before, on the flat of the rear face between the door's edge and the corner, which is nearer the real car's tall narrow lamps.
+- The seam between the tub and the hardtop runs round each rear corner to the barn door's edge, instead of stopping where the side ended.
+- The spare carrier's bracket reaches forward to the round corner's skin (at x −0.69 the skin is at z 1.85).
+- `scripts/studio-audit.ts` takes four more pictures, one looking down at each upper corner from outside (`shoulder-*`), 28 in all. `reference/vehicles/README.md` says to open them after any change to a body's outline.
+- The hardtop is body colour inside, as the real one is. With a dark inside each pillar was half dark and half body colour, with a curved edge between, which showed from the driver's seat as a dark wedge at the foot of the right pillar.
+- After the fix the car was photographed from eight more places chosen for its joins (both front corners from above, the roof's front and rear edges, the left sill from below, the right rear from below, the front from below, the right side) and each was read at full size. Nothing else was found.
+
+**The second look, and what it changed.** A reviewer was given 48 pictures: the standard set, twelve close-ups and the 28 audit pictures. It found the joins sound. It also listed, again, things earlier versions had recorded as "not changed". Those are now fixed:
+
+- **Shocks.** On leaf-sprung vehicles the game hangs each shock from a tower of two braces off the chassis rail, whose top stood in the open arch with nothing above it. A look can now say where the body gives the shock a mount (`leafShockTop` in the suspension layout). The FJ40's front shocks hang from a bracket under the inner wing and its rear ones from a bracket in the roof of the wheel tub, with no towers. Other vehicles are unchanged.
+- **Door spare.** v1.88's carrier latched to the right door, so it tied the body's corner to a door across the other door. The carrier is redrawn: its arm runs along the rear sill, under the doors and the tail lamps, from a hinge bracket on the fixed left corner to a catch on the rear bar; a post stands on the arm between the door skin and the tyre, up to a plate and boss the wheel bolts to. Nothing is fixed to a door. The spare faces the rear. The model's own door-mounted plate and boss are no longer drawn.
+- **Recovery boards.** Their ends were 2 mm from the rack's end rails and looked run through them. The rack is 30 mm longer at each end (2.50 m), so each board end is 28 mm clear. The rack still stands on six posts with clamps on the gutters.
+- **Gutter.** Each side's rail stopped square just before the corner window. It is one band along both sides and round the rear corners.
+- **Barn-door hinges.** The lower hinge butted against the tail lamp's housing. The hinges are at 0.92 m and 1.24 m (were 0.80 m and 1.22 m).
+- **Mud flaps.** Each hangs at the rear edge of its arch, 12 cm behind the tyre (was 6 cm).
+- **A last review of the finished build** found nothing floating or through a panel, and three more points. The shocks' lower eyes were 0.63 m out on the axle, inside tyres whose inner faces are at 0.595 m (true of the towers before them as well); on this car they are 0.52 m out (`axleX`). The spare's post was a thin tube; the arm and post are 50 mm box section with a gusset each side. The snorkel's tube is 25 mm further in (0.825 m out), which leaves a gap to the left mirror's head that shows from the front.
+- Still as it was: two faint vertical lines low on each side panel are shading where the model's panels were cut, not parts; they need the panel's mesh rebuilt and are left for now.

@@ -258,3 +258,14 @@ file as headless Blender: the script rebuilt the committed GLB byte for byte bef
 - **Barn doors' edges** (`REAR_DOOR`) at 0.52 m from the centre (were 0.73 m), inboard of the tail lamps and the corner
   glass; hinges and seams follow; the rear handle is 50 mm shorter. **Front panel** as wide as the bonnet (±0.53 m).
 - GLB: 59,530 tris.
+
+## Step 10 — the tub's rear corners (v1.89, 15 Nov 2026)
+
+- **Rear corners:** the tub's rear corner radius is `TAIL_R` 0.20 m, the hardtop's (it was 0.06 m). The tub stood up to
+  58 mm outside the hardtop's round corners and its dark top showed as a ledge under each corner window. The cabin void's
+  rear corners are round too.
+- **Tail lamps:** 64 mm wide (were 130), on the flat of the rear face between the door's edge and the round corner.
+- **Seam:** the tub-to-hardtop seam is one band along both sides and round the rear corners, stopping at the barn doors.
+- **Hardtop inside** in body colour (the pillars were half dark). **Gutter** (`trim_drip_rail`) one band round the rear
+  corners. **Barn-door hinges** at 0.92 and 1.24 m, clear of the tail lamps.
+- GLB: 60,622 tris.
