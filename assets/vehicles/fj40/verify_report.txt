@@ -9,8 +9,8 @@
   chassis_spring_fr        tris=   108 mats=['chassis_black']
   chassis_spring_rl        tris=   108 mats=['chassis_black']
   chassis_spring_rr        tris=   108 mats=['chassis_black']
-  chassis_tub_l            tris=   136 mats=['chassis_black']
-  chassis_tub_r            tris=   136 mats=['chassis_black']
+  chassis_tub_l            tris=   144 mats=['chassis_black']
+  chassis_tub_r            tris=   144 mats=['chassis_black']
   glass_corner_l           tris=   124 mats=['glass']
   glass_corner_r           tris=   124 mats=['glass']
   glass_door_l             tris=   140 mats=['glass']
@@ -65,7 +65,7 @@
   wheel_fr                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
   wheel_rl                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
   wheel_rr                 tris=  4096 mats=['tyre_rubber', 'wheel_white', 'chrome']
-TOTAL TRIS 56312
+TOTAL TRIS 56328
 BBOX (Blender Z-up after import) min (-1.015, -2.145, -0.5) max (1.015, 1.86, 1.45)
 SIZE x(width)=2.030 y(length)=4.005 z(height)=1.950
 MATERIALS ['chassis_black', 'chrome', 'glass', 'interior', 'interior_vinyl', 'lamp_amber', 'lamp_lens', 'lamp_red', 'metal_bumper', 'paint', 'paint_roof', 'trim_black', 'trim_white', 'tyre_rubber', 'wheel_white']

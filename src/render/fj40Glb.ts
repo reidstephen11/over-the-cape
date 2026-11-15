@@ -29,8 +29,14 @@ import { standardLivery, type Livery } from './vehicleBody';
  * the code body and left a 120 mm gap above each tyre.
  */
 const LIFT = -0.012 + FJ40_BODY_LIFT;
-/** The rear spare, as modelled, covered the left tail lamp. It and its carrier move inboard. */
-const SPARE_INBOARD = 0.22;
+/**
+ * The rear spare, as modelled, covered the left tail lamp. v1.83 moved it 0.22 m inboard, which
+ * put it across the seam between the two barn doors, where no carrier could hold it. Since
+ * v1.86 it is on the left door alone, 0.19 m higher: over the lamp and across the foot of that
+ * door's window, as rear-34-left.jpg carries its spare. 15 mm further off the door, the tyre
+ * clears the door's upper hinge.
+ */
+const SPARE_SHIFT = { x: -0.02, y: 0.19, z: 0.015 };
 const GLB_TYRE_R = 0.392;
 
 let gltfRoot: THREE.Object3D | null = null;
@@ -195,7 +201,12 @@ export function buildFj40GlbBody(
     if (skipInBody.test(part)) return;
     addMesh(soup, o as THREE.Mesh, part, livery, (v) => {
       v.y += LIFT;
-      if (part === 'spare' || part.startsWith('spare') || part === 'trim_spare_carrier') v.x += SPARE_INBOARD;
+      const carrier = part === 'trim_spare_carrier';
+      if (part.startsWith('spare') || carrier) {
+        v.x += SPARE_SHIFT.x;
+        v.y += SPARE_SHIFT.y;
+        if (!carrier) v.z += SPARE_SHIFT.z;
+      }
     });
   });
   const glb = soupGeometry(soup);
@@ -205,8 +216,11 @@ export function buildFj40GlbBody(
   addVehicleInterior(b, tuning.engine.redlineRpm, {
     cabin: vehicles.shortie.cabin,
     drop: FJ40_CAB_DROP,
-    boxOuter: 0.735,
+    // The model has its own boxes over the rear wheels (chassis_tub_l/r).
+    boxOuter: 0,
     dashDepth: 0.07,
+    // The tubs' inner walls are at x 0.40; a wider floor showed in the arches as a bar.
+    rearFloor: 0.78,
   });
   addFj40GlbEquipment(b, tuning, wheel);
   const code = b.build();

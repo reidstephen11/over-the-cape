@@ -403,7 +403,7 @@ def build_sides(M):
     # the far side do not show through the opening.
     for s_ in (-1, 1):
         x0, x1 = (0.40, HW_TUB - 0.012) if s_ > 0 else (-HW_TUB + 0.012, -0.40)
-        tb = box('tubbox', x0, x1, A['y'] - A['a'] - 0.05, A['y'] + A['a'] + 0.05, SILL + 0.01, A['hc'] + A['b'] + 0.05, M['chassis'])
+        tb = box('tubbox', x0, x1, A['y'] - A['a'] - 0.05, A['y'] + A['a'] + 0.05, SILL - 0.006, A['hc'] + A['b'] + 0.05, M['chassis'])
         cx0, cx1 = (0.43, 1.0) if s_ > 0 else (-1.0, -0.43)
         boolean(tb, prism_x('tubcut', sarch(A['y'], A['hc'], A['a'] - 0.004, A['b'] - 0.004, A['n'], 0, 2 * math.pi, 64)[:-1], cx0, cx1))
         kill(bpy.data.objects['tubcut'])

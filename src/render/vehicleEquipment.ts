@@ -384,7 +384,7 @@ function roofSpare(
    * Where the clamp bar bears on the wheel: how far above the hub its underside is, and how
    * long it is. Left out, the bar sits over the code wheel's hub cap.
    */
-  clamp?: { above: number; length: number },
+  clamp?: { above: number; length: number; plate: number },
 ): void {
   const width = tuning.drawnWheels?.width ?? tuning.wheelWidth;
   const drop = rackDrop();
@@ -402,7 +402,8 @@ function roofSpare(
   const spineTop = plateBottom + 0.012;
   const spineH = spineTop - deck;
   b.block(-0.28, deck + spineH / 2, z, 0.036, spineH, 0.32, bar, M.Metal, Z.Roof, 0.004);
-  b.block(x, plateBottom + plateH / 2, z, 0.4, plateH, 0.4, bar, M.Metal, Z.Roof, 0.008);
+  const plate = clamp?.plate ?? 0.4;
+  b.block(x, plateBottom + plateH / 2, z, plate, plateH, plate, bar, M.Metal, Z.Roof, 0.008);
   b.tag = Z.Roof;
   mountSpare(b, wheel, { x, y: hubY, z }, 'up', black);
   b.rod(v(x, base, z), v(x, top + 0.04, z), 0.014, steel, M.Metal, Z.Roof);
@@ -526,12 +527,11 @@ function fj40RearCan(b: VehicleBuilder): void {
 
 /** Rear bar under the lamps, with the plate on the right (the spare takes the left) and a tow ball. */
 function fj40RearBar(b: VehicleBuilder): void {
-  // Its top (y 0.155) is 43 mm under the door spare's tread (y 0.198), which stands over it.
-  // Until v1.85 the tyre sat 24 mm into the bar.
+  // Under the tail lamps (their housings start at y 0.19) and clear of the door spare above.
   const y = 0.095;
   b.block(0, y, 2.0, 1.55, 0.12, 0.1, bar, M.Metal, Z.Rear, 0.012);
   for (const x of [-0.5, 0.5]) b.block(x, y, 1.92, 0.06, 0.08, 0.12, bar, M.Metal, Z.Rear);
-  numberPlate(b, 0.48, y, 2.06, 1, 'FJ-40', black);
+  numberPlate(b, 0.48, y + 0.012, 2.06, 1, 'FJ-40', black);
   b.slot = M.Metal;
   b.tag = Z.Rear;
   b.push().translate(0, y + 0.07, 2.02);
@@ -571,7 +571,9 @@ export function addFj40GlbEquipment(
   roofGear(b, fj40Rack);
   // The Blender wheel's rim flange is 0.21 m out and 93 mm above the hub's plane: the bar
   // spans it and bears on the tyre's bead on both sides.
-  roofSpare(b, tuning, wheel, { above: 0.098, length: 0.44 });
+  // The plate is 0.62 m square, out to where the sidewall is widest, so the tyre is seen to
+  // rest on it; on the standard 0.4 m plate it looked held up by a block under its middle.
+  roofSpare(b, tuning, wheel, { above: 0.098, length: 0.44, plate: 0.62 });
   b.pop();
 }
 

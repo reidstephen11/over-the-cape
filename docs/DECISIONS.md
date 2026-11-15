@@ -1716,6 +1716,22 @@ The owner, after v1.85: fix it until it looks like the real thing. This version 
 - **Hinges and step (item 15).** The door and barn-door hinges are body colour. The step under each door stands 85 mm out from the side (it was 45 mm and hard to see).
 - **Door mirrors.** `e2e/mirrors.spec.ts` and `e2e/headMotion.spec.ts` failed after v1.85: no mirror was ever drawn in this car. The model's mirror glass is chrome, so it loaded as plain metal and the working mirrors found nothing to reflect in; this had been so since v1.81. The flat chrome face that looks straight back now loads as mirror glass (`markMirrorGlass` in `src/render/fj40Glb.ts`). Both tests pass. One line of `e2e/mirrors.spec.ts` expected a button's class to be exactly `on`; since v1.84 the highlighted button is `on focused`, so the check now looks for `on` among the classes.
 
-**Where the moved parts are.** Nothing was added to the kit. The rear bar is 20 mm higher than in v1.85 (its top is 43 mm under the door spare's tread, and its brackets still reach the body's lower edge). Everything else that moved rose 42 mm with the body it is bolted to.
+**Where the moved parts are.**
 
-**Still open on this car.** The wheels show a white disc on the inside as well as the outside, because all four share one mirrored shape that is not turned for the left side (item 15). The game's suspension draws a pair of rods in each rear arch (noted under item 9). The doors are shut lines on a flat side, with no rounded lower corners.
+- **Door spare.** On the left barn door alone, face to the rear, on the model's carrier plate and boss behind it: 0.19 m higher than modelled and 15 mm further off the door, so it stands above both tail lamps, across the foot of that door's window (as `rear-34-left.jpg` carries its spare) and clear of the door's upper hinge. v1.83 had moved it 0.22 m inboard to uncover the left lamp, which put it across the seam between the two doors where nothing could hold it.
+- **Roof spare.** Unchanged in place, lying flat and face up; its plate is 0.62 m square (was 0.4 m), out to where the sidewall is widest, so the tyre is seen to rest on it.
+- **Rear bar.** 20 mm higher than in v1.85, under the tail lamps, its brackets reaching the body's lower edge; the plate sits 12 mm higher on it so it no longer hangs below.
+- Everything else that moved rose 42 mm with the body it is bolted to.
+
+**The second look.** A reviewer was given the standard studio set and 16 close-ups and nothing else. What it found, and what was done:
+
+- The door spare had no visible carrier and sat across the door seam: moved, as above.
+- Thin pale slivers in the lower corners of the rear arches: the cut faces of the floor showed for 10 mm under the dark boxes. The boxes now reach 6 mm below the body's lower edge.
+- A flat bar across each rear arch that stopped short: the code cabin's floor, 1.04 m wide, reaching into the wheel tubs. On this car it is 0.78 m wide between the rear wheels. The cabin's own boxes over the wheels are left out on this car too, since the model now has them.
+- The roof spare looked held up by a block under its middle: the wider plate, as above.
+- The rear plate hung below the bar: raised.
+- Not changed: the pair of rods above each axle end is the shock's tower, two braces from the chassis rail to the shock's top eye, which the game draws on every leaf-sprung vehicle; the leaf springs' leaves are drawn apart for the same reason. The snorkel's box covers the left cowl louvres, where a real one sits. The front door's shut line is two fine grooves close together.
+
+Each fix was photographed again and read.
+
+**Still open on this car.** The wheels show a white disc on the inside as well as the outside, because all four share one mirrored shape that is not turned for the left side (item 15). The doors are shut lines on a flat side, with no rounded lower corners.
