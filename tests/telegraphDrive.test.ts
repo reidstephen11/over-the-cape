@@ -181,6 +181,33 @@ describe('the Telegraph Track the wrong way', () => {
   );
 });
 
+describe('the old gauging station track (v2.00)', () => {
+  it(
+    'crawls out over the rocks to the hut and back to the main line',
+    async () => {
+      const out = await drivePath(
+        world,
+        along(world, [
+          ['sand-dulhunty', 110, 117],
+          ['gauging-track', 0, 200],
+        ]),
+        { day: dry, psi: 18 },
+      );
+      expect(out.done).toBe(true);
+      const back = await drivePath(
+        world,
+        along(world, [
+          ['gauging-track', 200, 0],
+          ['sand-dulhunty', 117, 143],
+        ]),
+        { day: dry, psi: 18 },
+      );
+      expect(back.done).toBe(true);
+    },
+    SLOW,
+  );
+});
+
 describe('a clean run of the whole Telegraph Track', () => {
   it('drives from Bramwell Junction to Gunshot camp in the short 40 on the fuel it carries', async () => {
     const route = along(world, [

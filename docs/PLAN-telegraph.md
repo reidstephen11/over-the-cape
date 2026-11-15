@@ -6,7 +6,7 @@ The owner asked for a new level, "shorter but more challenging" than the CREB Tr
 
 - **Stage 1 (v1.96): built.** The episode, map, route with all five obstacles, Gunshot's Chute and the bypass, the camp, mission, briefing, notes with sourced history, and tests (`tests/telegraph.test.ts`, `tests/telegraphDrive.test.ts`).
 - **Stage 2 (v1.99): built.** The Staircase and the Slot at Gunshot, an oncoming Troopy, a stranded HiLux paying one plug, and a dead tree down across the track by Ducie or Bertie. The three engine limits (Bertie's holes, Palm Creek's rut, the Chute taken crooked) are still open: see below.
-- **Stage 3: after the owner's play test.** Polish (including the three engine limits, the gallery forest's density and Bertie's holes from the seat), and the side trip to the old water gauging station at the Dulhunty.
+- **Stage 3 (v2.00): built without a play test.** The owner asked for it before playing, so there was no feedback to act on. Built: the side trip to the old gauging station at the Dulhunty with a jerry can at its end, and a thicker gallery forest along the creeks. Not solved: the three engine limits, which need a change to how wheels meet the ground (`docs/ROADMAP.md`). Polish from the owner's play test is still to come, in later updates.
 
 ## The design
 
@@ -73,9 +73,15 @@ Measured on the generated map and in the scripted drives (`tests/telegraphDrive.
 - **Driven:** both at a crawl with both lockers in the short 40, the LC79 and the Troop Carrier on the dry day; both stop in high range on a just-reopened day.
 - **Traffic:** a Troopy along `palm-ducie`. **Stranded:** a HiLux 8 m off `dulhunty-bertie`, paying one plug. **Surprise:** one dead tree a run, on the Ducie or Bertie end of the sand track (`planSurprises` keeps falls 22 m clear of water). No rockfalls: the plain has no cutting banks for rocks to come off.
 
+## As built (v2.00, stage 3)
+
+- **The gauging station track** (`gauging-track`): 114 m of faint sand track west off `sand-dulhunty` at (3, −284), just before the camp, about 22 m back from the river, past the falls and over two rock ledges (0.35 and 0.4 m) and boulders beside them, to a hut, a water tank and a gauge board on the south bank. A full jerry can (`gauging-can`) on a crate at its end. Driven out and back at a crawl in the 40 and the LC79; it is easy in high range too: the cost is time (about 75 s each way at a crawl), not difficulty. The station is the game's own (`docs/HISTORY.md`).
+- **The gallery forest:** the woodland circles now stop 25 m short of the water (they had faded out 30 m past their edge, right over the creeks), and the rainforest there is three times as dense (`VegetationDef.rainforestScale`, new, 1 elsewhere). Trees within 25 m of a creek: 369, from 107; 3,033 on the map in all (the CREB has about 45,000).
+
 ## Differences from the design
 
 - **Episode number.** SPEC.md §2 calls the southern Telegraph Track Episode 5; the design builds it as the game's second episode, number 2.
+- **The three engine limits below are not solved in stage 3.** Each needs a wheel that can be held by the edge of a hole or rut, which the raycast wheels cannot be: a change to the vehicle model, listed in `docs/ROADMAP.md`.
 - **Bertie's holes do not hang the car.** The wheels are raycast springs: a wheel that drops into a hole is lifted out by the next ray hitting the far rim, so a car crawling straight up the bed tips (a wheel goes 1 m deep, the car leans about 25°) but drives on. The 1 m ground grid could not hold a 2 m hole at all, so the holes are pits in the fine ground detail (0.25 m) for the wheels and deeper bowls in the 1 m ground for the water's colour. The wrong line fails only by tipping; stage 2 should find a way to hold a wheel (an `it.todo` in the tests).
 - **Palm Creek's rut does not stop a crooked car.** Same cause: a wheel in the 0.5 m rut climbs out at a crawl. The wrong-line test there is an `it.todo`.
 - **The Chute taken crooked lands safely at a crawl.** Taken fast it fails (it went over end on end with a 0.9 m lip; with the 0.55 m lip it pitches past 50° and stops short). The lip is lower and shorter than the CREB knoll's because the LC79 and Troopy grounded their bellies on a 0.7–0.9 m band as their front wheels dropped. With 0.55 m the LC79 gets down; **the Troopy cannot do the Chute** (it grounds on the lip). Not yet tested: the other vehicles.
@@ -89,5 +95,5 @@ Measured on the generated map and in the scripted drives (`tests/telegraphDrive.
 - **Bertie's holes from the driver's seat** show as darker water through a darker deep-water colour for this map, but they are blocky (1 m cells) and faint at a low angle. Check in the play test.
 - **The bypass** costs 250 points, a fixed deduction in `scoreRun` (the simpler of the two choices): the other parts sum to 1000, so a bypass run scores 750 at most and cannot reach gold (800).
 - **The Staircase and the Slot are gentler than the design's 45° and 40°** on average (about 30° each over the 4 m bank), because the 1 m ground grid rounds a 4 m drop over 4 m into a slope over about 7 m; their steepest metres are past 40°. The design's "off-camber" Staircase leans 8°.
-- **The fallen tree can be driven round.** The design wants surprises that make the track harder. The gallery forest by the creeks renders as open woodland in the game, so a car can leave the track and go round the tree: it costs time, not a winch. Thicker forest along the creeks is for stage 3.
+- **The fallen tree can still be driven round, with care.** The design wants surprises that make the track harder. v2.00 thickened the forest along the creeks, but the planner keeps falls 22 m from water, where the forest thins, and the trees stand a few metres apart. Check in the play test.
 - **History left out:** Gunshot's drop height and the number plates tree (not sourced).

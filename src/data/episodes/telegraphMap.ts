@@ -28,6 +28,8 @@ import {
   gunshotChute,
   gunshotLip,
   gunshotSlot,
+  gaugingTrack,
+  GAUGING_ROCKS,
   gunshotStaircase,
   arcAtPoint,
   levels,
@@ -302,6 +304,24 @@ const tracks: TrackDef[] = [
     routeHint: 'The Slot: a narrow twisting rut. Let the wheels lift, keep crawling',
   },
   {
+    id: 'gauging-track',
+    name: 'Gauging station track',
+    points: gaugingTrack,
+    width: 3,
+    ...sand,
+    faint: true,
+    // Over the rock beside the falls: ledges and boulders to crawl.
+    stones: [
+      rockStep(GAUGING_ROCKS[0] + 4, 0, 0.35, 3.6, 1.4),
+      rockStep(GAUGING_ROCKS[0] + 9, 0.3, 0.4, 3.6, 1.4, 6),
+      boulder(GAUGING_ROCKS[0] + 13, -0.9, 0.45, 0.9),
+      boulder(GAUGING_ROCKS[0] + 15.5, 0.9, 0.4, 0.8),
+      boulder(GAUGING_ROCKS[0] + 6, 2.3, 0.8, 1.4),
+      boulder(GAUGING_ROCKS[0] + 12, -2.4, 0.9, 1.5),
+    ],
+    routeHint: 'A faint track to the old gauging station: crawl the rocks beside the falls',
+  },
+  {
     id: 'gunshot-bypass',
     name: 'Gunshot bypass',
     points: gunshotBypass,
@@ -382,6 +402,15 @@ const pois: PoiDef[] = [
     note: 'Ledges down to a rock shelf above the falls',
   },
   {
+    id: 'gauging-station',
+    name: 'Old gauging station',
+    kind: 'landmark',
+    x: -110,
+    z: -293,
+    radius: 14,
+    note: 'A hut on the bank downstream of the falls',
+  },
+  {
     id: 'bertie-creek',
     name: 'Bertie Creek',
     kind: 'feature',
@@ -440,6 +469,10 @@ const props: PropDef[] = [
   { kind: 'fireRing', x: 28, z: -298, headingDeg: 0 },
   { kind: 'logSeat', x: 33, z: -299, headingDeg: 0 },
   { kind: 'signpost', x: 7, z: -636, headingDeg: 180, text: 'Bertie Creek' },
+  { kind: 'signpost', x: -4, z: -280, headingDeg: 90, text: 'Gauging station' },
+  { kind: 'hut', x: -116, z: -290, headingDeg: 90, flatten: 6 },
+  { kind: 'waterTank', x: -114, z: -283, headingDeg: 0 },
+  { kind: 'noticeBox', x: -110, z: -301, headingDeg: 0, text: 'Gauge board' },
   { kind: 'signpost', x: 0, z: -852, headingDeg: 200, text: 'Gunshot — bypass right' },
   { kind: 'signpost', x: 2, z: -894, headingDeg: 180, text: 'Gunshot Creek — the Chute' },
   { kind: 'signpost', x: 6, z: -896, headingDeg: 200, text: 'Staircase →' },
@@ -517,8 +550,9 @@ const woodland: ClearingDef[] = (() => {
   };
   for (let z = -1000; z <= 1000; z += 100)
     for (let x = -500; x <= 500; x += 100) {
-      const r = Math.min(130, creekDist(x, z) - 22);
-      if (r >= 30) out.push({ x, z, radius: Math.round(r) });
+      // Woodland fades out over 30 m beyond a circle's edge: stop it 25 m short of the water.
+      const r = Math.min(130, creekDist(x, z) - 55);
+      if (r >= 20) out.push({ x, z, radius: Math.round(r) });
     }
   return out;
 })();
@@ -601,6 +635,17 @@ export const telegraphMap: MapDef = {
     },
   ],
   gullies: [sandWashout],
+  finds: [
+    {
+      id: 'gauging-can',
+      name: 'Jerry can',
+      x: -110,
+      z: -293.5,
+      radius: 4,
+      gives: { jerryCans: 1 },
+      taken: 'A full 20 L jerry can, left at the old gauging station. Loaded.',
+    },
+  ],
   pois,
   props: [...props, ...telegraphPoles],
   boulders: [
@@ -621,6 +666,8 @@ export const telegraphMap: MapDef = {
     flora: 'tropical',
     woodland,
     maxTreeDensity: 0.28,
+    // The gallery forest along the creeks, thick enough that a fallen tree can't be driven round.
+    rainforestScale: 3,
     ashBelow: 0,
     snowGumAbove: 1000,
     patchScale: 160,
@@ -630,6 +677,7 @@ export const telegraphMap: MapDef = {
     clearings: [
       { x: 20, z: 958, radius: 44 },
       { x: 26, z: -292, radius: 30 },
+      { x: -112, z: -292, radius: 14 },
       { x: 8, z: -975, radius: 34 },
     ],
   },

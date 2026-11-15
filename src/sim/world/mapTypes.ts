@@ -463,6 +463,8 @@ export interface VegetationDef {
   woodland?: readonly ClearingDef[];
   /** Trees per 100 m² in the densest forest. */
   maxTreeDensity: number;
+  /** Tropical maps: the rainforest (outside `woodland`) this many times as dense (default 1). */
+  rainforestScale?: number;
   /** Heights below this get tall mountain ash; above `snowGumAbove` get snow gums. */
   ashBelow: number;
   snowGumAbove: number;

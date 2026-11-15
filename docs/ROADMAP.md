@@ -2,7 +2,9 @@
 
 # The Telegraph Track (Episode 2)
 
-The owner asked for a second level, shorter and harder than the CREB. It is built in three stages from `docs/PLAN-telegraph.md`: stage 1 (the level, playable end to end) in v1.96; stage 2 (Gunshot's Staircase and Slot, tuning, the engine limits the plan lists, traffic and a stranded driver where they make it harder) next; stage 3 (polish from the owner's play test, and the Dulhunty gauging station side trip) after that.
+The owner asked for a second level, shorter and harder than the CREB. It is built in three stages from `docs/PLAN-telegraph.md`: stage 1 (the level, playable end to end) in v1.96; stage 2 in v1.99; stage 3 (the Dulhunty gauging station side trip and thicker creek forest) in v2.00, built before the owner's play test, so polish from that test is still to come.
+
+- **Wheels that a hole can hold.** The raycast wheels climb out of any hole or rut at a crawl, so three of the Telegraph's wrong lines do not fail as the plan wants: a wheel in one of Bertie's holes, a crooked car in Palm Creek's rut, and a crawl off Gunshot's Chute 20° crooked (`it.todo` in `tests/telegraphDrive.test.ts`). It needs the wheel to meet the hole's far edge as a wall (a wheel collider or a sweep forward of the footprint), with the CREB's climbs retested after.
 
 # Make the CREB the heart of the game
 
