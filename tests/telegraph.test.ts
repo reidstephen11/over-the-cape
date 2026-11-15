@@ -183,6 +183,37 @@ describe('Gunshot’s three lines (v1.99)', () => {
   });
 });
 
+describe('the old gauging station side trip (v2.00)', () => {
+  it('runs off the main line above the Dulhunty to a hut with a jerry can at its end', () => {
+    const side = track('gauging-track');
+    const a = trailPoint(side, 0);
+    const main = trailProgress(track('sand-dulhunty'), a.x, a.z);
+    expect(main.distance).toBeLessThan(0.5);
+    const find = telegraphMap.finds?.find((f) => f.id === 'gauging-can');
+    expect(find?.gives).toEqual({ jerryCans: 1 });
+    const end = trailPoint(side, side.poly.length);
+    expect(Math.hypot(end.x - find!.x, end.z - find!.z)).toBeLessThan(find!.radius);
+    expect(telegraphEpisode.notes['gauging-station']).toBeDefined();
+    expect(side.def.stones?.filter((st) => st.shape === 'ridge').length).toBeGreaterThanOrEqual(2);
+    expect(telegraphMap.props.some((p) => p.kind === 'signpost' && /Gauging/.test(p.text ?? ''))).toBe(true);
+  });
+
+  it('keeps a thicker gallery forest along the creeks than the woodland away from them', () => {
+    let near = 0,
+      far = 0;
+    for (const tree of world.scatter.trees) {
+      const i =
+        Math.round(tree.z + telegraphMap.length / 2) * (telegraphMap.width + 1) +
+        Math.round(tree.x + telegraphMap.width / 2);
+      const d = world.features.creekDistance[i];
+      if (d < 25) near++;
+      else if (d > 80 && d < 200) far++;
+    }
+    // Per unit of area: the strip within 25 m of the water against the band 80–200 m out.
+    expect(near / 25).toBeGreaterThan((far / 120) * 1.5);
+  });
+});
+
 describe('the Telegraph Track episode', () => {
   it('is episode 2 on its own map, open from the start, with a lean load and one camp', () => {
     expect(episodes.telegraph).toBe(telegraphEpisode);

@@ -1985,3 +1985,17 @@ Stage 2 of `docs/PLAN-telegraph.md`, which records as built every number below.
 **Looked at.** The Staircase from the chase camera and the driver's seat at its top, both lines from the free camera across the creek, and the tree-fall stretches from above. The stretch by Ducie is open woodland: the plan's gallery forest along the creeks is not dense in the game, so a car can drive round the fallen tree. Recorded in the plan for stage 3.
 
 **Not done.** The three engine limits from v1.96 are still open (`it.todo`): Bertie's holes do not hang a car, Palm Creek's rut does not stop a crooked one, and a crawl off the Chute crooked lands safely. They are listed for stage 3 with the play test's findings. Not driven: the traffic and the stranded driver on the Telegraph (they use the CREB's tested code); the fallen tree with the winch.
+
+## v2.00: the Telegraph Track, stage 3 (the gauging station, the creek forest)
+
+Stage 3 of `docs/PLAN-telegraph.md`. The owner asked for it before playing v1.99, so there was no play test to act on; the polish here is what earlier stages had noted.
+
+**The old gauging station.** A signed faint track west off the main line just before the Dulhunty camp, downstream past the falls, over two rock ledges and boulders beside them, to a hut, a water tank and a gauge board on the south bank, with a full jerry can on a crate (a find: stop beside it to load it). A jerry can is worth the detour on a run that starts with none. No source was found for a gauging station on the Dulhunty, so the station is the game's own and its note states no history (`docs/HISTORY.md`).
+
+**The creek forest.** The woodland circles reached past their edge over the creeks, so the gallery forest the plan asked for was open woodland. They now stop 25 m short of the water, and a new `VegetationDef.rainforestScale` (3 here, 1 by default, so the CREB is unchanged) makes the strip thick: 369 trees within 25 m of a creek, from 107. The map has about 3,000 trees in all.
+
+**Driven and passed:** the gauging track out and back at a crawl in the 40 and the LC79 (it is easy in high range: a time cost, not a hard line); every Telegraph drive from stages 1 and 2. `tests/telegraph.test.ts` checks the side trip's junction, find, note, ledges and sign, and that trees stand more than 1.5 times as thick within 25 m of a creek as 80–200 m from one.
+
+**Looked at:** the station from the free camera and from the track (the hut, the tank and the can on its crate, with its prompt), the rocks beside the falls, and the forest at the Ducie tree-fall stretch, which is thicker but still has gaps a car could weave through.
+
+**Not solved:** the three engine limits (Bertie's holes, Palm Creek's rut, the crooked Chute) need wheels that a hole's edge can hold. That is a change to the vehicle model, now an item in `docs/ROADMAP.md`, not a change to this map.

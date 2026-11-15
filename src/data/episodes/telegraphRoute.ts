@@ -204,6 +204,24 @@ export const dulhuntyCrossing: Waypoint[] = [
   [0, -362, PLAIN],
 ];
 
+/**
+ * The old gauging station track (v2.00): a faint track west off the main line above the
+ * Dulhunty, downstream past the falls, over the rocks beside them, to a hut on the south
+ * bank where a full jerry can was left. The station and the can are the game's own.
+ */
+export const gaugingTrack: Waypoint[] = [
+  [3, -284, PLAIN],
+  [-12, -288],
+  [-30, -296],
+  [-45, -299],
+  [-62, -301],
+  [-82, -300],
+  [-100, -298],
+  [-108, -296, PLAIN],
+];
+/** Metres along `gaugingTrack` where it crosses the rocks beside the falls. */
+export const GAUGING_ROCKS: readonly [number, number] = [26, 48];
+
 // --- The Dulhunty to Bertie Creek -------------------------------------------------------
 
 export const dulhuntyToBertie: Waypoint[] = [

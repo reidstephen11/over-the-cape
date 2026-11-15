@@ -120,6 +120,10 @@ export const telegraphEpisode: EpisodeDef = {
       title: 'The shelf',
       text: 'Three ledges of rock down to a shelf at the head of the falls. Work down them one wheel at a time, then keep to the shelf: the current pushes you towards the falls, and off its downstream edge the rock drops away. The old way out has become a slide of pale grey clay. Low range, both lockers, and there is a marked rock above it.',
     },
+    'gauging-station': {
+      title: 'Old gauging station',
+      text: 'A hut on the bank below the falls, a water tank and a board by the river with its markings worn off. Nobody reads the river here now. Someone has left a full jerry can by the door: pull up beside it to load it. It is the long way back to the main track.',
+    },
     'bertie-creek': {
       title: 'Bertie Creek',
       text: 'A run up the creek and a dogleg out, to keep clear of the deep holes in its rock. Here the track runs up the bed itself, and the holes show as darker water. A wheel in one hangs the car on its belly. Crawl and weave between them; at one point the line puts a hole between your wheels.',

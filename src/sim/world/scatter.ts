@@ -175,7 +175,7 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
       const rainforest = tropical && r2 > woodlandAt(x, z);
       if (edge < map.border.width)
         dens = 0.55 + 0.45 * smoothstep(map.border.width, map.border.width * 0.3, edge);
-      else if (rainforest) dens = 0.75 * TF.rainforestDensity;
+      else if (rainforest) dens = 0.75 * TF.rainforestDensity * (veg.rainforestScale ?? 1);
       else if (tropical) dens = 0.45;
       else if (h > veg.snowGumAbove) dens = 0.24;
       else if (h > veg.ashBelow) dens = 0.62;
