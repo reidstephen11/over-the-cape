@@ -45,14 +45,23 @@ const SILL = 0.07;
 const ARCH = { radius: 0.51, cy: -0.05 };
 /**
  * The wheel openings (v1.92): flat-topped, with radiused corners and sides that splay out to the
- * sill, 12 cm over the tyre, under a black eyebrow (side-right-county-1990.jpg,
- * rear-34-right-county-1990.jpg). They were half circles 0.51 m in radius under a thick lip.
- * `top` is the flat's height, `flat` and `foot` its half-widths at the top and at the sill.
+ * sill, under a black eyebrow (side-right-county-1990.jpg, rear-34-right-county-1990.jpg). They
+ * were half circles 0.51 m in radius under a thick lip. `top` is the flat's height: 18 cm over
+ * the tyre, because a crossed axle lifts a wheel 16 cm. `flat` and `foot` are the opening's
+ * half-widths at the top and at the sill. The front one is narrower: the grille's face is only
+ * 0.50 m ahead of the axle, and the wing has to reach the sill ahead of the wheel.
  */
-const OPENING = { top: 0.4, flat: 0.37, foot: 0.5, corner: 0.11 };
+interface Opening {
+  top: number;
+  flat: number;
+  foot: number;
+  corner: number;
+}
+const FRONT_OPENING: Opening = { top: 0.46, flat: 0.4, foot: 0.45, corner: 0.12 };
+const REAR_OPENING: Opening = { top: 0.46, flat: 0.43, foot: 0.52, corner: 0.12 };
 /** Height of the opening's edge `d` metres along the truck from the axle. */
-function openingAt(d: number): number {
-  const { top, flat, foot, corner } = OPENING;
+function openingAt(o: Opening, d: number): number {
+  const { top, flat, foot, corner } = o;
   d = Math.abs(d);
   if (d >= foot) return SILL;
   if (d <= flat - corner) return top;
@@ -92,11 +101,12 @@ function archPanel(
   top: number,
   zone: number,
   wellX: number,
+  o: Opening,
 ): void {
   const outer = side * SIDE,
     inner = side * (SIDE - 0.05);
   const steps = 72;
-  const low = (z: number) => openingAt(z - axle);
+  const low = (z: number) => openingAt(o, z - axle);
   b.slot = M.Paint;
   b.tag = zone;
   for (let i = 0; i < steps; i++) {
@@ -124,44 +134,49 @@ function archPanel(
   // The eyebrow: a black moulding along the flat and down both corners to the sill.
   const edge = (grow: number) =>
     Array.from({ length: 49 }, (_, i) => {
-      const d = -OPENING.foot + (2 * OPENING.foot * i) / 48;
-      const k = 1 + grow / OPENING.foot;
-      return [axle + d * k, Math.max(SILL, openingAt(d) + grow)] as Vtx;
+      const d = -o.foot + (2 * o.foot * i) / 48;
+      const k = 1 + grow / o.foot;
+      return [axle + d * k, Math.max(SILL, openingAt(o, d) + grow)] as Vtx;
     });
   extrudeX(
     b,
     sideShape([...edge(0.05), ...edge(-0.004).reverse()]),
-    side > 0 ? SIDE - 0.006 : -SIDE - 0.04,
-    side > 0 ? SIDE + 0.04 : -SIDE + 0.006,
+    side > 0 ? SIDE - 0.006 : -SIDE - 0.028,
+    side > 0 ? SIDE + 0.028 : -SIDE + 0.006,
     black,
     M.Rubber,
     zone,
     0.006,
   );
-  // Inner wheel box, so the opening shows a dark well rather than the far side; the front
-  // ones sit further in, clear of the wheels at full lock.
-  b.block(
-    side * wellX,
-    (SILL + OPENING.top) / 2 + 0.03,
-    axle,
-    0.03,
-    OPENING.top - SILL + 0.1,
-    OPENING.foot * 2,
-    black,
-    M.Rubber,
-    Z.Trim,
-  );
+  // Inner wheel box, so the opening shows a dark well rather than the far side or the cab:
+  // an inner wall, a roof and a wall across each end. The front ones sit further in, clear
+  // of the wheels at full lock.
+  const boxH = o.top + 0.035 - SILL;
+  b.block(side * wellX, SILL + boxH / 2, axle, 0.03, boxH, o.foot * 2, black, M.Rubber, Z.Trim);
+  const span = SIDE - wellX - 0.025;
   b.block(
     (side * (wellX + SIDE - 0.025)) / 2,
-    OPENING.top + 0.02,
+    o.top + 0.02,
     axle,
-    SIDE - wellX - 0.025,
+    span,
     0.03,
-    OPENING.foot * 2,
+    o.foot * 2,
     black,
     M.Rubber,
     Z.Trim,
   );
+  for (const end of [-1, 1])
+    b.block(
+      (side * (wellX + SIDE - 0.025)) / 2,
+      SILL + boxH / 2,
+      axle + end * (o.foot + 0.005),
+      span,
+      boxH,
+      0.02,
+      black,
+      M.Rubber,
+      Z.Trim,
+    );
 }
 
 function frontEnd(b: VehicleBuilder): void {
@@ -196,7 +211,7 @@ function frontEnd(b: VehicleBuilder): void {
       Z.Front,
       0.012,
     );
-    archPanel(b, side, F, SCUTTLE, -1.397, 0.585, Z.Front, 0.39);
+    archPanel(b, side, F, SCUTTLE, -1.397, 0.585, Z.Front, 0.39, FRONT_OPENING);
     // Headlamp panel: round lamp in a black bezel, side lamp and indicator beneath, and
     // the convoy lamp above it.
     b.block(side * 0.655, 0.33, F + 0.02, 0.47, 0.52, 0.04, paint, M.Paint, Z.Front, 0.01);
@@ -260,9 +275,10 @@ function frontEnd(b: VehicleBuilder): void {
     }
     // Air intake grille on the left wing; the right wing is plain.
     if (side < 0) {
-      b.block(-SIDE - 0.004, 0.45, -1.02, 0.012, 0.13, 0.26, black, M.Rubber, Z.Front, 0.006);
-      for (let i = 0; i < 5; i++)
-        b.block(-SIDE - 0.011, 0.4 + i * 0.024, -1.02, 0.006, 0.006, 0.23, rubber, M.Rubber, Z.Front);
+      // A low slot between the eyebrow and the wing top; lower down the eyebrow crossed it.
+      b.block(-SIDE - 0.004, 0.55, -1.02, 0.012, 0.05, 0.26, black, M.Rubber, Z.Front, 0.006);
+      for (let i = 0; i < 2; i++)
+        b.block(-SIDE - 0.011, 0.538 + i * 0.024, -1.02, 0.006, 0.006, 0.23, rubber, M.Rubber, Z.Front);
     }
   }
   // The Perentie's grille: a body-colour panel of seven chunky louvres (front.jpg), with a
@@ -470,7 +486,7 @@ function doors(b: VehicleBuilder): void {
 
 function rearBody(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
-    archPanel(b, side, B_PILLAR + 0.01, TAIL, 1.397, WAIST, Z.Rear, 0.56);
+    archPanel(b, side, B_PILLAR + 0.01, TAIL, 1.397, WAIST, Z.Rear, 0.56, REAR_OPENING);
     // Capping rail and the rope cleats the tilt is lashed to.
     b.block(
       side * (SIDE - 0.02),
@@ -594,7 +610,7 @@ function tailgateTools(b: VehicleBuilder): void {
   const clamp = (x: number, y: number) =>
     b.block(x, y, TAIL + 0.055, 0.035, 0.07, 0.05, black, M.Metal, Z.Rear, 0.006);
   // Shovel: blade on the right, socket, handle and D grip towards the left.
-  let y = 0.655;
+  let y = 0.63;
   b.block(0.35, y, z, 0.27, 0.2, 0.012, head, M.Metal, Z.Rear, 0.004);
   b.rod({ x: 0.22, y, z }, { x: 0.11, y, z }, 0.02, head, M.Metal, Z.Rear);
   b.rod({ x: 0.11, y, z }, { x: -0.37, y, z }, 0.016, wood, M.Fabric, Z.Rear);

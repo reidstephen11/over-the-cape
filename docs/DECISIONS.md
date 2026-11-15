@@ -1859,6 +1859,15 @@ Stage 3 is split in two so each part is finished and shipped. This part is item 
 
 **Compared with** `side-right-county-1990.jpg`, `rear-34-right-county-1990.jpg` and `front-34-county.jpg`, which are Army GS soft tops (see v1.91).
 
-- **Wheel arches (item 1).** Each opening is flat-topped with radiused corners and sides that splay out to the sill: 0.74 m across the flat, 1.0 m at the sill, its top 0.40 m up, 12 cm over the tyre. A black moulding (the eyebrow) follows the edge from sill to sill, 40 mm proud. They were half circles 0.51 m in radius, 18 cm over the tyre, under a thick lip. The dark boxes inside follow the new shape.
+- **Wheel arches (item 1).** Each opening is flat-topped with radiused corners and sides that splay out to the sill, its top 0.46 m up, 18 cm over the tyre. The rear one is 0.86 m across the flat and 1.04 m at the sill; the front one is 0.80 m and 0.90 m, because the grille's face is only 0.50 m ahead of the axle and the wing has to reach the sill ahead of the wheel. A black moulding (the eyebrow) follows the edge from sill to sill, 28 mm proud. They were half circles 0.51 m in radius under a thick lip. Inside each is a dark box with an inner wall, a roof and a wall across each end.
 - **Roll bar (item 10).** A hoop of 60 mm tube standing on the load floor 0.12 m behind the cab, inside the canvas bows and under the canvas, each foot on a plate; a 48 mm brace runs from each top corner back and down to a plate on the tub's capping rail 1.45 m back. Painted with the body.
 - **Rear crossmember (item 10).** Painted with the body. It was bare galvanised grey.
+
+**The second look.** A reviewer was given 45 pictures (the standard set, nine close-ups and the 28 audit pictures). What it found, and what was done:
+
+- **With an axle crossed, the raised tyre met the top of the opening.** The first openings were 12 cm over the tyre and a crossed axle lifts a wheel 16 cm. They are 18 cm over it now, as the round ones were, and wider across the flat so the tyre's shoulders are not under the corners.
+- **From low behind, the cab's floor and dials showed through the rear arch.** The dark boxes had no ends. Each has a wall across its front and its back.
+- **At the front the opening ran to the front panel** (the nose is 0.12 m shorter since v1.91), so the eyebrow's leg ended on the bumper. The front opening is narrower, as above, and the wing reaches the sill ahead of the wheel.
+- The eyebrow crossed the wing's intake grille. The grille is a low slot above the eyebrow until stage 3b settles where it belongs.
+- The shovel's blade stood above the tailgate's top edge. It is 25 mm lower.
+- Not changed: the roll bar's feet are on the load floor 9 cm ahead of the benches' ends, which hide them from behind. A pale strut above each front tyre is the coil spring's tower, drawn by the suspension. The blocks at the foot of the windscreen are for stage 3b.
