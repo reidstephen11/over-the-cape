@@ -27,6 +27,9 @@ import {
   gunshotBypass,
   gunshotChute,
   gunshotLip,
+  gunshotSlot,
+  gunshotStaircase,
+  arcAtPoint,
   levels,
   palmChuteLip,
   palmCreek,
@@ -70,6 +73,25 @@ const bank = {
   pinSmooth: 2,
   surface: 'clay',
 } as const;
+
+/** A ledge of rock across a track that goes down it: its riser is on the far, lower side. */
+function descendingLedge(at: number, rise: number) {
+  return {
+    shape: 'ridge' as const,
+    at,
+    lateral: 0,
+    width: 4.2,
+    length: 1.2,
+    height: rise,
+    profile: [
+      [-0.6, 0.04],
+      [0.45, rise],
+      [0.6, rise * 0.65],
+    ] as const,
+  };
+}
+const staircaseTop = arcAtPoint(gunshotStaircase, 4);
+const slotTop = arcAtPoint(gunshotSlot, 4);
 
 const tracks: TrackDef[] = [
   {
@@ -213,6 +235,73 @@ const tracks: TrackDef[] = [
     routeHint: 'The Chute: low range, wheels dead straight, crawl over the lip and let the nose drop',
   },
   {
+    id: 'gunshot-staircase',
+    name: 'The Staircase',
+    points: gunshotStaircase,
+    width: 3.3,
+    ...bank,
+    smooth: 1,
+    pinSmooth: 1,
+    camber: 0,
+    // Leaning towards the creek's downstream side as it goes down.
+    cant: [
+      [staircaseTop - 2, 0],
+      [staircaseTop + 0.5, -8],
+      [staircaseTop + 4.5, -8],
+      [staircaseTop + 6.5, 0],
+    ],
+    erosion: [
+      {
+        path: [
+          [staircaseTop - 1.5, 0.8],
+          [staircaseTop + 2, 0.5],
+          [staircaseTop + 5, 0.9],
+        ],
+        width: 0.45,
+        depth: 0.3,
+      },
+    ],
+    stones: [
+      // Two ledges of rock across the bank, their risers on the creek side.
+      descendingLedge(staircaseTop + 1.4, 0.45),
+      descendingLedge(staircaseTop + 3.2, 0.45),
+      boulder(staircaseTop, -2.9, 0.8, 1.4),
+      boulder(staircaseTop + 2.2, 2.9, 0.9, 1.5),
+    ],
+    routeHint: 'The Staircase: two ledges down steep clay, leaning you off. Crawl, one ledge at a time',
+  },
+  {
+    id: 'gunshot-slot',
+    name: 'The Slot',
+    points: gunshotSlot,
+    width: 2.8,
+    ...bank,
+    batter: 2.4,
+    smooth: 1,
+    pinSmooth: 1,
+    // A hole under the left wheels and a hump under the right, so the car twists: a front
+    // wheel and the opposite rear lift as it crawls through.
+    erosion: [
+      {
+        path: [
+          [slotTop + 1.6, -0.75],
+          [slotTop + 2.6, -0.75],
+        ],
+        width: 0.9,
+        depth: 0.45,
+      },
+      {
+        path: [
+          [slotTop + 1.6, 0.75],
+          [slotTop + 2.6, 0.75],
+        ],
+        width: 0.9,
+        depth: -0.35,
+      },
+    ],
+    routeHint: 'The Slot: a narrow twisting rut. Let the wheels lift, keep crawling',
+  },
+  {
     id: 'gunshot-bypass',
     name: 'Gunshot bypass',
     points: gunshotBypass,
@@ -326,7 +415,7 @@ const pois: PoiDef[] = [
     x: -3.5,
     z: -900,
     radius: 14,
-    note: 'The Chute: a three-metre drop into the creek',
+    note: 'The Chute ahead, the Staircase right, the Slot left',
   },
   {
     id: 'gunshot-camp',
@@ -352,7 +441,9 @@ const props: PropDef[] = [
   { kind: 'logSeat', x: 33, z: -299, headingDeg: 0 },
   { kind: 'signpost', x: 7, z: -636, headingDeg: 180, text: 'Bertie Creek' },
   { kind: 'signpost', x: 0, z: -852, headingDeg: 200, text: 'Gunshot — bypass right' },
-  { kind: 'signpost', x: 2, z: -894, headingDeg: 180, text: 'Gunshot Creek' },
+  { kind: 'signpost', x: 2, z: -894, headingDeg: 180, text: 'Gunshot Creek — the Chute' },
+  { kind: 'signpost', x: 6, z: -896, headingDeg: 200, text: 'Staircase →' },
+  { kind: 'signpost', x: -10, z: -895, headingDeg: 160, text: '← Slot' },
   { kind: 'fireRing', x: 14, z: -980, headingDeg: 0 },
   { kind: 'logSeat', x: 19, z: -979, headingDeg: 0 },
 ];

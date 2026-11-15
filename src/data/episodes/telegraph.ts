@@ -54,12 +54,46 @@ export const telegraphEpisode: EpisodeDef = {
     },
   },
   timedSections: ['palm-creek', 'gunshot-chute'],
+  // A 4WD coming the other way on the sand between Palm Creek and Ducie (v1.99).
+  traffic: [{ track: 'palm-ducie', name: 'A Troopy', look: 'troopy' }],
+  // A driver bogged in the sand beside the track before Bertie. Winching them out costs
+  // time and pays little: one tyre plug (v1.99).
+  stranded: [
+    {
+      id: 'bertie-hilux',
+      name: 'Bogged HiLux',
+      look: 'hilux',
+      track: 'dulhunty-bertie',
+      at: 0.45,
+      side: 'right',
+      off: 8,
+      sink: 0.3,
+      freeAfter: 5,
+      breakout: 2500,
+      drag: 2000,
+      reward: { plugs: 1 },
+      freed: {
+        title: 'The HiLux',
+        text: '“Cheers. Tried to go round a soft patch and found a softer one. All I can spare is a plug: you’ll want it for Bertie.”',
+      },
+    },
+  ],
+  // A dead tree down across the track in the gallery forest by a creek, where there is no
+  // way round it but the winch (v1.99). One a run, at a spot the run's seed picks.
+  surprises: {
+    sites: [
+      { id: 'ducie-forest', kind: 'treefall', track: 'palm-ducie', from: 262, to: 292 },
+      { id: 'bertie-forest', kind: 'treefall', track: 'dulhunty-bertie', from: 246, to: 264 },
+    ],
+    treefalls: 1,
+    rockfalls: 0,
+  },
   bypass: { poi: 'gunshot-bypass', penalty: 250, label: 'Took the Gunshot bypass' },
   briefing: [
     'This one is short and hard: about two kilometres of the old Telegraph Track from Bramwell Junction north to Gunshot Creek, across five creeks that have cut their beds metres below the sandy plain. Every crossing is a steep way in, water, and a steep way out.',
     'There is one camp, on the Dulhunty River about halfway. Fail before it and you start again from the junction.',
     'The load is lean: fuel for a clean run and a little over, no jerry cans, one spare and two tyre plugs.',
-    'Gunshot’s Chute is the finale. A bypass to the right goes round it, at a cost. Get across before dark.',
+    'Gunshot is the finale: three ways down its bank, the Chute, the Staircase and the Slot. A bypass to the right goes round it all, at a cost. Get across before dark.',
   ],
   notes: {
     'bramwell-junction': {
@@ -100,7 +134,7 @@ export const telegraphEpisode: EpisodeDef = {
     },
     'gunshot-creek': {
       title: 'Gunshot Creek',
-      text: 'Pale clay and white sand, cut by washouts. The Chute drops over a band of rock into the creek, near vertical. Low range, wheels dead straight, crawl over the lip and let the nose drop: fast or crooked, it rolls the car. Below it, a bog along the bed, then a clay climb out with marked rocks at the top.',
+      text: 'Pale clay and white sand, cut by washouts. Three ways down the bank. Straight ahead, the Chute drops over a band of rock into the creek, near vertical: low range, wheels dead straight, crawl over the lip and let the nose drop; fast or crooked, it rolls the car. To the right, the Staircase: steep clay over two ledges of rock, leaning you towards the creek. To the left, the Slot: a narrow rut that twists the car as one wheel drops and another lifts. Below all three, a bog along the bed, then a clay climb out with marked rocks at the top.',
     },
   },
   wrapUp: [
