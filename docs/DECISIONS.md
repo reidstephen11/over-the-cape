@@ -1805,3 +1805,29 @@ The owner sent a picture from the game of the right rear corner, taken from behi
 - **Mud flaps.** Each hangs at the rear edge of its arch, 12 cm behind the tyre (was 6 cm).
 - **A last review of the finished build** found nothing floating or through a panel, and three more points. The shocks' lower eyes were 0.63 m out on the axle, inside tyres whose inner faces are at 0.595 m (true of the towers before them as well); on this car they are 0.52 m out (`axleX`). The spare's post was a thin tube; the arm and post are 50 mm box section with a gusset each side. The snorkel's tube is 25 mm further in (0.825 m out), which leaves a gap to the left mirror's head that shows from the front.
 - Still as it was: two faint vertical lines low on each side panel are shading where the model's panels were cut, not parts; they need the panel's mesh rebuilt and are left for now.
+
+## v1.90: the Perentie, stage 1 of 3
+
+The owner asked for the Perentie's audit list, in stages so that each is finished and shipped before the next. This stage is what could not exist: what holds the rack, the cans, the aerial and the spare, and the open rear corners. Stage 2 is the front; stage 3 is the body's shape. Only the Perentie (`perentie`) changes.
+
+Before any change, the 28 audit pictures were taken, including the four that look down at each upper corner. Compared with `drawing-variants.png` (sheet A, the 110 GS soft top).
+
+**Where each part is attached and which way it faces.**
+
+- **Roof rack (item 3).** Each of the two crossbars reaches out past the rolled side curtains (0.955 m out) to a leg that drops outside the canvas and cranks in to a foot bolted over the tub's capping rail. The legs used to stop on the canvas. The front crossbar is 90 mm behind the first bow so its feet land on the tub, behind the cab. The boards lie along the truck on the crossbars, as before.
+- **Aerial (item 5).** On the top of the left front wing, ahead of the windscreen, standing nearly upright. On the tub's rear corner it passed up through the canvas roof.
+- **Rear corners and tailgate (items 7 and 4).** The corner panels run from the tailgate's edge to the body side. They were 0.11 m wide at 0.79 m out, which left a 5 cm slit at each corner. The tailgate is 1.06 m wide (was 1.46 m), as the audit measured the real one. The shovel, pick and axe moved in to fit it, each still in two clamps; the plate is 80 mm further right.
+- **Jerry cans (item 4).** One on each rear corner panel, above the lamps, its broad side flat against the panel, in a tray held by two flat bars bolted to the panel, with a stay under each side and a strap round it. They hung outside the body sides, which made the truck 2.2 m wide. The audit said the real truck carries them on the rear face. The photographs here do not show an Army GS from behind, so that is not confirmed; some Perenties carry them in lockers let into the body sides behind the rear wheels.
+- **Reflectors.** Inboard of each lamp cluster, where the can does not cover them.
+- **Spare under the rear floor (item 9).** It was there, tucked up between the chassis rails where it could not be seen from any side, with its front edge inside the differential. It hangs 0.2 m lower and 80 mm further back, flat, outer face down, in a cradle of two rails and two crossbars hung from the chassis rails by four hangers. Its tread passes under the rear crossmember and shows below it from behind. Placed with `mountSpare()`; `tests/spares.test.ts` passes (the first cradle stood 2 cm into the tyre and the test caught it).
+
+**The second look.** A reviewer was given 46 pictures (the standard set, ten close-ups and the 28 audit pictures) and nothing else. It found nothing floating, upside down or below the ground. What it did find, and what was done:
+
+- The rear crossbar's feet shared a spot on the tub's rail with a canvas bow's foot. The crossbar is 0.1 m behind that bow now, as the front one already was.
+- A 4 cm slot was open between the tailgate's foot and the rear crossmember. A sill closes it.
+- The bonnet spare stood on a 0.36 m plate under its middle. The plate is 0.66 m square, out to where the sidewall is widest; the spare still lies flat, face up, under its centre clamp.
+- The shovel, the pick's head and the reflectors were hard against the cans' bars and stays. Each moved 20 to 30 mm clear.
+- The exhaust's tip ended beside the cradle's left rear hanger. It runs on 0.15 m to end under the rear crossmember.
+- Left for the later stages: a pale wedge above each front tyre inside the arch (stage 3, with the arches); two grey blocks at the foot of the windscreen, which are its hinges. The spare's cradle is the lowest thing behind the rear axle, 0.2 m off the ground, as the real one is.
+
+Each fix was photographed again and read.

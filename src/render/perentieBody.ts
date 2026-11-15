@@ -47,9 +47,13 @@ const FRONT_FACE = -2.02;
 const SCUTTLE = -0.8;
 const B_PILLAR = 0.21;
 const TAIL = 2.3;
+/** Half the tailgate's width: 1.06 m between the corner panels (it was drawn 1.46 m). */
+const GATE = 0.53;
 const SCREEN_TOP = 1.36;
 /** The bonnet: flush with the wing tops at its edges and crowned a little in the middle. */
 const BONNET = { half: 0.58, low: 0.56, edge: 0.61, crown: 0.645 };
+/** Top of the front wings, where the aerial stands. */
+const AERIAL_Y = BONNET.edge;
 const crownAt = (x: number) => BONNET.crown - (BONNET.crown - BONNET.edge) * (x / BONNET.half) ** 2;
 
 /**
@@ -456,13 +460,26 @@ function rearBody(b: VehicleBuilder): void {
       );
     }
     // Rear corner panels beside the tailgate, with Army-pattern lamp clusters low down.
-    b.block(side * 0.79, (SILL + WAIST) / 2, TAIL, 0.11, WAIST - SILL, 0.05, paint, M.Paint, Z.Rear, 0.01);
+    // From the tailgate's edge to the body side: 0.11 m panels at 0.79 left a 5 cm slit open
+    // at each corner (v1.90).
+    b.block(
+      (side * (GATE + SIDE)) / 2,
+      (SILL + WAIST) / 2,
+      TAIL,
+      SIDE - GATE,
+      WAIST - SILL,
+      0.05,
+      paint,
+      M.Paint,
+      Z.Rear,
+      0.01,
+    );
     b.block(side * 0.76, 0.2, TAIL + 0.035, 0.13, 0.18, 0.04, black, M.Rubber, Z.Rear, 0.01);
     b.block(side * 0.76, 0.24, TAIL + 0.058, 0.1, 0.06, 0.012, red, M.Red, Z.Rear, 0.005);
     b.block(side * 0.76, 0.17, TAIL + 0.058, 0.1, 0.05, 0.012, amber, M.Amber, Z.Rear, 0.005);
-    b.ring(side * 0.76, 0.36, TAIL + 0.03, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
-    // Jerry can in its holder behind each rear wheel.
-    canInHolder(b, side * (SIDE + 0.1), 0.41, 2.08);
+    b.ring(side * 0.63, 0.2, TAIL + 0.03, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
+    // Jerry can in a holder on the corner panel, above the lamps, its broad side to the panel.
+    canOnRear(b, side);
   }
   // Fuel filler on the right, behind the door.
   b.slot = M.Metal;
@@ -473,27 +490,31 @@ function rearBody(b: VehicleBuilder): void {
   b.geometry(new THREE.CylinderGeometry(0.05, 0.05, 0.02, 18), black);
   b.pop();
   // Drop-down tailgate on two bottom hinges, held by chains, with pressed ribs.
-  b.block(0, 0.44, TAIL + 0.005, 1.46, 0.62, 0.05, paint, M.Paint, Z.Rear, 0.01);
-  for (const y of [0.3, 0.58]) b.block(0, y, TAIL + 0.034, 1.3, 0.04, 0.012, paint, M.Paint, Z.Rear, 0.006);
-  for (const x of [-0.5, 0.5]) {
+  b.block(0, 0.44, TAIL + 0.005, 2 * GATE, 0.62, 0.05, paint, M.Paint, Z.Rear, 0.01);
+  // The sill under the gate, down to the rear crossmember: a 4 cm slot was open there.
+  b.block(0, 0.1, TAIL - 0.005, 2 * GATE, 0.07, 0.04, paint, M.Paint, Z.Rear);
+  for (const y of [0.3, 0.58])
+    b.block(0, y, TAIL + 0.034, 2 * GATE - 0.12, 0.04, 0.012, paint, M.Paint, Z.Rear, 0.006);
+  for (const side of [-1, 1]) {
+    // Bottom hinge, and the chain from the gate's top corner to the corner panel.
     b.rod(
-      { x, y: 0.14, z: TAIL + 0.04 },
-      { x: x + 0.12, y: 0.14, z: TAIL + 0.04 },
+      { x: side * 0.3, y: 0.14, z: TAIL + 0.04 },
+      { x: side * 0.42, y: 0.14, z: TAIL + 0.04 },
       0.014,
       steel,
       M.Metal,
       Z.Rear,
     );
     b.rod(
-      { x: x * 1.4, y: 0.74, z: TAIL + 0.03 },
-      { x: x * 1.5, y: 0.77, z: TAIL - 0.04 },
+      { x: side * (GATE - 0.03), y: 0.73, z: TAIL + 0.03 },
+      { x: side * (GATE + 0.04), y: 0.77, z: TAIL - 0.02 },
       0.006,
       steel,
       M.Metal,
       Z.Rear,
     );
   }
-  armyPlate(b, -0.38, 0.22, TAIL + 0.04, 1);
+  armyPlate(b, -0.3, 0.22, TAIL + 0.04, 1);
   // Load floor between the wheel boxes, full width ahead of and behind them, and
   // inward-facing bench seats, seen from the cab under the tilt.
   b.block(0, 0.2, (B_PILLAR + TAIL) / 2, 1.12, 0.03, TAIL - B_PILLAR, black, M.Rubber, Z.Trim);
@@ -537,26 +558,26 @@ function tailgateTools(b: VehicleBuilder): void {
     b.block(x, y, TAIL + 0.055, 0.035, 0.07, 0.05, black, M.Metal, Z.Rear, 0.006);
   // Shovel: blade on the right, socket, handle and D grip towards the left.
   let y = 0.655;
-  b.block(0.5, y, z, 0.27, 0.2, 0.012, head, M.Metal, Z.Rear, 0.004);
-  b.rod({ x: 0.37, y, z }, { x: 0.26, y, z }, 0.02, head, M.Metal, Z.Rear);
-  b.rod({ x: 0.26, y, z }, { x: -0.4, y, z }, 0.016, wood, M.Fabric, Z.Rear);
-  b.ring(-0.445, y, z, 0.045, 0.01, black, M.Metal, 'z', Z.Rear);
-  clamp(0.5, y);
+  b.block(0.35, y, z, 0.27, 0.2, 0.012, head, M.Metal, Z.Rear, 0.004);
+  b.rod({ x: 0.22, y, z }, { x: 0.11, y, z }, 0.02, head, M.Metal, Z.Rear);
+  b.rod({ x: 0.11, y, z }, { x: -0.37, y, z }, 0.016, wood, M.Fabric, Z.Rear);
+  b.ring(-0.415, y, z, 0.045, 0.01, black, M.Metal, 'z', Z.Rear);
+  clamp(0.35, y);
   clamp(-0.2, y);
   // Pick: helve across the middle with the head upright at its left end.
   y = 0.44;
-  b.rod({ x: -0.6, y, z }, { x: 0.3, y, z }, 0.019, wood, M.Fabric, Z.Rear);
-  b.rod({ x: -0.6, y: 0.3, z }, { x: -0.6, y: 0.58, z }, 0.016, head, M.Metal, Z.Rear);
-  b.block(-0.6, y, z, 0.06, 0.07, 0.05, head, M.Metal, Z.Rear, 0.01);
-  clamp(-0.4, y);
-  clamp(0.15, y);
+  b.rod({ x: -0.45, y, z }, { x: 0.42, y, z }, 0.019, wood, M.Fabric, Z.Rear);
+  b.rod({ x: -0.45, y: 0.3, z }, { x: -0.45, y: 0.58, z }, 0.016, head, M.Metal, Z.Rear);
+  b.block(-0.45, y, z, 0.06, 0.07, 0.05, head, M.Metal, Z.Rear, 0.01);
+  clamp(-0.3, y);
+  clamp(0.25, y);
   // Axe: helve along the bottom, its head at the right end with the blade turned down.
   y = 0.3;
-  b.rod({ x: -0.1, y, z }, { x: 0.52, y, z }, 0.017, wood, M.Fabric, Z.Rear);
-  b.block(0.54, y - 0.03, z, 0.06, 0.16, 0.03, head, M.Metal, Z.Rear, 0.006);
-  b.block(0.54, y - 0.12, z, 0.11, 0.03, 0.012, head, M.Metal, Z.Rear, 0.004);
-  clamp(0.0, y);
-  clamp(0.4, y);
+  b.rod({ x: -0.19, y, z }, { x: 0.43, y, z }, 0.017, wood, M.Fabric, Z.Rear);
+  b.block(0.45, y - 0.03, z, 0.06, 0.16, 0.03, head, M.Metal, Z.Rear, 0.006);
+  b.block(0.45, y - 0.12, z, 0.11, 0.03, 0.012, head, M.Metal, Z.Rear, 0.004);
+  clamp(-0.09, y);
+  clamp(0.31, y);
 }
 
 /** The second spare lying flat on a mounting plate on the bonnet, held by a centre clamp. */
@@ -566,7 +587,9 @@ function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
     // The tyre's sidewall rests on the plate, 4 mm clear.
     hubY = base + spareSidewall(wheel) + 0.004,
     top = hubY + tuning.wheelWidth / 2;
-  b.block(0, crownAt(0) + 0.02, z, 0.36, 0.04, 0.36, black, M.Metal, Z.Front, 0.01);
+  // 0.66 m square, out to where the sidewall is widest, so the tyre is seen to rest on it
+  // (on the 0.36 m plate it looked held up by a plinth under its middle).
+  b.block(0, crownAt(0) + 0.02, z, 0.66, 0.04, 0.66, black, M.Metal, Z.Front, 0.01);
   b.tag = Z.Front;
   mountSpare(b, wheel, { x: 0, y: hubY, z }, 'up', black);
   b.rod({ x: 0, y: base, z }, { x: 0, y: top + 0.05, z }, 0.014, steel, M.Metal, Z.Front);
@@ -574,15 +597,35 @@ function bonnetSpare(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
   b.rod({ x: -0.07, y: top + 0.05, z }, { x: 0.07, y: top + 0.05, z }, 0.01, steel, M.Metal, Z.Front);
 }
 
-/** Pressed-steel jerry can in a holder, standing against the body side. */
-function canInHolder(b: VehicleBuilder, x: number, y: number, z: number): void {
-  const s = Math.sign(x);
-  jerryCan(b, x, y, z, { colour: new THREE.Color('#5B6640'), zone: Z.Rear, width: 0.165, ribX: s * 0.085 });
-  b.block(x - s * 0.06, y - 0.25, z, 0.25, 0.03, 0.38, bar, M.Metal, Z.Rear);
-  b.block(x + s * 0.09, y + 0.05, z, 0.012, 0.04, 0.38, black, M.Rubber, Z.Rear);
-  for (const dz of [-0.185, 0.185]) b.block(x, y + 0.05, z + dz, 0.19, 0.04, 0.012, black, M.Rubber, Z.Rear);
-  b.block(x - s * 0.09, y + 0.05, z, 0.012, 0.04, 0.38, black, M.Rubber, Z.Rear);
-  b.block(x + s * 0.098, y + 0.05, z, 0.012, 0.06, 0.05, steel, M.Metal, Z.Rear, 0.003);
+/**
+ * Pressed-steel jerry can on a rear corner panel, above the lamps, its broad side flat against
+ * the panel. It stands in a tray held by two flat bars bolted to the panel behind it, with a
+ * stay under each side of the tray and a strap round it. Until v1.90 a can hung outside each
+ * body side, which made the truck 2.2 m wide.
+ */
+function canOnRear(b: VehicleBuilder, side: number): void {
+  const x = (side * (GATE + SIDE)) / 2,
+    y = 0.565,
+    skin = TAIL + 0.025,
+    z = skin + 0.02 + 0.0825;
+  b.block(x, y - 0.25, skin + 0.105, 0.36, 0.03, 0.21, bar, M.Metal, Z.Rear, 0.004);
+  for (const dx of [-0.15, 0.15]) {
+    b.block(x + dx, y - 0.01, skin + 0.01, 0.035, 0.5, 0.02, bar, M.Metal, Z.Rear);
+    b.rod(
+      { x: x + dx, y: y - 0.265, z: skin + 0.2 },
+      { x: x + dx, y: y - 0.39, z: skin + 0.005 },
+      0.009,
+      bar,
+    );
+  }
+  b.push()
+    .translate(x, y, z)
+    .rotate(0, -Math.PI / 2, 0);
+  jerryCan(b, 0, 0, 0, { colour: new THREE.Color('#5B6640'), zone: Z.Rear, width: 0.165, ribX: 0.085 });
+  b.pop();
+  b.block(x, y + 0.05, z + 0.088, 0.36, 0.04, 0.012, black, M.Rubber, Z.Rear);
+  for (const dx of [-0.176, 0.176])
+    b.block(x + dx, y + 0.05, skin + 0.105, 0.012, 0.04, 0.21, black, M.Rubber, Z.Rear);
 }
 
 function tilt(b: VehicleBuilder): void {
@@ -630,7 +673,7 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   );
   b.block(0.64, 0.06, 0.15, 0.22, 0.24, 0.72, black, M.Metal, Z.Trim, 0.03);
   b.rod({ x: -0.3, y: -0.06, z: -0.75 }, { x: -0.3, y: -0.08, z: 1.0 }, 0.028, steel);
-  b.rod({ x: -0.3, y: -0.08, z: 1.0 }, { x: -0.6, y: -0.06, z: 2.25 }, 0.028, steel);
+  b.rod({ x: -0.3, y: -0.08, z: 1.0 }, { x: -0.62, y: -0.09, z: 2.4 }, 0.028, steel);
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()
@@ -640,9 +683,19 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   b.pop();
   // The Perentie's own spare wheel, slung flat in a cradle under the rear floor.
   b.tag = Z.Rear;
-  mountSpare(b, wheel, { x: 0, y: 0.03, z: 1.85 }, 'down', black);
-  for (const x of [-0.2, 0.2]) b.block(x, -0.09, 1.85, 0.05, 0.03, 0.84, galv, M.Paint, Z.Trim);
-  for (const z of [1.43, 2.27]) b.block(0, -0.075, z, 0.99, 0.04, 0.035, galv, M.Paint, Z.Trim);
+  // v1.90: it hangs 0.2 m lower and 80 mm further back. Tucked up between the rails it could
+  // not be seen from any side, and its front edge was inside the differential. Its tread now
+  // passes just under the rear crossmember and shows below it from behind, as the real one does.
+  const spare = { x: 0, y: -0.17, z: 1.93 };
+  mountSpare(b, wheel, spare, 'down', black);
+  const under = spare.y - spareSidewall(wheel) - 0.02;
+  for (const x of [-0.2, 0.2]) b.block(x, under, spare.z, 0.05, 0.03, 0.84, galv, M.Paint, Z.Trim);
+  for (const z of [spare.z - 0.42, spare.z + 0.3]) {
+    b.block(0, under - 0.005, z, 1.04, 0.04, 0.035, galv, M.Paint, Z.Trim);
+    // Hangers from the chassis rails down to the cradle.
+    for (const x of [-0.495, 0.495])
+      b.rod({ x, y: -0.06, z }, { x, y: under - 0.005, z }, 0.012, galv, M.Paint, Z.Trim);
+  }
   // Pintle hook and trailer socket for the No. 5 trailer, and the rear plate.
   b.block(0, -0.02, 2.43, 0.14, 0.12, 0.08, black, M.Metal, Z.Rear, 0.01);
   b.ring(0, -0.04, 2.5, 0.045, 0.014, black, M.Metal, 'y', Z.Rear);
@@ -733,9 +786,17 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
       M.Metal,
       Z.Front,
     );
-  // HF radio whip on the rear corner of the tub.
-  b.block(0.8, WAIST + 0.06, 2.22, 0.07, 0.08, 0.07, black, M.Rubber, Z.Rear, 0.01);
-  b.rod({ x: 0.8, y: WAIST + 0.1, z: 2.22 }, { x: 0.82, y: 2.45, z: 2.3 }, 0.005, black, M.Rubber, Z.Roof);
+  // HF radio whip on the left front wing, ahead of the windscreen and clear of the tilt. On the
+  // tub's rear corner it passed up through the canvas roof (v1.90).
+  b.block(-0.76, AERIAL_Y + 0.03, -1.0, 0.07, 0.06, 0.07, black, M.Rubber, Z.Front, 0.01);
+  b.rod(
+    { x: -0.76, y: AERIAL_Y + 0.06, z: -1.0 },
+    { x: -0.78, y: 2.3, z: -0.95 },
+    0.005,
+    black,
+    M.Rubber,
+    Z.Front,
+  );
 }
 
 export function buildPerentieBody(tuning: VehicleTuning, wheel: THREE.BufferGeometry): THREE.BufferGeometry {
