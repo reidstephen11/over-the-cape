@@ -62,7 +62,7 @@ export class GameRenderer {
   readonly focus = new THREE.Vector3();
   /** Where the viewer is in the world (the camera rides in a rig while a headset is on). */
   private readonly eye = new THREE.Vector3();
-  /** The headset's eye as a plain world-space camera, for the mirrors to reflect (v1.96). */
+  /** The headset's eye as a plain world-space camera, for the mirrors to reflect (v1.98). */
   private readonly headsetEye = new THREE.PerspectiveCamera(90, 1, 0.05, 180);
 
   constructor(

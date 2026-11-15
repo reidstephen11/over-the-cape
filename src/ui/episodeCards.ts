@@ -110,7 +110,7 @@ export class HistoryCard {
     return !this.el.classList.contains('hidden');
   }
 
-  /** The note as words, for the headset's dash panel (v1.96); null when none is up. */
+  /** The note as words, for the headset's dash panel (v1.98); null when none is up. */
   get words(): { kind: string; title: string; text: string; hint: string } | null {
     if (!this.isShown || !this.current) return null;
     return {

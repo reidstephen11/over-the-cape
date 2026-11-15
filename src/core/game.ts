@@ -32,6 +32,7 @@ import { addPuddles } from '../sim/world/puddles';
 import { prepareFlood } from '../sim/world/flood';
 import {
   conditionById,
+  conditionFor,
   isTrackConditionId,
   mapForCondition,
   rollTrackCondition,
@@ -143,7 +144,7 @@ export class Game {
   readonly input: InputManager;
   readonly freeCam: FreeCamera;
   readonly chase: ChaseCamera;
-  /** Headset play (v1.96): the driver's seat in a headset, with its hand controllers. */
+  /** Headset play (v1.98): the driver's seat in a headset, with its hand controllers. */
   readonly vr: VrMode;
   readonly vrDash = new VrDash();
   /** The headset session was left for a menu: go back into it when the menu closes. */
@@ -586,15 +587,18 @@ export class Game {
             seed > 0 ? seed : undefined,
             choice.load,
           );
-    if (choice.supply && checkpoint !== saved) checkpoint.supply = true;
+    // The Army supply run is to Wujal Wujal, on the CREB.
+    if (choice.supply && checkpoint !== saved && def.id === 'creb') checkpoint.supply = true;
     const packs = { ...save?.packs, ...(choice.load ? { [choice.vehicle]: choice.load } : {}) };
     // How the track is found today, rolled from the run's seed, so a restart from a camp
     // (which keeps the seed) meets the same day. Replays pick their conditions by hand.
     // ?track=dry|reopened|wet pins the day, for comparing one against another and so the
     // browser tests meet a fixed track; otherwise it is rolled from the run's seed.
     const pinned = params.get('track');
-    const condition =
-      pinned && isTrackConditionId(pinned) ? conditionById(pinned) : rollTrackCondition(checkpoint.seed);
+    const condition = conditionFor(
+      pinned && isTrackConditionId(pinned) ? conditionById(pinned) : rollTrackCondition(checkpoint.seed),
+      def.conditions,
+    );
     // Replays keep the conditions picked; the story's own run has its storm (if any).
     const storm = choice.replay ? undefined : stormFor(def.storm, condition);
     const weather = choice.replay
@@ -818,7 +822,7 @@ export class Game {
   }
 
   /**
-   * Menus are page panels a headset cannot show (v1.96): the headset session ends while one
+   * Menus are page panels a headset cannot show (v1.98): the headset session ends while one
    * is open, so it shows in the browser window, and starts again when it closes. Closing it
    * is a press (a controller click on the window), which lets the page start the headset.
    */
@@ -1451,6 +1455,12 @@ export class Game {
     ];
   }
 
+  /** The episode's bypass, if this run took it: a fixed deduction from the score. */
+  private bypassPenalty(): { label: string; points: number }[] {
+    const b = this.episode.bypass;
+    return b && this.exploration.discovered.has(b.poi) ? [{ label: b.label, points: b.penalty }] : [];
+  }
+
   private onComplete(): void {
     const minutes = this.run.elapsed / 60;
     const was = this.episodeProgress;
@@ -1461,16 +1471,24 @@ export class Game {
       minutes,
       hoursSpare: this.run.timed && deadline !== undefined ? deadline - this.run.hour : null,
       targetMinutes: 30,
+      penalties: this.bypassPenalty(),
     });
+    // The vehicle challenges are all set on the CREB.
+    const creb = this.episode.id === 'creb';
     const scoreLines = [
       ...this.scoreStats(score, was, minutes),
+      ...(score.parts.some((p) => p.points < 0)
+        ? score.parts.filter((p) => p.points < 0).map((p) => `${p.label}: ${p.points}`)
+        : []),
       ...this.keepGhost(),
-      ...this.unlock('hilux', false),
-      ...(this.winched ? [] : this.unlock('unimog', false)),
-      ...(this.vehicleId === 'shortie' || this.vehicleId === 'forty' ? this.unlock('hj60', false) : []),
-      ...(this.vehicleId === 'hilux' ? this.unlock('ute40', false) : []),
-      ...(this.vehicleId === 'patrol' ? this.unlock('mq', false) : []),
-      ...(this.vehicleId === 'camel' ? this.unlock('rangie', false) : []),
+      ...(creb ? this.unlock('hilux', false) : []),
+      ...(creb && !this.winched ? this.unlock('unimog', false) : []),
+      ...(creb && (this.vehicleId === 'shortie' || this.vehicleId === 'forty')
+        ? this.unlock('hj60', false)
+        : []),
+      ...(creb && this.vehicleId === 'hilux' ? this.unlock('ute40', false) : []),
+      ...(creb && this.vehicleId === 'patrol' ? this.unlock('mq', false) : []),
+      ...(creb && this.vehicleId === 'camel' ? this.unlock('rangie', false) : []),
     ];
     this.progress[this.episode.id] = {
       completed: true,
@@ -1833,7 +1851,7 @@ export class Game {
       sectionBests: { ...this.sectionTimes.bests },
     };
     this.save();
-    if (sectionTargetsMet(this.sectionTimes.bests)) this.unlock('sooty80');
+    if (this.episode.id === 'creb' && sectionTargetsMet(this.sectionTimes.bests)) this.unlock('sooty80');
   }
 
   private onCrawlRun(e: CrawlRunEvent): void {

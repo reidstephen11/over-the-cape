@@ -11,7 +11,7 @@ export interface VirtualPad {
 const STICK_AS_DPAD = 0.6;
 
 /**
- * Headset play (v1.96): the driver's seat in an immersive WebXR session, driven with the
+ * Headset play (v1.98): the driver's seat in an immersive WebXR session, driven with the
  * headset's own hand controllers.
  *
  * The camera rides in a rig that sits at the driver's eye and turns with the body, so the cab

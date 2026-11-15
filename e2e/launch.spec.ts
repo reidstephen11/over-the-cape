@@ -64,7 +64,8 @@ test('New Journey opens episode setup and keeps vehicle, difficulty and replay c
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-group="vehicle"].on')).toHaveAttribute('data-value', 'hilux');
-  await expect(page.locator('[data-group="episode"]')).toHaveCount(1);
+  // The CREB and, since v1.96, the Telegraph Track.
+  await expect(page.locator('[data-group="episode"]')).toHaveCount(2);
   await page.keyboard.press('Escape');
   await expect(page.locator('.title-menu')).toBeVisible();
   expect(errors).toEqual([]);

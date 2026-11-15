@@ -142,7 +142,7 @@ export class Hud {
   readonly el: HTMLElement;
   private controller: ControllerType = defaultController;
   onCameraReset: (() => void) | null = null;
-  /** Every message card as it is shown (the headset's dash panel repeats them, v1.96). */
+  /** Every message card as it is shown (the headset's dash panel repeats them, v1.98). */
   onToast: ((text: string, ms: number) => void) | null = null;
   onCameraPreset: (() => void) | null = null;
   private readonly status: HTMLElement;

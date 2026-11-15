@@ -17,8 +17,9 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   await expect(on('start')).toHaveAttribute('data-value', 'new');
   await expect(on('vehicle')).toHaveAttribute('data-value', 'shortie');
   await expect(on('damage')).toHaveAttribute('data-value', 'mild');
-  // The CREB is the whole game: one episode and no "coming soon" list.
-  await expect(page.locator('[data-group="episode"]')).toHaveCount(1);
+  // Two episodes, both open (v1.96): the CREB and the Telegraph Track, and no "coming soon" list.
+  await expect(page.locator('[data-group="episode"]')).toHaveCount(2);
+  await expect(page.locator('[data-group="episode"][data-value="telegraph"]')).toBeEnabled();
   await expect(page.locator('.welcome-upcoming')).toHaveCount(0);
   // Conditions are the story's until the episode is finished.
   await expect(page.locator('[data-group="time"]')).toHaveCount(0);

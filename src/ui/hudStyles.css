@@ -2631,7 +2631,7 @@ body:not(.touch-mode) #ui[data-hud] .history-card .history-hint {
   }
 }
 
-/* Headset play (v1.96): offered only by a browser with a headset session. */
+/* Headset play (v1.98): offered only by a browser with a headset session. */
 .vr-enter {
   position: fixed;
   right: calc(16px + env(safe-area-inset-right));

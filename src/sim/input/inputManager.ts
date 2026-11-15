@@ -24,7 +24,7 @@ export class InputManager {
   /** A gamepad was connected at the last poll(). */
   gamepadConnected = false;
   /**
-   * The headset's hand controllers as a standard pad (v1.96), read in place of any gamepad
+   * The headset's hand controllers as a standard pad (v1.98), read in place of any gamepad
    * while a headset is on; null otherwise.
    */
   headsetPad:

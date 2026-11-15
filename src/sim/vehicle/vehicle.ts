@@ -34,6 +34,7 @@ import {
   type GearboxMode,
 } from './drivetrain';
 import { floodPower, updateFlood, type FloodEvent } from './flooding';
+import { sandPressure } from './tyrePressure';
 import { mulberry32 } from '../world/rng';
 import { type Quat, type Vec3, dot, headingToYaw, rotate, v3, yawQuat } from './math';
 import { WheelContacts } from './wheelContacts';
@@ -881,6 +882,7 @@ export class Vehicle {
       const w = this.wheels[i];
       const sinkTarget = w.contact
         ? surfaces[w.surface].sink *
+          (w.surface === SurfaceId.Sand ? sandPressure(this.condition).sink : 1) *
           (1 - 0.65 * relief) *
           loadSink *
           Math.min(1, 0.4 + w.spin + (Math.abs(this.speed) < 2 ? 0.4 : 0))
@@ -914,7 +916,11 @@ export class Vehicle {
       if (!w.contact) continue;
       const softGround =
         w.surface === SurfaceId.Mud || w.surface === SurfaceId.BlackSoil || w.surface === SurfaceId.Sand;
-      rr += surfaces[w.surface].rollingResistance * w.load * (softGround ? 1 - 0.65 * relief : 1);
+      rr +=
+        surfaces[w.surface].rollingResistance *
+        w.load *
+        (softGround ? 1 - 0.65 * relief : 1) *
+        (w.surface === SurfaceId.Sand ? sandPressure(this.condition).drag : 1);
       // A soft or flat tyre drags at its own corner, which also pulls the car that way.
       const drag = damageTuning.tyre.flatDrag * (1 - this.condition.tyres[i]) * w.load * sv * dt;
       if (drag !== 0)

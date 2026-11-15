@@ -22,7 +22,7 @@ interface Toast {
 }
 
 /**
- * The headset's dash panel (v1.96): the page's HUD is not seen inside a headset, so the parts
+ * The headset's dash panel (v1.98): the page's HUD is not seen inside a headset, so the parts
  * needed to drive are drawn on a small card fixed in the cab below the windscreen line: the
  * button prompts, the last message cards, the mission and the drive state, and the tool wheel
  * while it is open. Redrawn only when its text changes.
