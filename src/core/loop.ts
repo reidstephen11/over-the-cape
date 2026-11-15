@@ -7,6 +7,11 @@ export interface LoopCallbacks {
   render(alpha: number, frameDt: number): void;
 }
 
+/** Something that calls back once per frame: Three.js's renderer.setAnimationLoop. */
+export interface FrameScheduler {
+  setAnimationLoop(cb: ((time: number) => void) | null): void;
+}
+
 /** Main-thread time per drawn frame (ms), smoothed. */
 export interface LoopTimings {
   sim: number;
@@ -56,24 +61,33 @@ export class GameLoop {
   private raf = 0;
   private running = false;
 
-  constructor(private readonly cb: LoopCallbacks) {}
+  /**
+   * `scheduler`: the renderer's animation loop, which follows the headset's frames while a
+   * headset session is on (the page's own frames stop then). Without one, the page's frames.
+   */
+  constructor(
+    private readonly cb: LoopCallbacks,
+    private readonly scheduler: FrameScheduler | null = null,
+  ) {}
 
   start(): void {
     if (this.running) return;
     this.running = true;
     this.last = performance.now();
     this.lastDraw = this.last;
-    this.raf = requestAnimationFrame(this.frame);
+    if (this.scheduler) this.scheduler.setAnimationLoop(this.frame);
+    else this.raf = requestAnimationFrame(this.frame);
   }
 
   stop(): void {
     this.running = false;
-    cancelAnimationFrame(this.raf);
+    if (this.scheduler) this.scheduler.setAnimationLoop(null);
+    else cancelAnimationFrame(this.raf);
   }
 
   private readonly frame = (now: number): void => {
     if (!this.running) return;
-    this.raf = requestAnimationFrame(this.frame);
+    if (!this.scheduler) this.raf = requestAnimationFrame(this.frame);
     const frameDt = Math.min(0.25, Math.max(0, (now - this.last) / 1000));
     this.last = now;
     const t0 = performance.now();

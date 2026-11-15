@@ -110,6 +110,9 @@ async function play(choice: WelcomeChoice, audio?: AudioContext): Promise<void> 
 }
 
 function boot(): void {
+  // A pretend headset for trying headset play on a desktop (src/debug/vrSim.ts).
+  if (new URLSearchParams(location.search).has('vrsim'))
+    void import('./debug/vrSim').then((m) => m.installVrSim());
   const uiEl = document.getElementById('ui') as HTMLElement;
   const save = loadSave();
   applyHudStyle(save?.settings.hudStyle ?? defaultHudStyle);

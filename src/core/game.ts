@@ -1,4 +1,4 @@
-import { controllers } from '../data/controllers';
+import { controllers, type ControllerType } from '../data/controllers';
 import { loadFj40Glb } from '../render/fj40Glb';
 import type { ControlInstruction } from '../data/controlInstructions';
 import * as THREE from 'three';
@@ -20,7 +20,7 @@ import {
   type StrandedDriverDef,
 } from '../data/episodes';
 import { usePalette } from '../render/colors';
-import { qualityFor } from '../data/quality';
+import { qualityFor, qualityPresets } from '../data/quality';
 import type { DamageMode } from '../data/damage';
 import type { VehicleId } from '../data/vehicle';
 import { vehicleLoadout, vehicles } from '../data/vehicles';
@@ -68,6 +68,8 @@ import type { ToolEvent } from '../sim/tools/tools';
 import { GameRenderer } from '../render/renderer';
 import { VehicleModel } from '../render/vehicleModel';
 import { ChaseCamera } from '../render/chaseCamera';
+import { VrMode } from '../render/vrMode';
+import { VrDash } from '../render/vrDash';
 import { CameraDrag } from '../render/cameraDrag';
 import { ToolsView } from '../render/tools';
 import { Hud } from '../ui/hud';
@@ -142,6 +144,12 @@ export class Game {
   readonly input: InputManager;
   readonly freeCam: FreeCamera;
   readonly chase: ChaseCamera;
+  /** Headset play (v1.98): the driver's seat in a headset, with its hand controllers. */
+  readonly vr: VrMode;
+  readonly vrDash = new VrDash();
+  /** The headset session was left for a menu: go back into it when the menu closes. */
+  private vrResume = false;
+  private vrButton: HTMLButtonElement | null = null;
   private readonly cameraDrag: CameraDrag;
   /** Winch anchors in reach, the chooser on USE, and a tap on one to pick it. */
   private readonly anchors: AnchorPicker;
@@ -380,6 +388,10 @@ export class Game {
     this.chase.headMotionEnabled = settings.headMotion;
     this.chase.scale = vehicles[vehicleId].cameraScale ?? 1;
     this.freeCam = new FreeCamera(view.camera, view.renderer.domElement);
+    this.vr = new VrMode(view.renderer, view.scene, view.camera);
+    this.vr.cab.add(this.vrDash.mesh);
+    this.input.headsetPad = () => this.vr.virtualPad();
+    this.vr.onChange((on) => this.headsetChanged(on));
 
     this.hud = new Hud(uiRoot, (action) => this.input.requestDriveAction(action));
     this.hud.units = settings.units;
@@ -387,6 +399,7 @@ export class Game {
     applyHudStyle(settings.hudStyle);
     this.hud.setControllerType(settings.controller);
     this.hud.onCameraReset = () => this.chase.recenter();
+    this.hud.onToast = (text, ms) => this.vrDash.toast(text, ms);
     this.hud.onCameraPreset = () => this.chase.cyclePreset();
     this.toolMenu = new ToolMenu(uiRoot);
     this.toolMenu.onPick = (id) => this.pickTool(id);
@@ -485,13 +498,17 @@ export class Game {
     wireSimFeedback(sim, this.hud, this.audio, {
       vehicleId: LOCAL_VEHICLE,
       vehicle: () => this.vehicle,
-      controller: () => this.settings.controller,
+      controller: () => this.controllerShown,
     });
 
-    this.loop = new GameLoop({
-      step: (dt) => this.step(dt),
-      render: (alpha, frameDt) => this.renderFrame(alpha, frameDt),
-    });
+    this.loop = new GameLoop(
+      {
+        step: (dt) => this.step(dt),
+        render: (alpha, frameDt) => this.renderFrame(alpha, frameDt),
+      },
+      view.renderer,
+    );
+    void VrMode.supported().then((ok) => ok && this.addVrButton(uiRoot));
     this.applyFrameRate();
     this.cameraDrag = new CameraDrag(
       view.renderer.domElement,
@@ -777,7 +794,64 @@ export class Game {
 
   /** The frame cap (v1.49): on unless Settings says Screen, and off for the phone test. */
   private applyFrameRate(): void {
-    this.loop.capFrameRate = this.settings.frameRate !== 'screen' && !this.benchMode;
+    // A headset needs a picture for every one of its frames.
+    this.loop.capFrameRate = this.settings.frameRate !== 'screen' && !this.benchMode && !this.vr.presenting;
+  }
+
+  /** Button names as the player holds them: the headset's controllers while it is on. */
+  private get controllerShown(): ControllerType {
+    return this.vr.presenting ? 'quest' : this.settings.controller;
+  }
+
+  /** The "Drive in VR" button, on a browser that offers a headset session. */
+  private addVrButton(uiRoot: HTMLElement): void {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'vr-enter paper';
+    b.textContent = 'Drive in VR';
+    b.addEventListener('click', () => this.enterHeadset());
+    uiRoot.appendChild(b);
+    this.vrButton = b;
+  }
+
+  private enterHeadset(): void {
+    this.vrResume = false;
+    this.vr
+      .enter()
+      .catch((err: unknown) => this.hud.toast(`The headset could not start: ${String(err)}`, 5000));
+  }
+
+  /**
+   * Menus are page panels a headset cannot show (v1.98): the headset session ends while one
+   * is open, so it shows in the browser window, and starts again when it closes. Closing it
+   * is a press (a controller click on the window), which lets the page start the headset.
+   */
+  private syncHeadset(): void {
+    const menu = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
+    this.vrButton?.classList.toggle('hidden', this.vr.presenting || menu);
+    if (this.vr.presenting && menu) {
+      this.vrResume = true;
+      void this.vr.exit();
+    } else if (this.vrResume && !menu && !this.vr.presenting) {
+      if (navigator.userActivation?.isActive ?? true) this.enterHeadset();
+      else this.vrResume = false;
+    }
+  }
+
+  /** The headset went on or came off. */
+  private headsetChanged(on: boolean): void {
+    this.applyFrameRate();
+    // Two eyes at the headset's rate: the lightest graphics (the 3S's chip is a phone's).
+    this.view.setQuality(on ? qualityPresets.low : qualityFor(this.settings.quality, isTouchDevice()));
+    this.hud.setControllerType(this.controllerShown);
+    this.chase.headMotion.reset();
+    document.body.classList.toggle('vr-on', on);
+    if (!on) {
+      // Back to the screen camera at once, even with a menu stopping the game.
+      this.view.resize();
+      this.chase.reset();
+      this.followVehicle(0);
+    }
   }
 
   changeSettings(s: Partial<Settings>): void {
@@ -794,7 +868,7 @@ export class Game {
     this.hud.style = this.settings.hudStyle;
     applyHudStyle(this.settings.hudStyle);
     applyUiSize(this.settings.uiSize);
-    this.hud.setControllerType(this.settings.controller);
+    this.hud.setControllerType(this.controllerShown);
     this.input.setTouchDrive(this.settings.touchDrive);
     this.touch.setDriveScheme(this.settings.touchDrive);
     this.touch.setStickSide(this.settings.touchStickSide);
@@ -834,7 +908,7 @@ export class Game {
       this.exploration.discovered,
       { x: p.x, z: p.z, heading: this.cameraHeading() },
       this.input.activeDevice,
-      this.settings.controller,
+      this.controllerShown,
       // Test mode shows the whole map.
       this.dev ? null : this.seen,
       // Finds still there, unless an unfound place beside one already has its own mark.
@@ -1304,7 +1378,7 @@ export class Game {
 
   /** A place's history note or a lesson: a small card in the top right; driving carries on. */
   showHistory(note: { title: string; text: string; instruction?: ControlInstruction }): void {
-    this.history.setInput(this.input.activeDevice, this.settings.controller);
+    this.history.setInput(this.input.activeDevice, this.controllerShown);
     this.history.show(note.title, note.text, false, note.instruction);
   }
 
@@ -1540,7 +1614,12 @@ export class Game {
     this.sim.step(this.inputs, dt);
     // Physics-time sampling keeps the inertial response independent of the screen's
     // refresh rate and of the browser test's accelerated steps per frame.
-    if (this.chase.headMotionEnabled && this.chase.preset === 'cockpit' && !this.freeCamOn) {
+    if (
+      this.chase.headMotionEnabled &&
+      this.chase.preset === 'cockpit' &&
+      !this.freeCamOn &&
+      !this.vr.presenting
+    ) {
       const body = this.vehicle.body;
       this.motionRotation.copy(body.rotation());
       this.tmpPos.copy(this.chase.seat.eye).applyQuaternion(this.motionRotation).add(body.translation());
@@ -1851,7 +1930,7 @@ export class Game {
     if (inp.pressed('pause')) this.openPause();
     else if (inp.pressed('map')) this.openMap();
     else if (inp.pressed('toolMenu')) {
-      const pad = controllers[this.settings.controller];
+      const pad = controllers[this.controllerShown];
       this.toolMenu.open(
         this.toolOptions(),
         inp.activeDevice === 'touch',
@@ -1875,10 +1954,11 @@ export class Game {
 
   private renderFrame(alpha: number, frameDt: number): void {
     this.input.poll();
+    this.syncHeadset();
     this.syncGearbox();
-    this.map.updateInput(this.input.activeDevice, this.settings.controller);
+    this.map.updateInput(this.input.activeDevice, this.controllerShown);
     this.pause.setInputDevice(this.input.activeDevice);
-    this.history.setInput(this.input.activeDevice, this.settings.controller);
+    this.history.setInput(this.input.activeDevice, this.controllerShown);
     this.clock += frameDt;
     this.updateEnvironment();
     this.devPanel?.update();
@@ -1920,7 +2000,7 @@ export class Game {
         );
       }
     }
-    this.hud.cockpitView = this.chase.preset === 'cockpit' && !this.freeCamOn;
+    this.hud.cockpitView = (this.chase.preset === 'cockpit' || this.vr.presenting) && !this.freeCamOn;
     this.model.setCockpitView(this.hud.cockpitView);
     this.hud.cameraHelp(
       this.input.activeDevice,
@@ -1946,7 +2026,8 @@ export class Game {
     this.toolsView.update(v, tools, this.sim.probeGroundFor(LOCAL_VEHICLE), this.clock, between);
     this.view.particles.update(v, this.loop.paused ? 0 : frameDt);
     if (this.freeCamOn) this.freeCam.update(frameDt);
-    else if (!this.loop.paused) this.followVehicle(frameDt, between);
+    // The headset's seat follows the car even while a note stops the game.
+    else if (!this.loop.paused || this.vr.presenting) this.followVehicle(frameDt, between);
     this.view.focus.copy(this.model.root.position);
     this.view.shelter.copy(this.model.root.matrixWorld);
     const t0 = performance.now();
@@ -1991,37 +2072,37 @@ export class Game {
     // After dusk the HUD dims like a dash's lights.
     this.hud.night = this.replay ? this.replay.time === 'night' : this.run.hour >= 18.4 || this.run.hour < 6;
     this.applyPinnedHazards();
-    this.hud.update(
-      buildHudState({
-        vehicle: v,
-        tools,
-        device: this.input.activeDevice,
-        controller: this.settings.controller,
-        touchDrive: this.settings.touchDrive,
-        mode: this.tool.mode,
-        cameraHeading: this.cameraHeading(),
-        discovered: this.exploration.discovered,
-        pois: this.world.pois,
-        crawlCourses: this.world.map.crawlCourses,
-        crawlTrails: this.world.map.crawlTrails,
-        tracks: this.world.features.tracks,
-        trackDistanceAt: this.trackDistanceAt,
-        hintCache: this.hintCache,
-        anchorInReach: this.anchors.inReach,
-        anchorCount: this.anchors.count,
-        run: this.crawlRuns.run,
-        gates: this.scoredGates ? this.scoredGates.hud() : this.gateCount.total ? this.gateCount : null,
-        repair: this.sim.repairOption(LOCAL_VEHICLE),
-        refuel: this.sim.refuelOption(LOCAL_VEHICLE),
-        find: this.findNearby(),
-        sideTrip: this.run.status === 'driving' ? this.sideTrips.prompt(v.position.x, v.position.z) : null,
-        hitch: this.sim.hitchOption(LOCAL_VEHICLE),
-        trailer: this.sim.trailerOf(LOCAL_VEHICLE),
-        trailerLeft: this.delivery.trailerLeft(),
-        episode: episodeHud(this.run, this.episode),
-        supplies: true,
-      }),
-    );
+    const hudState = buildHudState({
+      vehicle: v,
+      tools,
+      device: this.input.activeDevice,
+      controller: this.controllerShown,
+      touchDrive: this.settings.touchDrive,
+      mode: this.tool.mode,
+      cameraHeading: this.cameraHeading(),
+      discovered: this.exploration.discovered,
+      pois: this.world.pois,
+      crawlCourses: this.world.map.crawlCourses,
+      crawlTrails: this.world.map.crawlTrails,
+      tracks: this.world.features.tracks,
+      trackDistanceAt: this.trackDistanceAt,
+      hintCache: this.hintCache,
+      anchorInReach: this.anchors.inReach,
+      anchorCount: this.anchors.count,
+      run: this.crawlRuns.run,
+      gates: this.scoredGates ? this.scoredGates.hud() : this.gateCount.total ? this.gateCount : null,
+      repair: this.sim.repairOption(LOCAL_VEHICLE),
+      refuel: this.sim.refuelOption(LOCAL_VEHICLE),
+      find: this.findNearby(),
+      sideTrip: this.run.status === 'driving' ? this.sideTrips.prompt(v.position.x, v.position.z) : null,
+      hitch: this.sim.hitchOption(LOCAL_VEHICLE),
+      trailer: this.sim.trailerOf(LOCAL_VEHICLE),
+      trailerLeft: this.delivery.trailerLeft(),
+      episode: episodeHud(this.run, this.episode),
+      supplies: true,
+    });
+    this.hud.update(hudState);
+    if (this.vr.presenting) this.vrDash.update(hudState, this.toolMenu.view, this.history.words);
     if (this.overlay) {
       const w = tools.winch;
       const fl = v.condition.flood;
@@ -2044,6 +2125,11 @@ export class Game {
   /** The chase camera follows the car (each frame, and once before the first). */
   private followVehicle(frameDt: number, alpha = 1): void {
     const v = this.vehicle;
+    if (this.vr.presenting) {
+      this.vr.place(this.model.root.position, this.model.root.quaternion, this.chase.seat.eye);
+      this.vrDash.seat(this.chase.seat.eye.x);
+      return;
+    }
     this.chase.toolView = this.tool.mode !== 'drive';
     this.chase.towing = this.sim.trailerOf(LOCAL_VEHICLE) !== null;
     const p = this.model.root.position;

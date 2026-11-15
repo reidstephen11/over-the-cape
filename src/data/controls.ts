@@ -158,6 +158,14 @@ export const controllerGlyphs: Record<ControllerType, Partial<Record<Action, str
   playstation: padGlyphs('playstation'),
   xbox: padGlyphs('xbox'),
   generic: padGlyphs('generic'),
+  // The right stick stands in for the D-pad on the headset's controllers.
+  quest: {
+    ...padGlyphs('quest'),
+    winchIn: 'Right stick ↑',
+    winchOut: 'Right stick ↓',
+    shiftUp: 'Right stick →',
+    shiftDown: 'Right stick ←',
+  },
 };
 
 /** Short glyphs shown in prompts for the active device. */

@@ -155,6 +155,8 @@ export interface GameHook {
   setMirrors(enabled: boolean): void;
   setHeadMotion(enabled: boolean): void;
   headMotion(): { enabled: boolean; offset: number[] };
+  /** Headset play: on or off, the eye's world position, the seat rig's, and the dash panel as a picture. */
+  vr(): { presenting: boolean; eye: number[]; rig: number[]; dash: string };
   mirrors(): { targets: number; captures: number; enabled: boolean };
   quality(): 'low' | 'medium' | 'high';
   setTouchDrive(scheme: TouchDriveScheme): void;
@@ -376,6 +378,12 @@ export function installHook(game: Game): void {
     },
     setMirrors: (enabled) => g.changeSettings({ mirrors: enabled }),
     setHeadMotion: (enabled) => g.changeSettings({ headMotion: enabled }),
+    vr: () => ({
+      presenting: g.vr.presenting,
+      eye: g.view.camera.getWorldPosition(new THREE.Vector3()).toArray(),
+      rig: g.vr.rig.position.toArray(),
+      dash: g.vrDash.canvas.toDataURL('image/png'),
+    }),
     headMotion: () => ({ enabled: g.settings.headMotion, offset: g.chase.headMotion.offset.toArray() }),
     mirrors: () => ({
       targets: g.view.mirrors.targetCount,

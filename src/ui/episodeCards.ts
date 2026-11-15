@@ -110,6 +110,17 @@ export class HistoryCard {
     return !this.el.classList.contains('hidden');
   }
 
+  /** The note as words, for the headset's dash panel (v1.98); null when none is up. */
+  get words(): { kind: string; title: string; text: string; hint: string } | null {
+    if (!this.isShown || !this.current) return null;
+    return {
+      kind: this.el.querySelector('.history-kind')?.textContent ?? '',
+      title: this.current.title,
+      text: this.noteText(this.current),
+      hint: this.el.querySelector('.history-hint')?.textContent ?? '',
+    };
+  }
+
   /** Is a note up that stops the game until it's closed? */
   get reading(): boolean {
     return this.isShown && this.el.classList.contains('reading');
