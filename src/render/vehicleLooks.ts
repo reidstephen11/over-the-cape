@@ -5,7 +5,13 @@ import { buildVehicleBody } from './vehicleBody';
 import { buildVehicleWheel } from './vehicleWheel';
 import { buildFj40GlbBody, buildFj40GlbWheel, fj40GlbActive, fj40GlbHeadlamps } from './fj40Glb';
 import { FJ40_GEAR_DROP, FJ40_PLANK_SHIFT, buildRackPlank, fj40DrivingLamps } from './vehicleEquipment';
-import { WIDEN as PATROL_WIDEN, buildPatrolBody, buildPatrolPlank, buildPatrolWheel } from './patrolBody';
+import {
+  WIDEN as PATROL_WIDEN,
+  DRIVING_LAMP_X as PATROL_LAMP_X,
+  buildPatrolBody,
+  buildPatrolPlank,
+  buildPatrolWheel,
+} from './patrolBody';
 import { buildPerentieBody, buildPerentiePlank, buildPerentieWheel } from './perentieBody';
 import { buildCamelBody, buildCamelPlank } from './camelBody';
 import { buildCamelWheel } from './camelWheel';
@@ -252,10 +258,10 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
         { x: -0.645 * PATROL_WIDEN, y: 0.48, z: -2.3 },
         { x: 0.645 * PATROL_WIDEN, y: 0.48, z: -2.3 },
       ],
-      // The two driving lamps under the bull bar's top rail come on with high beam.
+      // The two driving lamps on the bull bar come on with high beam.
       roof: [
-        { x: -0.19 * PATROL_WIDEN, y: 0.645, z: -2.417 },
-        { x: 0.19 * PATROL_WIDEN, y: 0.645, z: -2.417 },
+        { x: -PATROL_LAMP_X * PATROL_WIDEN, y: 0.48, z: -2.417 },
+        { x: PATROL_LAMP_X * PATROL_WIDEN, y: 0.48, z: -2.417 },
       ],
     },
   },

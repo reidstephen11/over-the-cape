@@ -2032,3 +2032,50 @@ A follow-up to v2.02 from its browser test. Resuming from the pause menu with a 
 - **The test.** `e2e/vr.spec.ts` resumes with the Resume button (a click, as a headset controller's trigger on the window is), then leaves the headset view with no menu open (`leaveHeadset` on the test hook, standing in for the headset's own quit), checks the cover shows, and takes the seat again from it. The old step closed the menu with Escape, which a browser does not count as a press; it passed before only when one of the test's own calls happened to land first (Playwright's page calls count as presses).
 
 **Tested:** the headset drive test passes with the fix; a run that logged the browser's calls showed the headset asked for at the click and granted. Unit tests: 1,039 passed on v2.02 (the local run also reported a worker timeout while the browser tests shared the machine; no test failed).
+
+## v2.04: the Perentie's last details, and the GQ Patrol, stage 1
+
+The owner asked whether the Perentie and the LC79 were finished and, if so, for the GQ next. Both were photographed again (the 28 audit pictures each) and put beside their photographs. The LC79 showed nothing to fix. The Perentie had the one item v1.93 left open, its wheels, and two details nobody had listed. Those are fixed here, and the GQ's first comparison follows. The Perentie (`perentie`) and the GQ Patrol (`patrol`) change.
+
+### The Perentie
+
+**Compared with** `front-34-county.jpg` (the 1988 truck from its right rear) and `side-right-county-1990.jpg`, cropped at full size at the rear wheel and the body side behind it.
+
+- **Wheels (the last of item 10).** A plain disc dished in two steps, with no holes, five studs and the hub. Eight square holes were drawn round it.
+- **Lockers.** A stowage locker door with round ends, 0.32 m by 0.26 m, on each body side behind the rear wheel, 9 mm proud of the panel, with its hinge along the bottom edge and a catch at the top. The 1990 truck has another ahead of its right rear wheel; the 1988 truck, which the game follows, does not.
+- **Mud flaps.** One behind each rear wheel, 0.26 m wide and 0.32 m long, hung from a strip bolted under the body side's edge, its foot 0.25 m off the ground.
+
+**Where each part is attached and which way it faces.** Each locker door lies on the body side between the wheel arch's moulding and the tail, facing out. Each mud flap hangs from its strip under the body side, 16 cm behind the tyre, facing the tyre.
+
+### The GQ Patrol
+
+Before any change the 28 audit pictures were taken and compared with `rear-34-1988.jpg`, `rear-34-left-1994.jpg`, `side-right-1989.jpg`, `front-34-1988.jpg`, `front-34-left-1989.jpg` and `side-1992.jpg`. The list is in `docs/AUDIT-2026-11.md`; this stage fixes items 1 to 6.
+
+**A photograph was mislabelled.** `side-1992.jpg` is a front three-quarter view, not a profile, and both it and `front-34-1988.jpg` were captioned with rectangular headlamps; they are round lamps in square recesses. `SOURCES.md` now says what each shows. No profile of a GQ is in the folder.
+
+- **Rear doors (item 1).** They were the mirror image of the real ones. The doors now meet 0.16 m left of the centre line (`DOOR_SPLIT` −0.16, was +0.16): the narrow door is on the left with the handle, a black moulding against the split, and the plate under it; the wide door is on the right with the spare.
+- **Door spare (item 2).** Its hub is 0.27 m right of the centre line and 0.6 m above the origin (was 0.27 m left and 0.5 m), so it stands over the foot of the right-hand window, as on all three photographed cars, and 8 cm clear of the rear bar. Its collision box moved with it.
+- **Winch and driving lamps (item 3).** The winch is inside the bar's pan: what shows is its control box on the pan's top and the fairlead in the face. Its drum, drawn as a stack of rings, stood on the pan in front of the grille. The centre hoop is 0.92 m wide (was 0.84 m), and the two driving lamps stand on the pan inside it 0.32 m out (was 0.19 m), one each side of the NISSAN letters, which they covered. The high-beam lights start at the new lamps; they were set 16 cm above the lamps.
+- **Snorkel (item 4).** A flat moulded body 0.44 m long lies along the left guard's side under the bonnet's edge, and the tube climbs from its back end up the windscreen pillar to the ram head above the roof, held to the pillar by two stays. It left the guard low down and ran to the roof as one diagonal.
+- **Quarter vents (item 5).** A black louvred vent on each D pillar at the rear side window's lower back corner.
+- **Mud flaps (item 6).** One behind each rear wheel, hung from a strip under the body's edge.
+
+**Where each part is attached and which way it faces.** The spare is on its carrier plate on the wide right-hand door, its face to the rear, placed with `mountSpare()`; `tests/spares.test.ts` passes. The handle and the plate are on the narrow left-hand door's face, facing back. The winch's control box sits on the pan's top between the hoop's legs. Each driving lamp stands on a stem on the pan's top, facing forward. The snorkel's body is against the left guard's side; its tube is tied to the pillar. Each vent is set on the D pillar's side, facing out. Each mud flap hangs under the body's edge 4 cm behind the wheel arch.
+
+**Not done (items 7 to 9).** The two colours meet at the body-side moulding; on the photographed two-colour cars they meet just under the door handles. The body sides have no crease, and there are no PATROL 4x4 badges. The snorkel is on the left guard; the photographs are stock cars with no snorkel, so they do not say which side a GQ's goes, and it was not moved from memory.
+
+### The second look
+
+A reviewer was given 57 pictures and nothing else: the standard set of each vehicle, five close-ups of the Perentie, eight of the GQ and the GQ's 28 audit pictures. It found nothing floating, facing the wrong way, gaping or below the ground. What it did find, and what was done:
+
+- **GQ: the tailpipe ended 4 cm in front of the left rear tyre's tread** (there before this version). It now turns out and ends inboard of the tyre, 11 cm ahead of it.
+- **GQ: the left door mirror was hard against the snorkel's tube**, 2 cm apart. The tube climbs 3 cm further forward, 5 cm clear of the mirror's head.
+- **GQ: with an axle crossed, the rear mud flap's foot met the block under the wheel.** The flaps are 0.28 m long (were 0.34 m), 0.23 m off the ground. The Perentie's were shortened the same way, to 0.32 m.
+- **GQ: the rear door's handle was 5 cm from the spare's tyre.** The spare is 2 cm further right, 7 cm from the handle and 5 cm from the right-hand tail lamp.
+- **GQ: nothing visible holds the door spare.** Not changed: its carrier plate is behind the hub, between the wheel and the door, as on the real car, and the tyre stands 3 cm off the door's skin.
+- **Perentie: the spare's cradle is the lowest thing at the tail.** Not changed: 0.2 m off the ground, as the real one is (recorded since v1.90).
+- **Perentie: the cans' stays cross the tail lamps.** Not changed: the two stays are either side of the lamp (4 cm outboard of it and 13 cm inboard) and stand up to 0.2 m off the panel, so from an angle it passes in front of the lens; from straight behind both lamps are clear.
+- **Perentie: the tailpipe runs close beside the spare under the floor.** Not changed: it passes 7 cm from the tyre and 4 cm from the cradle's front hanger.
+- The reviewer also noted that the GQ's snorkel is on the left with the steering wheel on the right (item 9 above, open), and that a pale post shows above each front tyre on both vehicles: the top of the coil spring's tower or the shock absorber, drawn by the shared suspension.
+
+Each fix was photographed again and read. `tests/spares.test.ts` passes.

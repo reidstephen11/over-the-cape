@@ -53,7 +53,7 @@ export const patrolTuning: VehicleTuning = {
     // Bull bar with the winch, the rear bar, and the spare wheel on the rear door.
     { cx: 0, cy: 0.33, cz: -2.36, hx: 0.92, hy: 0.36, hz: 0.1 },
     { cx: 0, cy: 0.04, cz: 2.52, hx: 0.9, hy: 0.08, hz: 0.08 },
-    { cx: -0.3, cy: 0.5, cz: 2.61, hx: 0.39, hy: 0.39, hz: 0.13 },
+    { cx: 0.28, cy: 0.6, cz: 2.61, hx: 0.39, hy: 0.39, hz: 0.13 },
   ],
   bumpRadius: 0.25,
   bodyFriction: 0.45,
