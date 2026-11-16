@@ -559,6 +559,38 @@ function rearBody(b: VehicleBuilder): void {
     b.ring(side * 0.66, 0.02, 2.415, 0.03, 0.01, red, M.Red, 'z', Z.Rear);
     // Jerry can in a holder on the corner panel, above the lamps, its broad side to the panel.
     canOnRear(b, side);
+    // Stowage locker let into the body side behind the rear wheel: a door with round ends, proud
+    // of the panel, hinged along its bottom edge with a catch at the top (front-34-county.jpg).
+    extrudeX(
+      b,
+      sideShape([
+        [1.95, 0.27, 0.11],
+        [2.27, 0.27, 0.11],
+        [2.27, 0.53, 0.11],
+        [1.95, 0.53, 0.11],
+      ]),
+      side > 0 ? SIDE - 0.004 : -SIDE - 0.009,
+      side > 0 ? SIDE + 0.009 : -SIDE + 0.004,
+      paint.clone().multiplyScalar(0.92),
+      M.Paint,
+      Z.Sides,
+      0.003,
+    );
+    b.block(
+      side * (SIDE + 0.011),
+      0.278,
+      2.11,
+      0.008,
+      0.012,
+      0.18,
+      paint.clone().multiplyScalar(0.75),
+      M.Paint,
+      Z.Sides,
+    );
+    b.block(side * (SIDE + 0.011), 0.5, 2.11, 0.008, 0.022, 0.03, steel, M.Metal, Z.Sides);
+    // Mud flap behind the rear wheel, hung from a strip bolted under the body side.
+    b.block(side * 0.765, 0.058, 1.955, 0.26, 0.024, 0.022, black, M.Metal, Z.Trim);
+    b.block(side * 0.765, -0.14, 1.955, 0.26, 0.38, 0.012, rubber, M.Rubber, Z.Trim, 0.004);
   }
   // Fuel filler on the right, behind the door.
   b.slot = M.Metal;
@@ -1023,7 +1055,7 @@ export function buildPerentieWheel(tuning: VehicleTuning): THREE.BufferGeometry 
   }
   for (const side of [-1, 1]) {
     b.ring(side * w * 0.5, 0, 0, r * 0.72, 0.004, tyre.clone().multiplyScalar(1.4), M.Rubber, 'x');
-    // Rim flange, a dished centre in Army green with cooling slots, drive flange and studs.
+    // Rim flange, a dished centre in Army green, drive flange and studs.
     b.ring(side * (w * 0.5 - 0.005), 0, 0, rimR, 0.014, paint, M.Paint, 'x');
     b.slot = M.Paint;
     b.push()
@@ -1039,21 +1071,13 @@ export function buildPerentieWheel(tuning: VehicleTuning): THREE.BufferGeometry 
       .rotate(0, 0, -Math.PI / 2);
     b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 16), paint);
     b.pop();
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      b.block(
-        side * (w * 0.5 - 0.018),
-        Math.cos(a) * 0.16,
-        Math.sin(a) * 0.16,
-        0.012,
-        0.035,
-        0.035,
-        black,
-        M.Rubber,
-        Z.Trim,
-        0.012,
-      );
-    }
+    // A plain disc dished in two steps, with no holes (front-34-county.jpg, the 1988 truck's
+    // rear wheel). Eight square holes were drawn round it until v2.03.
+    b.push()
+      .translate(side * (w * 0.5 - 0.014), 0, 0)
+      .rotate(0, 0, -Math.PI / 2);
+    b.geometry(new THREE.CylinderGeometry(0.162, 0.178, 0.016, 24), paint.clone().multiplyScalar(0.95));
+    b.pop();
     for (let i = 0; i < 5; i++) {
       const a = (i / 5) * Math.PI * 2;
       b.slot = M.Metal;

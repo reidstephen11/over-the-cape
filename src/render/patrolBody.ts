@@ -109,7 +109,18 @@ const C_PILLAR = 1.08;
 const TAIL = 2.45;
 const ROOF = 1.29;
 const TUMBLE = 0.05;
-const DOOR_SPLIT = 0.16;
+/** Half-width of the bull bar's centre hoop, and how far out each driving lamp stands inside it. */
+const HOOP = 0.46;
+export const DRIVING_LAMP_X = 0.32;
+/** The door spare's hub: on the wide right-hand door. */
+const SPARE_X = 0.25,
+  SPARE_Y = 0.6;
+/**
+ * Where the two rear doors meet. The narrow door is on the left with the handle and the plate;
+ * the wide door is on the right and carries the spare (rear-34-1988.jpg, rear-34-left-1994.jpg,
+ * side-right-1989.jpg). Until v2.03 the split was at +0.16, the mirror image.
+ */
+const DOOR_SPLIT = -0.16;
 /** The front clip: where it meets the front doors, its top there, and the radius its
  * shoulders and front corners are rounded to (across the car, and `ratio` of it along). */
 const CLIP = { back: SCUTTLE, backTop: 0.745, round: 0.11, ratio: 0.6 };
@@ -403,10 +414,10 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   continuousTube(
     b,
     [
-      V(-0.42, top - 0.018, zAt(top)),
-      V(-0.42, 0.78, zAt(0.78)),
-      V(0.42, 0.78, zAt(0.78)),
-      V(0.42, top - 0.018, zAt(top)),
+      V(-HOOP, top - 0.018, zAt(top)),
+      V(-HOOP, 0.78, zAt(0.78)),
+      V(HOOP, 0.78, zAt(0.78)),
+      V(HOOP, top - 0.018, zAt(top)),
     ],
     0.032,
     bar,
@@ -416,21 +427,20 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     continuousTube(
       b,
       [
-        V(side * 0.414, 0.67, zAt(0.67)),
+        V(side * (HOOP - 0.006), 0.67, zAt(0.67)),
         V(side * 0.91, 0.65, zt + 0.07),
         V(side * 0.92, top - 0.018, back + 0.01),
       ],
       0.028,
       bar,
     );
-    b.block(side * 0.42, top + 0.008, zAt(top), 0.085, 0.028, 0.085, bar, M.Metal, Z.Front, 0.006);
+    b.block(side * HOOP, top + 0.008, zAt(top), 0.085, 0.028, 0.085, bar, M.Metal, Z.Front, 0.006);
     b.block(side * 0.92, top + 0.008, back + 0.01, 0.08, 0.028, 0.085, bar, M.Metal, Z.Front, 0.006);
     b.rod(v(side * 0.36, 0.1, back + 0.08), v(side * 0.36, 0.06, F + 0.28), 0.028, bar, M.Metal, Z.Trim);
   }
-  // Winch drum behind the pan, between the hoop's legs.
-  b.rod(v(-0.24, top + 0.06, back - 0.02), v(0.24, top + 0.06, back - 0.02), 0.07, trim);
-  for (let i = 0; i < 15; i++)
-    b.ring(-0.18 + i * 0.026, top + 0.06, back - 0.02, 0.07, 0.005, steel, M.Metal, 'x', Z.Front);
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the fairlead in the face. Until v2.03 its drum stood on the pan in front of the grille.
+  b.block(0, top + 0.03, zc + 0.02, 0.2, 0.06, 0.09, trim, M.Rubber, Z.Front, 0.012);
   // Fairlead, plate and shackles on the pan face.
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.005, 0.34, 0.12, 0.02, steel, M.Metal, Z.Front, 0.006);
@@ -446,9 +456,10 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.block(x, -0.04, face + 0.02, 0.07, 0.08, 0.06, steel, M.Metal, Z.Trim);
     b.ring(x, -0.08, face - 0.01, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
   }
-  // Driving lamps hung from tabs under the top rail, inside the hoop (lit on high beam).
+  // Driving lamps standing on the pan inside the hoop, one each side of the NISSAN letters
+  // (lit on high beam). At 0.19 m out they covered the letters.
   for (const side of [-1, 1]) {
-    const lx = side * 0.19,
+    const lx = side * DRIVING_LAMP_X,
       ly = 0.48,
       lz = zt - 0.01;
     b.block(lx, 0.335, zt, 0.045, 0.14, 0.05, black, M.Metal, Z.Front, 0.005);
@@ -559,6 +570,10 @@ function glasshouse(b: VehicleBuilder, side: number): void {
     Z.Sides,
     0.004,
   );
+  // Black louvred air vent on the D pillar at the rear side window's lower back corner.
+  b.block(side * 0.005, 0.11, TAIL - 0.068, 0.016, 0.2, 0.085, black, M.Rubber, Z.Sides, 0.006);
+  for (let i = 0; i < 4; i++)
+    b.block(side * 0.014, 0.045 + i * 0.043, TAIL - 0.068, 0.006, 0.014, 0.06, trim, M.Rubber, Z.Sides);
   // Shut lines down the B and C pillars.
   for (const z of [B_PILLAR + 0.005, C_PILLAR + 0.005])
     b.block(side * 0.001, h / 2, z, 0.004, h - 0.02, 0.006, black, M.Rubber, Z.Sides);
@@ -625,6 +640,20 @@ function sides(b: VehicleBuilder): void {
       b.block(side * (SIDE + 0.004), 0.64, z, 0.012, 0.05, 0.15, black, M.Rubber, Z.Sides, 0.008);
       b.block(side * (SIDE + 0.012), 0.64, z, 0.01, 0.022, 0.11, chrome, M.Metal, Z.Sides, 0.006);
     }
+    // Mud flap behind the rear wheel, hung from a strip under the body's edge.
+    b.block(side * 0.775, 0.01, AXLE + ARCH.bottom + 0.04, 0.27, 0.024, 0.022, black, M.Metal, Z.Trim);
+    b.block(
+      side * 0.775,
+      -0.17,
+      AXLE + ARCH.bottom + 0.04,
+      0.27,
+      0.34,
+      0.012,
+      black,
+      M.Rubber,
+      Z.Trim,
+      0.004,
+    );
     // Rock sliders on the chassis.
     b.rod(v(side * 0.86, -0.04, -0.92), v(side * 0.86, -0.04, 0.92), 0.032, bar, M.Metal, Z.Sides);
     for (const z of [-0.7, 0, 0.7])
@@ -767,11 +796,13 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
 function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {
   const x = -(SIDE + 0.045);
   const black2 = new THREE.Color('#202325');
-  // Out of the guard, up the A pillar to above the roof, and the ram head on top.
-  b.block(x + 0.015, 0.5, -0.98, 0.09, 0.2, 0.16, black2, M.Rubber, Z.Front, 0.035);
+  // A flat moulded body lying along the guard's side under the bonnet's edge, then up the A
+  // pillar to above the roof, and the ram head on top. Until v2.03 it came out of the guard low
+  // down and ran to the roof as one diagonal.
+  b.block(x + 0.03, 0.61, -1.1, 0.11, 0.14, 0.44, black2, M.Rubber, Z.Front, 0.035);
   tubePath(
     b,
-    [v(x, 0.5, -0.94), v(x, 0.72, -0.86), v(x + 0.01, 0.84, -0.8), v(x + 0.03, 1.38, -0.55)],
+    [v(x, 0.62, -0.95), v(x, 0.71, -0.85), v(x + 0.01, 0.84, -0.8), v(x + 0.03, 1.38, -0.55)],
     0.055,
     black2,
   );
@@ -849,7 +880,9 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   for (const side of [-1, 1])
     for (const y of [0.72, 1.06])
       b.block(side * (SIDE - 0.035), y, z + 0.02, 0.035, 0.1, 0.03, black, M.Metal, Z.Rear, 0.008);
-  b.block(DOOR_SPLIT + 0.1, 0.66, z + 0.015, 0.1, 0.03, 0.02, chrome, M.Metal, Z.Rear, 0.006);
+  // The handle: a black moulding on the narrow door, against the split, with its grip.
+  b.block(DOOR_SPLIT - 0.17, 0.61, z + 0.012, 0.28, 0.085, 0.024, black, M.Rubber, Z.Rear, 0.012);
+  b.block(DOOR_SPLIT - 0.08, 0.6, z + 0.026, 0.09, 0.03, 0.012, chrome, M.Metal, Z.Rear, 0.005);
   // Tall tail lamps in the corners: stop and tail, indicator and reverse, wrapping onto the sides.
   for (const side of [-1, 1]) {
     const x = side * (SIDE - 0.075);
@@ -866,12 +899,14 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.block(0, -0.04, z + 0.17, 0.08, 0.06, 0.16, bar, M.Metal, Z.Rear, 0.01);
   b.ring(0, -0.02, z + 0.23, 0.035, 0.012, steel, M.Metal, 'y', Z.Rear);
   for (const side of [-1, 1]) b.ring(side * 0.66, -0.07, z + 0.12, 0.045, 0.011, red, M.Red, 'x', Z.Trim);
-  b.block(0.42, 0.24, z + 0.006, 0.36, 0.12, 0.01, new THREE.Color('#F0EEE6'), M.Lamp, Z.Rear, 0.006);
-  plateText(b, 'GQ-060', 0.42, 0.24, z + 0.02, 1);
-  // The spare on its carrier on the wider door, with a black cover plate over the hub.
+  // The plate on the narrow door, under the handle.
+  b.block(-0.46, 0.42, z + 0.006, 0.36, 0.12, 0.01, new THREE.Color('#F0EEE6'), M.Lamp, Z.Rear, 0.006);
+  plateText(b, 'GQ-060', -0.46, 0.42, z + 0.02, 1);
+  // The spare on its carrier on the wide right-hand door, its face to the rear, high enough to
+  // stand over the foot of that door's window, as on the photographed cars.
   b.tag = Z.Rear;
-  mountSpare(b, wheel, { x: -0.27, y: 0.5, z: z + 0.16 }, 'back', black, { reversed: true });
-  b.block(-0.27, 0.5, z + 0.04, 0.3, 0.3, 0.06, bar, M.Metal, Z.Rear, 0.02);
+  mountSpare(b, wheel, { x: SPARE_X, y: SPARE_Y, z: z + 0.16 }, 'back', black, { reversed: true });
+  b.block(SPARE_X, SPARE_Y, z + 0.04, 0.3, 0.3, 0.06, bar, M.Metal, Z.Rear, 0.02);
 }
 
 function chassis(b: VehicleBuilder): void {

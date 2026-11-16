@@ -23,7 +23,7 @@ From the Y60 infobox on [Nissan Patrol](<https://en.wikipedia.org/wiki/Nissan_Pa
 
 ## Gaps
 
-No straight-on front, no straight-on rear, no right-hand profile (`side-right-1989.jpg` is a rear three-quarter), no top view, no interior, no free blueprint. No stock photo shows the bull bar, snorkel and 31-inch tyres together; those are the game's additions, and they should still sit on this body.
+No straight-on front, no straight-on rear, no profile of either side (`side-right-1989.jpg` is a rear three-quarter and `side-1992.jpg` is a front three-quarter), no top view, no interior, no free blueprint. No stock photo shows the bull bar, snorkel and 31-inch tyres together; those are the game's additions, and they should still sit on this body.
 
 ## Photographs
 
@@ -31,11 +31,11 @@ Keep this list with the files. CC BY and CC BY-SA require credit to the author, 
 
 | File                     | Angle                     | What it shows                                                                               | Source page                                                                                                  | Author       | Licence                                                           | Pixels    |
 | ------------------------ | ------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------ | ----------------------------------------------------------------- | --------- |
-| `front-34-1988.jpg`      | front three-quarter       | 1988 GQ (Y60) DX wagon, series 1, front three-quarter. Rectangular headlamps.               | [Commons](<https://commons.wikimedia.org/wiki/File:1988_Nissan_Patrol_(GQ)_DX_wagon_(2012-08-07)_01.jpg>)    | FotoSleuth   | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0)          | 3096×1808 |
+| `front-34-1988.jpg`      | front three-quarter       | 1988 GQ (Y60) DX wagon, series 1, front three-quarter. Round headlamps in square recesses.  | [Commons](<https://commons.wikimedia.org/wiki/File:1988_Nissan_Patrol_(GQ)_DX_wagon_(2012-08-07)_01.jpg>)    | FotoSleuth   | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0)          | 3096×1808 |
 | `rear-34-1988.jpg`       | rear three-quarter        | 1988 GQ DX wagon, rear three-quarter.                                                       | [Commons](<https://commons.wikimedia.org/wiki/File:1988_Nissan_Patrol_(GQ)_DX_wagon_(2012-08-07)_02.jpg>)    | FotoSleuth   | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0)          | 2448×2078 |
 | `front-34-left-1989.jpg` | front three-quarter, left | 1989 GQ ST wagon, series 1, front three-quarter from the left. Photographed in Victoria.    | [Commons](<https://commons.wikimedia.org/wiki/File:1989_Nissan_Patrol_(GQ)_ST_wagon_(2015-06-15)_01.jpg>)    | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 4272×2856 |
 | `side-right-1989.jpg`    | rear three-quarter, right | 1989 GQ ST wagon, rear three-quarter from the right (not the profile its name says).        | [Commons](<https://commons.wikimedia.org/wiki/File:1989_Nissan_Patrol_(GQ)_ST_wagon_(2015-06-15)_02.jpg>)    | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 4272×2856 |
-| `side-1992.jpg`          | side                      | 1992 GQ II ST wagon in profile. Facelift grille and lamps; the lamps are still rectangular. | [Commons](<https://commons.wikimedia.org/wiki/File:1992_Nissan_Patrol_(GQ_II)_ST_wagon_(2010-09-23).jpg>)    | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 3812×1810 |
+| `side-1992.jpg`          | front three-quarter, right | 1992 GQ II ST wagon from the front right (not the profile its name says). Round headlamps in square recesses. | [Commons](<https://commons.wikimedia.org/wiki/File:1992_Nissan_Patrol_(GQ_II)_ST_wagon_(2010-09-23).jpg>)    | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 3812×1810 |
 | `front-34-1994.jpg`      | front three-quarter       | 1994 GQ II RX wagon, front three-quarter.                                                   | [Commons](<https://commons.wikimedia.org/wiki/File:1994_Nissan_Patrol_(GQ_II)_RX_wagon_(2015-07-03)_01.jpg>) | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 4272×2856 |
 | `rear-34-left-1994.jpg`  | rear three-quarter, left  | 1994 GQ II RX wagon, rear three-quarter from the left. Spare on the rear door.              | [Commons](<https://commons.wikimedia.org/wiki/File:1994_Nissan_Patrol_(GQ_II)_RX_wagon_(2015-07-03)_02.jpg>) | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 4272×2856 |
 | `front-34-1997.jpg`      | front three-quarter       | 1997 GQ II RX wagon, front three-quarter. Late in the Y60 run.                              | [Commons](<https://commons.wikimedia.org/wiki/File:1995-1997_Nissan_Patrol_(GQ_II)_RX_wagon_01.jpg>)         | OSX          | Public domain (released by the photographer on Wikimedia Commons) | 2564×1704 |
@@ -46,3 +46,9 @@ Keep this list with the files. CC BY and CC BY-SA require credit to the author, 
 ## v1.62 inspection
 
 v1.62 visual review: the roof spare's strap and its two ties move 0.16 m rearwards across the wheel to clear its raised hub cap, still fastening to the rack. Body dimensions and both spare positions are unchanged. The rack and restraint remain additions for the game, absent from the stock photographs.
+
+## v2.03 comparison
+
+Compared with `rear-34-1988.jpg`, `rear-34-left-1994.jpg`, `side-right-1989.jpg`, `front-34-1988.jpg` and `front-34-left-1989.jpg`. The rear doors were the mirror image of the real ones and are now the right way round: the narrow door on the left with the handle and the plate, the wide door on the right with the spare (hub 0.25 m right of the centre line, 0.6 m above the origin). Quarter vents, rear mud flaps and the snorkel's body along the guard were added; the winch is inside the bar. Body dimensions are unchanged.
+
+**Still disagrees.** Every photographed car with two colours changes colour just under the door handles; the model's dark band starts lower, at the body-side moulding. The body sides have no crease at handle height. No PATROL 4x4 badge on the rear door or the guards. The photographs are stock cars and show no snorkel, so its side (the left) is not confirmed by them.
