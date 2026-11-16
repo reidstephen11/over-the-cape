@@ -4,7 +4,7 @@
 
 The owner asked for a second level, shorter and harder than the CREB. It is built in three stages from `docs/PLAN-telegraph.md`: stage 1 (the level, playable end to end) in v1.96; stage 2 in v1.99; stage 3 (the Dulhunty gauging station side trip and thicker creek forest) in v2.00, built before the owner's play test, so polish from that test is still to come.
 
-- **Wheels that a hole can hold.** The raycast wheels climb out of any hole or rut at a crawl, so three of the Telegraph's wrong lines do not fail as the plan wants: a wheel in one of Bertie's holes, a crooked car in Palm Creek's rut, and a crawl off Gunshot's Chute 20° crooked (`it.todo` in `tests/telegraphDrive.test.ts`). It needs the wheel to meet the hole's far edge as a wall (a wheel collider or a sweep forward of the footprint), with the CREB's climbs retested after.
+- ~~**Wheels that a hole can hold.**~~ Done in v2.01 for potholes: at a crawl, a tyre hanging in a hole whose floor is far below the edge ahead meets that edge as a wall, and a tyre in a pothole is walled at its sides too (`src/sim/vehicle/wheelContacts.ts`). Bertie's holes are now sheer-sided potholes and hold a car. Still open: Palm Creek's rut (0.5 m, too shallow to tell from a log) and Gunshot's Chute taken crooked (a landing, not a wall).
 
 # Make the CREB the heart of the game
 
