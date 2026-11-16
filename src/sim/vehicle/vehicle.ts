@@ -37,7 +37,7 @@ import { floodPower, updateFlood, type FloodEvent } from './flooding';
 import { sandPressure } from './tyrePressure';
 import { mulberry32 } from '../world/rng';
 import { type Quat, type Vec3, dot, headingToYaw, rotate, v3, yawQuat } from './math';
-import { WALL_SPEED, WheelContacts } from './wheelContacts';
+import { WALL_SPEED, WallSide, WheelContacts } from './wheelContacts';
 import { axleDriveCapacity } from './differential';
 import {
   createTransferState,
@@ -399,31 +399,40 @@ export class Vehicle {
   private meetWalls(q: Quat): void {
     const walls = this.wheelContacts.walls;
     const t = this.tuning;
-    const lin = this.body.linvel();
-    const ang = this.body.angvel();
     const com = this.body.worldCom();
     for (let i = 0; i < t.wheels.length; i++) {
-      const side = walls[i];
-      if (side === 0) continue;
+      const sides = walls[i];
+      if (sides === 0) continue;
       const w = t.wheels[i];
       const hub = this.localToWorld(w.x, w.y - this.wheels[i].suspension, w.z, this.wallHub);
-      // The rolling direction, level: the body's forward turned by the steering.
-      const d = rotate(q, this.wheelContacts.steerSin[i], 0, this.wheelContacts.steerCos[i], this.wallDir);
-      d.y = 0;
-      const len = Math.hypot(d.x, d.z) || 1;
-      d.x = (d.x / len) * side;
-      d.z = (d.z / len) * side;
-      // Velocity of the hub point.
-      const rx = hub.x - com.x,
-        ry = hub.y - com.y,
-        rz = hub.z - com.z;
-      const vx = lin.x + ang.y * rz - ang.z * ry;
-      const vz = lin.z + ang.x * ry - ang.y * rx;
-      const into = vx * d.x + vz * d.z;
-      if (into <= 0) continue;
-      // Enough to stop the corner: the whole car's mass, since its other wheels push it on.
-      const j = into * this.mass;
-      this.body.applyImpulseAtPoint({ x: -d.x * j, y: 0, z: -d.z * j }, hub, true);
+      const sx = this.wheelContacts.steerSin[i];
+      const sz = this.wheelContacts.steerCos[i];
+      for (const [bit, lx, lz] of [
+        [WallSide.Ahead, sx, sz],
+        [WallSide.Behind, -sx, -sz],
+        [WallSide.Right, sz, -sx],
+        [WallSide.Left, -sz, sx],
+      ] as const) {
+        if (!(sides & bit)) continue;
+        // Towards the wall, level.
+        const d = rotate(q, lx, 0, lz, this.wallDir);
+        const len = Math.hypot(d.x, d.z) || 1;
+        const dx = d.x / len,
+          dz = d.z / len;
+        // Velocity of the hub point, recomputed as each push changes it.
+        const v = this.body.linvel();
+        const o = this.body.angvel();
+        const rx = hub.x - com.x,
+          ry = hub.y - com.y,
+          rz = hub.z - com.z;
+        const vx = v.x + o.y * rz - o.z * ry;
+        const vz = v.z + o.x * ry - o.y * rx;
+        const into = vx * dx + vz * dz;
+        if (into <= 0) continue;
+        // Enough to stop the corner: the whole car's mass, since its other wheels push it on.
+        const j = into * this.mass;
+        this.body.applyImpulseAtPoint({ x: -dx * j, y: 0, z: -dz * j }, hub, true);
+      }
     }
   }
   private readonly wallHub = v3();

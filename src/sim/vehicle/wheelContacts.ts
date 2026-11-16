@@ -17,7 +17,7 @@ export const WALL_STEP = 1.5;
  * a radius above it; a real tyre would sit far lower and meet a wall. A tyre climbing a ledge
  * keeps its footing on the footprint, so this never applies to it.
  */
-export const WALL_STEP_HANGING = 0.8;
+export const WALL_STEP_HANGING = 0.3;
 /**
  * And for that hanging tyre the ground ahead must stand this many radii above the ground
  * under the hub, where the tyre would come to rest (v2.01): a hole's floor, far below its edge.
@@ -27,6 +27,9 @@ export const WALL_STEP_HANGING = 0.8;
 export const WALL_FLOOR_STEP = 2;
 /** Walls are only looked for at a crawl, below this speed (m/s), so a wheel in the air off a bump at speed never meets one. */
 export const WALL_SPEED = 3;
+/** The sides of a tyre a wall can stand on (bits). */
+export const WallSide = { Ahead: 1, Behind: 2, Right: 4, Left: 8 } as const;
+
 /** The wall check's rays start this far above the wheel's mounting point (m). */
 const WALL_LIFT = 1.2;
 
@@ -36,8 +39,8 @@ const WALL_LIFT = 1.2;
  */
 export class WheelContacts {
   /**
-   * Per wheel: +1 a wall ahead of the tyre along its rolling direction, -1 behind it, 0 none.
-   * Set by `update`; the vehicle stops that corner moving into it.
+   * Per wheel, the sides of the tyre with a wall (bits of `WallSide`; 0 none). Set by
+   * `update`; the vehicle stops that corner moving into each.
    */
   readonly walls = new Int8Array(4);
   /** Per wheel: the rolling direction's sine and cosine about +y (the steering angle), for the wall's push. */
@@ -50,8 +53,8 @@ export class WheelContacts {
   private readonly ray: RAPIER.Ray;
   private readonly local = v3();
   private readonly samples: { offset: number; rise: number }[];
-  /** Offsets along the rolling direction the wall check looks at: the tyre's leading and trailing edges. */
-  private readonly wallSamples: number[];
+  /** Where the wall check looks: each side of the tyre, along its rolling direction or its axle, and how far out (m). */
+  private readonly wallSamples: { side: number; along: number; across: number }[];
 
   constructor(
     private readonly physics: Physics,
@@ -59,7 +62,13 @@ export class WheelContacts {
   ) {
     this.ray = new physics.R.Ray(v3(), v3());
     const r = tuning.wheelRadius;
-    this.wallSamples = [0.9, -0.9].map((fraction) => r * fraction);
+    const out = tuning.wheelWidth / 2 + 0.12;
+    this.wallSamples = [
+      { side: WallSide.Ahead, along: r * 0.9, across: 0 },
+      { side: WallSide.Behind, along: -r * 0.9, across: 0 },
+      { side: WallSide.Right, along: 0, across: out },
+      { side: WallSide.Left, along: 0, across: -out },
+    ];
     this.samples = [0, -0.25, 0.25, -0.5, 0.5, -0.75, 0.75, -0.95, 0.95].map((fraction) => ({
       offset: r * fraction,
       rise: r * (1 - Math.sqrt(1 - fraction * fraction)),
@@ -160,7 +169,14 @@ export class WheelContacts {
       const hanging = grounded[i] === false;
       if (lookForWalls)
         for (const sample of this.wallSamples) {
-          rotate(q, contactX + sx * sample, w.y + WALL_LIFT, w.z + sz * sample, this.ray.origin);
+          // Along the rolling direction (sx, sz), across it along the axle (sz, -sx).
+          rotate(
+            q,
+            contactX + sx * sample.along + sz * sample.across,
+            w.y + WALL_LIFT,
+            w.z + sz * sample.along - sx * sample.across,
+            this.ray.origin,
+          );
           this.ray.origin.x += p.x;
           this.ray.origin.y += p.y;
           this.ray.origin.z += p.z;
@@ -180,11 +196,11 @@ export class WheelContacts {
           const wall = hanging
             ? wallFrom - ground > wallStep && floor - ground > WALL_FLOOR_STEP * t.wheelRadius
             : wallFrom - ground > wallStep;
-          if (wall) {
-            this.walls[i] = sample > 0 ? 1 : -1;
-            break;
-          }
+          if (wall) this.walls[i] |= sample.side;
         }
+      // Walls beside the tyre count only with one ahead of or behind it: the tyre is down in
+      // a pothole, not running past a boulder that the bump stops already keep it off.
+      if (!(this.walls[i] & (WallSide.Ahead | WallSide.Behind))) this.walls[i] = 0;
       // The profile rise keeps suspension length measured at the hub rather than the sample.
       this.local.x = contactX + sx * offset;
       this.local.y = w.y + rise;
