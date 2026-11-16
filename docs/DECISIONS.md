@@ -2011,3 +2011,14 @@ The owner asked to try the smaller of two ways to let a hole hold a wheel: look 
 **Driven and passed.** Straight up the middle of Bertie, the short 40 and the LC79 now stop at the first pothole (the test that was an `it.todo`); the weaving line still passes in both; the full suite passes (1,039 tests), including the CREB's rock climbs, Roaring Meg's ledge, the logs, Granite Spur and the crawl courses. Palm Creek's rut (0.5 m) is too shallow to tell from a log, so a crooked car still gets out of it, and the crooked Chute is a landing, not a wall: both stay `it.todo`.
 
 **Looked at.** Bertie from above and from the driver's seat: the potholes show as before, as dark water; their sheer sides are under it.
+
+## v2.02: the headset game at its own address
+
+The owner reported that the **Drive in VR** button (v1.98) sat over the controls, and said it does not belong on the screen: a setting at most, or better nowhere, with the headset game a build of its own.
+
+- **The button is gone.** The ordinary address never offers a headset, in any browser, so nothing for one is on its screen or in its settings.
+- **The headset game is its own address:** `/vr` (a small page, `public/vr.html`, that leads to `/?vr` and keeps any other options in the address). `VR_PAGE` in `src/core/buildInfo.ts` is the one switch. It is the same script as the ordinary game, not a second bundle: a separate bundle would be a second copy of everything to download and keep in step, and would differ only in this switch. The address is what makes it a separate thing to open, bookmark and hand to the VR Lab box.
+- **Getting into the headset without a button.** A browser starts a headset only on a press. On the headset page the **Drive** press on the briefing is that press (`Game.start`, if the browser still counts it). When the headset is off with the drive running and no menu open (after Continue, whose press was too long ago; after leaving the headset view; if the return from a menu was refused), a cover over the whole window, a card reading **Over the Cape VR**, takes the press. The headset page is not meant to be played in the window, so covering it is right there. In a browser with no headset the card says so.
+- **The service worker** serves `/vr` from its stored copy of `vr.html` (Workbox's clean addresses) and `/?vr` as the game's page with the option intact, so the headset address works offline like the ordinary one.
+
+**Tested** in the emulator (`e2e/vr.spec.ts`): the headset page's cover starts the headset and the rest of the v1.98 run follows; the ordinary page with a headset present has no cover or button. **Not tested on a real headset:** whether the Quest browser still counts the briefing's Drive press when the game starts (the cover is there if not).
