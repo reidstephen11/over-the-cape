@@ -1072,7 +1072,7 @@ export function buildPerentieWheel(tuning: VehicleTuning): THREE.BufferGeometry 
     b.geometry(new THREE.CylinderGeometry(0.12, 0.135, 0.03, 16), paint);
     b.pop();
     // A plain disc dished in two steps, with no holes (front-34-county.jpg, the 1988 truck's
-    // rear wheel). Eight square holes were drawn round it until v2.03.
+    // rear wheel). Eight square holes were drawn round it until v2.04.
     b.push()
       .translate(side * (w * 0.5 - 0.014), 0, 0)
       .rotate(0, 0, -Math.PI / 2);

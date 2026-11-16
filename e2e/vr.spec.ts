@@ -91,9 +91,19 @@ test('headset play: in the seat, driven by the hand controllers, menus in the wi
   await expect.poll(async () => (await vr(page)).presenting, { timeout: 60_000 }).toBe(false);
   await expect(page.locator('.pause:not(.hidden)')).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/vr-paused-window.png` });
-  // Resuming with a click goes straight back into the headset.
-  await page.keyboard.press('Escape');
+  // Resuming with a click (a controller's trigger on the window) goes straight back into the headset.
+  await page.locator('.pause:not(.hidden) [data-act="resume"]').click();
   await expect.poll(async () => (await vr(page)).presenting, { timeout: 60_000 }).toBe(true);
+
+  // Leaving the headset view with no menu open (the headset's own quit): the cover over the
+  // window waits for a press, and a click on it takes the seat again.
+  await page.evaluate(() => window.__game!.leaveHeadset());
+  await expect(page.locator('.vr-enter')).toBeVisible({ timeout: 60_000 });
+  expect((await vr(page)).presenting).toBe(false);
+  await page.screenshot({ path: `${SHOTS}/vr-cover.png` });
+  await page.locator('.vr-enter').click();
+  await expect.poll(async () => (await vr(page)).presenting, { timeout: 60_000 }).toBe(true);
+  await expect(page.locator('.vr-enter')).toBeHidden();
 
   expect(errors).toEqual([]);
 });

@@ -118,7 +118,7 @@ const SPARE_X = 0.27,
 /**
  * Where the two rear doors meet. The narrow door is on the left with the handle and the plate;
  * the wide door is on the right and carries the spare (rear-34-1988.jpg, rear-34-left-1994.jpg,
- * side-right-1989.jpg). Until v2.03 the split was at +0.16, the mirror image.
+ * side-right-1989.jpg). Until v2.04 the split was at +0.16, the mirror image.
  */
 const DOOR_SPLIT = -0.16;
 /** The front clip: where it meets the front doors, its top there, and the radius its
@@ -439,7 +439,7 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.rod(v(side * 0.36, 0.1, back + 0.08), v(side * 0.36, 0.06, F + 0.28), 0.028, bar, M.Metal, Z.Trim);
   }
   // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
-  // top and the fairlead in the face. Until v2.03 its drum stood on the pan in front of the grille.
+  // top and the fairlead in the face. Until v2.04 its drum stood on the pan in front of the grille.
   b.block(0, top + 0.03, zc + 0.02, 0.2, 0.06, 0.09, trim, M.Rubber, Z.Front, 0.012);
   // Fairlead, plate and shackles on the pan face.
   const m = tuning.winchMount;
@@ -797,7 +797,7 @@ function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {
   const x = -(SIDE + 0.045);
   const black2 = new THREE.Color('#202325');
   // A flat moulded body lying along the guard's side under the bonnet's edge, then up the A
-  // pillar to above the roof, and the ram head on top. Until v2.03 it came out of the guard low
+  // pillar to above the roof, and the ram head on top. Until v2.04 it came out of the guard low
   // down and ran to the roof as one diagonal.
   b.block(x + 0.03, 0.61, -1.1, 0.11, 0.14, 0.44, black2, M.Rubber, Z.Front, 0.035);
   tubePath(
@@ -941,7 +941,7 @@ function chassis(b: VehicleBuilder): void {
   b.rod({ x: 0.06, y: -0.08, z: 0.08 }, { x: 0.05, y: -0.12, z: AXLE - 0.12 }, 0.035, shaft);
   b.block(0, 0.1, 2.0, 0.84, 0.2, 0.6, black, M.Metal, Z.Trim, 0.03);
   b.rod({ x: -0.3, y: -0.06, z: -0.8 }, { x: -0.3, y: -0.08, z: 0.9 }, 0.028, steel);
-  // The tailpipe turns out and ends inboard of the left rear tyre, 11 cm ahead of it. Until v2.03
+  // The tailpipe turns out and ends inboard of the left rear tyre, 11 cm ahead of it. Until v2.04
   // it ran on to stop 4 cm in front of the tread.
   b.rod({ x: -0.3, y: -0.08, z: 0.9 }, { x: -0.54, y: -0.1, z: 0.98 }, 0.028, steel);
   b.slot = M.Metal;

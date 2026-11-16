@@ -820,6 +820,10 @@ export class Game {
     b.addEventListener('click', () => this.enterHeadset());
     uiRoot.appendChild(b);
     this.vrPrompt = b;
+    // A click that closes a menu is the press that lets the headset start again: ask at the
+    // click, after the menu's own handler, not at the next frame, which on a slow machine can
+    // come after the browser has stopped counting the press.
+    window.addEventListener('click', () => this.syncHeadset());
     void VrMode.supported().then((ok) => {
       if (ok) return;
       const how = b.querySelector('.vr-enter-how') as HTMLElement;

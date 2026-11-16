@@ -2023,7 +2023,17 @@ The owner reported that the **Drive in VR** button (v1.98) sat over the controls
 
 **Tested** in the emulator (`e2e/vr.spec.ts`): the headset page's cover starts the headset and the rest of the v1.98 run follows; the ordinary page with a headset present has no cover or button. **Not tested on a real headset:** whether the Quest browser still counts the briefing's Drive press when the game starts (the cover is there if not).
 
-## v2.03: the Perentie's last details, and the GQ Patrol, stage 1
+## v2.03: back into the headset at the click
+
+A follow-up to v2.02 from its browser test. Resuming from the pause menu with a click did not go back into the headset: the cover showed instead.
+
+- **Cause.** The game asked for the headset at the next frame after the menu closed. A browser counts a press for about five seconds. The test machine's software renderer takes 2.5 to 6 seconds a frame (measured), so the press had lapsed by then and the game gave up on the return. A headset draws far faster than that, so it would rarely happen there, but nothing should depend on it.
+- **Fix.** The headset page now asks at the click itself, after the menu's own handler has closed it (`window` click listener in `addVrPrompt`), as well as each frame. A menu closed from a controller button still returns at the next frame.
+- **The test.** `e2e/vr.spec.ts` resumes with the Resume button (a click, as a headset controller's trigger on the window is), then leaves the headset view with no menu open (`leaveHeadset` on the test hook, standing in for the headset's own quit), checks the cover shows, and takes the seat again from it. The old step closed the menu with Escape, which a browser does not count as a press; it passed before only when one of the test's own calls happened to land first (Playwright's page calls count as presses).
+
+**Tested:** the headset drive test passes with the fix; a run that logged the browser's calls showed the headset asked for at the click and granted. Unit tests: 1,039 passed on v2.02 (the local run also reported a worker timeout while the browser tests shared the machine; no test failed).
+
+## v2.04: the Perentie's last details, and the GQ Patrol, stage 1
 
 The owner asked whether the Perentie and the LC79 were finished and, if so, for the GQ next. Both were photographed again (the 28 audit pictures each) and put beside their photographs. The LC79 showed nothing to fix. The Perentie had the one item v1.93 left open, its wheels, and two details nobody had listed. Those are fixed here, and the GQ's first comparison follows. The Perentie (`perentie`) and the GQ Patrol (`patrol`) change.
 

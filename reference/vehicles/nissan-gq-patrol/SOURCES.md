@@ -47,7 +47,7 @@ Keep this list with the files. CC BY and CC BY-SA require credit to the author, 
 
 v1.62 visual review: the roof spare's strap and its two ties move 0.16 m rearwards across the wheel to clear its raised hub cap, still fastening to the rack. Body dimensions and both spare positions are unchanged. The rack and restraint remain additions for the game, absent from the stock photographs.
 
-## v2.03 comparison
+## v2.04 comparison
 
 Compared with `rear-34-1988.jpg`, `rear-34-left-1994.jpg`, `side-right-1989.jpg`, `front-34-1988.jpg` and `front-34-left-1989.jpg`. The rear doors were the mirror image of the real ones and are now the right way round: the narrow door on the left with the handle and the plate, the wide door on the right with the spare (hub 0.27 m right of the centre line, 0.6 m above the origin). Quarter vents, rear mud flaps and the snorkel's body along the guard were added; the winch is inside the bar. Body dimensions are unchanged.
 
