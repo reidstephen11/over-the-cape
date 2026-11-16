@@ -2119,3 +2119,13 @@ The owner asked for nothing in the game to be locked. Two things still were: ele
 - **Conditions** are always offered under Vehicle & difficulty, and a chosen time and weather is used whether or not the episode has been finished.
 - The other challenges (all five finds, the section times, winching out the Patrol and the LandCruiser, finishing without the winch) still happen in the game; they just open nothing. The finds and the stranded drivers keep their own toasts and rewards.
 - The episode list's "Finish episode N to unlock" path, never shown since v1.96, is removed with `unlocked()` in the save code.
+
+## v2.07: phone settings first, and the three failing title-screen tests
+
+The owner asked for the three failing tests in `e2e/launch.spec.ts` to be fixed. They had been failing since before v2.06. Two were out-of-date tests; the third found a real fault.
+
+- **Phone settings out of sight (a game fix).** On a sideways phone (844 × 390), **Phone driving** and **Joystick side** were below the bottom of the title Settings page, pushed down when v1.70 and v1.72 added Cockpit mirrors and Cockpit head motion above them. On a touch screen they now come first, above Graphics, and are first in the order a controller or the arrow keys move through. Other screens don't show them, as before.
+- **The pretend controller had no sticks.** The controller test's fake gamepad reported buttons but no `axes`. The menus read the left stick every frame, so the fake made that code throw before it handled the D-pad. A real controller always reports its sticks; the fake now does too (`axes: [0, 0, 0, 0]`).
+- **Phone settings checked on a computer.** The Settings persistence test looked for Phone driving on a desktop page, where it has deliberately been hidden since v1.84 made the phone settings touch-only. It now checks they are absent there. The phone test checks that a Phone driving choice is saved and comes back after a reload. It also looks for each phone setting by its heading, because there are two sections with the class it used.
+
+In a cloud session the project's Playwright can't find its own browser; run the browser tests with `CHROMIUM_PATH=/opt/pw-browsers/chromium`.
