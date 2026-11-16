@@ -142,7 +142,7 @@ export const patrolTuning: VehicleTuning = {
   },
   // Snorkel head beside the left windscreen pillar, a little above the roof.
   intakeHeight: 1.95,
-  intake: { x: -0.9, y: 1.95 - R - 0.12, z: -0.58 },
+  intake: { x: 0.9, y: 1.95 - R - 0.12, z: -0.58 },
   winchMount: { x: 0, y: 0.1, z: -2.43 },
   towPoint: { x: 0, y: 0.02, z: 2.6 },
 };

@@ -2079,3 +2079,33 @@ A reviewer was given 57 pictures and nothing else: the standard set of each vehi
 - The reviewer also noted that the GQ's snorkel is on the left with the steering wheel on the right (item 9 above, open), and that a pale post shows above each front tyre on both vehicles: the top of the coil spring's tower or the shock absorber, drawn by the shared suspension.
 
 Each fix was photographed again and read. `tests/spares.test.ts` passes.
+
+## v2.05: the GQ Patrol, stage 2 (the snorkel's side, the two colours, badges)
+
+The owner asked for the snorkel on the right and for the GQ to be finished: items 7 to 9 of its list in `docs/AUDIT-2026-11.md`. Only the GQ Patrol (`patrol`) changes.
+
+**Compared with** `front-34-left-1989.jpg` and `side-right-1989.jpg` (the two-colour 1989 ST, blue over silver), `side-1992.jpg` (the guard badge) and `rear-34-1988.jpg` (the rear door badge).
+
+- **Snorkel (item 9).** On the right-hand guard, the driver's side. This was the owner's call: the photographs are stock cars with no snorkel. It is the v2.04 snorkel mirrored: the flat body along the guard's side under the bonnet's edge, the tube up the windscreen pillar, two stays to the pillar and the ram head above the roof. The intake the simulation floods the engine at (`intake` in `src/data/patrol.ts`) moved with it, 0.9 m right of the centre line instead of left, at the same height. From the driver's seat the pillar hides it.
+- **The two colours (item 7).** They meet 0.57 m above the origin: 4.5 cm under the door handles and 2.5 cm over the flares, on one line along the guards, the doors, the rear quarters and across the back doors. They met at the body-side moulding, 0.27 m lower. The lower colour is silver-grey (`#9A9FA1`); it was charcoal, which at this height made half the car dark and hid the black flares. The 1989 car is silver below. The moulding stays where it was, now on the silver.
+- **How the line is drawn.** Each panel that crosses the line (the front clip, the side skins, the rear face) is built once and drawn twice, cut along the line, each half in its own colour (`cutAtSplit` in `src/render/patrolBody.ts`). Splitting the panel into two separately rounded pieces, as the old line at the moulding was, would have cut a deep groove along each guard, because the clip's edges are rounded 11 cm.
+- **Crease (item 8).** A narrow bead along each body side on the line, from the nose to the tail, a shade darker than the lower colour. The sides already swell out most at this height.
+- **Badges (item 8).** PATROL 4X4 in dark stroke capitals on the left guard above the flare, and on the narrow rear door above the handle. The real badge is a decal in outlined letters. The right guard has none: the snorkel's body lies there.
+- **Fuel flap.** In the lower colour and 7.5 cm lower, wholly under the line, as on `side-right-1989.jpg`.
+
+**Where each part is attached and which way it faces.** The snorkel's body is against the right guard's side; its tube is tied to the right windscreen pillar by two stays; its head faces forward. The guard badge lies on the left guard's side, facing out, reading from the front of the car to the back. The door badge lies on the narrow left-hand rear door's face, facing back. The crease beads lie on the body sides.
+
+**The second look.** A reviewer was given 46 pictures and nothing else: the standard set, the 28 audit pictures and ten close-ups (the snorkel from the side, the front, behind and low down, the left guard, the rear, the door badge, the rear quarter, the fuel flap and a front corner). It found nothing floating, facing the wrong way, gaping or below the ground. What it did find, and what was done:
+
+- **Daylight between the snorkel's head and its tube** from behind. The tube runs 5 cm further up, into the head.
+- **The snorkel's head 2.5 cm from the end of the rack's wind deflector.** The deflector is 1.5 m wide (was 1.6 m), 7.5 cm clear of the head. The gap was the same on the left before the snorkel moved.
+- **The crease bead bridged the gap between the guard and the door.** It is laid in four lengths that stop at each shut line, and stands 3 mm proud (was 5 mm), so its front end no longer reads as a small block on the guard.
+- **Crumpled facets at the top back corner of each front guard** (there before this version). The clip's corner there was rounded 2 cm in profile, less than the 6.6 cm its edges are drawn in by, so it folded over itself. It is sharp in profile now, and the corner is clean. The cowl panel under the windscreen is 1.56 m wide (was 1.72 m): its ends stood out through the guards' rounded shoulders.
+- **A slit to see through between each wheel's disc and its rim** (there before). A ring fills the rim's well.
+- **The fuel flap's outline was uneven and its corner looked against the flare.** The flap stands 2 mm proud of its outline (was 5 mm) and is 4 cm further back, 6 cm from the flare.
+- **The jerry can on the rack stood on one crossbar** (there before). It stands on a steel tray across three crossbars, strapped as before.
+- Not changed: a short post above each front tyre is the top of the shock absorber, drawn by the shared suspension; the gap between each guard and front door is wide because the guard's back edge is rounded; faint dotted seams inside the rear arches and along the guard tops; with an axle crossed the mud flap is 7 cm above the block and the raised tyre is close under the flare. A small dark block under each guard's front lower edge is the end of the bull bar's wing, which wraps round the guard's corner.
+
+Each fix was photographed again and read. `tests/spares.test.ts` passes.
+
+77.5k triangles with wheels and boards (body 56.6k), up from 71.6k: the panels cut along the two-colour line, the badges and the rim rings.
