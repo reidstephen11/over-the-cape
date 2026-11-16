@@ -56,7 +56,7 @@ import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
 import { RutsView } from '../render/ruts';
 import type { TrailerTuning } from '../data/trailers';
-import { hitchSupplyTrailer, supplyDelivered } from '../sim/supplyRun';
+import { hitchSupplyTrailer, supplyDelivered, supplyRun } from '../sim/supplyRun';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
 import { planSurprises } from '../sim/world/surprisePlan';
 import { defaultSettings, loadSave, writeSave, type EpisodeProgress, type Settings } from '../sim/save/save';
@@ -98,7 +98,6 @@ import { applyHudStyle } from '../data/hudStyles';
 import { applyUiSize } from '../ui/uiScale';
 import { installHook } from './testHook';
 import { Bench } from '../debug/bench';
-import { sectionTargetsMet, supplyRun, vehicleChallenges, type LockedVehicleId } from '../data/unlocks';
 
 const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
 
@@ -132,8 +131,6 @@ interface EpisodeSetup {
   progress: Partial<Record<EpisodeId, EpisodeProgress>>;
   /** The load last packed for each vehicle. */
   packs: Partial<Record<VehicleId, EpisodeLoadout>>;
-  /** Vehicles opened by their challenges. */
-  unlocked: VehicleId[];
 }
 
 /**
@@ -215,8 +212,8 @@ export class Game {
   private readonly ruts: RutsView;
   /** Stranded drivers winched out so far this run. */
   private strandedFreed = new Set<string>();
-  /** Vehicles opened by their challenges (src/data/unlocks.ts). */
-  private readonly unlocked: VehicleId[];
+  /** The supply run's drums are delivered (shown once). */
+  private supplyDone = false;
   /** The winch has been used this run (since the start, through restarts from camp). */
   private winched = false;
   /** Gates driven on a gate trail (Crawler Creek). */
@@ -286,7 +283,6 @@ export class Game {
     this.replay = setup.replay;
     this.checkpoint = setup.checkpoint;
     this.strandedFreed = new Set(setup.checkpoint.stranded);
-    this.unlocked = [...setup.unlocked];
     this.winched = setup.checkpoint.winched === true;
     this.progress = { ...setup.progress };
     this.packs = setup.packs;
@@ -438,7 +434,6 @@ export class Game {
       settings,
     );
     this.pause.setVehicle(vehicleId);
-    this.pause.setUnlocked(this.unlocked);
     this.pause.setEpisode(setup.def);
     this.history = new HistoryCard(uiRoot, this.hud.notices, () => {
       this.loop.paused = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
@@ -671,7 +666,6 @@ export class Game {
         replay: choice.replay,
         progress: episodeProgress,
         packs,
-        unlocked: save?.unlocked ?? [],
       },
       audioContext,
     );
@@ -743,7 +737,6 @@ export class Game {
       replay: this.replay,
       crawlBests: this.crawlRuns.bests,
       packs: this.packs,
-      unlocked: this.unlocked,
     });
     if (!ok && this.storageOk) {
       this.storageOk = false;
@@ -1491,22 +1484,12 @@ export class Game {
       targetMinutes: 30,
       penalties: this.bypassPenalty(),
     });
-    // The vehicle challenges are all set on the CREB.
-    const creb = this.episode.id === 'creb';
     const scoreLines = [
       ...this.scoreStats(score, was, minutes),
       ...(score.parts.some((p) => p.points < 0)
         ? score.parts.filter((p) => p.points < 0).map((p) => `${p.label}: ${p.points}`)
         : []),
       ...this.keepGhost(),
-      ...(creb ? this.unlock('hilux', false) : []),
-      ...(creb && !this.winched ? this.unlock('unimog', false) : []),
-      ...(creb && (this.vehicleId === 'shortie' || this.vehicleId === 'forty')
-        ? this.unlock('hj60', false)
-        : []),
-      ...(creb && this.vehicleId === 'hilux' ? this.unlock('ute40', false) : []),
-      ...(creb && this.vehicleId === 'patrol' ? this.unlock('mq', false) : []),
-      ...(creb && this.vehicleId === 'camel' ? this.unlock('rangie', false) : []),
     ];
     this.progress[this.episode.id] = {
       completed: true,
@@ -1674,7 +1657,6 @@ export class Game {
       this.findMarkers.show(this.finds.defs, this.finds.taken);
       this.hud.toast(`${loaded.taken}: loaded`, 2600);
       this.audio.discovery();
-      if (this.finds.taken.size === this.finds.defs.length) this.unlock('troopy');
     }
     const velocity = this.vehicle.body.linvel();
     const tripEvent =
@@ -1734,8 +1716,14 @@ export class Game {
       this.keepCheckpoint();
       if (camp) this.hud.toast(`${camp.name}: camp reached, progress saved`, 2600);
     } else if (found.discovered.length > 0) this.save();
-    if (this.checkpoint.supply && !this.unlocked.includes('perentie')) {
-      if (supplyDelivered(this.sim.trailers.values(), this.world.pois)) this.unlock('perentie');
+    if (
+      this.checkpoint.supply &&
+      !this.supplyDone &&
+      supplyDelivered(this.sim.trailers.values(), this.world.pois)
+    ) {
+      this.supplyDone = true;
+      this.hud.runResult('Supply run', 'Drums delivered', `All ${supplyRun.drums} drums are at Wujal Wujal.`);
+      this.audio.discovery();
     }
     const goal = this.world.pois.find((q) => q.id === this.episode.goal);
     const status = goal ? this.run.check(this.vehicle, this.sim.damage, goal) : null;
@@ -1839,22 +1827,6 @@ export class Game {
     this.hud.toast(`${d.name}: out of the bog. They give you ${given.join(' and ')}`, 3200);
     this.showHistory(d.freed);
     this.audio.discovery();
-    if (d.id === 'ridge-patrol') this.unlock('patrol');
-    else if (d.id === 'donovans-cruiser') this.unlock('lc79');
-  }
-
-  /** Open a vehicle whose challenge is done. Returns its line for the finish screen, if new. */
-  private unlock(id: LockedVehicleId, card = true): string[] {
-    if (this.unlocked.includes(id)) return [];
-    this.unlocked.push(id);
-    this.pause.setUnlocked(this.unlocked);
-    this.save();
-    const name = vehicles[id].tuning.name;
-    if (card) {
-      this.hud.runResult('Vehicle unlocked', name, vehicleChallenges[id].unlocked);
-      this.audio.discovery();
-    }
-    return [`Unlocked: ${name}`];
   }
 
   private onSectionTime(t: SectionTime): void {
@@ -1869,7 +1841,6 @@ export class Game {
       sectionBests: { ...this.sectionTimes.bests },
     };
     this.save();
-    if (this.episode.id === 'creb' && sectionTargetsMet(this.sectionTimes.bests)) this.unlock('sooty80');
   }
 
   private onCrawlRun(e: CrawlRunEvent): void {

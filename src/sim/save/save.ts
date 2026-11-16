@@ -84,8 +84,6 @@ export interface SaveData {
   crawlBests?: CrawlBests;
   /** The load last packed for each vehicle (src/data/packing.ts). */
   packs?: Partial<Record<VehicleId, EpisodeLoadout>>;
-  /** Vehicles opened by their challenges (src/data/unlocks.ts). */
-  unlocked?: VehicleId[];
 }
 
 export const defaultSettings: Settings = {
@@ -173,7 +171,6 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
           : null,
       crawlBests: readBests(data.crawlBests),
       packs: readPacks(data.packs),
-      unlocked: [...new Set(strings(data.unlocked).filter(isVehicleId))],
     };
   } catch {
     return null;
@@ -281,14 +278,6 @@ function readBests(raw: unknown): CrawlBests {
       out[id] = { points: b.points, seconds: b.seconds };
   }
   return out;
-}
-
-/**
- * Episodes open to play. Since v1.96 every episode is open from the start: the owner is
- * the only player and tests each new one at once.
- */
-export function unlocked(_save: SaveData | null, id: EpisodeId): boolean {
-  return episodeOrder.includes(id);
 }
 
 /** Write the save. Returns false (and never throws) if storage is unavailable. */

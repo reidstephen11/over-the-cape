@@ -2109,3 +2109,13 @@ The owner asked for the snorkel on the right and for the GQ to be finished: item
 Each fix was photographed again and read. `tests/spares.test.ts` passes.
 
 77.5k triangles with wheels and boards (body 56.6k), up from 71.6k: the panels cut along the two-colour line, the badges and the rim rings.
+
+## v2.06: nothing locked
+
+The owner asked for nothing in the game to be locked. Two things still were: eleven of the fifteen vehicles, each opened by a challenge since v1.06, and the **Conditions** choice (time of day and weather) on the journey page, shown only once the episode had been finished. Both episodes were already open (v1.96).
+
+- **Vehicles.** The challenge system is removed rather than hidden: `src/data/unlocks.ts` and its test are gone, the save no longer keeps an `unlocked` list (an old save's list is ignored when it loads), and the game no longer checks the challenges or shows "Vehicle unlocked" cards. The journey page lists every vehicle as a choice with no "To unlock" list, and Pause → Vehicle has no locked buttons. The saved vehicle is always kept at launch (a locked one used to fall back to the 40 Series).
+- **The Army supply run** stays as a Start option on the CREB. Delivering both drums used to open the Perentie; it now shows a **Supply run · Drums delivered** card once per run. `supplyRun` moved to `src/sim/supplyRun.ts`.
+- **Conditions** are always offered under Vehicle & difficulty, and a chosen time and weather is used whether or not the episode has been finished.
+- The other challenges (all five finds, the section times, winching out the Patrol and the LandCruiser, finishing without the winch) still happen in the game; they just open nothing. The finds and the stranded drivers keep their own toasts and rewards.
+- The episode list's "Finish episode N to unlock" path, never shown since v1.96, is removed with `unlocked()` in the save code.

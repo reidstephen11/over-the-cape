@@ -1,12 +1,14 @@
 import { trailers } from '../data/trailers';
-import { supplyRun } from '../data/unlocks';
 import type { VehicleTuning } from '../data/vehicle';
 import type { Simulation } from './sim';
 import type { Trailer } from './trailer';
 import type { PoiDef } from './world/mapTypes';
 
+/** The Army supply run: drums on the trailer, and the camp they go to. */
+export const supplyRun = { drums: 2, goal: 'bloomfield-camp' } as const;
+
 /**
- * The Army supply run (src/data/unlocks.ts): a trailer with the drums of diesel hitched
+ * The Army supply run: a trailer with the drums of diesel hitched
  * behind the vehicle at the start, the No. 5 for a pintle hook and the box trailer for a ball.
  */
 export function hitchSupplyTrailer(sim: Simulation, vehicle: VehicleTuning, vehicleId: string): Trailer {

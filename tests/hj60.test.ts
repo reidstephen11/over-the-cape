@@ -3,7 +3,6 @@ import { DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 'three';
 import { engineSynthTunings } from '../src/data/audio';
 import { hj60Tuning as t } from '../src/data/hj60';
 import { troopyTuning } from '../src/data/troopy';
-import { vehicleChallenges, vehicleOpen } from '../src/data/unlocks';
 import { vehicleOrder, vehicles } from '../src/data/vehicles';
 import { VehicleModel } from '../src/render/vehicleModel';
 import { loadSave, writeSave } from '../src/sim/save/save';
@@ -32,12 +31,9 @@ describe('60 Series wagon', () => {
     expect(creep(t)).toBeLessThan(3);
   });
 
-  it('opens after a finish in the 40 Series and is remembered in the save', () => {
-    expect(vehicleOpen('hj60', [])).toBe(false);
-    expect(vehicleOpen('hj60', ['hj60'])).toBe(true);
-    expect(vehicleChallenges.hj60.task).toMatch(/40 Series/);
+  it('is open from the start and is remembered in the save', () => {
     const store = new MemoryStore();
-    writeSave(saveData({ vehicle: 'hj60', unlocked: ['hj60'] }), store);
+    writeSave(saveData({ vehicle: 'hj60' }), store);
     expect(loadSave(store)!.vehicle).toBe('hj60');
   });
 

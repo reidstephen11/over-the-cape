@@ -17,17 +17,10 @@ import {
   type TouchStickSide,
 } from '../data/touch';
 import { vehicleLoadout, vehicleOrder, vehicles } from '../data/vehicles';
-import { isLockedVehicle, supplyRun, vehicleChallenges, vehicleOpen } from '../data/unlocks';
+import { supplyRun } from '../sim/supplyRun';
 import type { EpisodeLoadout } from '../data/episodes';
 import { fitPack, loadKg, packLimitKg, stepPack } from '../data/packing';
-import {
-  defaultSettings,
-  loadSave,
-  unlocked,
-  writeSave,
-  type SaveData,
-  type Settings,
-} from '../sim/save/save';
+import { defaultSettings, loadSave, writeSave, type SaveData, type Settings } from '../sim/save/save';
 import { MenuStick } from '../sim/input/touchStick';
 import { isTouchDevice } from './touchControls';
 import { applyHudStyle, hudStyleLabels, pickableHudStyles, type HudStyle } from '../data/hudStyles';
@@ -334,14 +327,7 @@ export class WelcomeScreen {
         const e = episodes[id];
         const p = this.save?.episodes[id];
         const status = p?.completed ? 'Finished' : p?.checkpoint ? 'Under way' : '';
-        const open = this.dev || unlocked(this.save, id);
-        return option(
-          'episode',
-          id,
-          `${e.number}. ${e.title}`,
-          open ? status : `Finish episode ${e.number - 1} to unlock`,
-          !open,
-        );
+        return option('episode', id, `${e.number}. ${e.title}`, status);
       }),
     ].join('');
     const story = `${weatherLabels[def.weather]}${def.storm ? `, ${def.storm.forecast}` : ''}, from ${clockTime(def.startHour)}${def.deadline ? ` · ${def.deadline.label.toLowerCase()}` : ''}`;
@@ -379,23 +365,18 @@ export class WelcomeScreen {
         <button type="button" class="welcome-setup-toggle" data-group="setup" aria-expanded="${this.setupOpen}" aria-controls="welcome-setup"><span>Vehicle & difficulty</span><span>${vehicles[this.choice.vehicle].tuning.name} · ${damageLabels[this.choice.damage]} <b aria-hidden="true">${this.setupOpen ? '−' : '+'}</b></span></button>
         <section id="welcome-setup" class="welcome-section welcome-setup" ${this.setupOpen ? '' : 'hidden'}>
             <h2>Vehicle</h2>
-            <div class="welcome-options seg">${vehicleOrder.map((id) => (this.open(id) ? option('vehicle', id, vehicles[id].tuning.name) : option('vehicle', id, `${vehicles[id].tuning.name}`, 'Locked', true))).join('')}</div>
+            <div class="welcome-options seg">${vehicleOrder.map((id) => option('vehicle', id, vehicles[id].tuning.name)).join('')}</div>
             <p class="welcome-note">${vehicles[this.choice.vehicle].blurb}</p>
-            ${this.lockedHtml()}
             <h2>Difficulty</h2>
             <div class="welcome-options seg">${damageModes.map((m) => option('damage', m, damageLabels[m])).join('')}</div>
             <details class="welcome-rules"><summary>About difficulty</summary><p class="welcome-note damage-note"></p></details>
-            ${
-              progress?.completed || this.dev
-                ? `<h2>Conditions</h2>
+            <h2>Conditions</h2>
             <div class="welcome-options seg">${option('time', 'story', 'Story', story)}${timesOfDay.map((t) => option('time', t, timeLabels[t])).join('')}</div>
             ${this.time === 'story' ? '' : `<div class="welcome-options seg">${weathers.map((w) => option('weather', w, weatherLabels[w])).join('')}</div>`}
-            <p class="welcome-note">${this.time === 'story' ? '' : 'No time limit.'}</p>`
-                : ''
-            }
+            <p class="welcome-note">${this.time === 'story' ? '' : 'No time limit.'}</p>
         </section>
         ${this.packHtml()}
-        ${this.dev ? '<p class="welcome-note dev-note">Test mode: every episode is open, and nothing you do is saved.</p>' : ''}
+        ${this.dev ? '<p class="welcome-note dev-note">Test mode: nothing you do is saved.</p>' : ''}
         <p class="build-label" title="Build ${BUILD_LABEL}">Version ${GAME_VERSION}</p>
       </div>`;
     const groups: Group[] = [
@@ -409,24 +390,6 @@ export class WelcomeScreen {
       'drive',
     ];
     this.setRows(groups, keep ?? 'drive');
-  }
-
-  /** Can this vehicle be picked? Test mode opens them all. */
-  private open(id: WelcomeChoice['vehicle']): boolean {
-    return vehicleOpen(id, this.save?.unlocked ?? [], this.dev);
-  }
-
-  /** What opens each vehicle still locked. */
-  private lockedHtml(): string {
-    const locked = vehicleOrder.filter((id) => !this.open(id));
-    if (!locked.length) return '';
-    return `<h2>To unlock</h2><ul class="welcome-unlocks">${locked
-      .map((id) =>
-        isLockedVehicle(id)
-          ? `<li><b>${vehicles[id].tuning.name}</b>: ${vehicleChallenges[id].task}</li>`
-          : '',
-      )
-      .join('')}</ul>`;
   }
 
   /** The load for a new run: last packed for this vehicle, or the standard one. */
@@ -770,10 +733,7 @@ export class WelcomeScreen {
     const audio = this.ambience?.leave();
     this.el.classList.add('hidden');
     setTimeout(() => this.el.remove(), 400);
-    const replay =
-      (this.progress?.completed || this.dev) && this.time !== 'story'
-        ? { time: this.time, weather: this.weather }
-        : null;
+    const replay = this.time !== 'story' ? { time: this.time, weather: this.weather } : null;
     this.onDrive(
       { ...this.choice, replay, quickStart, settings: { ...this.settings }, inputDevice: this.inputMode },
       audio,

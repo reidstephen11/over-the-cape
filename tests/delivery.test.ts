@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { environmentAt } from '../src/data/environment';
 import { crebEpisode as E } from '../src/data/episodes/creb';
 import { crebMap } from '../src/data/episodes/crebMap';
-import { supplyRun } from '../src/data/unlocks';
+import { supplyRun } from '../src/sim/supplyRun';
 import { unimogTuning } from '../src/data/unimog';
 import { SAVE_KEY } from '../src/core/config';
 import { boxTrailer } from '../src/data/trailers';

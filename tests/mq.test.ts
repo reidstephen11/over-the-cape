@@ -3,7 +3,6 @@ import { Box3, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 't
 import { engineSynthTunings } from '../src/data/audio';
 import { hj60Tuning } from '../src/data/hj60';
 import { mqTuning as t } from '../src/data/mq';
-import { vehicleChallenges, vehicleOpen } from '../src/data/unlocks';
 import { vehicleOrder, vehicles } from '../src/data/vehicles';
 import { TAIL, buildMqWheel } from '../src/render/mqBody';
 import { MQ_SPARE } from '../src/render/mqGear';
@@ -36,12 +35,9 @@ describe('MQ Patrol hardtop', () => {
     expect(creep(t)).toBeLessThan(3.5);
   });
 
-  it('opens after a finish in the GQ Patrol and is remembered in the save', () => {
-    expect(vehicleOpen('mq', [])).toBe(false);
-    expect(vehicleOpen('mq', ['mq'])).toBe(true);
-    expect(vehicleChallenges.mq.task).toMatch(/GQ Patrol/);
+  it('is open from the start and is remembered in the save', () => {
     const store = new MemoryStore();
-    writeSave(saveData({ vehicle: 'mq', unlocked: ['mq'] }), store);
+    writeSave(saveData({ vehicle: 'mq' }), store);
     expect(loadSave(store)!.vehicle).toBe('mq');
   });
 

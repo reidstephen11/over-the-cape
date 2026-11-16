@@ -10,7 +10,7 @@ The owner asked for a second level, shorter and harder than the CREB. It is buil
 
 The owner found Episodes 2–4 boring and easy and wanted the game to focus on Episode 1, the CREB Track. v0.64 added a scored finish (medal, score out of 1000, best score and time). Build the rest one update at a time, in this order. Wildlife was considered and turned down.
 
-1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. The trailer code stays: the Army supply run (v1.06, a Start option on the welcome screen) tows one and unlocks the Perentie, and test mode can hitch one.
+1. ~~**Remove Episodes 2–4.**~~ Done in v0.73. The trailer code stays: the Army supply run (v1.06, a Start option on the welcome screen) tows one, and test mode can hitch one.
 2. ~~**Section times.**~~ Done in v0.65.
 3. ~~**Ghost car.**~~ Done in v1.00 (`src/sim/ghost.ts`): the quickest finish follows you as a pale car; the pause menu shows the gap. Still open: a live gap on the driving HUD and a setting to hide it.
 4. ~~**Changing track conditions.**~~ Done: each run rolls dry, wet or just-reopened from the seed; bogs, creeks, current and grip scale with it, the briefing names it, and a camp restart keeps the roll. Clay churn and its visible ruts are also implemented.
@@ -44,7 +44,7 @@ Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.59). Measure ea
 # Other follow-up work
 
 - **Vehicle audit (November 2026).** `docs/AUDIT-2026-11.md` lists the faults found in the FJ40 and the Perentie by comparing 24 large pictures of each (`scripts/studio-audit.ts`) with their reference photographs. v1.85 to v1.87 closed the FJ40's list; the Perentie's list is being done in three stages (v1.90: what holds the rack, cans, aerial and spare, and the rear panels; v1.91: the front; v1.92: wheel arches and roll bar; v1.93: the cab's width, windscreen and wing intake; v2.04: its wheels, which closed the list). The LC79 was done in v1.94 and v1.95 and the GQ Patrol in v2.04 and v2.05. Review the other eleven vehicles the same way, one or two at a time (a review is about 260,000 tokens), starting with the ones the owner drives. v1.84 fixed the track and menu faults from the same audit.
-- **Menus, still open after v1.84:** the journey page's vehicle chooser is a wrapping grid with locked vehicles mixed in; Pause → Vehicle is a long list of paragraphs; Pause → Map → ○ closes the map and the pause menu together. Grass tufts, shrubs and rocks beyond the shadow map take no shade from the trees above them (the ground does since v1.84).
+- **Menus, still open after v1.84:** the journey page's vehicle chooser is a wrapping grid; Pause → Vehicle is a long list of paragraphs; Pause → Map → ○ closes the map and the pause menu together. Grass tufts, shrubs and rocks beyond the shadow map take no shade from the trees above them (the ground does since v1.84).
 
 - **More side quests and interesting discoveries off the beaten track on the CREB.** First set in v1.66: the lost-logbook delivery, the last-pole survey with a new clearing beyond the linesman’s hut, and a three-stop falls/lookout scrapbook. Pause → Trip journal tracks directions, observations and camp-saved progress. Still open: more optional recoveries, hidden camps and abandoned equipment, with distinct tasks and worthwhile rewards.
 
