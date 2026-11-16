@@ -157,6 +157,8 @@ export interface GameHook {
   headMotion(): { enabled: boolean; offset: number[] };
   /** Headset play: on or off, the eye's world position, the seat rig's, and the dash panel as a picture. */
   vr(): { presenting: boolean; eye: number[]; rig: number[]; dash: string };
+  /** Leave the headset view with no menu open, as the headset's own quit does. */
+  leaveHeadset(): void;
   mirrors(): { targets: number; captures: number; enabled: boolean };
   quality(): 'low' | 'medium' | 'high';
   setTouchDrive(scheme: TouchDriveScheme): void;
@@ -384,6 +386,7 @@ export function installHook(game: Game): void {
       rig: g.vr.rig.position.toArray(),
       dash: g.vrDash.canvas.toDataURL('image/png'),
     }),
+    leaveHeadset: () => void g.vr.exit(),
     headMotion: () => ({ enabled: g.settings.headMotion, offset: g.chase.headMotion.offset.toArray() }),
     mirrors: () => ({
       targets: g.view.mirrors.targetCount,
