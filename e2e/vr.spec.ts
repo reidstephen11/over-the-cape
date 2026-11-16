@@ -28,12 +28,15 @@ test('headset play: in the seat, driven by the hand controllers, menus in the wi
   test.setTimeout(900_000);
   const errors = collectErrors(page);
   await lowGraphics(page);
-  await page.goto('/?surprises=off&vrsim');
+  // The headset game is its own address (v2.02).
+  await page.goto('/?vr&surprises=off&vrsim');
   await waitReady(page);
   // A note read with the game stopped would be closed with A in the headset: close it here first.
   await page.evaluate(() => document.querySelector<HTMLElement>('.history-card.reading')?.click());
 
-  await page.locator('.vr-enter').click({ timeout: 60_000 });
+  // The briefing's Drive press starts the headset where the browser still counts it; if not,
+  // the cover over the window takes a press.
+  if (!(await vr(page)).presenting) await page.locator('.vr-enter').click({ timeout: 60_000 });
   await expect.poll(async () => (await vr(page)).presenting, { timeout: 60_000 }).toBe(true);
   await expect(page.locator('.vr-enter')).toBeHidden();
 
@@ -93,4 +96,18 @@ test('headset play: in the seat, driven by the hand controllers, menus in the wi
   await expect.poll(async () => (await vr(page)).presenting, { timeout: 60_000 }).toBe(true);
 
   expect(errors).toEqual([]);
+});
+
+test('the ordinary address offers no headset, even with one present (v2.02)', async ({ page }) => {
+  test.setTimeout(900_000);
+  await lowGraphics(page);
+  await page.goto('/?surprises=off&vrsim');
+  await waitReady(page);
+  await expect(page.locator('.vr-enter')).toHaveCount(0);
+  expect((await vr(page)).presenting).toBe(false);
+});
+
+test('/vr leads to the headset game and keeps the address options', async ({ page }) => {
+  await page.goto('/vr.html?surprises=off');
+  await page.waitForURL(/\/\?vr&surprises=off$/);
 });

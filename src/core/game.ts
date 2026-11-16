@@ -92,6 +92,7 @@ import { AnchorPicker } from './anchorPicker';
 import { DeliveryViews } from './deliveryViews';
 import { ToolController } from './toolController';
 import { pendingUpdate } from './update';
+import { VR_PAGE } from './buildInfo';
 import { buildHudState, CourseHintCache, episodeHud } from './hudState';
 import { applyHudStyle } from '../data/hudStyles';
 import { applyUiSize } from '../ui/uiScale';
@@ -149,7 +150,8 @@ export class Game {
   readonly vrDash = new VrDash();
   /** The headset session was left for a menu: go back into it when the menu closes. */
   private vrResume = false;
-  private vrButton: HTMLButtonElement | null = null;
+  /** The headset page's cover over the window (v2.02): a press on it starts the headset. */
+  private vrPrompt: HTMLButtonElement | null = null;
   private readonly cameraDrag: CameraDrag;
   /** Winch anchors in reach, the chooser on USE, and a tap on one to pick it. */
   private readonly anchors: AnchorPicker;
@@ -508,7 +510,7 @@ export class Game {
       },
       view.renderer,
     );
-    void VrMode.supported().then((ok) => ok && this.addVrButton(uiRoot));
+    if (VR_PAGE) this.addVrPrompt(uiRoot);
     this.applyFrameRate();
     this.cameraDrag = new CameraDrag(
       view.renderer.domElement,
@@ -695,6 +697,8 @@ export class Game {
     // The Drive press on the briefing (Space, Enter, Cross or Options) is not a game press.
     this.input.clearEdges();
     this.loop.start();
+    // On the headset page that press also starts the headset, while the browser still counts it.
+    if (VR_PAGE && navigator.userActivation?.isActive) this.enterHeadset(true);
     // The engine is off as you arrive: the first press of the pedal starts it.
     this.sim.switchOffEngine(LOCAL_VEHICLE);
     // A run under way can be continued from the main menu, even before the first camp.
@@ -803,22 +807,32 @@ export class Game {
     return this.vr.presenting ? 'quest' : this.settings.controller;
   }
 
-  /** The "Drive in VR" button, on a browser that offers a headset session. */
-  private addVrButton(uiRoot: HTMLElement): void {
+  /**
+   * The headset page (`?vr`, v2.02) is played in the headset, not in the window: while the
+   * headset is off and no menu is open, a cover over the whole window waits for the press a
+   * browser needs before it starts a headset. The ordinary page has no such thing.
+   */
+  private addVrPrompt(uiRoot: HTMLElement): void {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'vr-enter paper';
-    b.textContent = 'Drive in VR';
+    b.className = 'vr-enter hidden';
+    b.innerHTML = `<span class="paper"><strong>Over the Cape VR</strong><span class="vr-enter-how">Pull the trigger or click to take the driver's seat</span></span>`;
     b.addEventListener('click', () => this.enterHeadset());
     uiRoot.appendChild(b);
-    this.vrButton = b;
+    this.vrPrompt = b;
+    void VrMode.supported().then((ok) => {
+      if (ok) return;
+      const how = b.querySelector('.vr-enter-how') as HTMLElement;
+      how.textContent = "This browser has no headset. Open this address in the headset's own browser.";
+    });
   }
 
-  private enterHeadset(): void {
+  /** Start the headset. `quiet`: an attempt the player did not ask for says nothing if refused. */
+  private enterHeadset(quiet = false): void {
     this.vrResume = false;
-    this.vr
-      .enter()
-      .catch((err: unknown) => this.hud.toast(`The headset could not start: ${String(err)}`, 5000));
+    this.vr.enter().catch((err: unknown) => {
+      if (!quiet) this.hud.toast(`The headset could not start: ${String(err)}`, 5000);
+    });
   }
 
   /**
@@ -828,7 +842,7 @@ export class Game {
    */
   private syncHeadset(): void {
     const menu = this.pause.isOpen || this.map.isOpen || this.result.isOpen;
-    this.vrButton?.classList.toggle('hidden', this.vr.presenting || menu);
+    this.vrPrompt?.classList.toggle('hidden', this.vr.presenting || menu);
     if (this.vr.presenting && menu) {
       this.vrResume = true;
       void this.vr.exit();
