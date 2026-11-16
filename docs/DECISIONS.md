@@ -2119,3 +2119,13 @@ The owner asked for nothing in the game to be locked. Two things still were: ele
 - **Conditions** are always offered under Vehicle & difficulty, and a chosen time and weather is used whether or not the episode has been finished.
 - The other challenges (all five finds, the section times, winching out the Patrol and the LandCruiser, finishing without the winch) still happen in the game; they just open nothing. The finds and the stranded drivers keep their own toasts and rewards.
 - The episode list's "Finish episode N to unlock" path, never shown since v1.96, is removed with `unlocked()` in the save code.
+
+## v2.07: Phone driving back in view, and three title tests mended
+
+Three browser tests in `e2e/launch.spec.ts` failed. Each was run at v1.60 (the first commit in the history), v1.83 and v1.84 to find when it broke.
+
+- **"title Settings persist sound and graphics…"** passed up to v1.83 and failed from v1.84, which drew Phone driving and Joystick side only on a touch screen (on purpose: a television has no use for them). The test, on a computer, still looked for Phone driving. The test was wrong: it now checks that the phone settings are absent on a computer, and checks speed units after the reload instead. Saving Phone driving moved to the phone test.
+- **"a held controller button opens only the menu…"** failed at v1.60 already. The test's stand-in controller had no sticks (`axes`). Once the menu is open, the title reads the left stick every frame; reading a missing list threw an error and stopped the title listening to the controller, so D-pad Down did nothing. Every real controller reports its sticks, so the test was wrong: its controller now has four still axes and the standard mapping, as in the other controller tests.
+- **"Phone driving sits on the Settings page in view"** failed at v1.60 already, because the test asked for "the" `.phone-driving-setting` and there are two (Phone driving and Joystick side). With that fixed it showed a real fault: on a sideways phone (844 × 390) Phone driving was below the bottom of the screen. At v1.60 it came straight after Graphics and was in view; Cockpit mirrors (v1.70) and Cockpit head motion (v1.72) were put in above it. **The game is changed:** on a touch screen the two phone settings come straight after Graphics again, so a sideways phone shows Phone driving when Settings opens. Computers and televisions don't show them, so their Settings are as before. The test now counts both phone settings, checks both headings, and checks that a Phone driving choice is saved and comes back after a reload.
+
+The pause menu's Settings is not changed: its page scrolls under the heading, and its order is as before.

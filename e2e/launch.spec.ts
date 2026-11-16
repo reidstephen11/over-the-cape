@@ -94,15 +94,14 @@ test('title Settings persist sound and graphics without replacing a saved journe
   await expect(page.locator('.title-settings')).toBeVisible();
   await page.locator('[data-group="quality"][data-value="high"]').click();
   await page.locator('#title-volume').fill('0.3');
-  await expect(page.getByRole('heading', { name: 'Phone driving' })).toBeVisible();
-  await page.locator('[data-group="touchDrive"][data-value="pedals"]').click();
+  // The phone settings are drawn only on a touch screen (v1.84); the phone test below covers them.
+  await expect(page.locator('.phone-driving-setting')).toHaveCount(0);
   await page.locator('[data-group="units"][data-value="mph"]').click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('overthecape.save.v1')!));
   expect(saved.settings).toMatchObject({
     quality: 'high',
     masterVolume: 0.3,
     units: 'mph',
-    touchDrive: 'pedals',
   });
   expect(saved.episodes.creb.checkpoint.camp).toBe('roaring-meg-camp');
   expect(saved.vehicle).toBe('perentie');
@@ -112,7 +111,7 @@ test('title Settings persist sound and graphics without replacing a saved journe
   await page.keyboard.press('Enter');
   await page.locator('[data-value="settings"]').click();
   await expect(page.locator('#title-volume')).toHaveValue('0.3');
-  await expect(page.locator('[data-group="touchDrive"][data-value="pedals"]')).toHaveClass(/\bon\b/);
+  await expect(page.locator('[data-group="units"][data-value="mph"]')).toHaveClass(/\bon\b/);
 });
 
 test('New Journey starts fresh without deleting the existing checkpoint while browsing', async ({ page }) => {
@@ -149,7 +148,10 @@ test('a held controller button opens only the menu, with directions to select an
 }) => {
   await page.addInitScript(() => {
     const buttons = Array.from({ length: 16 }, () => ({ pressed: false, value: 0, touched: false }));
-    Object.defineProperty(navigator, 'getGamepads', { value: () => [{ connected: true, buttons }] });
+    // A real controller always reports its sticks: the title menu reads them every frame.
+    Object.defineProperty(navigator, 'getGamepads', {
+      value: () => [{ connected: true, mapping: 'standard', axes: [0, 0, 0, 0], buttons }],
+    });
     (window as unknown as { titlePad: typeof buttons }).titlePad = buttons;
   });
   await page.goto('/?track=reopened');
@@ -220,8 +222,20 @@ test.describe('title Settings on a phone', () => {
     await page.goto('/?touch&track=reopened');
     await page.locator('[data-title-begin]').click();
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
-    await expect(page.locator('.phone-driving-setting')).toBeVisible();
+    // Two phone settings: Phone driving and Joystick side.
+    await expect(page.locator('.phone-driving-setting')).toHaveCount(2);
+    await expect(page.getByRole('heading', { name: 'Phone driving' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Joystick side' })).toBeVisible();
     await expect(page.locator('[data-group="touchDrive"][data-value="stick"]')).toBeInViewport();
     await expect(page.locator('[data-group="touchDrive"][data-value="stick"]')).toHaveClass(/\bon\b/);
+    // The choice is saved and comes back after a reload.
+    await page.locator('[data-group="touchDrive"][data-value="pedals"]').click();
+    expect(
+      await page.evaluate(() => JSON.parse(localStorage.getItem('overthecape.save.v1')!).settings.touchDrive),
+    ).toBe('pedals');
+    await page.reload();
+    await page.locator('[data-title-begin]').click();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(page.locator('[data-group="touchDrive"][data-value="pedals"]')).toHaveClass(/\bon\b/);
   });
 });

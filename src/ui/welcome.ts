@@ -219,6 +219,7 @@ export class WelcomeScreen {
       const setting = (group: Group, value: string, label: string, on: boolean) =>
         `<button type="button" class="welcome-option ${on ? 'on' : ''}" aria-pressed="${on}" data-group="${group}" data-value="${value}">${label}</button>`;
       // The two phone settings are only for a touch screen: a television has no use for them.
+      // They sit straight after Graphics so a sideways phone shows Phone driving without scrolling.
       const phone = isTouchDevice()
         ? `<section class="title-setting phone-driving-setting"><h3>Phone driving</h3><div class="welcome-options seg">${touchDriveSchemes.map((c) => setting('touchDrive', c, touchDriveLabels[c], this.settings.touchDrive === c)).join('')}</div></section>
           <section class="title-setting phone-driving-setting"><h3>Joystick side</h3><div class="welcome-options seg">${touchStickSides.map((c) => setting('touchSide', c, touchStickSideLabels[c], this.settings.touchStickSide === c)).join('')}</div></section>`
@@ -236,9 +237,9 @@ export class WelcomeScreen {
             ),
           )
           .join('')}</div></section>
+        ${phone}
         <section class="title-setting"><h3>Cockpit mirrors</h3><div class="welcome-options seg">${setting('mirrors', 'on', 'On', this.settings.mirrors)}${setting('mirrors', 'off', 'Off', !this.settings.mirrors)}</div></section>
         <section class="title-setting"><h3>Cockpit head motion</h3><div class="welcome-options seg">${setting('headMotion', 'on', 'On', this.settings.headMotion)}${setting('headMotion', 'off', 'Off', !this.settings.headMotion)}</div></section>
-        ${phone}
         <section class="title-setting"><label for="title-volume">Master volume <output for="title-volume">${Math.round(this.settings.masterVolume * 100)}%</output></label><input id="title-volume" type="range" min="0" max="1" step="0.1" value="${this.settings.masterVolume}" data-group="volume" /></section>
         <section class="title-setting"><h3>Controller type</h3><div class="welcome-options seg">${controllerTypes.map((c) => setting('controller', c, controllers[c].label, this.settings.controller === c)).join('')}</div></section>
         <section class="title-setting"><h3>Speed units</h3><div class="welcome-options seg">${setting('units', 'kmh', 'km/h', this.settings.units === 'kmh')}${setting('units', 'mph', 'mph', this.settings.units === 'mph')}</div></section>
@@ -255,10 +256,10 @@ export class WelcomeScreen {
         [
           'back',
           'quality',
-          'mirrors',
-          'headMotion',
           'touchDrive',
           'touchSide',
+          'mirrors',
+          'headMotion',
           'volume',
           'controller',
           'units',
