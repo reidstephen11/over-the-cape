@@ -561,10 +561,14 @@ export function bertieHoles(): CreekHoleDef[] {
  * two metres across is too small for the 1 m ground to hold.
  */
 export const bertiePits: ErosionRutDef[] = bertieHoleSpec().map(([s, lateral, radius, depth]) => ({
+  // Potholes worn into the rock: round, flat-floored and sheer-sided (v2.01), so a wheel
+  // that drops in meets the far side as a wall (src/sim/vehicle/wheelContacts.ts).
   path: [
-    [s - radius * 1.1, lateral],
-    [s + radius * 1.1, lateral],
+    [s - 0.02, lateral],
+    [s + 0.02, lateral],
   ],
   width: radius * 2,
   depth,
+  wall: 0.2,
+  ramp: 0,
 }));

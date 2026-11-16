@@ -127,25 +127,26 @@ describe('the Telegraph Track the wrong way', () => {
   );
 
   it(
-    'drops a wheel into one of Bertie’s holes straight up the middle',
+    'hangs the car with a wheel in one of Bertie’s holes straight up the middle (v2.01)',
     async () => {
       const path: [number, number][] = [
         ...along(world, [['bertie-bed', 0, 18]]),
         ...Array.from({ length: 140 }, (_, k) => [0, -660 - k * 0.5] as [number, number]),
         ...along(world, [['bertie-bed', 92, 121]]),
       ];
-      const r = await drivePath(world, path, { psi: 18, day: dry });
-      // The wheel goes deeper than any on the line (0.6 m). The engine lifts it out again:
-      // the hole does not yet hang the car on its belly (docs/PLAN-telegraph.md).
-      expect(r.water).toBeGreaterThan(0.9);
+      for (const tuning of [vehicleTuning, lc79Tuning]) {
+        const r = await drivePath(world, path, { tuning, psi: 18, day: dry });
+        // The tyre meets the hole's far edge as a wall (src/sim/vehicle/wheelContacts.ts).
+        expect(r.done, tuning.name).toBe(false);
+        expect(r.water, tuning.name).toBeGreaterThan(0.9);
+      }
     },
     SLOW,
   );
 
-  // Open for stage 2 (docs/PLAN-telegraph.md): the raycast wheels climb out of a hole or a
-  // rut, and a car crawling off the Chute crooked lands safely, where the plan wants each to fail.
+  // Still open (docs/PLAN-telegraph.md): Palm Creek's rut is too shallow to be a wall (v2.01),
+  // and a car crawling off the Chute crooked lands safely.
   it.todo('stops the car taken crooked down Palm Creek’s chute, a wheel in the rut');
-  it.todo('hangs the car on its belly with a wheel in one of Bertie’s holes');
   it.todo('rolls or damages the car taken crooked off the Chute');
 
   it(

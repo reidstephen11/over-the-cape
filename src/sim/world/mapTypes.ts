@@ -295,6 +295,10 @@ export interface ErosionRutDef {
   path: ReadonlyArray<readonly [number, number]>;
   width: number;
   depth: number;
+  /** How wide its walls are (m): the floor runs out to this far inside the edge. Default 65% of the half width. */
+  wall?: number;
+  /** Over how many metres each end shallows out. Default 30% of its length, at most 2 m; 0 for a pit with sheer ends. */
+  ramp?: number;
 }
 
 export type SurfaceKind = 'dirt' | 'grass' | 'gravel' | 'rock' | 'mud' | 'sand';

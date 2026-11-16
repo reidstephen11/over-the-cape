@@ -98,10 +98,12 @@ function rutOffset(rut: ErosionRutDef, s: number, l: number): number {
   }
   const hw = rut.width / 2;
   if (best >= hw) return 0;
-  // Flat floor, sloping walls; the rut starts and ends over up to two metres.
-  const ramp = Math.min(2, total * 0.3);
-  const taper = smoothstep(0, ramp, along) * smoothstep(0, ramp, total - along);
-  return -rut.depth * taper * (1 - smoothstep(hw * 0.35, hw, best));
+  // Flat floor, sloping walls; the rut starts and ends over up to two metres. A pothole
+  // (ramp 0) keeps its full depth to its round ends.
+  const ramp = rut.ramp ?? Math.min(2, total * 0.3);
+  const taper = ramp > 0 ? smoothstep(0, ramp, along) * smoothstep(0, ramp, total - along) : 1;
+  const wall = Math.min(hw, rut.wall ?? hw * 0.65);
+  return -rut.depth * taper * (1 - smoothstep(hw - wall, hw, best));
 }
 
 /**

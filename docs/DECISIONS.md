@@ -1999,3 +1999,15 @@ Stage 3 of `docs/PLAN-telegraph.md`. The owner asked for it before playing v1.99
 **Looked at:** the station from the free camera and from the track (the hut, the tank and the can on its crate, with its prompt), the rocks beside the falls, and the forest at the Ducie tree-fall stretch, which is thicker but still has gaps a car could weave through.
 
 **Not solved:** the three engine limits (Bertie's holes, Palm Creek's rut, the crooked Chute) need wheels that a hole's edge can hold. That is a change to the vehicle model, now an item in `docs/ROADMAP.md`, not a change to this map.
+
+## v2.01: wheels held in potholes
+
+The owner asked to try the smaller of two ways to let a hole hold a wheel: look ahead of each tyre for ground it could not climb, and push back as if against a wall (`src/sim/vehicle/wheelContacts.ts`, `Vehicle.meetWalls`).
+
+**How it works.** The suspension is still a downward ray per footprint sample, unchanged. At a crawl (under 3 m/s) with at least two wheels on the ground, extra rays from 1.2 m above each wheel look at the tyre's leading and trailing edges. Ground there stands as a wall when it is more than 1.5 radii above the tyre's bottom, or, for a tyre hanging free, more than 0.3 radii above it _and_ more than 2 radii above the ground under the hub (a hole's floor). A wall takes away the corner's velocity into it, along the tyre's rolling direction; a tyre against a wall ahead or behind is also walled at its sides, so it cannot slide round the edge. The car can still back out or be winched.
+
+**What it took.** The first version (any ground ahead 1.5 radii above the tyre) broke 21 tests: over logs and ledges a wheel lifts briefly and the log ahead read as a wall. Requiring the floor under the hub to be far below the edge separated holes from logs, but Bertie's holes were smooth bowls whose floor rises to meet the edge, which reads like a log. So **Bertie's holes are now sheer-sided potholes** (two new options on erosion ruts, `wall` and `ramp`), with a flat floor right to a 0.2 m wall. A sideways wall from a boulder beside a tyre on Granite Spur's chute tipped it 0.1° past its limit; side walls now count only with a wall ahead or behind.
+
+**Driven and passed.** Straight up the middle of Bertie, the short 40 and the LC79 now stop at the first pothole (the test that was an `it.todo`); the weaving line still passes in both; the full suite passes (1,039 tests), including the CREB's rock climbs, Roaring Meg's ledge, the logs, Granite Spur and the crawl courses. Palm Creek's rut (0.5 m) is too shallow to tell from a log, so a crooked car still gets out of it, and the crooked Chute is a landing, not a wall: both stay `it.todo`.
+
+**Looked at.** Bertie from above and from the driver's seat: the potholes show as before, as dark water; their sheer sides are under it.
