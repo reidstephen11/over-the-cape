@@ -25,6 +25,8 @@ export interface SeventyCabFit {
   visor: { y: number; z: number };
   /** Where the wagon's flat headlining starts. */
   liningFront: number;
+  /** The footwell bulkhead: its place along the car and its top. */
+  bulkhead: { z: number; top: number };
 }
 /** The cab as the LC79 uses it, and as the Troop Carrier did until v2.08. */
 const TALL_CAB: SeventyCabFit = {
@@ -34,6 +36,7 @@ const TALL_CAB: SeventyCabFit = {
   door: { down: 0, z: -0.42, length: 0.96 },
   visor: { y: 1.48, z: -0.68 },
   liningFront: -0.75,
+  bulkhead: { z: -0.97, top: 0.83 },
 };
 export function addTroopyInterior(
   b: VehicleBuilder,
@@ -54,13 +57,24 @@ export function addTroopyInterior(
   // Floor mat, the transmission tunnel and the footwell bulkhead.
   b.block(0, floor, -0.35, 1.7, 0.03, 1.3, mat, M.Rubber, Z.Trim);
   b.block(0, floor + 0.09, -0.48, 0.34, 0.16, 0.8, mat, M.Rubber, Z.Trim, 0.04);
-  b.block(0, 0.5, -0.97, 1.7, 0.66, 0.03, paint.clone().multiplyScalar(0.7), M.Paint, Z.Trim);
+  b.block(
+    0,
+    (0.17 + fit.bulkhead.top) / 2,
+    fit.bulkhead.z,
+    1.7,
+    fit.bulkhead.top - 0.17,
+    0.03,
+    paint.clone().multiplyScalar(0.7),
+    M.Paint,
+    Z.Trim,
+  );
   // Dash: the steel lower panel, the padded top under the screen, and the binnacle.
   b.push().translate(0, -fit.dash.down, fit.dash.back);
   b.block(0, 0.8, -0.78, 1.7, 0.2, 0.3, paint.clone().multiplyScalar(0.85), M.Paint, Z.Trim, 0.02);
   b.block(0, 0.915, -0.8, 1.72, 0.05, 0.36, vinyl, M.Rubber, Z.Trim, 0.025);
-  b.block(0.39, 1.0, -0.66, 0.44, 0.2, 0.12, dark, M.Rubber, Z.Trim, 0.02);
-  b.block(0.39, 1.11, -0.63, 0.46, 0.03, 0.15, vinyl, M.Rubber, Z.Trim, 0.012);
+  // Wide enough for the oil gauge on its right: at 0.44 m the gauge hung off the housing's edge.
+  b.block(0.42, 1.0, -0.66, 0.5, 0.2, 0.12, dark, M.Rubber, Z.Trim, 0.02);
+  b.block(0.42, 1.11, -0.63, 0.52, 0.03, 0.15, vinyl, M.Rubber, Z.Trim, 0.012);
   b.pop();
   addDialFaces(b, cabin, redlineRpm);
   b.push().translate(0, -fit.dash.down, fit.dash.back);
@@ -132,7 +146,7 @@ export function addTroopyInterior(
   }
   const inner = paint.clone().multiplyScalar(0.82);
   // A load floor and closed wheel boxes, with benches supported above them.
-  b.block(0, floor, 1.49, 1.1, 0.03, 1.23, mat, M.Rubber, Z.Trim);
+  b.block(0, floor, 1.49, 1.0, 0.03, 1.23, mat, M.Rubber, Z.Trim);
   for (const [z0, z1] of [
     [0.25, 0.875],
     [2.105, 2.55],
@@ -141,10 +155,12 @@ export function addTroopyInterior(
   for (const side of [-1, 1]) {
     const low = floor,
       top = 0.455;
-    b.block(side * 0.55, (low + top) / 2, 1.49, 0.02, top - low, 1.23, inner, M.Paint, Z.Trim);
-    b.block(side * 0.685, top, 1.49, 0.28, 0.02, 1.23, inner, M.Paint, Z.Trim);
+    // The box's wall is inboard of the dark wheelhouse wall (0.52 m out): at 0.55 m its painted
+    // face showed through the wheel opening from outside.
+    b.block(side * 0.5, (low + top) / 2, 1.49, 0.02, top - low, 1.23, inner, M.Paint, Z.Trim);
+    b.block(side * 0.66, top, 1.49, 0.33, 0.02, 1.23, inner, M.Paint, Z.Trim);
     for (const z of [0.875, 2.105])
-      b.block(side * 0.685, (low + top) / 2, z, 0.28, top - low, 0.02, inner, M.Paint, Z.Trim);
+      b.block(side * 0.66, (low + top) / 2, z, 0.33, top - low, 0.02, inner, M.Paint, Z.Trim);
     b.block(side * 0.62, floor + 0.38, 1.6, 0.3, 0.08, 1.6, vinyl, M.Fabric, Z.Trim, 0.03);
     for (const z of [0.84, 2.3]) b.block(side * 0.62, 0.33, z, 0.035, 0.34, 0.05, dark, M.Metal, Z.Trim);
     b.block(side * 0.65, 0.485, 1.49, 0.08, 0.04, 0.5, dark, M.Metal, Z.Trim);

@@ -167,11 +167,12 @@ const v = (x: number, y: number, z: number) => ({ x, y, z });
 /** Where the cab's parts sit under the lower header and behind the leaning screen (v2.08). */
 const TROOPY_CAB_FIT: SeventyCabFit = {
   cabin: vehicles.troopy.cabin,
-  dash: { down: 0.15, back: 0.14 },
+  dash: { down: 0.15, back: 0.2 },
   seatDown: 0.12,
   door: { down: 0.055, z: (DOOR.front + DOOR.back) / 2, length: DOOR.back - DOOR.front - 0.06 },
   visor: { y: SCREEN_TOP.y - 0.045, z: SCREEN_TOP.z + 0.09 },
   liningFront: BROW.flat,
+  bulkhead: { z: CLIP.back + 0.03, top: COWL.y - 0.06 },
 };
 
 /** Half-width of a wheel opening at height y: straight edges from the sill up to the flat top. */
@@ -235,7 +236,11 @@ function sidePanels(b: VehicleBuilder): void {
   const outline: Vtx[] = [
     ...[SILL, 0.1, 0.2, CLIP.low].map((y): Vtx => [archBack(y), y]),
     [archBack(CLIP.low + 0.03), CLIP.low + 0.03],
-    [CLIP.back + 0.005, CLIP.low + 0.03],
+    // The skin runs forward over the clip's rounded back edge up to its shoulder line, which
+    // otherwise shows as a dark slot between the guard and the door.
+    [CLIP.back - 0.085, CLIP.low + 0.03],
+    [CLIP.back - 0.085, COWL.y - 0.1],
+    [CLIP.back + 0.005, COWL.y - 0.1],
     [CLIP.back + 0.005, COWL.y - 0.03],
     [COWL.z - 0.01, COWL.y],
     [SCREEN_TOP.z, SCREEN_TOP.y],
@@ -496,6 +501,9 @@ function frontEnd(b: VehicleBuilder): void {
   // Cowl under the screen, with its vent slots.
   // 1.48 m wide, inside the guards' rounded shoulders: at 1.76 m its ends stood out through them.
   b.block(0, COWL.y - 0.02, COWL.z - 0.03, 1.48, 0.05, 0.1, paint, M.Paint, Z.Front, 0.015);
+  // Its ends, well rounded, close the corner between the guard's shoulder and the pillar's foot.
+  for (const side of [-1, 1])
+    b.block(side * 0.805, COWL.y - 0.05, COWL.z - 0.03, 0.15, 0.11, 0.1, paint, M.Paint, Z.Front, 0.04);
   for (let i = 0; i < 10; i++)
     b.block(-0.45 + i * 0.1, COWL.y + 0.006, COWL.z - 0.04, 0.06, 0.004, 0.05, black, M.Rubber, Z.Front);
 
@@ -628,6 +636,9 @@ function windscreen(b: VehicleBuilder): void {
     b.rod({ x, y: 0.065, z: -0.036 }, { x: x - 0.42, y: 0.095, z: -0.036 }, 0.004, black, M.Rubber, Z.Front);
   }
   b.block(0, L - 0.12, 0.05, 0.22, 0.065, 0.02, black, M.Rubber, Z.Trim, 0.01);
+  // The mirror's stem, from a foot on the header.
+  b.rod({ x: 0, y: L - 0.11, z: 0.045 }, { x: 0, y: L - 0.035, z: 0.02 }, 0.008, black, M.Rubber, Z.Trim);
+  b.block(0, L - 0.03, 0.022, 0.05, 0.03, 0.012, black, M.Rubber, Z.Trim, 0.004);
   b.pop();
 }
 
@@ -1022,10 +1033,10 @@ function chassis(b: VehicleBuilder): void {
   ])
     b.block(0, 0.1, (start + end) / 2, width, 0.03, end - start, black, M.Rubber, Z.Trim);
   // Whip aerial on the right front wing.
-  b.block(0.68, clipTop(-1.0), -1.0, 0.05, 0.04, 0.05, black, M.Rubber, Z.Front);
+  b.block(0.745, clipTop(-1.0) - 0.004, -1.0, 0.05, 0.04, 0.05, black, M.Rubber, Z.Front);
   b.rod(
-    v(0.68, clipTop(-1.0) + 0.02, -1.0),
-    v(0.7, clipTop(-1.0) + 1.0, -0.96),
+    v(0.745, clipTop(-1.0) + 0.016, -1.0),
+    v(0.765, clipTop(-1.0) + 1.0, -0.96),
     0.004,
     black,
     M.Rubber,
@@ -1140,7 +1151,7 @@ export function buildTroopyPlank(index: number): THREE.BufferGeometry {
   const wood = new THREE.Color('#A9824F');
   const x = index === 0 ? -0.6 : 0.6,
     y = RACK.y + 0.04,
-    z = RACK.front + 0.03 + plankTuning.length / 2;
+    z = (RACK.front + RACK.back) / 2;
   const L = plankTuning.length,
     W = plankTuning.width;
   b.block(x, y, z, W, 0.05, L, wood, M.Fabric, Z.Roof);

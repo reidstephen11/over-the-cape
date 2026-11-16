@@ -156,15 +156,15 @@ export const seventyCabin: CabinLayout = {
 
 /**
  * The Troop Carrier's cab since v2.08: under a header 0.17 m lower and behind a screen leaning
- * back 37 degrees, so the dash is 0.15 m lower and 0.14 m further back, the seat 0.12 m lower and
+ * back 37 degrees, so the dash is 0.15 m lower and 0.2 m further back, the seat 0.12 m lower and
  * the eye 0.13 m lower (`TROOPY_CAB_FIT` in src/render/troopyBody.ts moves the cab's parts to match).
  */
 const troopyCabin: CabinLayout = {
   ...seventyCabin,
   eye: { x: 0.4, y: 1.19, z: 0.02 },
   dialY: 0.89,
-  dialZ: -0.46,
-  lamps: { ...seventyCabin.lamps, y: 0.805, z: -0.463 },
+  dialZ: -0.4,
+  lamps: { ...seventyCabin.lamps, y: 0.805, z: -0.403 },
   handbrake: {
     kind: 'lever',
     base: { x: 0.12, y: 0.3, z: -0.12 },
@@ -173,8 +173,8 @@ const troopyCabin: CabinLayout = {
   },
   steeringWheel: {
     ...seventyCabin.steeringWheel,
-    centre: { x: 0.4, y: 0.85, z: -0.2 },
-    columnBase: { x: 0.4, y: 0.63, z: -0.52 },
+    centre: { x: 0.4, y: 0.85, z: -0.14 },
+    columnBase: { x: 0.4, y: 0.63, z: -0.46 },
   },
 };
 
