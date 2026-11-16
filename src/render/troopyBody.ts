@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import type { VehicleTuning } from '../data/vehicle';
 import { plankTuning } from '../data/tools';
 import { BodyZone as Z, VehicleBuilder, VehicleMaterial as M } from './vehicleGeometry';
-import { addTroopyInterior } from './troopyInterior';
+import { addTroopyInterior, type SeventyCabFit } from './troopyInterior';
+import { vehicles } from '../data/vehicles';
 import { troopyColors } from './troopyPaint';
 import {
   cornerWrap,
@@ -37,11 +38,7 @@ function extrudeX(
     const clip = zone === Z.Front && x1 - x0 > 1.6 && wells.length === 1;
     const skin = zone === Z.Sides && wells.length === 2;
     if (clip || skin) {
-      g = subdivideSurface(
-        g,
-        (p, n) => (clip ? p.y > 0.6 && n.y > 0.6 : Math.abs(n.x) > 0.8 && p.y < 0.84),
-        2,
-      );
+      g = subdivideSurface(g, (p, n) => (clip ? p.y > 0.5 && n.y > 0.6 : Math.abs(n.x) > 0.8), 2);
       const p = g.getAttribute('position'),
         n = g.getAttribute('normal');
       for (let i = 0; i < p.count; i++) {
@@ -53,31 +50,32 @@ function extrudeX(
           dy = 0,
           dz = 0;
         if (clip) {
-          const t = THREE.MathUtils.clamp((z + 2.2) / 1.23, 0, 1),
+          const span = CLIP.back - F,
+            t = THREE.MathUtils.clamp((z - F) / span, 0, 1),
             a = Math.max(0, 1 - (x / 0.7) ** 2),
             q = Math.sin(Math.PI * t) ** 2,
-            u = THREE.MathUtils.clamp((y - 0.6) / 0.1, 0, 1),
+            u = THREE.MathUtils.clamp((y - 0.5) / 0.1, 0, 1),
             fade = u * u * (3 - 2 * u),
             df = u > 0 && u < 1 ? (6 * u * (1 - u)) / 0.1 : 0;
           h = 0.022 * a * a * q * fade;
           dx = ((-0.088 * x) / (0.7 * 0.7)) * a * q * fade;
           dy = 0.022 * a * a * q * df;
-          dz = ((0.022 * a * a * Math.PI * Math.sin(2 * Math.PI * t)) / 1.23) * fade;
+          dz = ((0.022 * a * a * Math.PI * Math.sin(2 * Math.PI * t)) / span) * fade;
           const ny = n.getY(i) / (1 + dy),
             nn = new THREE.Vector3(n.getX(i) - dx * ny, ny, n.getZ(i) - dz * ny).normalize();
           p.setY(i, y + h);
           n.setXYZ(i, nn.x, nn.y, nn.z);
         } else {
           const side = Math.sign(x),
-            start = z < 0.08 ? -0.95 : 0.1,
-            end = z < 0.08 ? 0.08 : 2.51,
+            start = z < DOOR.back ? DOOR.front : DOOR.back + 0.02,
+            end = z < DOOR.back ? DOOR.back : 2.51,
             t = (z - start) / (end - start),
-            u = (y - 0.04) / 0.8;
+            u = (y - SILL) / (WAIST - SILL);
           if (t <= 0 || t >= 1 || u <= 0 || u >= 1) continue;
           const qy = Math.sin(Math.PI * u) ** 2,
             qz = Math.sin(Math.PI * t) ** 2;
           h = 0.008 * qy * qz;
-          dy = ((0.008 * Math.PI * Math.sin(2 * Math.PI * u)) / 0.8) * qz;
+          dy = ((0.008 * Math.PI * Math.sin(2 * Math.PI * u)) / (WAIST - SILL)) * qz;
           dz = (0.008 * qy * Math.PI * Math.sin(2 * Math.PI * t)) / (end - start);
           const nx = n.getX(i),
             nn = new THREE.Vector3(nx, n.getY(i) - side * dy * nx, n.getZ(i) - side * dz * nx).normalize();
@@ -115,31 +113,49 @@ const glass = new THREE.Color('#9FB6B3'),
 
 const SIDE = 0.895;
 const SILL = 0.04;
-const WAIST = 0.84;
+/**
+ * The line the door glass stands on. v2.08 set the cab's heights from side.jpg, measured from the
+ * line through its hubs at 238 px a metre: the cowl 0.79 m above the origin (it was 0.84), the
+ * windscreen's header 1.31 (1.48), the bonnet's nose 0.61 (0.745), the door glass from 0.80 to
+ * 1.25, and the two side windows behind it from 0.97 to 1.43, higher than the door's.
+ */
+const WAIST = 0.76;
 /**
  * The 75 Series wheel openings: a flat top `y` above the hubs with short rounded corners
  * (`r`), `top` half-wide along the flat, widening to `bottom` at the sill (side.jpg). `cy`
  * is the well's centre for the dark inner shading.
  */
 const ARCH = { y: 0.435, top: 0.33, bottom: 0.46, r: 0.12, cy: -0.08 };
-const F = -2.2;
-const COWL = { y: 0.84, z: -0.98 };
-const SCREEN_TOP = { y: 1.48, z: -0.8 };
-const DOOR = { front: -0.95, back: 0.08 };
+/** The nose's skin: 0.62 m ahead of the front axle on side.jpg (it was 0.71 m, at -2.2). */
+const F = -2.11;
+/** The foot of the windscreen and its header: the screen leans back 37 degrees (it was 12). */
+const COWL = { y: 0.79, z: -0.79 };
+const SCREEN_TOP = { y: 1.31, z: -0.4 };
+const DOOR = { front: -0.85, back: 0.26 };
 const ROOF = 1.54;
+/**
+ * The raised roof: from the header it stands up 12 cm and then slopes up to the full height
+ * `flat` behind the header, over the driver's head (side.jpg, front-34-b.jpg). Until v2.08 the
+ * roof was one flat sheet at full height from the top of an upright windscreen.
+ */
+const BROW = { z: SCREEN_TOP.z + 0.035, y: SCREEN_TOP.y + 0.125, flat: 0.3 };
 const TAIL = 2.58;
 const AXLE = 1.49;
 /** Radius of the rear corners and the roof's back corners. */
 const CORNER = 0.07;
-const RACK = { y: 1.66, front: -0.72, back: 2.42 };
+/** The rack stands on the flat of the raised roof, behind the brow. */
+const RACK = { y: 1.66, front: 0.4, back: 2.42 };
 const GUARD_LOW = 0.25;
+/** Centre height of the grille and the headlamps, under the lower nose. */
+export const GRILLE_Y = 0.46;
+export const NOSE_Z = F;
 /** The front clip: where it meets the doors, its top at the nose and at the back, and the
  * radius its shoulders and front corners are rounded to (across the car, and `ratio` of it
  * along). Below `low` the side panel takes over behind the front wheel opening. */
 const CLIP = {
   back: DOOR.front - 0.02,
-  noseTop: 0.745,
-  backTop: WAIST - 0.005,
+  noseTop: 0.61,
+  backTop: COWL.y - 0.005,
   round: 0.15,
   ratio: 0.55,
   low: 0.3,
@@ -147,6 +163,16 @@ const CLIP = {
 const clipTop = (z: number) => CLIP.noseTop + ((z - F) / (CLIP.back - F)) * (CLIP.backTop - CLIP.noseTop);
 
 const v = (x: number, y: number, z: number) => ({ x, y, z });
+
+/** Where the cab's parts sit under the lower header and behind the leaning screen (v2.08). */
+const TROOPY_CAB_FIT: SeventyCabFit = {
+  cabin: vehicles.troopy.cabin,
+  dash: { down: 0.15, back: 0.14 },
+  seatDown: 0.12,
+  door: { down: 0.055, z: (DOOR.front + DOOR.back) / 2, length: DOOR.back - DOOR.front - 0.06 },
+  visor: { y: SCREEN_TOP.y - 0.045, z: SCREEN_TOP.z + 0.09 },
+  liningFront: BROW.flat,
+};
 
 /** Half-width of a wheel opening at height y: straight edges from the sill up to the flat top. */
 function archHalf(y: number): number {
@@ -170,12 +196,15 @@ function archPath(axle: number, yBack: number, yFront: number, grow = 0): Vtx[] 
 /** Where the A pillar's front edge is at height y. */
 const pillarZ = (y: number) => COWL.z + ((y - COWL.y) * (SCREEN_TOP.z - COWL.z)) / (SCREEN_TOP.y - COWL.y);
 
-const WIN = { low: WAIST + 0.045, top: ROOF - 0.085 };
-const SLIDE = { z0: DOOR.back + 0.1, z1: 1.16 };
-const FIXED = { z0: 1.32, z1: 2.3 };
+/** The door's glass, and the two windows behind it, which sit higher (side.jpg). */
+const WIN = { low: WAIST + 0.045, top: SCREEN_TOP.y - 0.06 };
+const REAR_WIN = { low: 0.97, top: 1.43, r: 0.06 };
+const SLIDE = { z0: 0.49, z1: 1.375 };
+const FIXED = { z0: 1.49, z1: 2.34 };
 
 function windows(): Vtx[][] {
   const { low, top } = WIN;
+  const { low: rl, top: rt, r } = REAR_WIN;
   return [
     [
       [pillarZ(low) + 0.085, low, 0.03],
@@ -184,16 +213,16 @@ function windows(): Vtx[][] {
       [pillarZ(top) + 0.085, top, 0.04],
     ],
     [
-      [SLIDE.z0, low, 0.035],
-      [SLIDE.z1, low, 0.035],
-      [SLIDE.z1, top, 0.035],
-      [SLIDE.z0, top, 0.035],
+      [SLIDE.z0, rl, r],
+      [SLIDE.z1, rl, r],
+      [SLIDE.z1, rt, r],
+      [SLIDE.z0, rt, r],
     ],
     [
-      [FIXED.z0, low, 0.035],
-      [FIXED.z1, low, 0.035],
-      [FIXED.z1, top, 0.035],
-      [FIXED.z0, top, 0.035],
+      [FIXED.z0, rl, r],
+      [FIXED.z1, rl, r],
+      [FIXED.z1, rt, r],
+      [FIXED.z0, rt, r],
     ],
   ];
 }
@@ -207,9 +236,11 @@ function sidePanels(b: VehicleBuilder): void {
     ...[SILL, 0.1, 0.2, CLIP.low].map((y): Vtx => [archBack(y), y]),
     [archBack(CLIP.low + 0.03), CLIP.low + 0.03],
     [CLIP.back + 0.005, CLIP.low + 0.03],
-    [CLIP.back + 0.005, WAIST - 0.02],
-    [pillarZ(WAIST) - 0.01, WAIST],
-    [pillarZ(ROOF), ROOF],
+    [CLIP.back + 0.005, COWL.y - 0.03],
+    [COWL.z - 0.01, COWL.y],
+    [SCREEN_TOP.z, SCREEN_TOP.y],
+    [BROW.z, BROW.y, 0.03],
+    [BROW.flat, ROOF],
     [end, ROOF],
     [end, SILL],
     ...archPath(AXLE, SILL, SILL),
@@ -229,10 +260,10 @@ function sidePanels(b: VehicleBuilder): void {
     const mid = (SLIDE.z0 + SLIDE.z1) / 2;
     b.block(
       side * (SIDE - 0.016),
-      (WIN.low + WIN.top) / 2,
+      (REAR_WIN.low + REAR_WIN.top) / 2,
       mid,
       0.012,
-      WIN.top - WIN.low - 0.02,
+      REAR_WIN.top - REAR_WIN.low - 0.02,
       0.026,
       rubber,
       M.Rubber,
@@ -274,10 +305,10 @@ function sidePanels(b: VehicleBuilder): void {
     const x = side * (SIDE + 0.001);
     b.block(
       x,
-      (SILL + ROOF) / 2 - 0.02,
+      (SILL + SCREEN_TOP.y) / 2 + 0.01,
       DOOR.back + 0.004,
       0.006,
-      ROOF - SILL - 0.08,
+      SCREEN_TOP.y - SILL - 0.02,
       0.006,
       black,
       M.Rubber,
@@ -285,10 +316,21 @@ function sidePanels(b: VehicleBuilder): void {
     );
     b.block(
       x,
-      (SILL + WAIST) / 2 + 0.01,
+      SCREEN_TOP.y - 0.002,
+      (SCREEN_TOP.z + 0.03 + DOOR.back) / 2,
+      0.006,
+      0.006,
+      DOOR.back - SCREEN_TOP.z - 0.03,
+      black,
+      M.Rubber,
+      Z.Sides,
+    );
+    b.block(
+      x,
+      (SILL + COWL.y) / 2 - 0.02,
       DOOR.front + 0.004,
       0.006,
-      WAIST - SILL - 0.02,
+      COWL.y - SILL - 0.08,
       0.006,
       black,
       M.Rubber,
@@ -374,8 +416,16 @@ function sidePanels(b: VehicleBuilder): void {
     mirrorHead(b, side, v(side * (SIDE + 0.15), WIN.low + 0.12, mz), 0.2, 0.16, 0.075, black);
     // Rain gutter along the roof edge.
     b.rod(
-      v(side * (SIDE + 0.004), ROOF - 0.03, pillarZ(ROOF) + 0.03),
-      v(side * (SIDE + 0.004), ROOF - 0.03, end),
+      v(side * (SIDE + 0.004), ROOF - 0.08, DOOR.back + 0.02),
+      v(side * (SIDE + 0.004), ROOF - 0.08, end),
+      0.01,
+      paint,
+      M.Paint,
+      Z.Roof,
+    );
+    b.rod(
+      v(side * (SIDE + 0.004), SCREEN_TOP.y + 0.012, SCREEN_TOP.z + 0.02),
+      v(side * (SIDE + 0.004), SCREEN_TOP.y + 0.012, DOOR.back + 0.02),
       0.01,
       paint,
       M.Paint,
@@ -415,9 +465,11 @@ function frontEnd(b: VehicleBuilder): void {
   extrudeX(
     b,
     sideShape([
-      [F, GUARD_LOW, 0.03],
-      [F, CLIP.noseTop, 0.05],
-      [CLIP.back, CLIP.backTop, 0.02],
+      // The top corners are rounded more than the 8 cm the clip's edges are drawn in by, or sharp:
+      // a smaller radius folds over itself and shows as crumpled facets.
+      [F, GUARD_LOW],
+      [F, CLIP.noseTop, 0.09],
+      [CLIP.back, CLIP.backTop],
       [CLIP.back, CLIP.low],
       ...archPath(-AXLE, CLIP.low, GUARD_LOW),
     ]),
@@ -442,20 +494,21 @@ function frontEnd(b: VehicleBuilder): void {
       Z.Front,
     );
   // Cowl under the screen, with its vent slots.
-  b.block(0, COWL.y - 0.02, COWL.z - 0.03, 1.76, 0.05, 0.1, paint, M.Paint, Z.Front, 0.015);
+  // 1.48 m wide, inside the guards' rounded shoulders: at 1.76 m its ends stood out through them.
+  b.block(0, COWL.y - 0.02, COWL.z - 0.03, 1.48, 0.05, 0.1, paint, M.Paint, Z.Front, 0.015);
   for (let i = 0; i < 10; i++)
     b.block(-0.45 + i * 0.1, COWL.y + 0.006, COWL.z - 0.04, 0.06, 0.004, 0.05, black, M.Rubber, Z.Front);
 
   // Front panel: a black grille with horizontal bars and a centre badge between round 7 inch
   // headlamps in square black surrounds; the indicators sit on the outer corners of the
   // front clip, outboard of the lamps, wrapping round them.
-  const gy = 0.56;
+  const gy = GRILLE_Y;
   const grille = new THREE.Color('#525856');
-  b.block(0, gy, F - 0.004, 0.97, 0.29, 0.026, grille, M.Rubber, Z.Front, 0.014);
-  b.block(0, gy, F - 0.02, 0.9, 0.235, 0.014, black, M.Rubber, Z.Front, 0.008);
+  b.block(0, gy, F - 0.004, 0.97, 0.26, 0.026, grille, M.Rubber, Z.Front, 0.014);
+  b.block(0, gy, F - 0.02, 0.9, 0.21, 0.014, black, M.Rubber, Z.Front, 0.008);
   for (let i = 0; i < 27; i++)
-    b.block(-0.426 + i * 0.0328, gy, F - 0.03, 0.009, 0.21, 0.012, grille, M.Rubber, Z.Front);
-  for (const y of [gy - 0.056, gy + 0.056])
+    b.block(-0.426 + i * 0.0328, gy, F - 0.03, 0.009, 0.19, 0.012, grille, M.Rubber, Z.Front);
+  for (const y of [gy - 0.052, gy + 0.052])
     b.block(0, y, F - 0.038, 0.9, 0.016, 0.016, grille, M.Rubber, Z.Front, 0.003);
   b.block(0, gy, F - 0.04, 0.43, 0.068, 0.016, black, M.Rubber, Z.Front, 0.004);
   strokeText(b, 'TOYOTA', {
@@ -473,7 +526,7 @@ function frontEnd(b: VehicleBuilder): void {
   });
   for (const side of [-1, 1]) {
     const hx = side * 0.6;
-    b.block(hx, gy, F - 0.002, 0.27, 0.27, 0.02, new THREE.Color('#525856'), M.Rubber, Z.Front, 0.02);
+    b.block(hx, gy, F - 0.002, 0.25, 0.25, 0.02, new THREE.Color('#525856'), M.Rubber, Z.Front, 0.02);
     roundHeadlamp(b, hx, gy, F - 0.012, 0.089, lens, chrome, black);
     // Indicator wrapped round the corner, in a black housing, with the white triangle
     // under it on the face.
@@ -545,12 +598,12 @@ function frontEnd(b: VehicleBuilder): void {
   for (const x of [-0.43, 0.43]) b.block(x, 0.1, F + 0.06, 0.07, 0.07, 0.16, black, M.Metal, Z.Trim);
   // Sump, steering box and the air cleaner's intake behind the left headlamp.
   b.block(0, -0.04, -1.75, 0.44, 0.16, 0.5, black, M.Metal, Z.Trim, 0.02);
-  b.block(0.38, 0.02, -2.0, 0.14, 0.16, 0.16, black, M.Metal, Z.Trim, 0.02);
+  b.block(0.38, 0.02, F + 0.2, 0.14, 0.16, 0.16, black, M.Metal, Z.Trim, 0.02);
 }
 
 function windscreen(b: VehicleBuilder): void {
   const lean = Math.atan2(SCREEN_TOP.z - COWL.z, SCREEN_TOP.y - COWL.y);
-  const L = (ROOF - 0.01 - COWL.y) / Math.cos(lean);
+  const L = (SCREEN_TOP.y + 0.012 - COWL.y) / Math.cos(lean);
   const w = SIDE - 0.005;
   const outer: Vtx[] = [
     [-w, 0, 0.02],
@@ -561,8 +614,8 @@ function windscreen(b: VehicleBuilder): void {
   const hole: Vtx[] = [
     [-w + 0.085, 0.045, 0.04],
     [w - 0.085, 0.045, 0.04],
-    [w - 0.085, L - 0.1, 0.04],
-    [-w + 0.085, L - 0.1, 0.04],
+    [w - 0.085, L - 0.06, 0.04],
+    [-w + 0.085, L - 0.06, 0.04],
   ];
   b.push().translate(0, COWL.y, COWL.z).rotate(lean, 0, 0);
   const s = new THREE.Shape(rounded(outer));
@@ -574,12 +627,30 @@ function windscreen(b: VehicleBuilder): void {
     b.rod({ x, y: 0.06, z: -0.03 }, { x: x - 0.46, y: 0.09, z: -0.03 }, 0.006, black, M.Rubber, Z.Front);
     b.rod({ x, y: 0.065, z: -0.036 }, { x: x - 0.42, y: 0.095, z: -0.036 }, 0.004, black, M.Rubber, Z.Front);
   }
-  b.block(0, L - 0.16, 0.05, 0.22, 0.065, 0.02, black, M.Rubber, Z.Trim, 0.01);
+  b.block(0, L - 0.12, 0.05, 0.22, 0.065, 0.02, black, M.Rubber, Z.Trim, 0.01);
   b.pop();
 }
 
 function roof(b: VehicleBuilder): void {
-  const front = pillarZ(ROOF) - 0.01;
+  const front = BROW.flat - 0.02;
+  // The brow: a shell across the car from the header up to the flat of the raised roof.
+  extrudeX(
+    b,
+    sideShape([
+      [SCREEN_TOP.z - 0.012, SCREEN_TOP.y - 0.01],
+      [BROW.z - 0.008, BROW.y + 0.008, 0.03],
+      [BROW.flat + 0.02, ROOF + 0.004],
+      [BROW.flat + 0.02, ROOF - 0.036],
+      [BROW.z + 0.03, BROW.y - 0.034, 0.02],
+      [SCREEN_TOP.z + 0.03, SCREEN_TOP.y - 0.01],
+    ]),
+    -SIDE + 0.006,
+    SIDE - 0.006,
+    paint,
+    M.Paint,
+    Z.Roof,
+    0.004,
+  );
   const s = new THREE.Shape(
     rounded([
       [-SIDE, -front, 0.04],
@@ -627,8 +698,8 @@ function roof(b: VehicleBuilder): void {
   b.geometry(g, paint);
   b.pop();
   // Conforming transverse pressed ribs, sharing the roof crown.
-  for (let j = 0; j < 7; j++) {
-    const z = -0.45 + j * 0.45,
+  for (let j = 0; j < 5; j++) {
+    const z = 0.52 + j * 0.42,
       q = Math.sin((Math.PI * (z - front)) / (TAIL - front)) ** 2;
     const point = (x: number) => v(x, ROOF + 0.004 + 0.028 * (1 - (x / SIDE) ** 2) ** 2 * q, z);
     for (let i = 0; i < 20; i++)
@@ -828,7 +899,7 @@ function roofRack(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
     );
     b.block(0, y - 0.018, z, 0.78, 0.008, 0.04, strap, M.Fabric, Z.Roof);
   }
-  jerryCan(b, 0, y + 0.113, -0.35);
+  jerryCan(b, 0, y + 0.113, 0.85);
 }
 
 /** Steel bar: a deep pan with swept wings, a centre hoop over the grille and loops over the lamps. */
@@ -884,15 +955,14 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
       ROUND_BEND,
     );
   tube(
-    [v(-0.4, top - 0.015, zc + 0.01), v(-0.4, 0.88, zt), v(0.4, 0.88, zt), v(0.4, top - 0.015, zc + 0.01)],
+    [v(-0.4, top - 0.015, zc + 0.01), v(-0.4, 0.76, zt), v(0.4, 0.76, zt), v(0.4, top - 0.015, zc + 0.01)],
     0.032,
   );
-  b.rod(v(-0.4, 0.62, (zc + zt) / 2), v(0.4, 0.62, (zc + zt) / 2), 0.022, bar, M.Metal, Z.Front);
   for (const side of [-1, 1]) {
     tube(
       [
-        v(side * 0.4, 0.75, zt - 0.012),
-        v(side * 0.86, 0.73, zt + 0.04),
+        v(side * 0.4, 0.66, zt - 0.012),
+        v(side * 0.86, 0.64, zt + 0.04),
         v(side * 0.86, top - 0.01, zc + 0.105),
       ],
       0.028,
@@ -900,10 +970,9 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.block(side * 0.86, top, zc + 0.105, 0.09, 0.025, 0.1, bar, M.Metal, Z.Front, 0.005);
     b.block(side * 0.4, top, zc + 0.01, 0.09, 0.025, 0.1, bar, M.Metal, Z.Front, 0.005);
   }
-  // Winch drum behind the pan, between the hoop's legs.
-  b.rod(v(-0.24, top + 0.06, back - 0.02), v(0.24, top + 0.06, back - 0.02), 0.07, trim);
-  for (let i = 0; i < 15; i++)
-    b.ring(-0.18 + i * 0.026, top + 0.06, back - 0.02, 0.07, 0.005, steel, M.Metal, 'x', Z.Front);
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the fairlead in the face. Until v2.08 its drum stood on the pan in front of the grille.
+  b.block(0, top + 0.04, zc + 0.02, 0.2, 0.06, 0.09, trim, M.Rubber, Z.Front, 0.012);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.005, 0.34, 0.12, 0.02, steel, M.Metal, Z.Front, 0.006);
   b.block(m.x, m.y, face - 0.012, 0.2, 0.05, 0.015, black, M.Rubber, Z.Front);
@@ -953,10 +1022,10 @@ function chassis(b: VehicleBuilder): void {
   ])
     b.block(0, 0.1, (start + end) / 2, width, 0.03, end - start, black, M.Rubber, Z.Trim);
   // Whip aerial on the right front wing.
-  b.block(0.68, clipTop(-1.08), -1.08, 0.05, 0.04, 0.05, black, M.Rubber, Z.Front);
+  b.block(0.68, clipTop(-1.0), -1.0, 0.05, 0.04, 0.05, black, M.Rubber, Z.Front);
   b.rod(
-    v(0.68, clipTop(-1.08) + 0.02, -1.08),
-    v(0.7, clipTop(-1.08) + 1.0, -1.04),
+    v(0.68, clipTop(-1.0) + 0.02, -1.0),
+    v(0.7, clipTop(-1.0) + 1.0, -0.96),
     0.004,
     black,
     M.Rubber,
@@ -974,7 +1043,7 @@ export function buildTroopyBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
   roofRack(b, wheel);
   bullBar(b, tuning);
   chassis(b);
-  addTroopyInterior(b, tuning.engine.redlineRpm);
+  addTroopyInterior(b, tuning.engine.redlineRpm, paint, false, TROOPY_CAB_FIT);
   const g = b.build();
   return cleanGeometry(g);
 }
@@ -1071,7 +1140,7 @@ export function buildTroopyPlank(index: number): THREE.BufferGeometry {
   const wood = new THREE.Color('#A9824F');
   const x = index === 0 ? -0.6 : 0.6,
     y = RACK.y + 0.04,
-    z = 0.48;
+    z = RACK.front + 0.03 + plankTuning.length / 2;
   const L = plankTuning.length,
     W = plankTuning.width;
   b.block(x, y, z, W, 0.05, L, wood, M.Fabric, Z.Roof);

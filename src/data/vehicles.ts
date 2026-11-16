@@ -124,8 +124,8 @@ export function useFj40Cab(on: boolean): void {
   fj40CabLowered = on;
 }
 
-/** The 70 Series cab, as in the Troop Carrier. */
-const seventyCabin: CabinLayout = {
+/** The 70 Series cab as first drawn: the LC79's, and the Troop Carrier's until v2.08. */
+export const seventyCabin: CabinLayout = {
   // High up behind an upright screen, looking down the short, square bonnet.
   eye: { x: 0.4, y: 1.32, z: 0.02 },
   pitch: -0.17,
@@ -151,6 +151,30 @@ const seventyCabin: CabinLayout = {
     // Power steering, about 1¾ turns to full lock.
     ratio: 21,
     spokes: 4,
+  },
+};
+
+/**
+ * The Troop Carrier's cab since v2.08: under a header 0.17 m lower and behind a screen leaning
+ * back 37 degrees, so the dash is 0.15 m lower and 0.14 m further back, the seat 0.12 m lower and
+ * the eye 0.13 m lower (`TROOPY_CAB_FIT` in src/render/troopyBody.ts moves the cab's parts to match).
+ */
+const troopyCabin: CabinLayout = {
+  ...seventyCabin,
+  eye: { x: 0.4, y: 1.19, z: 0.02 },
+  dialY: 0.89,
+  dialZ: -0.46,
+  lamps: { ...seventyCabin.lamps, y: 0.805, z: -0.463 },
+  handbrake: {
+    kind: 'lever',
+    base: { x: 0.12, y: 0.3, z: -0.12 },
+    tip: { x: 0.12, y: 0.48, z: -0.3 },
+    travel: 0.55,
+  },
+  steeringWheel: {
+    ...seventyCabin.steeringWheel,
+    centre: { x: 0.4, y: 0.85, z: -0.2 },
+    columnBase: { x: 0.4, y: 0.63, z: -0.52 },
   },
 };
 
@@ -405,7 +429,7 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     cameraScale: 1.12,
     // Starting fill for the game, separate from the sub-tank's 90 L capacity.
     extraLoad: { fuel: TROOPY_START_FUEL },
-    cabin: seventyCabin,
+    cabin: troopyCabin,
   },
   hj60: {
     tuning: hj60Tuning,

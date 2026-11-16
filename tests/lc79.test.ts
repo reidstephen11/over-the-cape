@@ -7,7 +7,7 @@ import { patrolTuning } from '../src/data/patrol';
 import { SurfaceId } from '../src/data/surfaces';
 import { troopyTuning } from '../src/data/troopy';
 import { type VehicleTuning } from '../src/data/vehicle';
-import { vehicleOrder, vehicles } from '../src/data/vehicles';
+import { vehicleOrder, vehicles, seventyCabin } from '../src/data/vehicles';
 import { LC79_DRIVING_LAMPS } from '../src/render/lc79Body';
 import { DIAL_START, DIAL_SWEEP } from '../src/render/vehicleInstruments';
 import { VehicleModel } from '../src/render/vehicleModel';
@@ -136,12 +136,18 @@ describe('LC79 V8', () => {
     model.dispose();
   });
 
-  it('sits the driver in the same 70 Series cab as the Troop Carrier, lifted 4 inches', () => {
-    const lc = vehicles.lc79.cabin,
-      tc = vehicles.troopy.cabin;
-    expect(lc.eye.y - tc.eye.y).toBeCloseTo(0.1, 5);
-    expect(lc.steeringWheel.centre.y - tc.steeringWheel.centre.y).toBeCloseTo(0.1, 5);
-    expect(lc.dials).toBe(tc.dials);
+  it('sits the driver in the 70 Series cab as first drawn, lifted 4 inches', () => {
+    const lc = vehicles.lc79.cabin;
+    expect(lc.eye.y - seventyCabin.eye.y).toBeCloseTo(0.1, 5);
+    expect(lc.steeringWheel.centre.y - seventyCabin.steeringWheel.centre.y).toBeCloseTo(0.1, 5);
+    expect(lc.dials).toBe(seventyCabin.dials);
+  });
+
+  it('leaves the Troop Carrier its own lower cab (v2.08): the same dials, the eye under a lower header', () => {
+    const tc = vehicles.troopy.cabin;
+    expect(tc.dials).toBe(seventyCabin.dials);
+    expect(seventyCabin.eye.y - tc.eye.y).toBeCloseTo(0.13, 5);
+    expect(tc.eye.y).toBeLessThan(1.31 - 0.1);
   });
 
   it('is remembered in the save', () => {

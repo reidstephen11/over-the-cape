@@ -2129,3 +2129,26 @@ The owner asked for the three failing tests in `e2e/launch.spec.ts` to be fixed.
 - **Phone settings checked on a computer.** The Settings persistence test looked for Phone driving on a desktop page, where it has deliberately been hidden since v1.84 made the phone settings touch-only. It now checks they are absent there. The phone test checks that a Phone driving choice is saved and comes back after a reload. It also looks for each phone setting by its heading, because there are two sections with the class it used.
 
 In a cloud session the project's Playwright can't find its own browser; run the browser tests with `CHROMIUM_PATH=/opt/pw-browsers/chromium`.
+
+## v2.08: the Troop Carrier, stage 1 (the cab and roof)
+
+The owner asked for the Troop Carrier next. Before any change the 28 audit pictures were taken and compared with `side.jpg`, `front-34.jpg`, `front-34-b.jpg` and `rear-34-ambulance.jpg`. The list is in `docs/AUDIT-2026-11.md`; this stage fixes items 1 to 8, which are the body's shape. Only the Troop Carrier (`troopy`) changes; the LC79, which shares its cab's parts, is unchanged.
+
+**What was wrong.** The model was a tall box with an upright windscreen to the full height of the roof, a high flat bonnet and three windows in a row at one height: it read as a Land Rover station wagon. On `side.jpg` the screen leans back 37 degrees to a header 0.23 m below the roof, the roof stands up behind the header, the bonnet slopes down to a low nose, and the door's glass is lower and larger than the two windows behind it.
+
+**How it was measured.** `side.jpg` is nearly square on but tilted 1.6 degrees, so heights were taken from the line through its two hubs, at 238 px a metre (its 2.98 m wheelbase), and set 1 cm higher for the game's springs. The table of each height and station, before and after, is in the vehicle's `SOURCES.md`.
+
+**A photograph was mislabelled.** `rear-34-ambulance.jpg` is a straight-on rear view with both doors open, not a three-quarter. `SOURCES.md` now says so.
+
+- **Windscreen (item 1).** From the cowl 0.79 m above the origin and 0.70 m behind the front axle to a header at 1.31 m, 1.09 m behind the axle: 37 degrees back. It stood 12 degrees back, from 0.84 m to 1.48 m.
+- **Roof (item 2).** From the header it stands up 12 cm and then slopes up to the full height (1.54 m, unchanged) 0.3 m behind the driver's eye line, as a shell across the car (`BROW`). A gutter runs over each door at the header's height and along the raised roof behind it.
+- **Bonnet and nose (items 3 and 5).** The nose's skin is 0.62 m ahead of the front axle (`F` −2.11, was −2.2) and its top 0.61 m up (was 0.745); the bonnet rises to the cowl at 0.785. The grille, the lamps and the corner indicators are 10 cm lower (centre 0.46 m), the bull bar 9 cm further back with its hoop 12 cm lower, and the headlamp beams, the winch's rope (`winchMount` z −2.33) and the bar's collision box moved with them. The centre rail across the bar's hoop is gone: at the new height it crossed the grille's letters.
+- **Doors and windows (item 4).** The door runs from 0.64 to 1.75 m behind the front axle (it was 0.54 to 1.57) and stops at the header; its glass is from 0.805 to 1.25 m up. The sliding window and the fixed window behind it are from 0.97 to 1.43 m up, 0.89 m and 0.85 m long, with 6 cm corners.
+- **The cab inside (item 6).** The Troop Carrier has its own cab layout (`troopyCabin`, and `TROOPY_CAB_FIT` for the parts): the dash 0.15 m lower and 0.14 m further back, under the leaning screen; the seats and gear levers 0.12 m lower; the driver's eye 0.13 m lower, 0.12 m under the header; the steering wheel, dials, warning lamps and handbrake moved with the dash and seat; the door trims fit the new door; the visors are under the header; the headlining starts behind the brow. The LC79 keeps the cab as first drawn (`seventyCabin`), which `tests/lc79.test.ts` now checks against.
+- **Winch (item 7).** Inside the bar's pan, as on the LC79 and the GQ: its control box shows on the pan's top and the fairlead in the face.
+- **Roof rack (item 8).** On the flat of the raised roof only: 2.0 m long (was 3.1 m), from 0.4 m behind the centre to the tail, on seven feet a side. The boards, the jerry can (now ahead of the spare) and the spare are on it; its collision box is shorter to match.
+- The cowl panel under the screen is 1.48 m wide (was 1.76 m): its ends stood out through the guards' rounded shoulders. The front clip's top corners no longer fold over themselves (the fault found on the GQ in v2.05).
+
+**Where each part is attached and which way it faces.** The rack stands on fourteen feet on the edges of the raised roof. The roof spare lies flat on the rack's two bearers, face up, under two straps, placed with `mountSpare()`; the door spare is unchanged. The jerry can lies on the rack's crossbars ahead of the spare. The winch's control box sits on the pan's top between the hoop's legs.
+
+**Not done (items 9 to 13).** The grille's bars, the wheel openings' black lips and height, the rear quarter's vent and filler flaps, the tail lamps, stripes, mud flaps and steps. No photograph shows which rear door carries the spare, so it was not moved.
