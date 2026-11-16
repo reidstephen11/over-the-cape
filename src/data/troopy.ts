@@ -53,7 +53,7 @@ export const troopyTuning: VehicleTuning = {
     { cx: 0.43, cy: -0.02, cz: 0.12, hx: 0.05, hy: 0.09, hz: 2.36 },
     { cx: 0.04, cy: -0.04, cz: -0.4, hx: 0.21, hy: 0.09, hz: 0.36 },
     // Engine bay between the front wheels and the sump under it.
-    { cx: 0, cy: 0.4, cz: -1.62, hx: 0.6, hy: 0.32, hz: 0.6 },
+    { cx: 0, cy: 0.36, cz: -1.57, hx: 0.6, hy: 0.28, hz: 0.55 },
     { cx: 0, cy: -0.04, cz: -1.75, hx: 0.3, hy: 0.08, hz: 0.26 },
     // The body from the cowl to the back doors: the floor between the wheels, then full
     // width from the tops of the wheel arches to the roof. Behind the rear wheels it hangs
@@ -62,9 +62,9 @@ export const troopyTuning: VehicleTuning = {
     { cx: 0, cy: 1.03, cz: 0.82, hx: 0.84, hy: 0.53, hz: 1.78 },
     { cx: 0, cy: 0.3, cz: 2.3, hx: 0.84, hy: 0.2, hz: 0.3 },
     // Bull bar, the rear bar with its tow hitch, and the roof rack with its load.
-    { cx: 0, cy: 0.33, cz: -2.36, hx: 0.88, hy: 0.3, hz: 0.08 },
+    { cx: 0, cy: 0.33, cz: -2.27, hx: 0.88, hy: 0.3, hz: 0.08 },
     { cx: 0, cy: 0.05, cz: 2.66, hx: 0.84, hy: 0.07, hz: 0.07 },
-    { cx: 0, cy: 1.72, cz: 0.75, hx: 0.8, hy: 0.15, hz: 1.4 },
+    { cx: 0, cy: 1.72, cz: 1.4, hx: 0.8, hy: 0.15, hz: 1.02 },
   ],
   bumpRadius: 0.25,
   bodyFriction: 0.45,
@@ -159,6 +159,6 @@ export const troopyTuning: VehicleTuning = {
   // The air cleaner draws from behind the left headlamp, under the wing.
   intakeHeight: 0.95,
   intake: { x: -0.62, y: 0.95 - R - 0.12, z: -1.75 },
-  winchMount: { x: 0, y: 0.12, z: -2.42 },
+  winchMount: { x: 0, y: 0.12, z: -2.33 },
   towPoint: { x: 0, y: 0.0, z: 2.75 },
 };

@@ -17,7 +17,13 @@ import { buildCamelBody, buildCamelPlank } from './camelBody';
 import { buildCamelWheel } from './camelWheel';
 import { buildHiluxBody, buildHiluxPlank, buildHiluxWheel } from './hiluxBody';
 import { buildUnimogBody, buildUnimogPlank, buildUnimogWheel } from './unimogBody';
-import { buildTroopyBody, buildTroopyPlank, buildTroopyWheel } from './troopyBody';
+import {
+  buildTroopyBody,
+  buildTroopyPlank,
+  buildTroopyWheel,
+  GRILLE_Y as TROOPY_GRILLE_Y,
+  NOSE_Z as TROOPY_NOSE_Z,
+} from './troopyBody';
 import { LC79_DRIVING_LAMPS, buildLc79Body, buildLc79Plank, buildLc79Wheel } from './lc79Body';
 import { buildVehicleBody as buildSooty80Body, buildRackPlank as buildSooty80Plank } from './sooty80Body';
 import { buildVehicleWheel as buildSooty80Wheel } from './sooty80Wheel';
@@ -241,8 +247,8 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'leaf',
     lamps: {
       head: [
-        { x: -0.6, y: 0.56, z: -2.224 },
-        { x: 0.6, y: 0.56, z: -2.224 },
+        { x: -0.6, y: TROOPY_GRILLE_Y, z: TROOPY_NOSE_Z - 0.024 },
+        { x: 0.6, y: TROOPY_GRILLE_Y, z: TROOPY_NOSE_Z - 0.024 },
       ],
     },
   },

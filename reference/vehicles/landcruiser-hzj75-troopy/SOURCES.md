@@ -38,4 +38,24 @@ Keep this list with the files. CC BY and CC BY-SA require credit to the author, 
 | `front-34-b.jpg`         | front three-quarter | Another view of an HZJ75 Troop Carrier.                                                                                                  | [Commons](https://commons.wikimedia.org/wiki/File:TOYOTA_Land_Cruiser_HZJ75-03.jpg)                                            | Berndw at English Wikipedia        | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0) | 1600×1200 |
 | `detail.jpg`             | detail              | Closer view of an HZJ75.                                                                                                                 | [Commons](https://commons.wikimedia.org/wiki/File:TOYOTA_Land_Cruiser_HZJ75-01-01.jpg)                                         | Berndw~enwiki at English Wikipedia | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0) | 1600×1200 |
 | `front-34-ambulance.jpg` | front three-quarter | 1992 Australian 75 Series Troop Carrier ambulance. The shell is the troop carrier; the extra windows and markings are the ambulance fit. | [Commons](<https://commons.wikimedia.org/wiki/File:1992_Toyota_LandCruiser_75_series_Troopcarrier_ambulance_(5350134409).jpg>) | sv1ambo                            | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) | 3160×2078 |
-| `rear-34-ambulance.jpg`  | rear three-quarter  | Same 1992 ambulance, rear three-quarter. Barn-door rear of the troop-carrier shell.                                                      | [Commons](<https://commons.wikimedia.org/wiki/File:1992_Toyota_LandCruiser_75_series_Troopcarrier_ambulance_(5350128655).jpg>) | sv1ambo                            | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) | 3026×2308 |
+| `rear-34-ambulance.jpg`  | rear, straight on   | Same 1992 ambulance from directly behind with both barn doors open (not the three-quarter its name says).                                                      | [Commons](<https://commons.wikimedia.org/wiki/File:1992_Toyota_LandCruiser_75_series_Troopcarrier_ambulance_(5350128655).jpg>) | sv1ambo                            | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) | 3026×2308 |
+
+## v2.08 comparison
+
+Heights and stations were measured on `side.jpg` (the car's left side; it is left-hand drive) from the line through its two hubs, at 238 px a metre, and set 1 cm higher for the game's springs. In the model's frame (origin 0.12 m above the hubs):
+
+|                              | On `side.jpg`                  | Model before     | Model since v2.08  |
+| ---------------------------- | ------------------------------ | ---------------- | ------------------ |
+| Nose skin                    | 0.62 m ahead of the axle       | 0.71 m           | 0.62 m (`F` −2.11) |
+| Bonnet top at the nose       | 0.60 m                         | 0.745 m          | 0.61 m             |
+| Cowl (foot of the screen)    | 0.78 m, 0.70 m behind the axle | 0.84 m, 0.51 m   | 0.79 m, 0.70 m     |
+| Windscreen header            | 1.30 m, 1.09 m behind the axle | 1.48 m, 0.69 m   | 1.31 m, 1.09 m     |
+| Roof                         | 1.55 m                         | 1.54 m           | 1.54 m             |
+| Door                         | 0.64 to 1.75 m behind the axle | 0.54 to 1.57 m   | 0.64 to 1.75 m     |
+| Door glass                   | 0.79 to 1.29 m                 | 0.885 to 1.455 m | 0.805 to 1.25 m    |
+| Side windows behind the door | 0.96 to 1.42 m                 | 0.885 to 1.455 m | 0.97 to 1.43 m     |
+| Tail skin                    | 1.11 m behind the rear axle    | 1.09 m           | 1.09 m (unchanged) |
+
+The tail measures 2 cm short here, not the 9 cm the table above gives; it was left alone. `rear-34-ambulance.jpg` is a straight-on rear view with the doors open; the table now says so.
+
+**Still disagrees.** The grille (vertical bars and letters; the photographs have horizontal bars), the wheel openings (black lips, and tops 4 to 7 cm high), the rear quarter (no vent, a round filler cap), the tail lamps, and no stripes, mud flaps or steps. No photograph shows which rear door carries the spare.
