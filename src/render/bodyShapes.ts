@@ -210,6 +210,7 @@ export function extrudeZ(
   slot: number,
   zone: number,
   bevel: number,
+  reshape?: (g: THREE.BufferGeometry) => THREE.BufferGeometry,
 ): void {
   const size = bevel * 0.8;
   const raw = new THREE.ExtrudeGeometry(shape, {
@@ -221,7 +222,8 @@ export function extrudeZ(
     bevelSegments: 3,
     curveSegments: 12,
   });
-  const g = capNormals(raw);
+  const flat = capNormals(raw);
+  const g = reshape ? reshape(flat) : flat;
   b.slot = slot as typeof b.slot;
   b.tag = zone;
   b.push().translate(0, 0, z0 + bevel);

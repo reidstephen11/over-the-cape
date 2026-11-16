@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { plateText } from './patrolLettering';
+import { badgeText, plateText } from './patrolLettering';
 import { continuousTube, subdivideSurface, cleanGeometry } from './bodyRefinement';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { VehicleTuning } from '../data/vehicle';
@@ -35,8 +35,13 @@ function extrudeX(
   wells: [number, number][] = [],
   segments = 3,
   ratio = 0.8,
+  keep?: 'above' | 'below',
 ): void {
   const reshape = (g: THREE.BufferGeometry): THREE.BufferGeometry => {
+    const shaped = shapePanel(g);
+    return keep ? cutAtSplit(shaped, keep === 'above') : shaped;
+  };
+  const shapePanel = (g: THREE.BufferGeometry): THREE.BufferGeometry => {
     if (zone === Z.Sides && slot === M.Paint && x1 - x0 < 0.08)
       return subdivideSurface(g, (_p, n) => Math.abs(n.x) > 0.5, 1);
     if (zone !== Z.Front || slot !== M.Paint || x1 - x0 <= 1.6) return g;
@@ -94,7 +99,14 @@ const SIDE = 0.87;
 export const WIDEN = 1.035;
 const WAIST = 0.76;
 const SILL = 0.02;
+/** The body-side moulding's height, where the panels of the lower body are joined. */
 const TWO_TONE = 0.3;
+/**
+ * Where the two colours meet: just under the door handles and just over the flares, along the
+ * crease pressed into the body sides, as on the two-colour cars in front-34-left-1989.jpg and
+ * side-right-1989.jpg. Until v2.05 they met at the moulding, 0.27 m lower.
+ */
+const SPLIT = 0.57;
 const AXLE = 1.485;
 /** Square wheel openings: half-widths at the sill and at the flat top, and the top height. */
 const ARCH = { bottom: 0.58, top: 0.4, y: 0.455 };
@@ -144,13 +156,54 @@ function archPath(axle: number, y: number, grow = 0, r = 0.1): Vtx[] {
 
 const v = (x: number, y: number, z: number) => ({ x, y, z });
 
+/**
+ * The part of a panel above (or below) the two-colour line, cut cleanly along it. A panel that
+ * crosses the line is built once and drawn twice, each half in its own colour, so the colours
+ * meet on one straight line round the rounded shoulders and corners, with no groove between
+ * two separately rounded pieces.
+ */
+function cutAtSplit(source: THREE.BufferGeometry, above: boolean): THREE.BufferGeometry {
+  const g = source.index ? source.toNonIndexed() : source;
+  const names = Object.keys(g.attributes);
+  const attrs = names.map((n) => g.getAttribute(n));
+  const sizes = attrs.map((a) => a.itemSize);
+  const offsets = sizes.map((_, i) => sizes.slice(0, i).reduce((sum, n) => sum + n, 0));
+  const yAt = offsets[names.indexOf('position')] + 1;
+  const read = (i: number) =>
+    attrs.flatMap((a) => Array.from({ length: a.itemSize }, (_, k) => a.getComponent(i, k)));
+  const inside = (p: number[]) => (above ? p[yAt] >= SPLIT : p[yAt] <= SPLIT);
+  const out: number[][] = [];
+  for (let i = 0; i < attrs[0].count; i += 3) {
+    const tri = [read(i), read(i + 1), read(i + 2)];
+    const poly: number[][] = [];
+    for (let k = 0; k < 3; k++) {
+      const a = tri[k],
+        c = tri[(k + 1) % 3];
+      if (inside(a)) poly.push(a);
+      if (inside(a) !== inside(c)) {
+        const t = (SPLIT - a[yAt]) / (c[yAt] - a[yAt]);
+        poly.push(a.map((value, j) => value + (c[j] - value) * t));
+      }
+    }
+    for (let k = 1; k + 1 < poly.length; k++) out.push(poly[0], poly[k], poly[k + 1]);
+  }
+  const cut = new THREE.BufferGeometry();
+  names.forEach((name, n) => {
+    const data = new Float32Array(out.length * sizes[n]);
+    out.forEach((p, i) => data.set(p.slice(offsets[n], offsets[n] + sizes[n]), i * sizes[n]));
+    cut.setAttribute(name, new THREE.BufferAttribute(data, sizes[n]));
+  });
+  return cut;
+}
+
 function lowerBody(b: VehicleBuilder): void {
   const wells: [number, number][] = [
     [-AXLE, -0.05],
     [AXLE, -0.05],
   ];
   const t = TWO_TONE;
-  // White upper body from the front doors to the tail, with the top of the rear opening cut in.
+  // Upper body panel from the front doors to the tail, with the top of the rear opening cut in:
+  // white above the two-colour line and the lower colour below it.
   const upper = sideShape([
     [CLIP.back + 0.005, t],
     [CLIP.back + 0.005, CLIP.backTop - 0.01],
@@ -159,7 +212,7 @@ function lowerBody(b: VehicleBuilder): void {
     [TAIL, t],
     ...archPath(AXLE, t),
   ]);
-  // Charcoal lower body below the two-tone line, between and behind the openings.
+  // Lower body panels below the moulding, between and behind the openings.
   const lowerParts: Vtx[][] = [
     [
       [-AXLE + archHalf(SILL), SILL],
@@ -178,7 +231,8 @@ function lowerBody(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
     const x0 = side > 0 ? SIDE - 0.05 : -SIDE,
       x1 = x0 + 0.05;
-    extrudeX(b, upper, x0, x1, paint, M.Paint, Z.Sides, 0.018, wells);
+    extrudeX(b, upper, x0, x1, paint, M.Paint, Z.Sides, 0.018, wells, 3, 0.8, 'above');
+    extrudeX(b, upper, x0, x1, lower, M.Paint, Z.Sides, 0.018, wells, 3, 0.8, 'below');
     for (const p of lowerParts) extrudeX(b, sideShape(p), x0, x1, lower, M.Paint, Z.Sides, 0.018, wells);
     // Flat-topped flares round the openings, standing out from the body.
     for (const axle of [-AXLE, AXLE]) {
@@ -229,24 +283,37 @@ function lowerBody(b: VehicleBuilder): void {
 }
 
 function bonnetAndFace(b: VehicleBuilder): void {
-  // The front clip in two pieces split at the two-tone line: white above, with the bonnet
-  // and guard tops sloping down to the nose, charcoal below; both with the front wheel
-  // opening cut in and their shoulders and front corners well rounded.
+  // The front clip in two pieces joined at the moulding's height, with the bonnet and guard
+  // tops sloping down to the nose; both with the front wheel opening cut in and their shoulders
+  // and front corners well rounded. The upper piece is white above the two-colour line and the
+  // lower colour below it.
   const t = TWO_TONE,
     R = CLIP.round;
-  const clip = (shape: Vtx[], color: THREE.Color) =>
-    extrudeX(b, sideShape(shape), -SIDE, SIDE, color, M.Paint, Z.Front, R, [[-AXLE, -0.05]], 6, CLIP.ratio);
-  clip(
-    [
-      [F, t],
-      [F, BONNET_FRONT, 0.045],
-      [SCUTTLE - 0.12, BONNET_BACK],
-      [CLIP.back, CLIP.backTop, 0.02],
-      [CLIP.back, t],
-      ...archPath(-AXLE, t),
-    ],
-    paint,
-  );
+  const clip = (shape: Vtx[], color: THREE.Color, keep?: 'above' | 'below') =>
+    extrudeX(
+      b,
+      sideShape(shape),
+      -SIDE,
+      SIDE,
+      color,
+      M.Paint,
+      Z.Front,
+      R,
+      [[-AXLE, -0.05]],
+      6,
+      CLIP.ratio,
+      keep,
+    );
+  const upperClip: Vtx[] = [
+    [F, t],
+    [F, BONNET_FRONT, 0.045],
+    [SCUTTLE - 0.12, BONNET_BACK],
+    [CLIP.back, CLIP.backTop, 0.02],
+    [CLIP.back, t],
+    ...archPath(-AXLE, t),
+  ];
+  clip(upperClip, paint, 'above');
+  clip(upperClip, lower, 'below');
   clip(
     [
       [F, SILL + 0.04, 0.04],
@@ -640,6 +707,19 @@ function sides(b: VehicleBuilder): void {
       b.block(side * (SIDE + 0.004), 0.64, z, 0.012, 0.05, 0.15, black, M.Rubber, Z.Sides, 0.008);
       b.block(side * (SIDE + 0.012), 0.64, z, 0.01, 0.022, 0.11, chrome, M.Metal, Z.Sides, 0.006);
     }
+    // The crease pressed along the body side at the two-colour line, from the nose to the tail.
+    b.block(
+      side * (SIDE + 0.001),
+      SPLIT,
+      (F + 0.1 + TAIL - 0.03) / 2,
+      0.008,
+      0.012,
+      TAIL - 0.03 - F - 0.1,
+      lower.clone().multiplyScalar(0.72),
+      M.Paint,
+      Z.Sides,
+      0.003,
+    );
     // Mud flap behind the rear wheel, hung from a strip under the body's edge.
     b.block(side * 0.775, 0.01, AXLE + ARCH.bottom + 0.04, 0.27, 0.024, 0.022, black, M.Metal, Z.Trim);
     b.block(
@@ -664,9 +744,15 @@ function sides(b: VehicleBuilder): void {
     mirrorHead(b, side, v(side * (SIDE + 0.15), 0.95, mz), 0.2, 0.15, 0.075, black);
     glasshouse(b, side);
   }
-  // Fuel filler flap on the right rear quarter.
-  b.block(SIDE + 0.004, 0.56, 2.05, 0.012, 0.15, 0.15, paint, M.Paint, Z.Rear, 0.02);
-  b.block(SIDE + 0.002, 0.56, 2.05, 0.006, 0.16, 0.16, black, M.Rubber, Z.Rear, 0.02);
+  // PATROL 4X4 on the left guard above the flare (side-1992.jpg has it on both guards; the
+  // snorkel's body lies over the right-hand one) and on the narrow rear door above the handle
+  // (rear-34-1988.jpg). The real badge is a decal in outlined letters; these are stroke capitals.
+  const badge = new THREE.Color('#2A2D2F');
+  badgeText(b, 'PATROL 4X4', v(-(SIDE + 0.002), 0.6, -1.08), 0, 1, 0.036, badge, Z.Front);
+  badgeText(b, 'PATROL 4X4', v(-0.5, 0.75, TAIL + 0.003), 1, 0, 0.045, badge, Z.Rear);
+  // Fuel filler flap on the right rear quarter, below the two-colour line (side-right-1989.jpg).
+  b.block(SIDE + 0.004, 0.485, 2.1, 0.012, 0.15, 0.15, lower, M.Paint, Z.Rear, 0.02);
+  b.block(SIDE + 0.002, 0.485, 2.1, 0.006, 0.16, 0.16, black, M.Rubber, Z.Rear, 0.02);
 }
 
 function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
@@ -794,22 +880,23 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
 }
 
 function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {
-  const x = -(SIDE + 0.045);
+  // On the right-hand guard, the driver's side, where the GQ's air cleaner is (the owner's
+  // call in v2.05: the photographs are stock cars and show no snorkel). It was on the left.
+  const x = SIDE + 0.045;
   const black2 = new THREE.Color('#202325');
   // A flat moulded body lying along the guard's side under the bonnet's edge, then up the A
-  // pillar to above the roof, and the ram head on top. Until v2.04 it came out of the guard low
-  // down and ran to the roof as one diagonal.
-  b.block(x + 0.03, 0.61, -1.1, 0.11, 0.14, 0.44, black2, M.Rubber, Z.Front, 0.035);
+  // pillar to above the roof, and the ram head on top.
+  b.block(x - 0.03, 0.61, -1.1, 0.11, 0.14, 0.44, black2, M.Rubber, Z.Front, 0.035);
   tubePath(
     b,
-    [v(x, 0.62, -0.95), v(x, 0.71, -0.86), v(x + 0.01, 0.84, -0.83), v(x + 0.03, 1.38, -0.57)],
+    [v(x, 0.62, -0.95), v(x, 0.71, -0.86), v(x - 0.01, 0.84, -0.83), v(x - 0.03, 1.38, -0.57)],
     0.055,
     black2,
   );
   for (const t of [0.3, 0.7]) {
     const y = 0.84 + (1.38 - 0.84) * t,
       z = -0.83 + 0.26 * t;
-    b.rod(v(x + 0.03, y, z), v(-(SIDE - 0.04), y + 0.02, z + 0.04), 0.012, steel, M.Metal, Z.Front);
+    b.rod(v(x - 0.03, y, z), v(SIDE - 0.04, y + 0.02, z + 0.04), 0.012, steel, M.Metal, Z.Front);
   }
   const head = tuning.intake;
   b.block(head.x, head.y, head.z + 0.02, 0.15, 0.13, 0.22, black2, M.Rubber, Z.Roof, 0.045);
@@ -821,7 +908,7 @@ function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {
 function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   const z = TAIL;
   const topHalf = SIDE - TUMBLE;
-  // The rear face as one panel with the two door windows, white over a charcoal band.
+  // The rear face as one panel with the two door windows, white above the two-colour line.
   const e = SIDE - 0.004;
   const outer: Vtx[] = [
     [-e, TWO_TONE],
@@ -850,7 +937,8 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   ];
   const s = new THREE.Shape(rounded(outer));
   for (const w of windows) s.holes.push(new THREE.Path(rounded(w)));
-  extrudeZ(b, s, z - 0.05, z, paint, M.Paint, Z.Rear, 0.016);
+  extrudeZ(b, s, z - 0.05, z, paint, M.Paint, Z.Rear, 0.016, (g) => cutAtSplit(g, true));
+  extrudeZ(b, s, z - 0.05, z, lower, M.Paint, Z.Rear, 0.016, (g) => cutAtSplit(g, false));
   const band = new THREE.Shape(
     rounded([
       [-e, SILL, 0.03],
