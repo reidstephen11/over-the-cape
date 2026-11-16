@@ -113,7 +113,7 @@ const TUMBLE = 0.05;
 const HOOP = 0.46;
 export const DRIVING_LAMP_X = 0.32;
 /** The door spare's hub: on the wide right-hand door. */
-const SPARE_X = 0.25,
+const SPARE_X = 0.27,
   SPARE_Y = 0.6;
 /**
  * Where the two rear doors meet. The narrow door is on the left with the handle and the plate;
@@ -644,10 +644,10 @@ function sides(b: VehicleBuilder): void {
     b.block(side * 0.775, 0.01, AXLE + ARCH.bottom + 0.04, 0.27, 0.024, 0.022, black, M.Metal, Z.Trim);
     b.block(
       side * 0.775,
-      -0.17,
+      -0.14,
       AXLE + ARCH.bottom + 0.04,
       0.27,
-      0.34,
+      0.28,
       0.012,
       black,
       M.Rubber,
@@ -802,13 +802,13 @@ function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {
   b.block(x + 0.03, 0.61, -1.1, 0.11, 0.14, 0.44, black2, M.Rubber, Z.Front, 0.035);
   tubePath(
     b,
-    [v(x, 0.62, -0.95), v(x, 0.71, -0.85), v(x + 0.01, 0.84, -0.8), v(x + 0.03, 1.38, -0.55)],
+    [v(x, 0.62, -0.95), v(x, 0.71, -0.86), v(x + 0.01, 0.84, -0.83), v(x + 0.03, 1.38, -0.57)],
     0.055,
     black2,
   );
   for (const t of [0.3, 0.7]) {
     const y = 0.84 + (1.38 - 0.84) * t,
-      z = -0.8 + 0.25 * t;
+      z = -0.83 + 0.26 * t;
     b.rod(v(x + 0.03, y, z), v(-(SIDE - 0.04), y + 0.02, z + 0.04), 0.012, steel, M.Metal, Z.Front);
   }
   const head = tuning.intake;
@@ -941,7 +941,9 @@ function chassis(b: VehicleBuilder): void {
   b.rod({ x: 0.06, y: -0.08, z: 0.08 }, { x: 0.05, y: -0.12, z: AXLE - 0.12 }, 0.035, shaft);
   b.block(0, 0.1, 2.0, 0.84, 0.2, 0.6, black, M.Metal, Z.Trim, 0.03);
   b.rod({ x: -0.3, y: -0.06, z: -0.8 }, { x: -0.3, y: -0.08, z: 0.9 }, 0.028, steel);
-  b.rod({ x: -0.3, y: -0.08, z: 0.9 }, { x: -0.72, y: -0.1, z: 1.05 }, 0.028, steel);
+  // The tailpipe turns out and ends inboard of the left rear tyre, 11 cm ahead of it. Until v2.03
+  // it ran on to stop 4 cm in front of the tread.
+  b.rod({ x: -0.3, y: -0.08, z: 0.9 }, { x: -0.54, y: -0.1, z: 0.98 }, 0.028, steel);
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()

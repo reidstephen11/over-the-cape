@@ -49,6 +49,6 @@ v1.62 visual review: the roof spare's strap and its two ties move 0.16 m rearwar
 
 ## v2.03 comparison
 
-Compared with `rear-34-1988.jpg`, `rear-34-left-1994.jpg`, `side-right-1989.jpg`, `front-34-1988.jpg` and `front-34-left-1989.jpg`. The rear doors were the mirror image of the real ones and are now the right way round: the narrow door on the left with the handle and the plate, the wide door on the right with the spare (hub 0.25 m right of the centre line, 0.6 m above the origin). Quarter vents, rear mud flaps and the snorkel's body along the guard were added; the winch is inside the bar. Body dimensions are unchanged.
+Compared with `rear-34-1988.jpg`, `rear-34-left-1994.jpg`, `side-right-1989.jpg`, `front-34-1988.jpg` and `front-34-left-1989.jpg`. The rear doors were the mirror image of the real ones and are now the right way round: the narrow door on the left with the handle and the plate, the wide door on the right with the spare (hub 0.27 m right of the centre line, 0.6 m above the origin). Quarter vents, rear mud flaps and the snorkel's body along the guard were added; the winch is inside the bar. Body dimensions are unchanged.
 
 **Still disagrees.** Every photographed car with two colours changes colour just under the door handles; the model's dark band starts lower, at the body-side moulding. The body sides have no crease at handle height. No PATROL 4x4 badge on the rear door or the guards. The photographs are stock cars and show no snorkel, so its side (the left) is not confirmed by them.

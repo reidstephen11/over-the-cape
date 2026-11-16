@@ -590,7 +590,7 @@ function rearBody(b: VehicleBuilder): void {
     b.block(side * (SIDE + 0.011), 0.5, 2.11, 0.008, 0.022, 0.03, steel, M.Metal, Z.Sides);
     // Mud flap behind the rear wheel, hung from a strip bolted under the body side.
     b.block(side * 0.765, 0.058, 1.955, 0.26, 0.024, 0.022, black, M.Metal, Z.Trim);
-    b.block(side * 0.765, -0.14, 1.955, 0.26, 0.38, 0.012, rubber, M.Rubber, Z.Trim, 0.004);
+    b.block(side * 0.765, -0.11, 1.955, 0.26, 0.32, 0.012, rubber, M.Rubber, Z.Trim, 0.004);
   }
   // Fuel filler on the right, behind the door.
   b.slot = M.Metal;
