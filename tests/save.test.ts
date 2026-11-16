@@ -3,7 +3,7 @@ import { highCountryMap } from './fixtures/maps/map';
 import { crebEpisode } from '../src/data/episodes/creb';
 import { Exploration } from '../src/sim/exploration';
 import { startCheckpoint } from '../src/sim/episode';
-import { defaultSettings, loadSave, unlocked, writeSave, type KeyValueStore } from '../src/sim/save/save';
+import { defaultSettings, loadSave, writeSave, type KeyValueStore } from '../src/sim/save/save';
 import { SAVE_KEY } from '../src/core/config';
 import { MemoryStore, saveData } from './helpers/saves';
 
@@ -172,13 +172,6 @@ describe('exploration and saving', () => {
     expect(c.completed).toBe(false);
     expect(c.checkpoint).toMatchObject({ camp: 'lions-den', fuel: 0, spares: 2, tyres: [1, 1, 1, 1] });
     expect(c.checkpoint!.tyreFault).toEqual(['none', 'none', 'none', 'none']);
-  });
-
-  it('opens every episode from the start, the Telegraph Track beside the CREB (v1.96)', () => {
-    expect(unlocked(null, 'creb')).toBe(true);
-    expect(unlocked(saveData(), 'creb')).toBe(true);
-    expect(unlocked(null, 'telegraph')).toBe(true);
-    expect(unlocked(saveData(), 'telegraph')).toBe(true);
   });
 
   it('keeps each episode’s progress, bests and camp apart', () => {

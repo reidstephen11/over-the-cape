@@ -3,7 +3,6 @@ import { DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 'three';
 import { engineSynthTunings } from '../src/data/audio';
 import { ute40Tuning as t } from '../src/data/ute40';
 import { vehicleTuning as shortie } from '../src/data/vehicle';
-import { vehicleChallenges, vehicleOpen } from '../src/data/unlocks';
 import { vehicleOrder, vehicles } from '../src/data/vehicles';
 import { VehicleModel } from '../src/render/vehicleModel';
 import { TRAY_BACK, TRAY_FRONT, DECK } from '../src/render/ute40Body';
@@ -30,12 +29,9 @@ describe('40 Series ute', () => {
     expect(t.intakeHeight).toBeGreaterThan(shortie.intakeHeight);
   });
 
-  it('opens after a finish in the Hilux and is remembered in the save', () => {
-    expect(vehicleOpen('ute40', [])).toBe(false);
-    expect(vehicleOpen('ute40', ['ute40'])).toBe(true);
-    expect(vehicleChallenges.ute40.task).toMatch(/Hilux/);
+  it('is open from the start and is remembered in the save', () => {
     const store = new MemoryStore();
-    writeSave(saveData({ vehicle: 'ute40', unlocked: ['ute40'] }), store);
+    writeSave(saveData({ vehicle: 'ute40' }), store);
     expect(loadSave(store)!.vehicle).toBe('ute40');
   });
 

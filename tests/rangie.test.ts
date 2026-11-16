@@ -3,7 +3,6 @@ import { DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector3 } from 'three';
 import { engineSynthTunings } from '../src/data/audio';
 import { rangieTuning as t } from '../src/data/rangie';
 import { hj60Tuning } from '../src/data/hj60';
-import { vehicleChallenges, vehicleOpen } from '../src/data/unlocks';
 import { vehicleOrder, vehicles } from '../src/data/vehicles';
 import { VehicleModel } from '../src/render/vehicleModel';
 import { loadSave, writeSave } from '../src/sim/save/save';
@@ -34,12 +33,9 @@ describe('Range Rover two-door', () => {
     expect(creep(t)).toBeGreaterThan(1.5);
   });
 
-  it('opens after a finish in the Camel Trophy Land Rover and is remembered in the save', () => {
-    expect(vehicleOpen('rangie', [])).toBe(false);
-    expect(vehicleOpen('rangie', ['rangie'])).toBe(true);
-    expect(vehicleChallenges.rangie.task).toMatch(/Camel Trophy/);
+  it('is open from the start and is remembered in the save', () => {
     const store = new MemoryStore();
-    writeSave(saveData({ vehicle: 'rangie', unlocked: ['rangie'] }), store);
+    writeSave(saveData({ vehicle: 'rangie' }), store);
     expect(loadSave(store)!.vehicle).toBe('rangie');
   });
 

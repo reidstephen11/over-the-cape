@@ -75,10 +75,8 @@ describe('time of day and weather', () => {
 
   it('starts the welcome screen on the last episode and vehicle, carrying on a run under way', () => {
     const s = new MemoryStore();
-    // A vehicle still locked falls back to the 40 Series (v1.06).
+    // Every vehicle is open (since v2.06): the saved one is kept.
     writeSave(saveData({ vehicle: 'perentie' }), s);
-    expect(choiceFromSave(loadSave(s)).vehicle).toBe('shortie');
-    writeSave(saveData({ vehicle: 'perentie', unlocked: ['perentie'] }), s);
     expect(choiceFromSave(loadSave(s))).toEqual({
       episode: 'creb',
       vehicle: 'perentie',

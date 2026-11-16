@@ -21,10 +21,10 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   await expect(page.locator('[data-group="episode"]')).toHaveCount(2);
   await expect(page.locator('[data-group="episode"][data-value="telegraph"]')).toBeEnabled();
   await expect(page.locator('.welcome-upcoming')).toHaveCount(0);
-  // Conditions are the story's until the episode is finished.
-  await expect(page.locator('[data-group="time"]')).toHaveCount(0);
 
   await page.locator('[data-group="setup"]').click();
+  // Nothing is locked (v2.06): conditions can be chosen before the episode is finished.
+  await expect(on('time')).toHaveAttribute('data-value', 'story');
   await page.getByRole('button', { name: /Land Rover 110 Perentie/ }).click();
   await page.locator('[data-group="damage"][data-value="realistic"]').click();
   await expect(page.locator('.damage-note')).toContainText('spare');
