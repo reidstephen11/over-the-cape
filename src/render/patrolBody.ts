@@ -306,9 +306,11 @@ function bonnetAndFace(b: VehicleBuilder): void {
     );
   const upperClip: Vtx[] = [
     [F, t],
-    [F, BONNET_FRONT, 0.045],
+    [F, BONNET_FRONT, 0.07],
     [SCUTTLE - 0.12, BONNET_BACK],
-    [CLIP.back, CLIP.backTop, 0.02],
+    // A sharp corner in profile: rounded 2 cm, less than the 6.6 cm the clip's edges are drawn in
+    // by, it folded over itself and showed as crumpled facets at the top back corner of each guard.
+    [CLIP.back, CLIP.backTop],
     [CLIP.back, t],
     ...archPath(-AXLE, t),
   ];
@@ -316,7 +318,9 @@ function bonnetAndFace(b: VehicleBuilder): void {
   clip(upperClip, lower, 'below');
   clip(
     [
-      [F, SILL + 0.04, 0.04],
+      // Sharp in profile, like the clip's top back corner: rounded 4 cm it folded over itself and
+      // showed as a dark facet under the guard's front lower edge.
+      [F, SILL + 0.04],
       [F, t],
       [-AXLE - archHalf(t), t],
       [-AXLE - archHalf(SILL), SILL],
@@ -336,7 +340,7 @@ function bonnetAndFace(b: VehicleBuilder): void {
       Z.Front,
     );
   // Cowl panel under the windscreen with its vent slots.
-  b.block(0, 0.715, SCUTTLE - 0.06, 1.72, 0.12, 0.14, paint, M.Paint, Z.Front, 0.02);
+  b.block(0, 0.715, SCUTTLE - 0.06, 1.56, 0.12, 0.14, paint, M.Paint, Z.Front, 0.02);
   for (let i = 0; i < 14; i++)
     b.block(-0.52 + i * 0.08, 0.777, SCUTTLE - 0.07, 0.05, 0.004, 0.06, black, M.Rubber, Z.Front);
 
@@ -707,19 +711,26 @@ function sides(b: VehicleBuilder): void {
       b.block(side * (SIDE + 0.004), 0.64, z, 0.012, 0.05, 0.15, black, M.Rubber, Z.Sides, 0.008);
       b.block(side * (SIDE + 0.012), 0.64, z, 0.01, 0.022, 0.11, chrome, M.Metal, Z.Sides, 0.006);
     }
-    // The crease pressed along the body side at the two-colour line, from the nose to the tail.
-    b.block(
-      side * (SIDE + 0.001),
-      SPLIT,
-      (F + 0.1 + TAIL - 0.03) / 2,
-      0.008,
-      0.012,
-      TAIL - 0.03 - F - 0.1,
-      lower.clone().multiplyScalar(0.72),
-      M.Paint,
-      Z.Sides,
-      0.003,
-    );
+    // The crease pressed along the body side at the two-colour line, in lengths that stop at
+    // each shut line: one unbroken bead bridged the gaps between the panels.
+    for (const [from, to] of [
+      [F + 0.14, SCUTTLE - 0.03],
+      [SCUTTLE + 0.03, B_PILLAR - 0.005],
+      [B_PILLAR + 0.015, C_PILLAR - 0.05],
+      [C_PILLAR - 0.03, TAIL - 0.03],
+    ])
+      b.block(
+        side * SIDE,
+        SPLIT,
+        (from + to) / 2,
+        0.006,
+        0.012,
+        to - from,
+        lower.clone().multiplyScalar(0.72),
+        M.Paint,
+        Z.Sides,
+        0.002,
+      );
     // Mud flap behind the rear wheel, hung from a strip under the body's edge.
     b.block(side * 0.775, 0.01, AXLE + ARCH.bottom + 0.04, 0.27, 0.024, 0.022, black, M.Metal, Z.Trim);
     b.block(
@@ -751,8 +762,8 @@ function sides(b: VehicleBuilder): void {
   badgeText(b, 'PATROL 4X4', v(-(SIDE + 0.002), 0.6, -1.08), 0, 1, 0.036, badge, Z.Front);
   badgeText(b, 'PATROL 4X4', v(-0.5, 0.75, TAIL + 0.003), 1, 0, 0.045, badge, Z.Rear);
   // Fuel filler flap on the right rear quarter, below the two-colour line (side-right-1989.jpg).
-  b.block(SIDE + 0.004, 0.485, 2.1, 0.012, 0.15, 0.15, lower, M.Paint, Z.Rear, 0.02);
-  b.block(SIDE + 0.002, 0.485, 2.1, 0.006, 0.16, 0.16, black, M.Rubber, Z.Rear, 0.02);
+  b.block(SIDE + 0.003, 0.485, 2.14, 0.008, 0.15, 0.15, lower, M.Paint, Z.Rear, 0.02);
+  b.block(SIDE + 0.002, 0.485, 2.14, 0.006, 0.16, 0.16, black, M.Rubber, Z.Rear, 0.02);
 }
 
 function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
@@ -839,10 +850,11 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
   b.push()
     .translate(0, y + 0.02, z0 - 0.1)
     .rotate(-0.6, 0, 0);
-  b.block(0, 0, 0, 1.6, 0.012, 0.16, bar, M.Metal, Z.Roof);
+  // 1.5 m wide: at 1.6 m its end was 2.5 cm from the snorkel's head.
+  b.block(0, 0, 0, 1.5, 0.012, 0.16, bar, M.Metal, Z.Roof);
   b.pop();
   for (const side of [-1, 1])
-    b.rod(v(side * 0.79, y + 0.061, z0 - 0.04), v(side * 0.79, y, z0 + 0.02), 0.012, bar, M.Metal, Z.Roof);
+    b.rod(v(side * 0.74, y + 0.061, z0 - 0.04), v(side * 0.79, y, z0 + 0.02), 0.012, bar, M.Metal, Z.Roof);
   // A rolled swag and a jerry can tied to the back of the rack.
   b.slot = M.Fabric;
   b.tag = Z.Roof;
@@ -861,11 +873,13 @@ function roofAndRack(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.Buff
     b.geometry(new THREE.TorusGeometry(0.1215, 0.0025, 6, 48), black);
     b.pop();
   }
-  b.block(0, y + 0.194, 1.3, 0.16, 0.36, 0.34, new THREE.Color('#2F5E37'), M.Paint, Z.Roof, 0.02);
+  // The can stands on a steel tray across three crossbars; it stood on one bar.
+  b.block(0, y + 0.019, 1.34, 0.26, 0.01, 0.7, black, M.Rubber, Z.Roof);
+  b.block(0, y + 0.204, 1.3, 0.16, 0.36, 0.34, new THREE.Color('#2F5E37'), M.Paint, Z.Roof, 0.02);
   // A strap closes around the can and a rack crossbar.
-  b.block(0, y + 0.383, 1.34, 0.2, 0.012, 0.045, black, M.Rubber, Z.Roof);
+  b.block(0, y + 0.393, 1.34, 0.2, 0.012, 0.045, black, M.Rubber, Z.Roof);
   b.block(0, y - 0.02, 1.34, 0.2, 0.012, 0.045, black, M.Rubber, Z.Roof);
-  for (const x of [-0.094, 0.094]) b.block(x, y + 0.1815, 1.34, 0.012, 0.415, 0.045, black, M.Rubber, Z.Roof);
+  for (const x of [-0.094, 0.094]) b.block(x, y + 0.1865, 1.34, 0.012, 0.425, 0.045, black, M.Rubber, Z.Roof);
   // The second spare lies flat at the front of the rack, between the boards, strapped down.
   const sy = y + 0.014 + spareSidewall(wheel) + 0.004,
     sz = 0.32,
@@ -889,7 +903,7 @@ function snorkel(b: VehicleBuilder, tuning: VehicleTuning): void {
   b.block(x - 0.03, 0.61, -1.1, 0.11, 0.14, 0.44, black2, M.Rubber, Z.Front, 0.035);
   tubePath(
     b,
-    [v(x, 0.62, -0.95), v(x, 0.71, -0.86), v(x - 0.01, 0.84, -0.83), v(x - 0.03, 1.38, -0.57)],
+    [v(x, 0.62, -0.95), v(x, 0.71, -0.86), v(x - 0.01, 0.84, -0.83), v(x - 0.03, 1.43, -0.546)],
     0.055,
     black2,
   );
@@ -1136,6 +1150,17 @@ export function buildPatrolWheel(tuning: VehicleTuning): THREE.BufferGeometry {
     b.ring(side * w * 0.5, 0, 0, r * 0.74, 0.004, tyre.clone().multiplyScalar(1.4), M.Rubber, 'x');
     // Rim flange, the dished centre with its ring of holes, hub cap and studs.
     b.ring(side * (w * 0.5 - 0.005), 0, 0, rimR, 0.014, rimColor, M.Paint, 'x');
+    // The rim's well between the disc and the bead: without it there was a slit to see through.
+    b.ring(
+      side * (w * 0.5 - 0.018),
+      0,
+      0,
+      rimR - 0.006,
+      0.012,
+      rimColor.clone().multiplyScalar(0.92),
+      M.Paint,
+      'x',
+    );
     b.slot = M.Paint;
     b.push()
       .translate(side * (w * 0.5 - 0.035), 0, 0)

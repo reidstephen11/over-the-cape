@@ -2094,3 +2094,18 @@ The owner asked for the snorkel on the right and for the GQ to be finished: item
 - **Fuel flap.** In the lower colour and 7.5 cm lower, wholly under the line, as on `side-right-1989.jpg`.
 
 **Where each part is attached and which way it faces.** The snorkel's body is against the right guard's side; its tube is tied to the right windscreen pillar by two stays; its head faces forward. The guard badge lies on the left guard's side, facing out, reading from the front of the car to the back. The door badge lies on the narrow left-hand rear door's face, facing back. The crease beads lie on the body sides.
+
+**The second look.** A reviewer was given 46 pictures and nothing else: the standard set, the 28 audit pictures and ten close-ups (the snorkel from the side, the front, behind and low down, the left guard, the rear, the door badge, the rear quarter, the fuel flap and a front corner). It found nothing floating, facing the wrong way, gaping or below the ground. What it did find, and what was done:
+
+- **Daylight between the snorkel's head and its tube** from behind. The tube runs 5 cm further up, into the head.
+- **The snorkel's head 2.5 cm from the end of the rack's wind deflector.** The deflector is 1.5 m wide (was 1.6 m), 7.5 cm clear of the head. The gap was the same on the left before the snorkel moved.
+- **The crease bead bridged the gap between the guard and the door.** It is laid in four lengths that stop at each shut line, and stands 3 mm proud (was 5 mm), so its front end no longer reads as a small block on the guard.
+- **Crumpled facets at the top back corner of each front guard** (there before this version). The clip's corner there was rounded 2 cm in profile, less than the 6.6 cm its edges are drawn in by, so it folded over itself. It is sharp in profile now, and the corner is clean. The cowl panel under the windscreen is 1.56 m wide (was 1.72 m): its ends stood out through the guards' rounded shoulders.
+- **A slit to see through between each wheel's disc and its rim** (there before). A ring fills the rim's well.
+- **The fuel flap's outline was uneven and its corner looked against the flare.** The flap stands 2 mm proud of its outline (was 5 mm) and is 4 cm further back, 6 cm from the flare.
+- **The jerry can on the rack stood on one crossbar** (there before). It stands on a steel tray across three crossbars, strapped as before.
+- Not changed: a short post above each front tyre is the top of the shock absorber, drawn by the shared suspension; the gap between each guard and front door is wide because the guard's back edge is rounded; faint dotted seams inside the rear arches and along the guard tops; with an axle crossed the mud flap is 7 cm above the block and the raised tyre is close under the flare. A small dark block under each guard's front lower edge is the end of the bull bar's wing, which wraps round the guard's corner.
+
+Each fix was photographed again and read. `tests/spares.test.ts` passes.
+
+77.5k triangles with wheels and boards (body 56.6k), up from 71.6k: the panels cut along the two-colour line, the badges and the rim rings.
