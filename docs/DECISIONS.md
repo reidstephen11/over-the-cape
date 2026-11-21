@@ -2227,3 +2227,14 @@ The owner looked at v2.09 from the side and saw a wedge, and asked how the bonne
 **Where each part is attached and which way it faces.** Nothing was added. The bull bar's hoop still stands on the beam's top, its legs between the grille and the lamps; the lamps face forward in their bezels on the front panel.
 
 **Compared again.** The model was photographed from the camera position worked out for `front-34-left-rn35-2wd.jpg` and put beside it, and from square-on to each side.
+
+**The second look.** A reviewer was given 17 pictures and nothing else: the standard set and nine close-ups (the bonnet square-on from each side, the front three-quarter, the grille, the nose from the side, above and below, the windscreen pillar's foot, and the bonnet from the driver's seat). It found nothing floating, no wheel or spare facing the wrong way and nothing on or below the ground. What it did find, and what was done:
+
+- **A dark pocket at each front corner, behind the bull bar's bend.** With the nose higher, the corner was open between the grille panel's top and the wing's top, outboard of the bonnet's front lip. The lip now runs under each wing's front edge to the guard's corner. Both corners were photographed again, closed.
+- **A short post in the front wheel arch with a cut-off top** (there before v2.09, and noted by that version's reviewer). It is the front spring's hanger, drawn by the shared suspension 0.48 m out; the Hilux's front chassis rails are 0.35 m out, so its top stood in the air. An outrigger from the rail now carries each of the four front hangers. The rear hangers already lie against the rear rails.
+- **The door's window frame ended in a square-cut end on the guard's top.** Its foot runs 2 cm down into the guard.
+- Not changed: **a grey sliver at the end of each wheel box in the tub**, in the picture from above. It is the box's end wall, seen at a grazing angle with the sky reflected in the paint; a close picture from above shows the box whole. **A spring hanger stops a few pixels short of the spring's top leaf**, seen from the ground under the bumper: the shared suspension's hanger and leaf, the same on every leaf-sprung vehicle. **The bull bar's outer uprights stand in front of the corner lamps** from dead ahead, as they did in v2.09. Square black corners behind the centre hoop in the straight-on view are the door mirrors.
+
+`tests/spares.test.ts` passes.
+
+56.5k triangles with wheels and boards (body 40.5k).

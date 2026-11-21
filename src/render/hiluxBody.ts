@@ -351,6 +351,27 @@ function frontEnd(b: VehicleBuilder): void {
       paint,
     );
   }
+  // The same lip under each wing's top, out to the guard's corner: with the nose 6 cm higher
+  // (v2.10) the corner was open between the grille panel and the wing.
+  const wingFront = (x: number) => {
+    const u = THREE.MathUtils.clamp((x - BONNET_HALF - 0.008) / (SIDE - BONNET_HALF - 0.008), 0, 1);
+    return bonnetEdge(NOSE_Z) * (1 - u) + shoulder(NOSE_Z) * u + 0.008 * Math.sin(Math.PI * u);
+  };
+  for (const side of [-1, 1])
+    for (let i = 0; i < 4; i++) {
+      const span = SIDE - BONNET_HALF;
+      const a = BONNET_HALF + (span * i) / 4,
+        c = a + span / 4;
+      // Keep the front face's winding: x rising from the first corner to the last.
+      const [x0, x1] = side > 0 ? [a, c] : [-c, -a];
+      b.quad(
+        { x: x0, y: PANEL.top - 0.012, z: F + 0.006 },
+        { x: x0, y: wingFront(Math.abs(x0)), z: NOSE_Z },
+        { x: x1, y: wingFront(Math.abs(x1)), z: NOSE_Z },
+        { x: x1, y: PANEL.top - 0.012, z: F + 0.006 },
+        paint,
+      );
+    }
   // Scuttle under the windscreen with its air intake slots.
   b.block(0, COWL.y - 0.02, BONNET_BACK, 1.4, 0.035, 0.08, paint, M.Paint, Z.Front, 0.012);
   for (let i = 0; i < 13; i++)
@@ -696,7 +717,7 @@ function cab(b: VehicleBuilder): void {
     );
     // The frame: along the pillar, across the top and down the back.
     b.rod(
-      { x: fx, y: WAIST, z: pillarZ(WAIST) + 0.022 },
+      { x: fx, y: WAIST - 0.02, z: pillarZ(WAIST - 0.02) + 0.022 },
       { x: fx, y: top + 0.004, z: SCREEN_TOP.z + 0.022 },
       0.013,
       paint,
@@ -1098,6 +1119,12 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     );
   }
   for (const z of [-2.0, -0.85, 0.42]) b.block(0, RAIL.y, z, 0.84, 0.08, 0.08, black, M.Metal, Z.Trim);
+  // An outrigger from each front rail to each front spring hanger, which the shared suspension
+  // draws 0.48 m out and 0.12 m up: the rails are 0.35 m out there, so the hangers' tops stood
+  // in the air. The rear rails are 0.42 m out and raised, and the rear hangers lie against them.
+  for (const side of [-1, 1])
+    for (const z of [-AXLE_Z - 0.46, -AXLE_Z + 0.46])
+      b.block(side * 0.4275, 0.085, z, 0.165, 0.09, 0.06, black, M.Metal, Z.Trim);
   const REAR_CROSS = [1.63, 2.37];
   for (const z of REAR_CROSS) b.block(0, RAIL.y + KICK + 0.03, z, 0.84, 0.06, 0.08, black, M.Metal, Z.Trim);
   b.block(0.04, -0.04, -0.32, 0.38, 0.16, 0.62, black, M.Metal, Z.Trim, 0.03);
