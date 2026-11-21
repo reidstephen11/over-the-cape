@@ -2208,3 +2208,33 @@ The owner asked for another vehicle that had not yet been brought up to its phot
 Each fix was photographed again and read. While checking them, the headlamp beams' positions (`lamps.head` in `src/render/vehicleLooks.ts`) were moved to the new lamp centres. `tests/spares.test.ts` passes.
 
 56.1k triangles with wheels and boards (body 40.2k).
+
+## v2.10: the Hilux's bonnet line
+
+The owner looked at v2.09 from the side and saw a wedge, and asked how the bonnet compares with the real truck's. Only the Hilux single cab (`hilux`) changes.
+
+**What was wrong.** v2.09 drew the bonnet's shut line as a straight ramp from the waist at the door (0.74 m above the origin) to a nose 0.47 m up: 0.27 m of fall, with the headlamps 0.36 m up. The real line leaves the cowl nearly level and rolls down towards the nose, 0.21 m in all, and the lamps are 0.40 m up.
+
+**Why.** v2.09 read the bonnet off `front-34-left.jpg`, the white 4WD, and took its camera to be at about the waist's height. It is at about the roof's: the tops of the roof and the bonnet both show. For the cab that made no difference, because those heights were read on one upright line, where a photograph keeps proportions whatever the camera's height. For the bonnet it did, because those points run away from that line towards the nose. With the camera at the roof's height the same picture gives 0.735 m at the cowl, 0.67 m over the front axle and 0.53 m at the nose.
+
+**A lower photograph.** Commons' category for this truck has 108 files and none named as a side view, but `Toyota Hilux N30 001.JPG` (Tennen-Gas, CC BY-SA 3.0) is a three-quarter view of a Japanese two-wheel-drive RN35 taken from 0.11 m above the waist, so it sees the bonnet nearly side-on in height. It is now in the folder as `front-34-left-rn35-2wd.jpg`, the original file. Its horizon was found from the tub's rail and the sill, its scale at each wheel from the tyre, and heights from the hubs: sill 0, waist 0.735, roof 1.235 (which confirm v2.09's cab), shut line 0.73 at the cowl, 0.68 over the front axle and 0.53 at the nose, headlamp centre 0.40 m. Two more low views there could not be fetched at full size from this container; `SOURCES.md` links them.
+
+- **Bonnet line.** `shoulder()` in `src/render/hiluxBody.ts` is a curve: 0.74 m at the door, 0.68 m over the front axle, 0.615 m 0.35 m ahead of it and 0.53 m at the nose (it was 0.74, 0.62, 0.545 and 0.46). The guards' sides, the bonnet, the wing tops, the bonnet's two pressed lines and the guard's pressed line all follow it.
+- **Nose.** The headlamps, grille, bezels, corner lamps and side lamps are 4 cm higher (lamp centre 0.40 m), and the bonnet's edge is 4 cm above the bezels at the sides and about 7 cm in the middle. The bonnet's crown at the nose is 2.4 cm (was 3.5). The panel under the grille is 4 cm taller.
+- **Bull bar.** The centre hoop is 0.66 m up and the branch over each lamp 0.56 m (were 0.6 and 0.5), 0.1 m over the bonnet's edge as before.
+- **Headlamp beams** start at the new lamp centres.
+
+**Where each part is attached and which way it faces.** Nothing was added. The bull bar's hoop still stands on the beam's top, its legs between the grille and the lamps; the lamps face forward in their bezels on the front panel.
+
+**Compared again.** The model was photographed from the camera position worked out for `front-34-left-rn35-2wd.jpg` and put beside it, and from square-on to each side.
+
+**The second look.** A reviewer was given 17 pictures and nothing else: the standard set and nine close-ups (the bonnet square-on from each side, the front three-quarter, the grille, the nose from the side, above and below, the windscreen pillar's foot, and the bonnet from the driver's seat). It found nothing floating, no wheel or spare facing the wrong way and nothing on or below the ground. What it did find, and what was done:
+
+- **A dark pocket at each front corner, behind the bull bar's bend.** With the nose higher, the corner was open between the grille panel's top and the wing's top, outboard of the bonnet's front lip. The lip now runs under each wing's front edge to the guard's corner. Both corners were photographed again, closed.
+- **A short post in the front wheel arch with a cut-off top** (there before v2.09, and noted by that version's reviewer). It is the front spring's hanger, drawn by the shared suspension 0.48 m out; the Hilux's front chassis rails are 0.35 m out, so its top stood in the air. An outrigger from the rail now carries each of the four front hangers. The rear hangers already lie against the rear rails.
+- **The door's window frame ended in a square-cut end on the guard's top.** Its foot runs 2 cm down into the guard.
+- Not changed: **a grey sliver at the end of each wheel box in the tub**, in the picture from above. It is the box's end wall, seen at a grazing angle with the sky reflected in the paint; a close picture from above shows the box whole. **A spring hanger stops a few pixels short of the spring's top leaf**, seen from the ground under the bumper: the shared suspension's hanger and leaf, the same on every leaf-sprung vehicle. **The bull bar's outer uprights stand in front of the corner lamps** from dead ahead, as they did in v2.09. Square black corners behind the centre hoop in the straight-on view are the door mirrors.
+
+`tests/spares.test.ts` passes.
+
+56.5k triangles with wheels and boards (body 40.5k).
