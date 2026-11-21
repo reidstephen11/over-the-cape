@@ -10,14 +10,14 @@ export function hiluxBullBar(b: VehicleBuilder, color: THREE.Color): void {
   b.tag = Z.Front;
   const outline = new THREE.Shape();
   const points = [
-    [-0.98, -2.2],
-    [-0.85, -2.32],
-    [0.85, -2.32],
-    [0.98, -2.2],
-    [0.91, -2.1],
-    [0.77, -2.18],
-    [-0.77, -2.18],
-    [-0.91, -2.1],
+    [-0.9, -2.2],
+    [-0.78, -2.32],
+    [0.78, -2.32],
+    [0.9, -2.2],
+    [0.845, -2.1],
+    [0.72, -2.18],
+    [-0.72, -2.18],
+    [-0.845, -2.1],
   ];
   points.forEach(([x, z], i) => (i ? outline.lineTo(x, z) : outline.moveTo(x, z)));
   outline.closePath();
@@ -52,16 +52,26 @@ export function hiluxBullBar(b: VehicleBuilder, color: THREE.Color): void {
     b.geometry(new THREE.TubeGeometry(path, 96, radius, 12, false), color);
   };
   const z = (y: number) => -2.27 + (y - 0.17) * 0.12;
-  tube([V(-0.44, 0.14, z(0.14)), V(-0.44, 0.7, z(0.7)), V(0.44, 0.7, z(0.7)), V(0.44, 0.14, z(0.14))]);
+  // The hoop stands 0.1 m over the bonnet's low front edge, the branches level with it.
+  // Its legs stand between the grille and the headlamps, clear of the maker's name.
+  const HOOP = 0.6,
+    BRANCH = 0.5,
+    LEG = 0.475,
+    END = 0.81;
+  tube([V(-LEG, 0.14, z(0.14)), V(-LEG, HOOP, z(HOOP)), V(LEG, HOOP, z(HOOP)), V(LEG, 0.14, z(0.14))]);
   for (const s of [-1, 1]) {
     // The branch penetrates the centre post; the lower leg enters the swept beam.
-    tube([V(s * 0.43, 0.59, z(0.59)), V(s * 0.88, 0.59, -2.18), V(s * 0.89, 0.14, -2.18)]);
-    b.block(s * 0.44, 0.19, z(0.19), 0.082, 0.025, 0.075, color, M.Metal, Z.Front, 0.008);
-    b.block(s * 0.89, 0.19, -2.18, 0.075, 0.025, 0.075, color, M.Metal, Z.Front, 0.008);
+    tube([
+      V(s * (LEG - 0.01), BRANCH, z(BRANCH)),
+      V(s * (END - 0.01), BRANCH, -2.18),
+      V(s * END, 0.14, -2.18),
+    ]);
+    b.block(s * LEG, 0.19, z(0.19), 0.082, 0.025, 0.075, color, M.Metal, Z.Front, 0.008);
+    b.block(s * END, 0.19, -2.18, 0.075, 0.025, 0.075, color, M.Metal, Z.Front, 0.008);
     b.rod(V(s * 0.42, 0.08, -2.21), V(s * 0.35, 0.04, -1.91), 0.026, color, M.Metal, Z.Trim);
     for (const y of [0.2, 0.23])
       b.block(
-        s * 0.44,
+        s * LEG,
         y,
         z(0.2) - 0.028,
         0.011,

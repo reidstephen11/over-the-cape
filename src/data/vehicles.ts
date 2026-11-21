@@ -322,8 +322,9 @@ export const vehicles: Record<VehicleId, VehicleDef> = {
     tuning: hiluxTuning,
     blurb: '1979–83 Toyota Hilux 4WD single cab with the styleside tub, 2.0 L petrol four, four-speed.',
     cabin: {
-      // Low on the bench seat, close under the roof, looking down the long bonnet.
-      eye: { x: 0.37, y: 1.06, z: 0.05 },
+      // Low on the bench seat, close under the roof, looking down the falling bonnet. The eye
+      // is 0.145 m under the windscreen's header (it came down 3 cm with the roof in v2.09).
+      eye: { x: 0.37, y: 1.03, z: 0.05 },
       pitch: -0.13,
       dialY: 0.69,
       dialZ: -0.535,

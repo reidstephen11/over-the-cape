@@ -50,18 +50,19 @@ export const hiluxTuning: VehicleTuning = {
     // Engine bay between the front wheels and the sump under it.
     { cx: 0, cy: 0.32, cz: -1.53, hx: 0.5, hy: 0.28, hz: 0.6 },
     { cx: 0, cy: -0.05, cz: -1.72, hx: 0.28, hy: 0.08, hz: 0.24 },
-    // The cab, from the sills to the roof.
-    { cx: 0, cy: 0.33, cz: -0.28, hx: 0.82, hy: 0.33, hz: 0.64 },
-    { cx: 0, cy: 0.93, cz: -0.12, hx: 0.78, hy: 0.34, hz: 0.48 },
+    // The cab, from the sills to the waist and from the waist to the roof (v2.09: the waist is
+    // 0.74 m up and the body 1.61 m wide).
+    { cx: 0, cy: 0.37, cz: -0.28, hx: 0.8, hy: 0.37, hz: 0.64 },
+    { cx: 0, cy: 0.99, cz: -0.14, hx: 0.74, hy: 0.26, hz: 0.5 },
     // The tub: between the rear wheels, full width ahead of and behind them, and its top
     // over them.
     { cx: 0, cy: 0.3, cz: 1.43, hx: 0.58, hy: 0.3, hz: 1.0 },
-    { cx: 0, cy: 0.3, cz: 0.69, hx: 0.82, hy: 0.3, hz: 0.26 },
-    { cx: 0, cy: 0.3, cz: 2.13, hx: 0.82, hy: 0.3, hz: 0.3 },
-    { cx: 0, cy: 0.5, cz: 1.43, hx: 0.82, hy: 0.1, hz: 1.0 },
+    { cx: 0, cy: 0.37, cz: 0.69, hx: 0.8, hy: 0.37, hz: 0.26 },
+    { cx: 0, cy: 0.37, cz: 2.13, hx: 0.8, hy: 0.37, hz: 0.3 },
+    { cx: 0, cy: 0.58, cz: 1.43, hx: 0.8, hy: 0.16, hz: 1.0 },
     // Bull bar, the rear step bumper, the spare slung under the tub, and the rack's top.
     { cx: 0, cy: 0.27, cz: -2.27, hx: 0.85, hy: 0.24, hz: 0.07 },
-    { cx: 0, cy: 0.1, cz: 2.5, hx: 0.82, hy: 0.06, hz: 0.07 },
+    { cx: 0, cy: 0.1, cz: 2.5, hx: 0.8, hy: 0.06, hz: 0.07 },
     { cx: 0, cy: -0.205, cz: 2.02, hx: 0.4, hy: 0.1, hz: 0.4 },
     { cx: 0, cy: 1.28, cz: 1.42, hx: 0.8, hy: 0.04, hz: 1.0 },
   ],
