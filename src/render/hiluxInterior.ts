@@ -19,12 +19,12 @@ export function addHiluxInterior(b: VehicleBuilder, redlineRpm: number): void {
     trim = new THREE.Color('#3A3936'),
     radio = new THREE.Color('#151716');
   // Floor mat, the transmission tunnel and the footwell bulkhead.
-  b.block(0, 0.05, -0.3, 1.56, 0.03, 1.22, mat, M.Rubber, Z.Trim);
+  b.block(0, 0.05, -0.3, 1.5, 0.03, 1.22, mat, M.Rubber, Z.Trim);
   b.block(0, 0.12, -0.45, 0.32, 0.12, 0.7, mat, M.Rubber, Z.Trim, 0.04);
-  b.block(0, 0.34, -0.9, 1.58, 0.56, 0.03, paint.clone().multiplyScalar(0.6), M.Paint, Z.Trim);
+  b.block(0, 0.385, -0.885, 1.52, 0.65, 0.03, paint.clone().multiplyScalar(0.6), M.Paint, Z.Trim);
   // Dash: the lower panel, a padded top under the screen, and the instrument hood.
-  b.block(0, 0.58, -0.68, 1.56, 0.18, 0.26, dark, M.Rubber, Z.Trim, 0.02);
-  b.block(0, 0.685, -0.7, 1.58, 0.06, 0.34, vinyl, M.Rubber, Z.Trim, 0.025);
+  b.block(0, 0.58, -0.68, 1.5, 0.18, 0.26, dark, M.Rubber, Z.Trim, 0.02);
+  b.block(0, 0.685, -0.7, 1.52, 0.06, 0.34, vinyl, M.Rubber, Z.Trim, 0.025);
   b.block(0.37, 0.69, -0.6, 0.42, 0.16, 0.12, dark, M.Rubber, Z.Trim, 0.02);
   b.block(0.37, 0.775, -0.57, 0.44, 0.03, 0.14, vinyl, M.Rubber, Z.Trim, 0.012);
   addDialFaces(b, cabin, redlineRpm);
@@ -56,10 +56,10 @@ export function addHiluxInterior(b: VehicleBuilder, redlineRpm: number): void {
     b.block(x, 0.19, -0.67, w, 0.08, 0.015, dark, M.Rubber, Z.Trim);
   }
   // Bench seat across the cab, with pleats and a low back against the rear wall.
-  b.block(0, 0.24, 0.02, 1.46, 0.14, 0.5, vinyl, M.Fabric, Z.Trim, 0.045);
+  b.block(0, 0.24, 0.02, 1.44, 0.14, 0.5, vinyl, M.Fabric, Z.Trim, 0.045);
   b.block(0, 0.12, 0.05, 1.3, 0.12, 0.44, dark, M.Rubber, Z.Trim);
   b.push().rotate(-0.16, 0, 0);
-  b.block(0, 0.58, 0.32, 1.46, 0.5, 0.11, vinyl, M.Fabric, Z.Trim, 0.04);
+  b.block(0, 0.58, 0.32, 1.44, 0.5, 0.11, vinyl, M.Fabric, Z.Trim, 0.04);
   for (let i = 0; i < 9; i++)
     b.block(-0.6 + i * 0.15, 0.58, 0.376, 0.012, 0.44, 0.006, dark, M.Fabric, Z.Trim);
   b.pop();
@@ -79,14 +79,15 @@ export function addHiluxInterior(b: VehicleBuilder, redlineRpm: number): void {
   b.block(0.0, 0.19, -0.5, 0.24, 0.04, 0.16, mat, M.Rubber, Z.Trim, 0.03);
   // Door trims with a pull handle and a window winder; the painted inner skin above them.
   for (const side of [-1, 1]) {
-    const x = side * 0.79;
+    const x = side * 0.765;
     b.block(x, 0.32, -0.34, 0.02, 0.5, 1.02, trim, M.Fabric, Z.Trim, 0.01);
-    b.block(x, 0.585, -0.34, 0.025, 0.04, 1.08, paint, M.Paint, Z.Trim, 0.01);
+    // The painted inner skin runs up to the waist, 0.74 m up since v2.09.
+    b.block(x, 0.655, -0.34, 0.025, 0.17, 1.08, paint, M.Paint, Z.Trim, 0.01);
     b.block(x - side * 0.02, 0.44, -0.16, 0.025, 0.04, 0.2, dark, M.Rubber, Z.Trim, 0.01);
     b.rod({ x: x - side * 0.015, y: 0.4, z: -0.5 }, { x: x - side * 0.05, y: 0.4, z: -0.5 }, 0.007, chrome);
     b.rod({ x: x - side * 0.05, y: 0.4, z: -0.5 }, { x: x - side * 0.05, y: 0.33, z: -0.46 }, 0.006, chrome);
   }
   // Sun visors under the front of the roof, and the headlining.
-  for (const x of [-0.4, 0.4]) b.block(x, 1.21, -0.44, 0.36, 0.012, 0.11, trim, M.Fabric, Z.Trim, 0.005);
-  b.block(0, 1.214, -0.07, 1.5, 0.008, 0.82, new THREE.Color('#BDB6A3'), M.Fabric, Z.Trim);
+  for (const x of [-0.4, 0.4]) b.block(x, 1.16, -0.52, 0.36, 0.012, 0.11, trim, M.Fabric, Z.Trim, 0.005);
+  b.block(0, 1.172, -0.125, 1.5, 0.008, 0.91, new THREE.Color('#BDB6A3'), M.Fabric, Z.Trim);
 }

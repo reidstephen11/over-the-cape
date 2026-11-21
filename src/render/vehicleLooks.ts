@@ -181,10 +181,13 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     // Single-stage enamel: some gloss, a little worn.
     paint: { roughness: 0.42, metalness: 0.08, clearcoat: 0.45, clearcoatRoughness: 0.32 },
     springs: 'leaf',
+    // Each shock hangs from a bracket under the roof of its wheel well (v2.09), not from an
+    // open tower of two braces whose top stood in the arch.
+    suspension: { ...DEFAULT_LAYOUT, leafShockTop: { front: 0.415, rear: 0.415, axleX: 0.52 } },
     lamps: {
       head: [
-        { x: -0.6, y: 0.416, z: -2.21 },
-        { x: 0.6, y: 0.416, z: -2.21 },
+        { x: -0.58, y: 0.36, z: -2.21 },
+        { x: 0.58, y: 0.36, z: -2.21 },
       ],
     },
   },
