@@ -14,8 +14,8 @@ import { mountSpare } from './spares';
 /**
  * Early Toyota Hilux 4WD single cab (1979–83) with the factory styleside tub, in deep
  * red. The body is 1.61 m wide with the 4WD's wheel-arch flares standing out to 1.69 m. The
- * bonnet falls 0.28 m from the cowl to a low nose, where round headlamps in square bezels
- * sit either side of a black four-panel grille. The cab is low: 0.74 m of body under the
+ * bonnet leaves the cowl nearly level and rolls down 0.21 m to the nose, where round
+ * headlamps in square bezels sit either side of a black four-panel grille. The cab is low: 0.74 m of body under the
  * waist and 0.5 m of glass and roof above it, with a windscreen leaning back 35 degrees, a
  * vent window in each door and a black vent behind it. The tub's rail is level with the
  * waist; its tailgate carries TOYOTA across it between tall corner lamps, over a chrome step
@@ -63,7 +63,7 @@ const RACK_Z = { front: TUB_FRONT + 0.07, rear: TAIL - 0.06 };
 const KICK = 0.155;
 const AXLE_Z = 1.4;
 /** Headlamp centres, and the grille and lamp panel round them. */
-const LAMP = { x: 0.58, y: 0.36 };
+const LAMP = { x: 0.58, y: 0.4 };
 const PANEL = { top: LAMP.y + 0.1, bottom: LAMP.y - 0.1 };
 /** The two pressed lines along the body: one under the door handles, one low on the doors. */
 const UPPER_CREASE = 0.665;
@@ -71,13 +71,18 @@ const LOWER_CREASE = 0.24;
 /** The cab leans in above the waist: 11% narrower at the drip rails. */
 const TUMBLEHOME = { lean: 0.11, over: 0.44 };
 
+/** How far the bonnet's shut line falls from the door to the nose, and how it curves. */
+const BONNET_FALL = { drop: 0.21, curve: 1.45 };
+
 /**
- * The top of each front guard's side, which is also the bonnet's shut line: it falls from the
- * waist at the door to the low nose (front-34-left.jpg, measured on the door's side plane).
+ * The top of each front guard's side, which is also the bonnet's shut line. It leaves the
+ * waist at the door nearly level and rolls down towards the nose: 6 cm lower over the front
+ * axle and 21 cm lower at the nose (front-34-left-rn35-2wd.jpg and front-34-left.jpg, measured
+ * on the body's side plane). Until v2.10 it was a straight ramp that fell 28 cm, a wedge.
  */
 function shoulder(z: number): number {
-  const t = THREE.MathUtils.clamp((z - NOSE_Z) / (DOOR.front - 0.01 - NOSE_Z), 0, 1);
-  return 0.46 + (WAIST - 0.46) * t;
+  const u = THREE.MathUtils.clamp((DOOR.front - 0.01 - z) / (DOOR.front - 0.01 - NOSE_Z), 0, 1);
+  return WAIST - BONNET_FALL.drop * u ** BONNET_FALL.curve;
 }
 
 /** The bonnet's edge beside the guard, a little above the guard's shoulder. */
@@ -85,7 +90,7 @@ const bonnetEdge = (z: number) => shoulder(z) + 0.012;
 /** The bonnet's height across the car: crowned, less so towards the windscreen. */
 function bonnetY(x: number, z: number): number {
   const t = (z - NOSE_Z) / (BONNET_BACK - NOSE_Z);
-  return bonnetEdge(z) + 0.035 * (1 - 0.6 * t) * (1 - (x / BONNET_HALF) ** 2);
+  return bonnetEdge(z) + (0.024 - 0.01 * t) * (1 - (x / BONNET_HALF) ** 2);
 }
 
 /**
@@ -277,8 +282,8 @@ function bonnet(b: VehicleBuilder): void {
     b.geometry(wing, paint);
     // The two pressed lines that set off the bonnet's raised centre.
     b.chain(
-      [0, 0.25, 0.5, 0.75, 1].map((t) => {
-        const z = NOSE_Z + 0.03 + (BONNET_BACK - NOSE_Z - 0.06) * t;
+      Array.from({ length: 13 }, (_, i) => {
+        const z = NOSE_Z + 0.03 + ((BONNET_BACK - NOSE_Z - 0.06) * i) / 12;
         return { x: side * 0.34, y: bonnetY(0.34, z) + 0.001, z };
       }),
       0.004,
@@ -417,8 +422,9 @@ function frontEnd(b: VehicleBuilder): void {
     sideText(b, '4WD', side, 0.5, -1.0, 0.055, chrome);
     // The upper pressed line, falling with the guard's shoulder to the nose.
     b.chain(
-      [0, 0.25, 0.5, 0.75, 1].map((t) => {
-        const z = F + 0.2 + (DOOR.front - 0.03 - F - 0.2) * t;
+      Array.from({ length: 9 }, (_, i) => {
+        const t = i / 8,
+          z = F + 0.2 + (DOOR.front - 0.03 - F - 0.2) * t;
         return { x: side * (SIDE + 0.011), y: shoulder(z) - 0.075 + 0.045 * (1 - t), z };
       }),
       0.004,
@@ -460,7 +466,7 @@ function frontEnd(b: VehicleBuilder): void {
     dir: -1,
   });
   // The valance under the grille, the bar's brackets and the sump guard.
-  b.block(0, 0.195, F + 0.02, 2 * SIDE - 0.03, 0.14, 0.05, paint, M.Paint, Z.Front, 0.018);
+  b.block(0, 0.215, F + 0.02, 2 * SIDE - 0.03, 0.18, 0.05, paint, M.Paint, Z.Front, 0.018);
   for (const x of [-0.42, 0.42]) b.block(x, 0.04, F + 0.05, 0.06, 0.06, 0.14, black, M.Metal, Z.Trim);
   b.block(0, -0.05, -1.72, 0.4, 0.15, 0.46, black, M.Metal, Z.Trim, 0.02);
 }

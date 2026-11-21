@@ -52,10 +52,10 @@ export function hiluxBullBar(b: VehicleBuilder, color: THREE.Color): void {
     b.geometry(new THREE.TubeGeometry(path, 96, radius, 12, false), color);
   };
   const z = (y: number) => -2.27 + (y - 0.17) * 0.12;
-  // The hoop stands 0.1 m over the bonnet's low front edge, the branches level with it.
+  // The hoop stands 0.1 m over the bonnet's front edge, the branches level with it.
   // Its legs stand between the grille and the headlamps, clear of the maker's name.
-  const HOOP = 0.6,
-    BRANCH = 0.5,
+  const HOOP = 0.66,
+    BRANCH = 0.56,
     LEG = 0.475,
     END = 0.81;
   tube([V(-LEG, 0.14, z(0.14)), V(-LEG, HOOP, z(HOOP)), V(LEG, HOOP, z(HOOP)), V(LEG, 0.14, z(0.14))]);

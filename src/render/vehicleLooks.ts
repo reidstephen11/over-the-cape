@@ -186,8 +186,8 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     suspension: { ...DEFAULT_LAYOUT, leafShockTop: { front: 0.415, rear: 0.415, axleX: 0.52 } },
     lamps: {
       head: [
-        { x: -0.58, y: 0.36, z: -2.21 },
-        { x: 0.58, y: 0.36, z: -2.21 },
+        { x: -0.58, y: 0.4, z: -2.21 },
+        { x: 0.58, y: 0.4, z: -2.21 },
       ],
     },
   },
