@@ -48,7 +48,7 @@ The windscreen pillar runs back 0.29 m over the height of the glass (34 degrees 
 
 ## Gaps
 
-No true top view and **no side-on view**: `side-1980-4wd.jpg` is a front three-quarter view despite its name. No straight rear view either: `rear-utility-2wd.jpg` is a rear three-quarter of the two-wheel-drive ute. No free factory blueprint. Wikimedia refused this project's container again in November 2026 (HTTP 429 on every request), so no profile could be added; look for one in Commons' Toyota Hilux (N30/N40) category from a machine it will serve.
+No true top view and **no side-on view**: `side-1980-4wd.jpg` is a front three-quarter view despite its name. No straight rear view either: `rear-utility-2wd.jpg` is a rear three-quarter of the two-wheel-drive ute. No free factory blueprint. No photograph shows the chassis from the side: the model's rails kick up 0.155 m over the rear axle and the under-tub spare's cradle is 0.35 m off the ground, both estimates. Wikimedia refused this project's container again in November 2026 (HTTP 429 on every request), so no profile could be added; look for one in Commons' Toyota Hilux (N30/N40) category from a machine it will serve.
 
 ## Photographs
 

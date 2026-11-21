@@ -57,6 +57,10 @@ const TUB_FRONT = 0.43;
 const TAIL = 2.43;
 const TUB_FLOOR = 0.33;
 const RACK_TOP = 1.31;
+/** The rack's front frame, 7 cm behind the tub's front wall, and its rear frame. */
+const RACK_Z = { front: TUB_FRONT + 0.07, rear: TAIL - 0.06 };
+/** The rear chassis rails stand 0.155 m higher than the front ones: the frame kicks up over the axle. */
+const KICK = 0.155;
 const AXLE_Z = 1.4;
 /** Headlamp centres, and the grille and lamp panel round them. */
 const LAMP = { x: 0.58, y: 0.36 };
@@ -405,7 +409,7 @@ function frontEnd(b: VehicleBuilder): void {
     // Tall clear parking lamp at the corner, wrapping round onto the guard.
     b.block(side * 0.725, LAMP.y, F - 0.03, 0.07, 0.19, 0.02, argent, M.Metal, Z.Front, 0.008);
     b.block(side * 0.725, LAMP.y, F - 0.04, 0.052, 0.17, 0.01, lens, M.Lamp, Z.Front, 0.005);
-    b.block(side * (SIDE + 0.004), LAMP.y, F + 0.05, 0.012, 0.17, 0.08, lens, M.Lamp, Z.Front, 0.005);
+    b.block(side * (SIDE + 0.011), LAMP.y, F + 0.05, 0.012, 0.17, 0.08, lens, M.Lamp, Z.Front, 0.005);
     // Amber side lamp on the guard ahead of the wheel opening.
     b.block(side * (SIDE + 0.008), LAMP.y + 0.02, -1.99, 0.014, 0.05, 0.11, black, M.Rubber, Z.Front, 0.008);
     b.block(side * (SIDE + 0.016), LAMP.y + 0.02, -1.99, 0.009, 0.036, 0.092, amber, M.Amber, Z.Front, 0.007);
@@ -475,11 +479,14 @@ function windscreen(b: VehicleBuilder): void {
   for (const x of [-pillar + 0.045, pillar - 0.045])
     b.block(x, L / 2, 0.002, 0.026, L, 0.02, rubber, M.Rubber, Z.Front);
   for (const x of [-pillar, pillar])
-    b.block(x, L / 2, 0.01, 0.07, L + 0.02, 0.05, paint, M.Paint, Z.Front, 0.012);
+    b.block(x, L / 2 - 0.02, 0.01, 0.07, L + 0.06, 0.05, paint, M.Paint, Z.Front, 0.012);
   // Wipers parked along the bottom of the screen.
   for (const x of [0.5, -0.12]) {
     b.rod({ x, y: 0.05, z: -0.02 }, { x: x - 0.42, y: 0.08, z: -0.02 }, 0.006, black, M.Rubber, Z.Front);
     b.rod({ x, y: 0.055, z: -0.026 }, { x: x - 0.38, y: 0.085, z: -0.026 }, 0.004, black, M.Rubber, Z.Front);
+    // Each arm comes up from a spindle on the scuttle.
+    b.rod({ x, y: 0.05, z: -0.02 }, { x: x + 0.025, y: -0.014, z: -0.03 }, 0.006, black, M.Rubber, Z.Front);
+    b.block(x + 0.025, -0.014, -0.03, 0.03, 0.02, 0.03, black, M.Rubber, Z.Front, 0.006);
   }
   // Rear-view mirror inside the top of the screen, on a stem from the header.
   b.block(0, L - 0.085, 0.05, 0.2, 0.06, 0.02, black, M.Rubber, Z.Trim, 0.01);
@@ -671,7 +678,7 @@ function cab(b: VehicleBuilder): void {
       g3 = { x: gx, y: top, z: SCREEN_TOP.z + 0.03 };
     b.quad(g0, g1, g2, g3, glass);
     // The divider runs up to where it meets the windscreen pillar.
-    const ventTop = COWL.y + ((vent - COWL.z) * (SCREEN_TOP.y - COWL.y)) / (SCREEN_TOP.z - COWL.z) - 0.01;
+    const ventTop = COWL.y + ((vent - COWL.z) * (SCREEN_TOP.y - COWL.y)) / (SCREEN_TOP.z - COWL.z) - 0.035;
     const fx = gx + side * 0.004;
     b.rod(
       { x: fx, y: WAIST + 0.01, z: vent },
@@ -774,7 +781,7 @@ function cab(b: VehicleBuilder): void {
 
 function tub(b: VehicleBuilder): void {
   for (const side of [-1, 1]) {
-    archPanel(b, side, TUB_FRONT, TAIL, AXLE_Z, () => WAIST, Z.Rear, 0.51);
+    archPanel(b, side, TUB_FRONT, TAIL, AXLE_Z, () => WAIST, Z.Rear, 0.492);
     // Capping rail along the top of each side with its rolled outer lip, and the rope hooks
     // under the lip (rear-34-right.jpg, rear-utility-2wd.jpg).
     b.block(
@@ -826,32 +833,18 @@ function tub(b: VehicleBuilder): void {
     b.block(lx, 0.555, TAIL + 0.02, 0.07, 0.12, 0.012, amber, M.Amber, Z.Rear, 0.006);
     b.block(lx, 0.455, TAIL + 0.02, 0.07, 0.065, 0.012, lens, M.Metal, Z.Rear, 0.006);
     b.block(lx, 0.325, TAIL + 0.02, 0.07, 0.18, 0.012, red, M.Red, Z.Rear, 0.006);
-    // Hollow wheel housing: roof, inboard wall and end walls, open underneath.
+    // Hollow wheel housing: roof, inboard wall and end walls, open underneath. The inboard wall
+    // stands inside the dark well wall, so the tub shows paint and the wheel opening shows dark.
     const innerPaint = paint.clone().multiplyScalar(0.8);
-    b.block(side * 0.645, 0.5, AXLE_Z, 0.29, 0.025, 1.0, innerPaint, M.Paint, Z.Trim);
-    b.block(
-      side * 0.5125,
-      (TUB_FLOOR + 0.5) / 2,
-      AXLE_Z,
-      0.025,
-      0.5 - TUB_FLOOR,
-      1.0,
-      innerPaint,
-      M.Paint,
-      Z.Trim,
-    );
+    const HOUSING = { in: 0.4575, out: SIDE - 0.015, top: 0.5 };
+    const hx = (HOUSING.in + HOUSING.out) / 2,
+      hw = HOUSING.out - HOUSING.in,
+      hy = (TUB_FLOOR + HOUSING.top) / 2,
+      hh = HOUSING.top - TUB_FLOOR;
+    b.block(side * hx, HOUSING.top, AXLE_Z, hw, 0.025, 1.0, innerPaint, M.Paint, Z.Trim);
+    b.block(side * (HOUSING.in + 0.0125), hy, AXLE_Z, 0.025, hh, 1.0, innerPaint, M.Paint, Z.Trim);
     for (const dz of [-0.4875, 0.4875])
-      b.block(
-        side * 0.645,
-        (TUB_FLOOR + 0.5) / 2,
-        AXLE_Z + dz,
-        0.29,
-        0.5 - TUB_FLOOR,
-        0.025,
-        innerPaint,
-        M.Paint,
-        Z.Trim,
-      );
+      b.block(side * hx, hy, AXLE_Z + dz, hw, hh, 0.025, innerPaint, M.Paint, Z.Trim);
   }
   // A mud flap behind each rear wheel, hung from a strip under the tub's edge
   // (rear-utility-2wd.jpg, front-34-left.jpg): its foot is 0.27 m off the ground.
@@ -935,13 +928,13 @@ function tub(b: VehicleBuilder): void {
     y: (gateFoot + WAIST) / 2 - 0.085,
     dir: 1,
   });
-  // The rear valance under the tailgate.
+  // The rear valance under the tailgate; the bumper's brackets pass under it.
   b.block(
     0,
-    (SILL + gateFoot) / 2 + 0.02,
+    (0.15 + gateFoot) / 2,
     TAIL - 0.005,
     gateW + 0.02,
-    gateFoot - SILL - 0.04,
+    gateFoot - 0.15,
     0.03,
     paint,
     M.Paint,
@@ -973,10 +966,10 @@ function tub(b: VehicleBuilder): void {
   // Chrome step bumper with a rubber tread, its brackets and the rear plate.
   b.block(0, 0.1, 2.5, 2 * SIDE - 0.02, 0.11, 0.1, chrome, M.Metal, Z.Rear, 0.025);
   b.block(0, 0.158, 2.49, 0.5, 0.012, 0.08, rubber, M.Rubber, Z.Rear, 0.004);
-  for (const x of [-0.42, 0.42]) b.block(x, 0.04, 2.44, 0.06, 0.07, 0.12, black, M.Metal, Z.Trim);
+  for (const x of [-0.42, 0.42]) b.block(x, 0.1, 2.42, 0.06, 0.07, 0.14, black, M.Metal, Z.Trim);
   numberPlate(b, 0, 0.1, 2.556, 1, 'RN-036', maroon);
   // A jerry can strapped against the front wall, and a steel toolbox.
-  strappedCan(b, -0.55, TUB_FLOOR + 0.25, TUB_FRONT + 0.17);
+  strappedCan(b, -0.55, TUB_FLOOR + 0.25);
   b.block(
     0.4,
     TUB_FLOOR + 0.13,
@@ -1005,15 +998,23 @@ function tub(b: VehicleBuilder): void {
 }
 
 /** Pressed-steel jerry can, standing upright, with its handles and cap, and a strap round it. */
-function strappedCan(b: VehicleBuilder, x: number, y: number, z: number): void {
+/**
+ * It stands on the floor just behind the rack's headboard, and the strap goes round the can and
+ * the headboard's lower rail (the rail used to pass through the can).
+ */
+function strappedCan(b: VehicleBuilder, x: number, y: number): void {
+  const railY = WAIST + 0.03,
+    z = RACK_Z.front + 0.2,
+    front = RACK_Z.front - 0.024,
+    back = z + 0.175;
   jerryCan(b, x, y, z, { colour: new THREE.Color('#5E6A43'), zone: Z.Trim, width: 0.17, ribX: 0.087 });
-  b.block(x, y + 0.05, z, 0.19, 0.035, 0.36, black, M.Rubber, Z.Trim);
+  b.block(x, railY, (front + back) / 2, 0.19, 0.035, back - front, black, M.Rubber, Z.Trim);
 }
 
 function rack(b: VehicleBuilder): void {
   const r = 0.022;
-  const fz = TUB_FRONT + 0.05,
-    rz = TAIL - 0.06,
+  const fz = RACK_Z.front,
+    rz = RACK_Z.rear,
     x = SIDE - 0.045,
     mid = (WAIST + RACK_TOP) / 2;
   // Headboard frame behind the cab (with bars guarding the rear window) and the rear frame.
@@ -1044,13 +1045,15 @@ function rack(b: VehicleBuilder): void {
 }
 
 function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeometry): void {
-  // Ladder frame, crossmembers, gearbox and transfer case, propshafts, tank and exhaust.
+  // Ladder frame, crossmembers, gearbox and transfer case, propshafts, tank and exhaust. Behind
+  // the cab each rail kicks up over the rear axle (KICK), which lifts the spare with it.
+  const RAIL = { y: -0.02, h: 0.15, kickFrom: 0.62, kickTo: 0.9, end: 2.35 };
   for (const side of [-1, 1]) {
     const stations = [
       [-1.99, 0.35],
       [-0.8, 0.35],
       [-0.5, 0.42],
-      [2.35, 0.42],
+      [RAIL.kickFrom + 0.04, 0.42],
     ];
     const profile = new THREE.Shape();
     const points = [
@@ -1060,17 +1063,37 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     points.forEach(([x, z], i) => (i ? profile.lineTo(x, z) : profile.moveTo(x, z)));
     profile.closePath();
     const rail = new THREE.ExtrudeGeometry(profile, {
-      depth: 0.15,
+      depth: RAIL.h,
       bevelEnabled: false,
     });
     rail.rotateX(Math.PI / 2);
-    rail.translate(0, 0.055, 0);
+    rail.translate(0, RAIL.y + RAIL.h / 2, 0);
     b.slot = M.Metal;
     b.tag = Z.Trim;
     b.geometry(rail, black);
+    // The kick-up and the raised rear length.
+    const run = RAIL.kickTo - RAIL.kickFrom;
+    b.slot = M.Metal;
+    b.push()
+      .translate(side * 0.42, RAIL.y + KICK / 2, (RAIL.kickFrom + RAIL.kickTo) / 2)
+      .rotate(-Math.atan2(KICK, run), 0, 0);
+    b.box(0.09, RAIL.h, Math.hypot(KICK, run) + 0.05, black);
+    b.pop();
+    b.block(
+      side * 0.42,
+      RAIL.y + KICK,
+      (RAIL.kickTo + RAIL.end) / 2,
+      0.09,
+      RAIL.h,
+      RAIL.end - RAIL.kickTo + 0.04,
+      black,
+      M.Metal,
+      Z.Trim,
+    );
   }
-  for (const z of [-2.0, -0.85, 0.42, 1.75, 2.38])
-    b.block(0, -0.02, z, 0.84, 0.08, 0.08, black, M.Metal, Z.Trim);
+  for (const z of [-2.0, -0.85, 0.42]) b.block(0, RAIL.y, z, 0.84, 0.08, 0.08, black, M.Metal, Z.Trim);
+  const REAR_CROSS = [1.63, 2.37];
+  for (const z of REAR_CROSS) b.block(0, RAIL.y + KICK + 0.03, z, 0.84, 0.06, 0.08, black, M.Metal, Z.Trim);
   b.block(0.04, -0.04, -0.32, 0.38, 0.16, 0.62, black, M.Metal, Z.Trim, 0.03);
   const shaft = steel.clone().multiplyScalar(0.6);
   b.rod({ x: 0.1, y: -0.08, z: -0.6 }, { x: 0.08, y: -0.11, z: -1.27 }, 0.03, shaft);
@@ -1086,33 +1109,60 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.075, 0.075, 0.5, 12), shaft);
   b.pop();
-  b.rod({ x: 0.3, y: -0.08, z: 0.88 }, { x: 0.32, y: -0.04, z: 1.7 }, 0.024, steel);
-  b.rod({ x: 0.32, y: -0.04, z: 1.7 }, { x: 0.62, y: -0.05, z: 2.18 }, 0.024, steel);
-  // The spare wheel slung flat under the back of the tub, below the frame rails and the two
-  // rear crossmembers, on two cradle bars.
-  const spareY = -0.1 - tuning.wheelWidth / 2 - 0.01;
+  // The tailpipe climbs over the rear axle inside the frame, crosses over the right-hand rail
+  // under the tub's floor, and comes down behind the wheel and its mud flap. It used to run
+  // straight back at axle height, through the rail.
+  b.chain(
+    [
+      { x: 0.3, y: -0.07, z: 0.86 },
+      { x: 0.3, y: 0.07, z: 1.12 },
+      { x: 0.3, y: 0.07, z: 1.36 },
+      { x: 0.31, y: 0.255, z: 1.5 },
+      { x: 0.34, y: 0.255, z: 1.86 },
+      { x: 0.56, y: 0.255, z: 2.02 },
+      { x: 0.62, y: 0.0, z: 2.14 },
+      { x: 0.64, y: -0.03, z: 2.3 },
+    ],
+    0.024,
+    steel,
+    M.Metal,
+    Z.Trim,
+  );
+  // The spare wheel slung flat under the back of the tub, against the underside of the raised
+  // rails, on two cradle bars hung from the two rear crossmembers. Its cradle is 0.35 m off the
+  // ground; until v2.09 the rails ran straight and it hung 0.19 m off the ground, below the axle.
+  const railFoot = RAIL.y + KICK - RAIL.h / 2;
+  const spareY = railFoot - tuning.wheelWidth / 2 - 0.01,
+    cradleY = spareY - tuning.wheelWidth / 2 - 0.015;
   b.tag = Z.Rear;
   mountSpare(b, wheel, { x: 0, y: spareY, z: 2.02 }, 'down', black);
-  for (const x of [-0.2, 0.2])
-    b.block(x, spareY - tuning.wheelWidth / 2 - 0.015, 2.02, 0.05, 0.03, 0.8, black, M.Metal, Z.Trim);
-  // The second spare lies flat on the tub floor between the wheel housings, with a ratchet
-  // strap over it to the tie-down rails.
+  for (const x of [-0.24, 0.24]) {
+    b.block(x, cradleY, 2.02, 0.05, 0.03, 0.8, black, M.Metal, Z.Trim);
+    // A hanger at each end of each bar, up to a crossmember, clear of the tyre.
+    for (const z of REAR_CROSS)
+      b.rod({ x, y: cradleY, z }, { x, y: RAIL.y + KICK + 0.03, z }, 0.008, black, M.Metal, Z.Trim);
+  }
+  // The second spare lies flat on the tub floor between the wheel housings, with two ratchet
+  // straps over it, one each side of the hub, down to the floor.
   const sy = TUB_FLOOR + 0.03 + tuning.wheelWidth * 0.53,
     sz = 1.75,
     strapY = sy + tuning.wheelWidth * 0.53 + 0.006;
   const orangeStrap = new THREE.Color('#C9762C');
   b.tag = Z.Rear;
   mountSpare(b, wheel, { x: 0, y: sy, z: sz }, 'up', black);
-  b.block(0, strapY, sz, 0.76, 0.008, 0.05, orangeStrap, M.Fabric, Z.Rear);
-  for (const side of [-1, 1])
-    b.rod(
-      { x: side * 0.38, y: strapY, z: sz },
-      { x: side * 0.48, y: TUB_FLOOR + 0.03, z: sz },
-      0.01,
-      orangeStrap,
-      M.Fabric,
-      Z.Rear,
-    );
+  for (const dz of [-0.17, 0.17]) {
+    const reach = Math.sqrt(tuning.wheelRadius ** 2 - dz ** 2) - 0.02;
+    b.block(0, strapY, sz + dz, 2 * reach, 0.008, 0.05, orangeStrap, M.Fabric, Z.Rear);
+    for (const side of [-1, 1])
+      b.rod(
+        { x: side * reach, y: strapY, z: sz + dz },
+        { x: side * (reach + 0.06), y: TUB_FLOOR + 0.03, z: sz + dz },
+        0.01,
+        orangeStrap,
+        M.Fabric,
+        Z.Rear,
+      );
+  }
 
   // Steel bar in place of the bumper: a heavy beam with a hoop over the grille and a branch
   // out over each headlamp. It covers the factory bumper lamps, so the amber park and
@@ -1310,7 +1360,7 @@ export function buildHiluxPlank(index: number): THREE.BufferGeometry {
       M.Fabric,
       Z.Roof,
     );
-  for (const dz of [TUB_FRONT + 0.05 - z, TAIL - 0.06 - z]) {
+  for (const dz of [RACK_Z.front - z, RACK_Z.rear - z]) {
     b.block(x, y + 0.03, z + dz, W + 0.01, 0.012, 0.045, black, M.Rubber, Z.Roof);
     b.block(x, RACK_TOP - 0.028, z + dz, W + 0.02, 0.012, 0.045, black, M.Rubber, Z.Roof);
     for (const s of [-1, 1])

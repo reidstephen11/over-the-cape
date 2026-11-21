@@ -43,9 +43,12 @@ export const hiluxTuning: VehicleTuning = {
   damperRelaxation: 2.7,
   maxSuspensionForce: 45000,
   bodyBoxes: [
-    // Ladder chassis rails and the gearbox with its transfer case.
-    { cx: -0.42, cy: -0.02, cz: 0.18, hx: 0.05, hy: 0.08, hz: 2.17 },
-    { cx: 0.42, cy: -0.02, cz: 0.18, hx: 0.05, hy: 0.08, hz: 2.17 },
+    // Ladder chassis rails, which kick up 0.155 m behind the cab (v2.09), and the gearbox with
+    // its transfer case.
+    { cx: -0.42, cy: -0.02, cz: -0.6, hx: 0.05, hy: 0.08, hz: 1.39 },
+    { cx: 0.42, cy: -0.02, cz: -0.6, hx: 0.05, hy: 0.08, hz: 1.39 },
+    { cx: -0.42, cy: 0.135, cz: 1.57, hx: 0.05, hy: 0.08, hz: 0.78 },
+    { cx: 0.42, cy: 0.135, cz: 1.57, hx: 0.05, hy: 0.08, hz: 0.78 },
     { cx: 0.04, cy: -0.04, cz: -0.32, hx: 0.2, hy: 0.08, hz: 0.32 },
     // Engine bay between the front wheels and the sump under it.
     { cx: 0, cy: 0.32, cz: -1.53, hx: 0.5, hy: 0.28, hz: 0.6 },
@@ -63,7 +66,7 @@ export const hiluxTuning: VehicleTuning = {
     // Bull bar, the rear step bumper, the spare slung under the tub, and the rack's top.
     { cx: 0, cy: 0.27, cz: -2.27, hx: 0.85, hy: 0.24, hz: 0.07 },
     { cx: 0, cy: 0.1, cz: 2.5, hx: 0.8, hy: 0.06, hz: 0.07 },
-    { cx: 0, cy: -0.205, cz: 2.02, hx: 0.4, hy: 0.1, hz: 0.4 },
+    { cx: 0, cy: -0.06, cz: 2.02, hx: 0.4, hy: 0.11, hz: 0.4 },
     { cx: 0, cy: 1.28, cz: 1.42, hx: 0.8, hy: 0.04, hz: 1.0 },
   ],
   bumpRadius: 0.22,
