@@ -7,7 +7,7 @@ import { addTroopyInterior } from './troopyInterior';
 import { lc79Colors } from './lc79Paint';
 import { extrudeX, extrudeZ, frontPane, inset, rounded, sidePane, sideShape, type Vtx } from './bodyShapes';
 import { mirrorHead } from './mirrors';
-import { GLYPHS, PLATE_WHITE, numberPlate, strokeText } from './bodyKit';
+import { BADGE_GLYPHS, GLYPHS, PLATE_WHITE, numberPlate, strokeText } from './bodyKit';
 import { cleanGeometry, continuousTube, subdivideSurface } from './bodyRefinement';
 import { mountSpare, spareSidewall } from './spares';
 
@@ -344,37 +344,6 @@ function headlamp(b: VehicleBuilder, x: number, y: number): void {
   b.geometry(new THREE.SphereGeometry(r - 0.004, 24, 8), tint);
   b.pop();
 }
-
-/** The stroke font with the letters the guards' LAND CRUISER badge needs as well. */
-const BADGE_GLYPHS: typeof GLYPHS = {
-  ...GLYPHS,
-  ' ': [],
-  L: [
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-  ],
-  U: [
-    [0, 1, 0, 0.15],
-    [0, 0.15, 0.3, 0],
-    [0.3, 0, 0.7, 0],
-    [0.7, 0, 1, 0.15],
-    [1, 0.15, 1, 1],
-  ],
-  I: [[0.5, 0, 0.5, 1]],
-  S: [
-    [1, 1, 0, 1],
-    [0, 1, 0, 0.5],
-    [0, 0.5, 1, 0.5],
-    [1, 0.5, 1, 0],
-    [1, 0, 0, 0],
-  ],
-  E: [
-    [1, 1, 0, 1],
-    [0, 1, 0, 0],
-    [0, 0, 1, 0],
-    [0, 0.5, 0.8, 0.5],
-  ],
-};
 
 /** Height of the bonnet's raised centre panel above the clip's top. */
 const CROWN = 0.024;

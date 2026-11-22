@@ -138,6 +138,37 @@ export const GLYPHS: Record<string, number[][]> = {
   ],
 };
 
+/** The stroke font with the letters a LAND CRUISER badge needs as well (the LC79's guards, the Troop Carrier's stripe). */
+export const BADGE_GLYPHS: typeof GLYPHS = {
+  ...GLYPHS,
+  ' ': [],
+  L: [
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+  ],
+  U: [
+    [0, 1, 0, 0.15],
+    [0, 0.15, 0.3, 0],
+    [0.3, 0, 0.7, 0],
+    [0.7, 0, 1, 0.15],
+    [1, 0.15, 1, 1],
+  ],
+  I: [[0.5, 0, 0.5, 1]],
+  S: [
+    [1, 1, 0, 1],
+    [0, 1, 0, 0.5],
+    [0, 0.5, 1, 0.5],
+    [1, 0.5, 1, 0],
+    [1, 0, 0, 0],
+  ],
+  E: [
+    [1, 1, 0, 1],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0.5, 0.8, 0.5],
+  ],
+};
+
 export interface StrokeOpts {
   /** Character width and height, and the spacing from one character to the next. */
   w: number;
