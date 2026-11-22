@@ -89,3 +89,11 @@ The draft's running gear is unchanged by the v1.09 body: a 1.67 m wheel-centre t
 ## Inspection
 
 With the dev server running, open `/scripts/studio/?vehicle=sooty80`. Add `?stock` to see the factory body with its own bumpers and no touring gear, and `&plain` for a white backdrop to lay the outline over a photo. The v1.09 before and after sheet, with the side overlay and close-ups of every panel join, is in the project files under `screenshots/sooty80-v1.09/`.
+
+## v2.13 comparison
+
+The factory body (`?stock&plain`) was photographed again at the calibrated camera above and laid over `side-left.jpg`; it matches as in v1.41. The 28 audit pictures were compared with `front.jpg`, `rear.jpg`, `front-34-left.jpg`, `grille-early.jpg`, `gxl-australian-front.jpg` and the touring cars. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Grille.** The 1990–94 pattern, since MY4X4 gives Sooty MkII as a 1993 car: a chrome surround 0.82 m wide, three slats above and three below a grey bar 0.056 m tall across its middle, TOYOTA in chrome letters 0.041 m tall and 0.415 m across on the bar, a small turbo badge at the bar's left end (the viewer's right), and five uprights. It was the 1995-on grille with the oval badge, as on the Australian GXL. The real car's grille is not shown by any photograph that may be committed, so this follows its year.
+- **Winch.** Inside the bar's pan, with its control box on the pan's top; the fairlead stays in the face.
+- **Exhaust.** On the right, over the rear axle between the differential and the coil spring (x 0.27, up to y 0.09), out behind the right rear wheel under the bar, as on `rear.jpg`. It was on the left.
