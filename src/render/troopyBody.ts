@@ -136,6 +136,8 @@ const FLARE = { top: 0.53, out: 0.018, lip: 0.035 };
 /** The body's pressed swage line, and the door handle above it (side.jpg, front-34-b.jpg). */
 const SWAGE_Y = 0.54;
 const HANDLE_Y = 0.625;
+/** The door spare's centre across the car (it was 0.33 until v2.11). */
+const SPARE_X = 0.3;
 const stripeGrey = new THREE.Color('#A2A39D'),
   stripeGold = new THREE.Color('#B4893A');
 /** The nose's skin: 0.62 m ahead of the front axle on side.jpg (it was 0.71 m, at -2.2). */
@@ -311,9 +313,36 @@ function sidePanels(b: VehicleBuilder): void {
     }
     for (const axle of [-AXLE, AXLE]) {
       // Dark wheelhouse: an inner wall and a roof over the tyre, just above the opening's top
-      // and reaching into the side panel, so no light shows between them.
-      const wellX = axle < 0 ? 0.34 : 0.52;
-      b.block(side * wellX, 0.12, axle, 0.03, 0.56, ARCH.bottom * 2, well, M.Rubber, Z.Trim);
+      // and reaching into the side panel, so no light shows between them. The wall reaches the
+      // roof: until v2.11 it stopped at 0.40 m and light came across the car under the roof.
+      const wellX = axle < 0 ? 0.34 : 0.52,
+        wellTop = ARCH.y + 0.03;
+      b.block(
+        side * wellX,
+        (wellTop - 0.16) / 2,
+        axle,
+        0.03,
+        wellTop + 0.16,
+        ARCH.bottom * 2,
+        well,
+        M.Rubber,
+        Z.Trim,
+      );
+      // The rear wheelhouses are closed at each end too (the front clip closes its own); the
+      // body's inside showed through the top of each rear opening.
+      if (axle > 0)
+        for (const end of [-1, 1])
+          b.block(
+            (side * (wellX + SIDE - 0.04)) / 2,
+            (SILL + wellTop) / 2,
+            axle + end * (ARCH.bottom + 0.01),
+            SIDE - 0.04 - wellX,
+            wellTop - SILL,
+            0.02,
+            well,
+            M.Rubber,
+            Z.Trim,
+          );
       b.block(
         (side * (wellX + SIDE - 0.035)) / 2,
         ARCH.y + 0.02,
@@ -375,18 +404,23 @@ function sidePanels(b: VehicleBuilder): void {
     // The pressed swage line along the doors and body, in line with the front flare's crease
     // and under the rear vent (front-34-b.jpg). Until v2.11 there were two, at 0.72 and 0.5;
     // the stripe now runs where the upper one was.
-    b.block(
-      side * (SIDE + 0.004),
-      SWAGE_Y,
-      (DOOR.front + 0.03 + end - 0.02) / 2,
-      0.01,
-      0.02,
-      end - 0.02 - DOOR.front - 0.03,
-      paint,
-      M.Paint,
-      Z.Sides,
-      0.008,
-    );
+    // It stops either side of the door's rear shut line, which it would otherwise cover.
+    for (const [z0, z1] of [
+      [DOOR.front + 0.03, DOOR.back - 0.01],
+      [DOOR.back + 0.018, end - 0.02],
+    ])
+      b.block(
+        side * (SIDE + 0.004),
+        SWAGE_Y,
+        (z0 + z1) / 2,
+        0.01,
+        0.02,
+        z1 - z0,
+        paint,
+        M.Paint,
+        Z.Sides,
+        0.008,
+      );
     // Chrome pull handle and lock on the door, under the stripe (side.jpg).
     b.block(
       side * (SIDE + 0.008),
@@ -495,13 +529,18 @@ function sidePanels(b: VehicleBuilder): void {
 function stripes(b: VehicleBuilder, side: number): void {
   const x = side * (SIDE + 0.0015),
     end = 2.34;
-  for (const [y0, y1, colour, z0] of [
+  // Each band is cut at the door's rear shut line, as a decal is.
+  for (const [y0, y1, colour, start] of [
     [0.762, 0.785, stripeGrey, -0.79],
     [0.749, 0.755, stripeGold, -0.79],
     [0.685, 0.735, stripeGrey, DOOR.front + 0.012],
     [0.671, 0.677, stripeGold, DOOR.front + 0.012],
   ] as const)
-    b.block(x, (y0 + y1) / 2, (z0 + end) / 2, 0.004, y1 - y0, end - z0, colour, M.Paint, Z.Sides);
+    for (const [z0, z1] of [
+      [start, DOOR.back - 0.003],
+      [DOOR.back + 0.011, end],
+    ])
+      b.block(x, (y0 + y1) / 2, (z0 + z1) / 2, 0.004, y1 - y0, z1 - z0, colour, M.Paint, Z.Sides);
   const text = 'LAND CRUISER',
     pitch = 0.046,
     w = 0.026,
@@ -942,9 +981,10 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   }
   // Covered spare on the wide right door, carried off the painted skin: the cover's back
   // stands clear of the carrier's uprights and cross bar (with the cover at T + 0.215 and the
-  // bar at T + 0.09, the bar ran 35 mm into the tyre).
+  // bar at T + 0.09, the bar ran 35 mm into the tyre). v2.11 moved it 3 cm in, clear of the
+  // corner lamp, and stopped the uprights under the door's window (they stood over its glass).
   b.tag = Z.Rear;
-  mountSpare(b, wheel, { x: 0.33, y: 0.72, z: T + 0.255 }, 'back', black, {
+  mountSpare(b, wheel, { x: SPARE_X, y: 0.72, z: T + 0.255 }, 'back', black, {
     reversed: true,
     cover: () => {
       const profile = [
@@ -960,15 +1000,16 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
       b.slot = M.Fabric;
       b.tag = Z.Rear;
       b.push()
-        .translate(0.33, 0.72, T + 0.255)
+        .translate(SPARE_X, 0.72, T + 0.255)
         .rotate(Math.PI / 2, 0, 0);
       b.geometry(new THREE.LatheGeometry(profile, 48), black.clone().multiplyScalar(1.18));
       b.pop();
     },
   });
-  b.ring(0.33, 0.72, T + 0.396, 0.397, 0.003, trim, M.Fabric, 'z', Z.Rear);
-  for (const x of [0.08, 0.58]) b.block(x, 0.72, T + 0.055, 0.055, 0.6, 0.09, black, M.Metal, Z.Rear, 0.004);
-  b.block(0.33, 0.72, T + 0.07, 0.55, 0.055, 0.055, black, M.Metal, Z.Rear, 0.004);
+  b.ring(SPARE_X, 0.72, T + 0.396, 0.397, 0.003, trim, M.Fabric, 'z', Z.Rear);
+  for (const x of [SPARE_X - 0.25, SPARE_X + 0.25])
+    b.block(x, 0.69, T + 0.055, 0.055, 0.48, 0.09, black, M.Metal, Z.Rear, 0.004);
+  b.block(SPARE_X, 0.72, T + 0.07, 0.55, 0.055, 0.055, black, M.Metal, Z.Rear, 0.004);
   // Black rear bar with recovery points, a tow hitch, its brackets and the plate. Its ends wrap
   // round the corners and run forward along the body sides to the vent (side.jpg).
   b.block(0, 0.08, T + 0.07, 1.86, 0.15, 0.13, bumper, M.Metal, Z.Rear, 0.025);
@@ -1192,8 +1233,17 @@ function chassis(b: VehicleBuilder): void {
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.08, 0.08, 0.55, 12), shaft);
   b.pop();
-  b.rod({ x: 0.28, y: -0.08, z: 1.03 }, { x: 0.3, y: -0.04, z: 1.85 }, 0.026, steel);
-  b.rod({ x: 0.3, y: -0.04, z: 1.85 }, { x: 0.62, y: -0.05, z: 2.55 }, 0.026, steel);
+  // The tailpipe climbs over the rear axle inside the right chassis rail, drops under the two
+  // rear crossmembers and ends under the rear bar. Until v2.11 it ran through the axle tube and
+  // its last length out through the rail to the corner.
+  const pipe = [
+    v(0.28, -0.08, 1.03),
+    v(0.3, -0.005, 1.3),
+    v(0.3, -0.005, 1.7),
+    v(0.31, -0.1, 1.84),
+    v(0.32, -0.1, 2.62),
+  ];
+  for (let i = 0; i < pipe.length - 1; i++) b.rod(pipe[i], pipe[i + 1], 0.026, steel);
   // Floor under the cab and load space.
   for (const [start, end, width] of [
     [-2.05, -0.88, 0.7],
