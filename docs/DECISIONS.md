@@ -2291,3 +2291,28 @@ The owner asked for the 40 Series ute next, then the 80 Series. Only the ute (`u
 Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` passes.
 
 53.8k triangles with wheels and boards (body 38.9k; it was 53.4k and 38.6k).
+
+## v2.13: the 80 Series
+
+The owner asked for the 80 Series after the ute. Only the 80 Series (`sooty80`) changes. Its 28 audit pictures and the standard set were compared with `front.jpg`, `rear.jpg`, `side-left.jpg`, `front-34-left.jpg`, `grille-early.jpg`, `gxl-australian-front.jpg` and the two touring cars in `reference/vehicles/landcruiser-80-sooty/`. The factory body, drawn without the touring gear, was photographed again at the calibrated camera in that folder's `SOURCES.md` and laid over `side-left.jpg`: it still matches to a few centimetres along the roof, the screen, the tail, the flares and the bumpers, so nothing in the body's shape moved. No photograph of the real Sooty MkII may be committed, so the touring gear is still checked against its written descriptions only. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Winch (item 1).** Inside the bar's pan, as on the other winch bars: what shows is its control box on the pan's top between the driving lamps, and the pierced hawse fairlead in the face. Its drum, drawn as a stack of rings, and its red motor stood on the pan in front of the grille.
+- **Grille (item 2).** The 1990–94 pattern, because MY4X4 gives Sooty MkII as a 1993 car: a chrome surround, three slats above and three below a grey bar across its middle, TOYOTA in chrome letters on the bar, a small turbo badge at the bar's left end, and five uprights (`front.jpg`, `grille-early.jpg`). It was the 1995-on grille with the oval badge, as on the Australian GXL. The driving lamps still stand in front of it.
+- **Exhaust (item 3).** On the right: under the floor, over the rear axle between the differential and the coil spring, and out behind the right rear wheel under the bar, as on `rear.jpg`. It ran on the left.
+
+**Where each part is attached and which way it faces.** The winch's control box sits on the bar pan's top, between the two driving lamps' stalks. The grille is on the front panel between the headlamp bezels, facing forward; its letters read left to right from the front. The exhaust hangs from three rubber hangers: one to the cab floor, one to the load floor over the rear axle, and one from the tail to the right chassis rail's corner. The snorkel rises out of its base on the right wing, bends out to the windscreen pillar and climbs it to the head, held by two clamps strapped to the pillar. Each door trim lies against the inside of a front door below the glass, with an armrest; each kick panel against the body side under the dash's end; each sill capping along the inside of a door under the glass. The swing-away spare is unchanged and still faces back, its arm's lower run now in the middle of its hinge post.
+
+**The second look.** A reviewer was given 50 pictures and nothing else: the standard set, the 28 audit pictures and 14 close-ups (the grille from ahead, each side and low; the bar from above, the side and low; the winch box; the exhaust from low, the side, behind, ahead, at the axle and at its tail). It found the wheels, the spare, the rack and its load, the light bar, the aerial, the driving lamps and the snorkel's brackets all in place, and nothing on or below the ground. What it found, and what was done (all there before this version):
+
+- **The scrub rails stopped just short of the bull bar's side uprights**, a sliver of background between them. Each rail now starts inside its upright.
+- **The snorkel's lower end did not meet its base**, and a sharp sliver stuck out of its first bend. The pipe ran into the top of the base nearly level, its open end showing, and its tight bends pinched. It now rises straight out of the base and turns out to the pillar in round bends; the clamps moved with it.
+- **The spare carrier's arm ended in a needle point on its post.** Its lower run lay at the post's back edge and showed through the post's rounded corner as a sliver. It is in the middle of the post now.
+- **The ground showed under the dash from the driver's seat.** The footwells had no front wall; they have one now, behind the dash.
+- **A thin brown line ran along the inside of the right door.** It was the seam between the lower body and the glasshouse, at the waist, with the ground showing through. A capping strip runs along the inside of each door's sill, and each front door has a dark trim panel below it and a kick panel ahead of it (the doors were bare body colour inside).
+- **A grey tube ended in mid-air under the floor.** The rear prop shaft started 2.5 cm behind the transfer case; it starts inside it.
+- **The exhaust crossed the right rear shock and had nothing holding it up.** At x 0.27 it ran 1.5 cm into the shock; at x 0.23 it clears it by 2.5 cm and the differential too, and the three hangers above hold it.
+- Not changed: **a small tan patch at the foot of the windscreen beside the snorkel**, seen from the right side. It was there before, does not show from the front or from the seat, and could not be traced from the close-ups. **A black rod from behind the right rear tyre to above the exhaust** is the shared suspension's rear radius arm.
+
+Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` and `tests/sooty80.test.ts` pass.
+
+71.7k triangles with wheels and boards (body 50.9k; it was 71.2k and 50.5k).
