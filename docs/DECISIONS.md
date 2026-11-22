@@ -2359,3 +2359,26 @@ The second of the three the owner asked for. Only the MQ Patrol hardtop (`mq`) c
 Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` and the MQ's tests pass.
 
 62.1k triangles with wheels and boards (body 45.6k; it was 63.2k and 46.7k).
+
+## v2.16: the Range Rover
+
+The last of the three the owner asked for. Only the Range Rover two-door (`rangie`) changes. Its folder has no photographs either: Commons refused its fourteen files again (HTTP 429), as when it was built in v1.58. So its 28 audit pictures and the standard set were compared with what its `SOURCES.md` records of the photographs and checked for faults a render shows on its own. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Winch (item 1).** Inside the roo bar's pan, as on the other winch bars: what shows is its control box on the pan's top and the roller fairlead in the face. Its drum, motor and gearbox stood on the pan in front of the grille.
+- **Exhaust (item 2).** Down the left side inside the frame rail, under the crossmembers, the muffler under the cab floor between two crossmembers, in towards the middle over the rear axle (clear of the coil spring and the damper, under the load floor), back out under the two rear crossmembers, and out under the rear bar pointing back. It ran at the axle's height, through the top of the axle tube and through three crossmembers, and the muffler ran into a crossmember.
+- **Rear wheel openings (item 3).** They went straight through the wheelhouse into the cabin, so the tan rear seat showed through their tops. Each rear wheelhouse has a dark inner wall now, 0.52 to 0.54 m out, clear of the coil spring and the tyre, and its top is 4 cm above the flare's opening (it was 5 mm below it). The rear seat is 1.02 m wide, between the wheelhouses (it was 1.44 m), and the load trims start above the wheelhouses.
+
+**Where each part is attached and which way it faces.** The winch's control box sits on the bar pan's top. The exhaust hangs inside the left rail: the muffler from a rubber hanger to the cab floor, the run over the axle from one to the load floor; its tail points back under the bar. Each rear wheelhouse wall stands on the body's inner side, facing the wheel. Neither spare moved: one stands upright in the load bay on the left, strapped to the side, facing across the car; the other lies flat on the rack, face up.
+
+**The second look.** A reviewer was given 50 pictures and nothing else: the standard set, the 28 audit pictures and 14 close-ups (the front from ahead and a corner, the bar from above and low, the winch box, the rear openings from each side and low, the exhaust from low, ahead, behind and the side, the rear seat and the load bay). It found the wheels, both spares, the rack and its load, the bar and lamps, the mirrors, aerial, mud flaps and recovery points attached, and nothing below the ground. What it found, and what was done (all there before this version):
+
+- **An orange bar crossed the windscreen from outside and stuck out past both A-pillars.** It was the dashboard's padded top, 11 cm forward of the leaning glass and 1.66 m wide; the steel panel under it reached past the glass too. Both are 1.5 m wide and behind the glass, and the glovebox, radio and heater slides moved back onto the panel's new face.
+- **The sky showed through each rear corner from inside, as a narrow slot.** The rounded corner panels show only from outside. Each band of each corner has an inside face now, black at the glass and trim below it.
+- **Dark wedges hung below the body at each end of the rear openings.** The wheelhouses' bottoms ran 4 to 6 cm below the flares' feet; they stop at them now.
+- **A thin tan line in the back of each rear opening.** The load floor's wide part started at the wheelhouse's back edge, where its front edge showed through; it starts 5 cm further back, and the narrow part runs on to meet it.
+- **A slit in the rear floor under the seat's front edge, and the underside of the load floor in the carpet's tan.** A step closes the cab floor to the raised load floor, and a dark pan lies under the load floor.
+- **The exhaust seemed to meet the rear axle.** A picture from directly under the axle shows the pipe over it, 0.26 m from the differential; this version's route had already taken it off the axle's line.
+
+Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` and the Range Rover's tests pass.
+
+60.2k triangles with wheels and boards (body 44.2k; it was 61.0k and 45.0k).

@@ -20,25 +20,34 @@ export function addRangieInterior(b: VehicleBuilder, redlineRpm: number): void {
   // Floor, the transmission tunnel and the toe board.
   b.block(0, floor, 0.1, 1.66, 0.03, 1.4, mat, M.Rubber, Z.Trim);
   // The load floor narrows between the rear wheelhouses rather than passing through the tyres.
-  b.block(0, floor + 0.05, 1.3, 1.0, 0.03, 1.0, C.trim, M.Fabric, Z.Trim);
-  b.block(0, floor + 0.05, 2.0, 1.66, 0.03, 0.4, C.trim, M.Fabric, Z.Trim);
+  // Its wide part starts behind the wheelhouses (at z 1.8 its front edge showed as a tan line in
+  // each rear opening). A step closes it to the cab floor, and a dark pan lies under it, so the
+  // underside is not the carpet's colour (both there before v2.16).
+  b.block(0, floor + 0.05, 1.325, 1.0, 0.03, 1.05, C.trim, M.Fabric, Z.Trim);
+  b.block(0, floor + 0.05, 2.025, 1.66, 0.03, 0.35, C.trim, M.Fabric, Z.Trim);
+  b.block(0, floor + 0.025, 0.8, 1.04, 0.05, 0.02, mat, M.Rubber, Z.Trim);
+  b.block(0, floor + 0.028, 1.325, 1.0, 0.01, 1.05, mat, M.Rubber, Z.Trim);
+  b.block(0, floor + 0.028, 2.025, 1.66, 0.01, 0.35, mat, M.Rubber, Z.Trim);
   b.block(0.02, floor + 0.08, -0.3, 0.3, 0.15, 0.62, mat, M.Rubber, Z.Trim, 0.04);
   b.block(0, floor + 0.08, -0.6, 1.64, 0.16, 0.06, mat, M.Rubber, Z.Trim, 0.02);
   // Dash: a steel lower panel, the padded top under the screen, and the binnacle with the two
   // big dials in front of the driver.
   b.block(0, 0.5, -0.5, 1.64, 0.2, 0.14, dash, M.Paint, Z.Trim, 0.02);
-  b.block(0, 0.885, -0.5, 1.66, 0.05, 0.2, C.vinyl, M.Rubber, Z.Trim, 0.02);
-  b.block(0, 0.73, -0.54, 1.64, 0.26, 0.06, dash, M.Paint, Z.Trim, 0.012);
+  // The padded top and the steel panel stay behind the leaning glass and between the A-pillars
+  // (until v2.16 the pad stood 11 cm forward of the glass and 1.66 m wide, so its orange top
+  // crossed the screen from outside and its ends stuck out past the pillars).
+  b.block(0, 0.885, -0.43, 1.5, 0.05, 0.1, C.vinyl, M.Rubber, Z.Trim, 0.02);
+  b.block(0, 0.72, -0.48, 1.5, 0.24, 0.06, dash, M.Paint, Z.Trim, 0.012);
   b.block(0.41, 0.74, -0.435, 0.5, 0.28, 0.06, mat, M.Rubber, Z.Trim, 0.015);
   b.block(0.41, 0.885, -0.42, 0.52, 0.03, 0.1, mat, M.Rubber, Z.Trim, 0.012);
   addDialFaces(b, cabin, redlineRpm);
   // Glovebox, radio and heater slides on the passenger side and in the middle.
-  b.block(-0.46, 0.72, -0.508, 0.42, 0.14, 0.012, dash, M.Rubber, Z.Trim, 0.008);
-  b.block(-0.46, 0.765, -0.5, 0.06, 0.014, 0.01, C.chrome, M.Metal, Z.Trim, 0.004);
-  b.block(0.0, 0.75, -0.508, 0.19, 0.05, 0.012, mat, M.Rubber, Z.Trim, 0.006);
-  b.block(0.0, 0.75, -0.5, 0.11, 0.018, 0.006, C.chrome, M.Metal, Z.Trim);
-  b.block(0.0, 0.66, -0.508, 0.22, 0.05, 0.012, dash, M.Rubber, Z.Trim, 0.006);
-  for (const x of [-0.07, 0.0, 0.07]) b.block(x, 0.665, -0.5, 0.012, 0.02, 0.012, metal, M.Metal, Z.Trim);
+  b.block(-0.46, 0.72, -0.448, 0.42, 0.14, 0.012, dash, M.Rubber, Z.Trim, 0.008);
+  b.block(-0.46, 0.765, -0.44, 0.06, 0.014, 0.01, C.chrome, M.Metal, Z.Trim, 0.004);
+  b.block(0.0, 0.75, -0.448, 0.19, 0.05, 0.012, mat, M.Rubber, Z.Trim, 0.006);
+  b.block(0.0, 0.75, -0.44, 0.11, 0.018, 0.006, C.chrome, M.Metal, Z.Trim);
+  b.block(0.0, 0.66, -0.448, 0.22, 0.05, 0.012, dash, M.Rubber, Z.Trim, 0.006);
+  for (const x of [-0.07, 0.0, 0.07]) b.block(x, 0.665, -0.44, 0.012, 0.02, 0.012, metal, M.Metal, Z.Trim);
   addSteeringColumn(b, cabin);
   // Pendant clutch, brake and throttle.
   for (const [x, w] of [
@@ -74,9 +83,11 @@ export function addRangieInterior(b: VehicleBuilder, redlineRpm: number): void {
   b.block(0, floor + 0.17, -0.4, 0.26, 0.04, 0.16, mat, M.Rubber, Z.Trim, 0.03);
   // The rear bench across the car ahead of the wheel boxes.
   b.block(0, floor + 0.135, 1.1, 1.0, 0.21, 0.42, mat, M.Rubber, Z.Trim, 0.02);
-  b.block(0, floor + 0.3, 1.09, 1.44, 0.12, 0.5, C.vinyl, M.Fabric, Z.Trim, 0.045);
+  // The cushion and back sit between the rear wheelhouses (inner faces 0.52 m out). Until v2.16
+  // they were 1.44 m wide, and their tan ends showed inside the rear wheel openings.
+  b.block(0, floor + 0.3, 1.09, 1.02, 0.12, 0.5, C.vinyl, M.Fabric, Z.Trim, 0.045);
   b.push().translate(0, 0, 1.37).rotate(-0.14, 0, 0);
-  b.block(0, floor + 0.56, 0, 1.44, 0.5, 0.12, C.vinyl, M.Fabric, Z.Trim, 0.04);
+  b.block(0, floor + 0.56, 0, 1.02, 0.5, 0.12, C.vinyl, M.Fabric, Z.Trim, 0.04);
   b.pop();
   for (const side of [-1, 1]) {
     // Long door trims with an armrest, a pull and a window winder; the quarter trims behind.
@@ -86,9 +97,10 @@ export function addRangieInterior(b: VehicleBuilder, redlineRpm: number): void {
     b.rod({ x: x - side * 0.014, y: 0.6, z: -0.42 }, { x: x - side * 0.05, y: 0.6, z: -0.42 }, 0.007, metal);
     b.rod({ x: x - side * 0.05, y: 0.6, z: -0.42 }, { x: x - side * 0.05, y: 0.53, z: -0.38 }, 0.006, metal);
     b.block(x - side * 0.016, 0.66, 0.44, 0.012, 0.025, 0.08, C.chrome, M.Metal, Z.Trim, 0.005);
-    b.block(x, 0.56, 1.1, 0.02, 0.28, 1.0, C.trim, M.Fabric, Z.Trim, 0.01);
-    // Trim along the load space behind the bench, over the wheel box.
-    b.block(side * 0.81, 0.55, 1.85, 0.02, 0.36, 0.7, C.trim, M.Fabric, Z.Trim, 0.01);
+    b.block(x, 0.585, 1.1, 0.02, 0.23, 1.0, C.trim, M.Fabric, Z.Trim, 0.01);
+    // Trim along the load space behind the bench, over the wheel box. It starts above the
+    // wheelhouse's top (0.465 m); from 0.37 its corner showed tan in the top of the rear opening.
+    b.block(side * 0.81, 0.6, 1.85, 0.02, 0.26, 0.7, C.trim, M.Fabric, Z.Trim, 0.01);
   }
   // Sun visors, the mirror and the headlining under the roof.
   for (const x of [-0.4, 0.4]) b.block(x, 1.17, -0.2, 0.36, 0.012, 0.13, C.vinyl, M.Fabric, Z.Trim, 0.005);
