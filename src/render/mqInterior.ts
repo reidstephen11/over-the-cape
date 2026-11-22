@@ -23,12 +23,15 @@ export function addMqInterior(b: VehicleBuilder, redlineRpm: number): void {
   b.block(0, floor, 1.85, 1.54, 0.03, 0.4, mat, M.Rubber, Z.Trim);
   b.block(0.02, floor + 0.08, -0.3, 0.3, 0.15, 0.6, mat, M.Rubber, Z.Trim, 0.04);
   b.block(0, floor + 0.08, -0.66, 1.54, 0.16, 0.06, mat, M.Rubber, Z.Trim, 0.02);
-  // Dash: a painted steel panel under the screen with a padded top and the instrument hood.
-  b.block(0, 0.72, -0.57, 1.54, 0.2, 0.12, dash, M.Paint, Z.Trim, 0.02);
-  // Keep the padded top behind the cluster so it cannot cross the dial faces.
-  b.block(0, 0.83, -0.62, 1.56, 0.04, 0.12, C.vinyl, M.Rubber, Z.Trim, 0.02);
-  b.block(0.47, 0.78, -0.535, 0.5, 0.2, 0.06, mat, M.Rubber, Z.Trim, 0.015);
-  b.block(0.47, 0.895, -0.515, 0.52, 0.03, 0.1, C.vinyl, M.Rubber, Z.Trim, 0.015);
+  // Dash: a painted steel panel under the screen with a padded top and the instrument hood. Both
+  // stay behind the leaning glass and between the A-pillars (inner faces 0.73 m out), and ahead of
+  // the dial faces (z -0.5). Until v2.15 the pad reached 8 cm forward of the glass and both stood
+  // out past the pillars, so their ends showed outside above the wings.
+  b.block(0, 0.72, -0.5525, 1.44, 0.2, 0.085, dash, M.Paint, Z.Trim, 0.02);
+  b.block(0, 0.83, -0.565, 1.44, 0.04, 0.05, C.vinyl, M.Rubber, Z.Trim, 0.015);
+  // The instrument hood stops 4 cm short of the right A-pillar (it ran into it).
+  b.block(0.45, 0.78, -0.535, 0.46, 0.2, 0.06, mat, M.Rubber, Z.Trim, 0.015);
+  b.block(0.45, 0.895, -0.515, 0.48, 0.03, 0.1, C.vinyl, M.Rubber, Z.Trim, 0.015);
   addDialFaces(b, cabin, redlineRpm);
   // Glovebox and the heater slides in the middle.
   b.block(-0.46, 0.73, -0.508, 0.4, 0.13, 0.012, C.trim, M.Rubber, Z.Trim, 0.008);

@@ -219,7 +219,9 @@ function underside(b: VehicleBuilder): void {
     v(0.33, 0.05, 1.33),
     v(0.33, -0.135, 1.5),
     v(0.33, -0.135, 1.95),
-    v(0.56, -0.155, 2.12),
+    // The tail turns out a little and ends under the bar, pointing back, 0.2 m inboard of the
+    // right recovery point (it ended pointing out at x 0.56, close under it).
+    v(0.44, -0.15, 2.17),
   ];
   for (let i = 0; i < pipe.length - 1; i++) {
     // The muffler stands between the second and third points.

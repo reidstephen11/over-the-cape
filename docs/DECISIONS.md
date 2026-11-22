@@ -2337,3 +2337,25 @@ The owner asked for the 60 Series, the MQ Patrol and the Range Rover next, each 
 Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` and `tests/hj60.test.ts` pass.
 
 78.5k triangles with wheels and boards (body 59.5k; it was 77.8k and 58.8k).
+
+## v2.15: the MQ Patrol
+
+The second of the three the owner asked for. Only the MQ Patrol hardtop (`mq`) changes. Its folder still has no photographs: Commons answered every request from the container with HTTP 429 again, for several hours, as it did when the body was built in v1.55. So its 28 audit pictures and the standard set were compared with what its `SOURCES.md` records of the photographs and checked for faults a render shows on its own. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Winch (item 1).** Inside the bar's pan, as on the other winch bars: what shows is its control box on the pan's top and the roller fairlead in the face. Its drum, motor and gearbox stood in a cradle on the pan in front of the grille.
+- **Exhaust (item 2).** Down the right side inside the frame rail, under the crossmembers, the muffler under the cab floor between two crossmembers, up over the rear axle under the load floor, and out under the rear bar pointing back. It ran at the axle's height, through the top of the axle tube and through three crossmembers, and the muffler ran into a crossmember.
+- **Battery box (item 3).** The 24 V system's second battery box is against the outside of the left chassis rail, its top under the cab floor. It stood 1 cm off the rail with nothing holding it, and its top rose through the floor.
+
+**Where each part is attached and which way it faces.** The winch's control box sits on the bar pan's top. The exhaust hangs inside the right rail: the muffler from a rubber hanger to the cab floor, the run over the axle from one to the load floor; its tail points back under the bar, 0.2 m inboard of the right recovery point. The battery box is bolted to the left rail's outer face. The dash and its pad stand between the A-pillars, behind the glass. Neither spare moved: one hangs on the swing-away carrier on the rear bar, facing back; the other lies flat on the rack, face up.
+
+**The second look.** A reviewer was given 49 pictures and nothing else: the standard set, the 28 audit pictures and 13 close-ups (the front from ahead and a corner, the bar from above and low, the winch box, the exhaust from low, ahead, behind, the side and at the axle, the battery box from low and the side, the cab floor). It found the wheels, both spares, the bar, the mud flaps, the recovery points, the rack and its load, the mirrors and the aerial attached, and nothing below the ground. What it found, and what was done (all there before this version):
+
+- **The dashboard showed outside, past the windscreen and both A-pillars.** Its padded top ran 8 cm forward of the leaning glass and both it and the dash panel stood out past the pillars, so their ends showed above the wings, and the dial hood ran into the right pillar from the seat. The dash and its pad are 1.44 m wide, behind the glass; the hood stops 4 cm short of the pillar.
+- **A thin sliver hung under the lower front corner of each wing.** The front clip's outline ran 2 cm below its bottom edge and back up the same line, and the panel's bevel drew that as a sliver. The outline starts at the bottom edge now.
+- **The tailpipe's end sat close under the right rear recovery point.** It ended pointing out at x 0.56; it now ends pointing back at x 0.44.
+- **The exhaust seemed to meet the rear axle's differential.** A picture from directly under the axle shows the pipe 0.23 m from it; the first route had run through the axle tube, which this version had already changed.
+- Not changed: **the differential looks like an open drum from behind**; from below it is closed. It is the shared suspension's part, drawn the same on every vehicle. **The roof spare reaching the rack's right rail from above** is perspective: from the side and behind the rails pass outside it. **The door spare covering a corner of the rear window** and **the carrier's post outboard of the tail lamp** are the swing-away carrier as built in v1.60. **The NISSAN letters half hidden by the bull bar's crossbar from dead ahead** read fully from a little above or below.
+
+Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` and the MQ's tests pass.
+
+62.1k triangles with wheels and boards (body 45.6k; it was 63.2k and 46.7k).

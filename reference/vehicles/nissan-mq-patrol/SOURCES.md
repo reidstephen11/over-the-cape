@@ -63,3 +63,13 @@ v1.62 visual review: the rack supports now rise outside the roof shoulder from t
 ## v1.65 articulation clearance
 
 The inner rear wheelhouse opening reaches y 0.43 instead of using the outer arch’s y 0.36 ceiling. Its trim is a thin inner wall at x ±0.49 rather than a solid 0.30 m wide block through the tyres; the rear bench support is 0.96 m wide between the wheel boxes. All remain fixed to the body and face into the cabin. The exterior arch, body dimensions and spare mounts are unchanged. No new photographs were available; these are internal clearance corrections to the existing draft.
+
+## v2.15 comparison
+
+The photographs are still not committed: in November 2026 Commons answered every request from the container with HTTP 429 again, for several hours. The 28 audit pictures were checked for faults a render shows on its own. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Winch.** Inside the bar's pan, with its control box on the pan's top.
+- **Dashboard.** The dash panel and its padded top are 1.44 m wide (were 1.54 and 1.56), inside the A-pillars, and the pad stays behind the leaning glass; the instrument hood stops 4 cm short of the right pillar.
+- **Exhaust.** Inside the right rail under the crossmembers (y −0.125), the muffler under the cab floor between the crossmembers, over the rear axle at y 0.05 under the load floor, down to y −0.135, and out under the rear bar pointing back at x 0.44.
+- **Battery box.** Against the outside of the left chassis rail, its top under the cab floor.
+- **Front clip.** The outline's front edge starts at the bottom edge; it ran 2 cm below it and back, which drew a sliver under each wing's front corner.
