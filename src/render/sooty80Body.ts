@@ -4,11 +4,12 @@ import type { VehicleTuning } from '../data/vehicle';
 import { sooty80Cabin } from '../data/sooty80';
 import { VehicleBuilder, BodyZone as Z, VehicleMaterial as M } from './vehicleGeometry';
 import { extrudeX, extrudeZ, sideShape, rounded, inset, cornerWrap, type Vtx } from './bodyShapes';
-import { cleanGeometry, continuousTube } from './bodyRefinement';
+import { cleanGeometry, continuousTube, ROUND_BEND } from './bodyRefinement';
 import { reviewRanges, markPart, attachParts } from './sooty80Parts';
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 import { mirrorHead } from './mirrors';
 import { mountSpare } from './spares';
+import { strokeText } from './bodyKit';
 export { buildVehicleWheel } from './sooty80Wheel';
 /**
  * The body is laid out on the 80 Series photographs in reference/vehicles/landcruiser-80-sooty
@@ -699,29 +700,32 @@ function frontEnd(b: VehicleBuilder) {
     -1,
     Z.Front,
   );
-  // Grille: chrome surround, slats and the Toyota oval (1995-on pattern, as on Australian GXLs).
-  // Grille runs from the lamp tops down past the indicators, as in the front photograph.
+  // Grille: the early pattern (front.jpg, grille-early.jpg), since Sooty MkII is a 1993 car
+  // (MY4X4's build page): a chrome surround, three slats above and three below a grey bar across
+  // the middle with TOYOTA in chrome letters and a small turbo badge at its left end, and five
+  // uprights dividing it. Until v2.13 it was the 1995-on grille with the oval badge.
   b.block(0, 0.42, F - 0.01, 0.82, 0.24, 0.025, chrome, M.Metal, Z.Front, 0.012);
   b.block(0, 0.42, F - 0.016, 0.76, 0.195, 0.02, black, M.Rubber, Z.Front, 0.006);
-  for (let i = 0; i < 8; i++)
-    b.block(0, 0.34 + i * 0.023, F - 0.027, 0.74, 0.008, 0.01, dark, M.Metal, Z.Front, 0.003);
-  b.slot = M.Metal;
-  b.tag = Z.Front;
-  b.push()
-    .translate(0, 0.44, F - 0.036)
-    .scale(1, 0.72, 1);
-  b.geometry(new THREE.TorusGeometry(0.05, 0.0045, 6, 36), chrome);
-  b.pop();
-  b.push()
-    .translate(0, 0.44, F - 0.04)
-    .scale(0.45, 1, 1);
-  b.geometry(new THREE.TorusGeometry(0.031, 0.004, 6, 28), chrome);
-  b.pop();
-  b.push()
-    .translate(0, 0.452, F - 0.04)
-    .scale(1, 0.4, 1);
-  b.geometry(new THREE.TorusGeometry(0.031, 0.004, 6, 28), chrome);
-  b.pop();
+  for (const y of [0.35, 0.372, 0.394, 0.462, 0.484, 0.506])
+    b.block(0, y, F - 0.027, 0.74, 0.008, 0.01, dark, M.Metal, Z.Front, 0.003);
+  for (let i = 0; i < 5; i++)
+    b.block(-0.26 + i * 0.13, 0.428, F - 0.025, 0.008, 0.18, 0.01, dark, M.Metal, Z.Front);
+  b.block(0, 0.428, F - 0.03, 0.74, 0.056, 0.012, new THREE.Color('#5A5E60'), M.Metal, Z.Front, 0.004);
+  strokeText(b, 'TOYOTA', {
+    x: 0.2075,
+    y: 0.428 - 0.0205,
+    z: F - 0.039,
+    dir: -1,
+    w: 0.05,
+    h: 0.041,
+    pitch: 0.073,
+    radius: 0.0034,
+    colour: chrome,
+    slot: M.Metal,
+    zone: Z.Front,
+  });
+  b.block(-0.32, 0.428, F - 0.038, 0.08, 0.022, 0.006, chrome, M.Metal, Z.Front, 0.003);
+  b.block(-0.32, 0.428, F - 0.042, 0.068, 0.012, 0.004, dark, M.Rubber, Z.Front);
   for (const side of [-1, 1]) {
     // Two square lamps a side in a chrome bezel, the clear corner lamp wrapping the corner.
     b.block(side * 0.6, 0.455, F - 0.008, 0.37, 0.16, 0.02, chrome, M.Metal, Z.Front, 0.012);
@@ -914,19 +918,35 @@ function chassis(b: VehicleBuilder, t: VehicleTuning) {
   b.block(0, 0.3, 0.85, 1.1, 0.32, 0.04, black, M.Rubber, Z.Trim);
   b.block(0, -0.025, -0.25, 0.36, 0.19, 0.71, dark, M.Metal, Z.Trim, 0.03);
   b.rod(v(0.08, -0.09, -0.56), v(0.08, -0.196, -WB), 0.031, steel, M.Metal, Z.Trim);
-  b.rod(v(0.08, -0.08, 0.13), v(0.08, -0.196, WB), 0.031, steel, M.Metal, Z.Trim);
+  // From inside the transfer case's tail (from 0.13 it started 2.5 cm behind it, in the air).
+  b.rod(v(0.08, -0.08, 0.08), v(0.08, -0.196, WB), 0.031, steel, M.Metal, Z.Trim);
   b.block(0.6, 0.04, 0.15, 0.27, 0.22, 0.65, black, M.Metal, Z.Trim, 0.03);
+  // The exhaust runs back on the right, climbs over the rear axle between the differential and
+  // the coil spring, and comes out behind the right rear wheel, as on rear.jpg. Until v2.13 it
+  // ran on the left and came out behind the left wheel.
+  // At x 0.23 it clears the rear shock (x 0.315, 26 mm radius) by 2.5 cm and the differential.
   tube(
     b,
     [
-      [-0.23, -0.07, -0.85],
-      [-0.23, -0.07, 1.75],
-      [-0.7, -0.04, TAIL - 0.02],
+      [0.23, -0.07, -0.85],
+      [0.23, -0.07, 1.0],
+      [0.23, 0.09, 1.2],
+      [0.23, 0.09, 1.65],
+      [0.23, -0.05, 1.85],
+      [0.7, -0.04, TAIL - 0.02],
     ],
     0.034,
     steel,
     Z.Trim,
   );
+  // Rubber hangers: one up to the cab floor, one up to the raised section over the axle's floor,
+  // and one from the tail to the corner of the right chassis rail.
+  for (const [a, c] of [
+    [v(0.23, -0.04, 0.3), v(0.23, 0.12, 0.3)],
+    [v(0.23, 0.12, 1.45), v(0.23, 0.44, 1.45)],
+    [v(0.52, -0.012, 2.1), v(0.45, 0.1, 2.1)],
+  ])
+    b.rod(a, c, 0.009, black, M.Rubber, Z.Trim);
   // Explicit coil seats and damper towers; only their intended contacts are excluded in suspension-body checks.
   markPart(b, 1024, () => {
     for (const w of t.wheels) {
@@ -962,6 +982,34 @@ function interior(b: VehicleBuilder, t: VehicleTuning) {
     Z.Trim,
     true,
   );
+  // The footwells' front wall under the dash: the ground showed under it from the seat.
+  b.block(0, 0.4, -0.7, 1.66, 0.5, 0.02, black, M.Rubber, Z.Trim);
+  // Door trims inside the front doors, below the glass (the doors were bare inside).
+  const doorX = 0.905 - 0.03;
+  for (const side of [-1, 1]) {
+    b.block(
+      side * doorX,
+      0.52,
+      -0.08,
+      0.012,
+      0.42,
+      0.72,
+      cloth.clone().multiplyScalar(0.8),
+      M.Fabric,
+      Z.Trim,
+      0.004,
+    );
+    b.block(side * (doorX - 0.025), 0.62, -0.02, 0.04, 0.03, 0.34, black, M.Rubber, Z.Trim, 0.008);
+    // A capping strip along the inside of each door's sill, under the glass: the seam between
+    // the lower body and the glasshouse showed the ground through it as a hairline.
+    for (const [z0, z1] of [
+      [-0.5, 0.3],
+      [0.41, 1.19],
+    ])
+      b.block(side * 0.885, WAIST, (z0 + z1) / 2, 0.03, 0.04, z1 - z0, black, M.Rubber, Z.Trim, 0.006);
+    // The kick panel ahead of it, under the dash's end.
+    b.block(side * doorX, 0.32, -0.55, 0.012, 0.3, 0.22, black, M.Rubber, Z.Trim, 0.004);
+  }
   // Keep the instrument pod behind the dial faces so the working gauges are visible.
   b.block(0.43, 0.78, sooty80Cabin.dialZ - 0.055, 0.46, 0.17, 0.1, dark, M.Rubber, Z.Trim, 0.024);
   addDialFaces(b, sooty80Cabin, t.engine.redlineRpm);
@@ -1126,12 +1174,10 @@ function bullbar(b: VehicleBuilder) {
         0.004,
       );
   }
-  // Red Edition-style winch, steel drum and a properly pierced hawse fairlead.
-  b.rod(v(-0.15, 0.35, back - 0.075), v(0.17, 0.35, back - 0.075), 0.067, dark, M.Metal, Z.Front);
-  for (let i = 0; i < 14; i++)
-    b.ring(-0.14 + i * 0.022, 0.35, back - 0.075, 0.067, 0.004, steel, M.Metal, 'x', Z.Front);
-  b.block(-0.235, 0.35, back - 0.075, 0.15, 0.15, 0.17, new THREE.Color('#B53428'), M.Paint, Z.Front, 0.018);
-  b.block(0.205, 0.35, back - 0.075, 0.05, 0.16, 0.17, black, M.Metal, Z.Front, 0.008);
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the pierced hawse fairlead in the face. Until v2.13 its drum and red motor stood on
+  // the pan in front of the grille.
+  b.block(0, 0.345, zc + 0.02, 0.18, 0.05, 0.09, black, M.Rubber, Z.Front, 0.012);
   const fair = rectangle(-0.16, 0.17, 0.16, 0.28, 0.025);
   fair.holes.push(new THREE.Path(rectangle(-0.11, 0.203, 0.11, 0.247, 0.018).getPoints(16).reverse()));
   extrudeZ(b, fair, face - 0.055, face - 0.025, steel, M.Metal, Z.Front, 0.002);
@@ -1178,7 +1224,8 @@ function sideProtectionAndIntake(b: VehicleBuilder) {
     tube(
       b,
       [
-        [side * 0.99, 0.62, F - 0.04],
+        // It starts inside the bar's side upright (from F - 0.04 its end stood 4 mm short of it).
+        [side * 0.99, 0.62, F - 0.075],
         [side * 0.975, 0.62, -1.7],
         [side * 0.975, 0.6, -0.9],
         [side * 1.0, 0.46, -0.745],
@@ -1202,18 +1249,25 @@ function sideProtectionAndIntake(b: VehicleBuilder) {
     for (const z of [-0.45, 0.2, 0.65])
       b.rod(v(side * 0.43, 0.01, z), v(side * 1.015, 0.04, z), 0.025, black, M.Metal, Z.Trim);
   }
-  // Four-inch stainless intake climbs the right windscreen pillar, with attached clamps.
-  const path = [
-    [0.8, 0.765, -0.86],
-    [0.93, 0.78, -0.79],
-    [0.982, 0.86, -0.67],
-    [0.955, 1.31, -0.27],
-  ];
+  // Four-inch stainless intake climbs the right windscreen pillar, with attached clamps. It
+  // rises out of its base on the wing, bends out to the pillar and climbs it, in round bends.
+  // Until v2.13 it ran into the top of the base nearly level, its open end showing, and its
+  // tight bends pinched.
+  const foot = v(0.975, 0.93, -0.62),
+    head = v(0.955, 1.31, -0.27);
   b.block(0.8, 0.745, -0.86, 0.18, 0.06, 0.18, black, M.Rubber, Z.Front, 0.02);
-  tube(b, path, 0.0508, steel, Z.Front);
-  const up = v(0, 0.45, 0.4).normalize();
-  for (const t of [0.35, 0.75]) {
-    const p = v(0.982 - 0.027 * t, 0.86 + 0.45 * t, -0.67 + 0.4 * t);
+  continuousTube(
+    b,
+    [v(0.8, 0.73, -0.86), v(0.8, 0.87, -0.86), foot, head],
+    0.0508,
+    steel,
+    Z.Front,
+    M.Metal,
+    ROUND_BEND,
+  );
+  const up = head.clone().sub(foot).normalize();
+  for (const t of [0.3, 0.72]) {
+    const p = foot.clone().lerp(head, t);
     b.push().translate(p.x, p.y, p.z).rotate(Math.atan2(up.z, up.y), 0, 0);
     b.ring(0, 0, 0, 0.054, 0.004, black, M.Rubber, 'y', Z.Front);
     b.pop();
@@ -1288,8 +1342,10 @@ function rearCarrier(b: VehicleBuilder, w: THREE.BufferGeometry) {
     tube(
       b,
       [
-        [0.88, 0.3, TAIL + 0.13],
-        [0.88, 0.65, TAIL + 0.15],
+        // Its lower run is in the middle of the post (at TAIL + 0.13 it showed through the post's
+        // rounded back corner).
+        [0.88, 0.3, TAIL + 0.11],
+        [0.88, 0.65, TAIL + 0.13],
         [x, 0.75, z - 0.2],
       ],
       0.028,
