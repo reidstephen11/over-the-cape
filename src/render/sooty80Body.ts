@@ -9,6 +9,7 @@ import { reviewRanges, markPart, attachParts } from './sooty80Parts';
 import { addDialFaces, addSteeringColumn } from './vehicleInstruments';
 import { mirrorHead } from './mirrors';
 import { mountSpare } from './spares';
+import { strokeText } from './bodyKit';
 export { buildVehicleWheel } from './sooty80Wheel';
 /**
  * The body is laid out on the 80 Series photographs in reference/vehicles/landcruiser-80-sooty
@@ -699,29 +700,32 @@ function frontEnd(b: VehicleBuilder) {
     -1,
     Z.Front,
   );
-  // Grille: chrome surround, slats and the Toyota oval (1995-on pattern, as on Australian GXLs).
-  // Grille runs from the lamp tops down past the indicators, as in the front photograph.
+  // Grille: the early pattern (front.jpg, grille-early.jpg), since Sooty MkII is a 1993 car
+  // (MY4X4's build page): a chrome surround, three slats above and three below a grey bar across
+  // the middle with TOYOTA in chrome letters and a small turbo badge at its left end, and five
+  // uprights dividing it. Until v2.13 it was the 1995-on grille with the oval badge.
   b.block(0, 0.42, F - 0.01, 0.82, 0.24, 0.025, chrome, M.Metal, Z.Front, 0.012);
   b.block(0, 0.42, F - 0.016, 0.76, 0.195, 0.02, black, M.Rubber, Z.Front, 0.006);
-  for (let i = 0; i < 8; i++)
-    b.block(0, 0.34 + i * 0.023, F - 0.027, 0.74, 0.008, 0.01, dark, M.Metal, Z.Front, 0.003);
-  b.slot = M.Metal;
-  b.tag = Z.Front;
-  b.push()
-    .translate(0, 0.44, F - 0.036)
-    .scale(1, 0.72, 1);
-  b.geometry(new THREE.TorusGeometry(0.05, 0.0045, 6, 36), chrome);
-  b.pop();
-  b.push()
-    .translate(0, 0.44, F - 0.04)
-    .scale(0.45, 1, 1);
-  b.geometry(new THREE.TorusGeometry(0.031, 0.004, 6, 28), chrome);
-  b.pop();
-  b.push()
-    .translate(0, 0.452, F - 0.04)
-    .scale(1, 0.4, 1);
-  b.geometry(new THREE.TorusGeometry(0.031, 0.004, 6, 28), chrome);
-  b.pop();
+  for (const y of [0.35, 0.372, 0.394, 0.462, 0.484, 0.506])
+    b.block(0, y, F - 0.027, 0.74, 0.008, 0.01, dark, M.Metal, Z.Front, 0.003);
+  for (let i = 0; i < 5; i++)
+    b.block(-0.26 + i * 0.13, 0.428, F - 0.025, 0.008, 0.18, 0.01, dark, M.Metal, Z.Front);
+  b.block(0, 0.428, F - 0.03, 0.74, 0.056, 0.012, new THREE.Color('#5A5E60'), M.Metal, Z.Front, 0.004);
+  strokeText(b, 'TOYOTA', {
+    x: 0.2075,
+    y: 0.428 - 0.0205,
+    z: F - 0.039,
+    dir: -1,
+    w: 0.05,
+    h: 0.041,
+    pitch: 0.073,
+    radius: 0.0034,
+    colour: chrome,
+    slot: M.Metal,
+    zone: Z.Front,
+  });
+  b.block(-0.32, 0.428, F - 0.038, 0.08, 0.022, 0.006, chrome, M.Metal, Z.Front, 0.003);
+  b.block(-0.32, 0.428, F - 0.042, 0.068, 0.012, 0.004, dark, M.Rubber, Z.Front);
   for (const side of [-1, 1]) {
     // Two square lamps a side in a chrome bezel, the clear corner lamp wrapping the corner.
     b.block(side * 0.6, 0.455, F - 0.008, 0.37, 0.16, 0.02, chrome, M.Metal, Z.Front, 0.012);
@@ -916,12 +920,18 @@ function chassis(b: VehicleBuilder, t: VehicleTuning) {
   b.rod(v(0.08, -0.09, -0.56), v(0.08, -0.196, -WB), 0.031, steel, M.Metal, Z.Trim);
   b.rod(v(0.08, -0.08, 0.13), v(0.08, -0.196, WB), 0.031, steel, M.Metal, Z.Trim);
   b.block(0.6, 0.04, 0.15, 0.27, 0.22, 0.65, black, M.Metal, Z.Trim, 0.03);
+  // The exhaust runs back on the right, climbs over the rear axle between the differential and
+  // the coil spring, and comes out behind the right rear wheel, as on rear.jpg. Until v2.13 it
+  // ran on the left and came out behind the left wheel.
   tube(
     b,
     [
-      [-0.23, -0.07, -0.85],
-      [-0.23, -0.07, 1.75],
-      [-0.7, -0.04, TAIL - 0.02],
+      [0.27, -0.07, -0.85],
+      [0.27, -0.07, 1.0],
+      [0.27, 0.09, 1.2],
+      [0.27, 0.09, 1.65],
+      [0.27, -0.05, 1.85],
+      [0.7, -0.04, TAIL - 0.02],
     ],
     0.034,
     steel,
@@ -1126,12 +1136,10 @@ function bullbar(b: VehicleBuilder) {
         0.004,
       );
   }
-  // Red Edition-style winch, steel drum and a properly pierced hawse fairlead.
-  b.rod(v(-0.15, 0.35, back - 0.075), v(0.17, 0.35, back - 0.075), 0.067, dark, M.Metal, Z.Front);
-  for (let i = 0; i < 14; i++)
-    b.ring(-0.14 + i * 0.022, 0.35, back - 0.075, 0.067, 0.004, steel, M.Metal, 'x', Z.Front);
-  b.block(-0.235, 0.35, back - 0.075, 0.15, 0.15, 0.17, new THREE.Color('#B53428'), M.Paint, Z.Front, 0.018);
-  b.block(0.205, 0.35, back - 0.075, 0.05, 0.16, 0.17, black, M.Metal, Z.Front, 0.008);
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the pierced hawse fairlead in the face. Until v2.13 its drum and red motor stood on
+  // the pan in front of the grille.
+  b.block(0, 0.345, zc + 0.02, 0.18, 0.05, 0.09, black, M.Rubber, Z.Front, 0.012);
   const fair = rectangle(-0.16, 0.17, 0.16, 0.28, 0.025);
   fair.holes.push(new THREE.Path(rectangle(-0.11, 0.203, 0.11, 0.247, 0.018).getPoints(16).reverse()));
   extrudeZ(b, fair, face - 0.055, face - 0.025, steel, M.Metal, Z.Front, 0.002);
