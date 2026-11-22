@@ -46,7 +46,7 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: numbe
 /**
  * A steel bull bar of the mid-eighties: a deep folded pan in place of the bumper, swept back
  * round the guards, a centre hoop over the grille, side loops across the headlamps, and an
- * electric winch sitting on the pan with a roller fairlead in its face.
+ * electric winch inside the pan with a roller fairlead in its face.
  */
 function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   const face = tuning.winchMount.z + 0.04,
@@ -94,13 +94,11 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
       0.026,
     );
   b.rod(v(-0.3, 0.46, zt - 0.015), v(0.3, 0.46, zt - 0.015), 0.022, C.bar, M.Metal, Z.Front);
-  // Winch on the pan: drum, motor on the left end, gearbox on the right, roller fairlead.
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the roller fairlead in the face. Until v2.14 its drum, motor and gearbox stood on the
+  // pan in front of the grille.
   const wz = (face + back) / 2;
-  b.rod(v(-0.2, top - 0.03, wz), v(0.2, top - 0.03, wz), 0.06, C.bar, M.Metal, Z.Front);
-  for (let i = 0; i < 12; i++)
-    b.ring(-0.14 + i * 0.025, top - 0.03, wz, 0.058, 0.005, C.steel, M.Metal, 'x', Z.Front);
-  b.rod(v(-0.36, top - 0.03, wz), v(-0.21, top - 0.03, wz), 0.055, C.bar, M.Metal, Z.Front);
-  b.block(0.24, top - 0.03, wz, 0.08, 0.15, 0.15, C.rubber, M.Rubber, Z.Front, 0.015);
+  b.block(0, top + 0.025, wz, 0.2, 0.05, 0.09, C.rubber, M.Rubber, Z.Front, 0.012);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.022, 0.2, 0.09, 0.03, C.steel, M.Metal, Z.Front, 0.006);
   for (const y of [m.y - 0.03, m.y + 0.03])
@@ -139,11 +137,17 @@ function underside(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: Vehic
   b.block(0.02, -0.07, -0.32, 0.34, 0.2, 0.72, C.steel.clone().multiplyScalar(0.55), M.Metal, Z.Trim, 0.03);
   b.block(0, -0.06, -1.6, 0.3, 0.16, 0.5, C.steel.clone().multiplyScalar(0.5), M.Metal, Z.Trim, 0.03);
   b.block(-0.1, -0.02, 0.85, 0.62, 0.2, 0.46, C.rubber, M.Rubber, Z.Trim, 0.03);
-  // Exhaust down the right side inside the frame rail, past the axle, out behind the wheel.
+  // Exhaust down the right side inside the frame rail, up over the rear axle under the load floor,
+  // and out behind the wheel. Until v2.14 it ran straight back at the axle's height, 1 cm into
+  // the top of its tube.
   for (const [p, q] of [
     [v(0.28, -0.06, -0.9), v(0.3, -0.07, 0.1)],
     [v(0.3, -0.07, 0.5), v(0.33, -0.05, 1.0)],
-    [v(0.33, -0.05, 1.0), v(0.33, -0.05, 1.9)],
+    [v(0.33, -0.05, 1.0), v(0.33, -0.05, 1.12)],
+    [v(0.33, -0.05, 1.12), v(0.33, 0.05, 1.25)],
+    [v(0.33, 0.05, 1.25), v(0.33, 0.05, 1.48)],
+    [v(0.33, 0.05, 1.48), v(0.33, -0.05, 1.61)],
+    [v(0.33, -0.05, 1.61), v(0.33, -0.05, 1.9)],
     [v(0.33, -0.05, 1.9), v(0.56, -0.1, 2.5)],
   ])
     b.rod(p, q, 0.028, C.steel);
