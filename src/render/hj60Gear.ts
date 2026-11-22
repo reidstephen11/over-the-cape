@@ -137,27 +137,39 @@ function underside(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: Vehic
   b.block(0.02, -0.07, -0.32, 0.34, 0.2, 0.72, C.steel.clone().multiplyScalar(0.55), M.Metal, Z.Trim, 0.03);
   b.block(0, -0.06, -1.6, 0.3, 0.16, 0.5, C.steel.clone().multiplyScalar(0.5), M.Metal, Z.Trim, 0.03);
   b.block(-0.1, -0.02, 0.85, 0.62, 0.2, 0.46, C.rubber, M.Rubber, Z.Trim, 0.03);
-  // Exhaust down the right side inside the frame rail, up over the rear axle under the load floor,
-  // and out behind the wheel. Until v2.14 it ran straight back at the axle's height, 1 cm into
-  // the top of its tube.
-  for (const [p, q] of [
-    [v(0.28, -0.06, -0.9), v(0.3, -0.07, 0.1)],
-    [v(0.3, -0.07, 0.5), v(0.33, -0.05, 1.0)],
-    [v(0.33, -0.05, 1.0), v(0.33, -0.05, 1.12)],
-    [v(0.33, -0.05, 1.12), v(0.33, 0.05, 1.25)],
-    [v(0.33, 0.05, 1.25), v(0.33, 0.05, 1.48)],
-    [v(0.33, 0.05, 1.48), v(0.33, -0.05, 1.61)],
-    [v(0.33, -0.05, 1.61), v(0.33, -0.05, 1.9)],
-    [v(0.33, -0.05, 1.9), v(0.56, -0.1, 2.5)],
-  ])
-    b.rod(p, q, 0.028, C.steel);
+  // Exhaust down the right side inside the frame rail: under the front crossmembers, up over the
+  // rear axle and the two rear crossmembers under the load floor, clear above the slung spare, and
+  // down behind the last crossmember to come out under the rear bar. Until v2.14 it ran at the
+  // axle's height through the axle tube and the three crossmembers behind the gearbox.
+  const pipe = [
+    v(0.28, -0.12, -0.9),
+    v(0.3, -0.125, 0.08),
+    v(0.3, -0.125, 0.52),
+    v(0.31, -0.125, 1.05),
+    v(0.33, 0.05, 1.22),
+    v(0.33, 0.05, 2.515),
+    v(0.33, -0.1, 2.53),
+    v(0.56, -0.14, 2.62),
+  ];
+  for (let i = 0; i < pipe.length - 1; i++) {
+    // The muffler (z 0.09 to 0.51) stands between the second and third points.
+    if (i === 1) continue;
+    b.rod(pipe[i], pipe[i + 1], 0.028, C.steel);
+  }
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()
-    .translate(0.3, -0.07, 0.3)
+    .translate(0.3, -0.125, 0.3)
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.07, 0.07, 0.42, 12), C.steel.clone().multiplyScalar(0.6));
   b.pop();
+  // Rubber hangers: from the top of the muffler up to the cab floor, and from the run over
+  // the axle up to the load floor.
+  for (const [a, c] of [
+    [v(0.3, -0.06, 0.18), v(0.3, 0.085, 0.18)],
+    [v(0.33, 0.075, 1.75), v(0.33, 0.09, 1.75)],
+  ])
+    b.rod(a, c, 0.009, C.rubber, M.Rubber, Z.Trim);
   // The first spare, slung flat under the back on its cradle as the factory carried it,
   // below the frame rails (bottom at -0.105) and the two rear crossmembers, high enough that
   // its lowest hub cap is 0.156 m off the ground.
@@ -248,8 +260,9 @@ export function addHj60Gear(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
 export function buildHj60Plank(index: number): THREE.BufferGeometry {
   const b = new VehicleBuilder();
   const wood = pal('barkOchre');
+  // Their front ends are 2 cm behind the rack's front rail (at z 1.05 they stood 5 cm past it).
   const x = index === 0 ? -0.56 : -0.25,
-    z = 1.05,
+    z = 1.12,
     y = DECK + 0.037;
   b.block(x, y, z, 0.29, 0.05, 2.2, wood, M.Fabric, Z.Roof);
   for (let i = 0; i < 4; i++)

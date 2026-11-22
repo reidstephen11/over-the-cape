@@ -2316,3 +2316,24 @@ The owner asked for the 80 Series after the ute. Only the 80 Series (`sooty80`) 
 Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` and `tests/sooty80.test.ts` pass.
 
 71.7k triangles with wheels and boards (body 50.9k; it was 71.2k and 50.5k).
+
+## v2.14: the 60 Series
+
+The owner asked for the 60 Series, the MQ Patrol and the Range Rover next, each to be shown before and after. Only the 60 Series wagon (`hj60`) changes. Its 28 audit pictures and the standard set were compared with `front-34-left-n-hj60v-std-1987-standard-roof.jpg`, `rear-34-left-n-hj60v-std-1987-barn-doors.jpg`, `front-34-left-customwagon-1985.jpg` and `side-left-j60-mod-roof-tent.jpg` in `reference/vehicles/landcruiser-60/`. The side was laid over the last of these in v1.10 and its outline, windows, pillars, creases and arches still agree, so the body's shape did not move. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Winch (item 1).** Inside the bar's pan, as on the other winch bars: what shows is its control box on the pan's top between the hoop's legs, and the roller fairlead in the face. Its drum, motor and gearbox stood on the pan in front of the grille.
+- **Headlamp surrounds (item 2).** Each round lamp sits in a black square surround with a thin chrome strip round its edge, as on the cream 1985 Customwagon; the Japanese Standard's are plain black. They were solid chrome and read from any distance as pale grey squares.
+- **Grille (item 3).** Its six horizontal bars are a dark grey a shade lighter than the recess behind them, so they show behind TOYOTA as they do on the photographs. They were the recess's own black.
+- **Exhaust (item 4).** Down the right side inside the frame rail, under the front crossmembers, the muffler under the cab floor, up over the rear axle and over the two rear crossmembers under the load floor (clear above the slung spare), down behind the last crossmember, and out under the right end of the rear bar. It ran straight back at the axle's height, through the top of the axle tube and through three crossmembers.
+
+**Where each part is attached and which way it faces.** The winch's control box sits on the bar pan's top. Each lamp surround lies on the grille band, facing forward, its chrome edge on its face. The exhaust hangs inside the right rail: the muffler from a rubber hanger to the cab floor, the run over the axle from one to the load floor; its tail points down and out under the rear bar. Neither spare moved: one lies flat under the back on its cradle, face down; the other lies flat on the rack, face up.
+
+**The second look.** A reviewer was given 49 pictures and nothing else: the standard set, the 28 audit pictures and 13 close-ups (the front from ahead and each corner, a headlamp from ahead and the side, the grille from low, the bar from above and low, the winch box, the exhaust at the axle, from low, behind and the side). It found the bar, lamps, mirrors, aerial, rack, both spares and all four mud flaps attached, and nothing below the ground. What it found, and what was done:
+
+- **The tailpipe looked like a loose piece, with nothing joining it forward** (there before). The pipe ran into the rear crossmember and out of the other side, so from below its tail stopped at the crossmember. Rerouted as above, over the rear crossmembers.
+- **The rack's boards stood 5 cm past its front rail** (there before). They are 7 cm further back, inside it.
+- Not changed: **the rear mud flap resting on the test block** in the picture with the axles crossed: it is a rubber flap brushing the rock the wheel is climbing. **The front tyre filling its opening** in the same picture: a closer look shows a dark gap between the tread and the opening's top. **The roof spare over the rack's rear rails from above** is perspective; from the side there is a gap of about 9 cm.
+
+Each fix was photographed again and read, and the standard and audit sets were taken again on the final version. `tests/spares.test.ts` and `tests/hj60.test.ts` pass.
+
+78.5k triangles with wheels and boards (body 59.5k; it was 77.8k and 58.8k).
