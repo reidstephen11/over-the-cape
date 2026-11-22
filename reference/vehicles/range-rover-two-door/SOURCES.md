@@ -65,3 +65,12 @@ The files the model was matched against, named as they would be committed. CC BY
 ## v1.65 articulation clearance
 
 The load floor is 1.0 m wide between z 0.8 and 1.8, between the rear wheelhouses, and resumes its previous full width behind them. The rear seat plinth is also 1.0 m wide, its top supports a cushion 0.03 m higher than before, and lower side trim starts above the wheelhouse roof at y 0.42. The seat still faces forward; the floor and trim remain attached to the body. These remove interior surfaces that crossed a cambered rear tyre. Exterior dimensions, wheel openings and the spare mount are unchanged. This is an internal fit correction, not a new claim from the unavailable reference originals.
+
+## v2.16 comparison
+
+The photographs are still not committed: Commons answered every request from the container with HTTP 429 again in November 2026. The 28 audit pictures were checked for faults a render shows on its own. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Winch.** Inside the roo bar's pan, with its control box on the pan's top.
+- **Exhaust.** Inside the left rail under the crossmembers (y −0.125), the muffler under the cab floor between the crossmembers, in to x −0.18 over the rear axle at y 0.05 (clear of the coil spring and the damper), back out under the rear crossmembers and out under the rear bar pointing back.
+- **Rear wheelhouses.** A dark inner wall 0.52 to 0.54 m out over each rear wheel, and the wheelhouse's top raised to 0.465 m, above the flare's opening; its ends stop at the flare's feet (0.09 m).
+- **Inside.** The dash panel and its pad are 1.5 m wide and behind the glass; the rear seat is 1.02 m wide, between the wheelhouses; the rear corners have an inside face; the load floor has a step to the cab floor and a dark pan under it.

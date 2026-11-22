@@ -738,13 +738,9 @@ function sides(b: VehicleBuilder): void {
     b.block(side * 0.53, 0.28, AXLE, 0.02, 0.37, 1.15, C.well, M.Rubber, Z.Trim);
     extrudeX(
       b,
-      sideShape([
-        [0.7, 0.465],
-        [1.84, 0.465],
-        [1.84, 0.05],
-        ...[...REAR_OPENING].reverse().slice(0, -1),
-        [0.71, 0.03],
-      ]),
+      // Its bottom ends at the flare's feet (0.09): at 0.03 and 0.05 they hung below the body as
+      // dark wedges at each end of the opening (there before v2.16).
+      sideShape([[0.7, 0.465], [1.84, 0.465], ...[...REAR_OPENING].reverse().slice(0, -1), [0.7, 0.09]]),
       side > 0 ? 0.52 : -0.83,
       side > 0 ? 0.83 : -0.52,
       C.well,
@@ -775,6 +771,7 @@ function rearCorner(
   zone: number,
   from = 0,
   to = 1,
+  inside = false,
 ): void {
   const z = TAIL - RC;
   const w0 = half(l, y0),
@@ -790,12 +787,28 @@ function rearCorner(
     ((to - from) * Math.PI) / 2,
   );
   g.translate(0, (y1 - y0) / 2, 0);
+  // An inside face: each triangle turned round, and its normal, so it faces into the body.
+  let geometry: THREE.BufferGeometry = g;
+  if (inside) {
+    geometry = g.toNonIndexed();
+    const p = geometry.getAttribute('position'),
+      n = geometry.getAttribute('normal');
+    for (let i = 0; i < p.count; i += 3)
+      for (const a of [p, n]) {
+        const x = a.getX(i + 1),
+          y = a.getY(i + 1),
+          zz = a.getZ(i + 1);
+        a.setXYZ(i + 1, a.getX(i + 2), a.getY(i + 2), a.getZ(i + 2));
+        a.setXYZ(i + 2, x, y, zz);
+      }
+    for (let i = 0; i < n.count; i++) n.setXYZ(i, -n.getX(i), -n.getY(i), -n.getZ(i));
+  }
   const k = (w1 - w0) / (y1 - y0);
   const m = new THREE.Matrix4().set(1, side * k, 0, side * (w0 - RC), 0, 1, 0, y0, 0, 0, 1, z, 0, 0, 0, 1);
   b.slot = slot as typeof b.slot;
   b.tag = zone;
   b.push(m);
-  b.geometry(g, color);
+  b.geometry(geometry, color);
   b.pop();
 }
 
@@ -814,7 +827,13 @@ function rear(b: VehicleBuilder): void {
     [BELT, ROOF_EDGE, LEAN_G, C.pillar, M.Rubber],
   ];
   for (const side of [-1, 1])
-    for (const [y0, y1, l, color, slot] of bands) rearCorner(b, side, y0, y1, l, RC, color, slot, Z.Rear);
+    for (const [y0, y1, l, color, slot] of bands) {
+      rearCorner(b, side, y0, y1, l, RC, color, slot, Z.Rear);
+      // The corner's inside face: the curved panel shows only from outside, so the sky showed
+      // through each rear corner from inside (there before v2.16).
+      const inner = y0 >= BELT ? C.pillar : C.trim;
+      rearCorner(b, side, y0, y1, l, RC - 0.012, inner, M.Rubber, Z.Trim, 0, 1, true);
+    }
   const edge = (y: number) => wAt(y + 0.0001) - RC + 0.012;
   const lower: Vtx[] = [
     [edge(DOOR_LOW), DOOR_LOW],
