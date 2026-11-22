@@ -18,6 +18,7 @@ export { buildHj60Plank, buildHj60Wheel } from './hj60Gear';
 // out, and checked against the front and rear photographs.
 // Photographs and dimensions: reference/vehicles/landcruiser-60/SOURCES.md.
 export const AXLE = 1.365;
+const GRILLE_BAR = new THREE.Color('#44494B');
 /** Face of the headlamp bezels and grille. */
 export const NOSE = -2.02;
 export const TAIL = 2.548;
@@ -392,21 +393,25 @@ function frontClip(b: VehicleBuilder): void {
     ),
   );
   extrudeZ(b, band, NOSE + 0.004, NOSE + 0.045, C.grille, M.Rubber, Z.Front, 0.006);
-  // Chrome square bezels round the round 7-inch sealed beams.
+  // Square black surrounds round the round 7-inch sealed beams, edged with a thin chrome strip
+  // (front-34-left-customwagon-1985.jpg; the Japanese Standard's are plain black). Until v2.14
+  // the whole surround was chrome and read as a pale grey square.
   for (const side of [-1, 1]) {
     const x = side * 0.625;
-    const bezel = new THREE.Shape(
-      rounded([
-        [x - 0.126, 0.266, 0.022],
-        [x + 0.126, 0.266, 0.022],
-        [x + 0.126, 0.504, 0.022],
-        [x - 0.126, 0.504, 0.022],
-      ]),
-    );
+    const square = (d: number): Vtx[] => [
+      [x - 0.126 + d, 0.266 + d, 0.022],
+      [x + 0.126 - d, 0.266 + d, 0.022],
+      [x + 0.126 - d, 0.504 - d, 0.022],
+      [x - 0.126 + d, 0.504 - d, 0.022],
+    ];
+    const bezel = new THREE.Shape(rounded(square(0)));
     const hole = new THREE.Path();
     hole.absarc(x, 0.385, 0.1, 0, Math.PI * 2, true);
     bezel.holes.push(hole);
-    extrudeZ(b, bezel, NOSE - 0.006, NOSE + 0.006, C.chrome, M.Metal, Z.Front, 0.004);
+    extrudeZ(b, bezel, NOSE - 0.006, NOSE + 0.006, C.rubber, M.Rubber, Z.Front, 0.004);
+    const edge = new THREE.Shape(rounded(square(-0.004)));
+    edge.holes.push(new THREE.Path(rounded(square(0.008)).reverse()));
+    extrudeZ(b, edge, NOSE - 0.009, NOSE - 0.004, C.chrome, M.Metal, Z.Front, 0.002);
     roundHeadlamp(b, x, 0.385, NOSE + 0.016, 0.089, C.lamp, C.chrome, C.rubber);
     // Indicator wrapped round the corner: amber over a clear park lamp, in a black housing.
     const ix = side * 0.822;
@@ -418,8 +423,10 @@ function frontClip(b: VehicleBuilder): void {
   }
   // Grille: horizontal bars in a dark recess, with the raised TOYOTA in the middle.
   b.block(0, 0.385, NOSE + 0.03, 0.96, 0.23, 0.01, C.well, M.Rubber, Z.Front);
+  // The bars are dark grey, a shade lighter than the recess, so they show as on the photographs
+  // (until v2.14 they were the recess's own black).
   for (let i = 0; i < 6; i++)
-    b.block(0, 0.293 + i * 0.037, NOSE + 0.012, 0.95, 0.011, 0.03, C.grille, M.Rubber, Z.Front, 0.004);
+    b.block(0, 0.293 + i * 0.037, NOSE + 0.012, 0.95, 0.011, 0.03, GRILLE_BAR, M.Rubber, Z.Front, 0.004);
   toyota(b, 0, 0.385, NOSE - 0.01, 0.06, C.argent);
 }
 

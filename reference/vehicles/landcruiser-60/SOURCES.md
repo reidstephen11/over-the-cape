@@ -65,3 +65,13 @@ All sixteen are the originals Commons serves. `manifest.json` repeats this table
 ## v1.62 inspection
 
 v1.62 visual review: the padded dashboard top moves 0.07 m towards the windscreen and is 0.12 m deep, clearing the dial faces from the driver's seat. Body dimensions, instruments and spare mounts are unchanged. The cabin remains estimated, as described under Gaps.
+
+## v2.14 comparison
+
+The 28 audit pictures were compared with `front-34-left-n-hj60v-std-1987-standard-roof.jpg`, `rear-34-left-n-hj60v-std-1987-barn-doors.jpg`, `front-34-left-customwagon-1985.jpg` and `side-left-j60-mod-roof-tent.jpg`. The side, already laid over the last of these in v1.10, did not move. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Headlamp surrounds.** Black squares 0.252 × 0.238 m round the round lamps, edged with a 1.2 cm chrome strip, as on the Customwagon; the Japanese Standard's are plain black. They were solid chrome.
+- **Grille.** The six bars are dark grey (`#44494B`), a shade lighter than the recess behind them, so they show; they were the recess's black.
+- **Winch.** Inside the bar's pan, with its control box on the pan's top.
+- **Exhaust.** Inside the right rail under the front crossmembers (y −0.125), the muffler under the cab floor, over the rear axle and the two rear crossmembers at y 0.05 under the load floor, down behind the last crossmember and out under the rear bar's right end. It ran through the axle tube and three crossmembers.
+- **Rack boards.** 7 cm further back, their front ends 2 cm behind the rack's front rail.
