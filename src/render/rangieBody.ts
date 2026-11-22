@@ -728,13 +728,19 @@ function sides(b: VehicleBuilder): void {
       Z.Sides,
       0.015,
     );
-    // Inner wheelhouses, dark where they face the wheels.
+    // Inner wheelhouses, dark where they face the wheels. The rear one's top is 4 cm above the
+    // flare's opening (it was 5 mm below it), so no light or tan trim shows through the top of
+    // the opening.
     b.block(side * 0.42, 0.12, -AXLE, 0.02, 0.5, 1.0, C.well, M.Rubber, Z.Trim);
+    // The rear wheelhouse's inner wall, 0.52 to 0.54 m out, clear of the coil spring and the tyre:
+    // until v2.16 the rear opening went straight through the wheelhouse into the cabin, so the
+    // rear seat and the floor showed tan through the top of the opening.
+    b.block(side * 0.53, 0.28, AXLE, 0.02, 0.37, 1.15, C.well, M.Rubber, Z.Trim);
     extrudeX(
       b,
       sideShape([
-        [0.7, 0.42],
-        [1.84, 0.42],
+        [0.7, 0.465],
+        [1.84, 0.465],
         [1.84, 0.05],
         ...[...REAR_OPENING].reverse().slice(0, -1),
         [0.71, 0.03],

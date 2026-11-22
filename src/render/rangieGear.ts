@@ -9,7 +9,7 @@ import { NOSE, ROOF_EDGE, TAIL, wAt } from './rangieBody';
 import { mountSpare, spareSidewall } from './spares';
 
 // What the game adds to the factory two-door: a tubular steel roo bar of the period with a
-// winch on its pan and two driving lamps on the centre hoop (as the green Australian car in
+// winch inside its pan and two driving lamps on the centre hoop (as the green Australian car in
 // the photographs carries), a towbar with a ball under the rear bumper, a gutter-mounted roof
 // rack carrying the second spare and the planks, and the first spare standing in the load bay
 // as the factory carried it.
@@ -48,7 +48,7 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: numbe
 }
 
 /**
- * The roo bar: a folded steel pan ahead of the bumper carrying the winch, a centre hoop over
+ * The roo bar: a folded steel pan ahead of the bumper holding the winch, a centre hoop over
  * the grille with the two driving lamps on it, a hoop over each headlamp, and a cross rail
  * tying the three together.
  */
@@ -105,13 +105,11 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.geometry(new THREE.CylinderGeometry(0.075, 0.075, 0.006, 18), C.lamp);
     b.pop();
   }
-  // Winch on the pan: drum, motor on the left end, gearbox on the right, roller fairlead.
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the roller fairlead in the face. Until v2.16 its drum, motor and gearbox stood on the
+  // pan in front of the grille.
   const wz = (face + back) / 2 + 0.02;
-  b.rod(v(-0.2, top + 0.05, wz), v(0.2, top + 0.05, wz), 0.055, C.bar, M.Metal, Z.Front);
-  for (let i = 0; i < 12; i++)
-    b.ring(-0.14 + i * 0.025, top + 0.05, wz, 0.053, 0.005, C.steel, M.Metal, 'x', Z.Front);
-  b.rod(v(-0.36, top + 0.05, wz), v(-0.21, top + 0.05, wz), 0.05, C.bar, M.Metal, Z.Front);
-  b.block(0.24, top + 0.05, wz, 0.08, 0.14, 0.14, C.rubber, M.Rubber, Z.Front, 0.015);
+  b.block(0, top + 0.025, wz, 0.2, 0.05, 0.09, C.rubber, M.Rubber, Z.Front, 0.012);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.022, 0.2, 0.09, 0.03, C.steel, M.Metal, Z.Front, 0.006);
   for (const y of [m.y - 0.03, m.y + 0.03])
@@ -158,21 +156,41 @@ function underside(b: VehicleBuilder, wheel: THREE.BufferGeometry, tuning: Vehic
   b.block(0.02, -0.07, -0.3, 0.34, 0.2, 0.72, C.steel.clone().multiplyScalar(0.55), M.Metal, Z.Trim, 0.03);
   b.block(0, -0.06, -1.5, 0.32, 0.16, 0.5, C.steel.clone().multiplyScalar(0.5), M.Metal, Z.Trim, 0.03);
   b.block(0.15, -0.02, 1.95, 0.6, 0.2, 0.44, C.rubber, M.Rubber, Z.Trim, 0.03);
-  // Exhaust down the left side inside the frame rail, past the axle, out behind the wheel.
-  for (const [p, q] of [
-    [v(-0.28, -0.06, -0.9), v(-0.3, -0.07, 0.1)],
-    [v(-0.3, -0.07, 0.5), v(-0.33, -0.05, 1.0)],
-    [v(-0.33, -0.05, 1.0), v(-0.33, -0.05, 1.8)],
-    [v(-0.33, -0.05, 1.8), v(-0.56, -0.1, 2.36)],
-  ])
-    b.rod(p, q, 0.028, C.steel);
+  // Exhaust down the left side inside the frame rail: under the crossmembers, the muffler under the
+  // cab floor between two crossmembers, in towards the middle over the rear axle (clear of the coil
+  // spring and the damper, under the load floor), back out under the two rear crossmembers and out
+  // under the rear bar pointing back. Until v2.16 it ran at the axle's height, through the top of
+  // its tube and through three crossmembers, and the muffler ran into the crossmember at 0.5.
+  const pipe = [
+    v(-0.28, -0.12, -0.9),
+    v(-0.3, -0.125, -0.01),
+    v(-0.3, -0.125, 0.41),
+    v(-0.3, -0.125, 0.95),
+    v(-0.18, 0.05, 1.12),
+    v(-0.18, 0.05, 1.43),
+    v(-0.33, -0.135, 1.62),
+    v(-0.33, -0.135, 2.24),
+    v(-0.42, -0.15, 2.36),
+  ];
+  for (let i = 0; i < pipe.length - 1; i++) {
+    // The muffler stands between the second and third points.
+    if (i === 1) continue;
+    b.rod(pipe[i], pipe[i + 1], 0.028, C.steel);
+  }
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()
-    .translate(-0.3, -0.07, 0.3)
+    .translate(-0.3, -0.125, 0.2)
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.07, 0.07, 0.42, 12), C.steel.clone().multiplyScalar(0.6));
   b.pop();
+  // Rubber hangers from the muffler up to the cab floor and from the run over the axle up to the
+  // load floor.
+  for (const [a, c] of [
+    [v(-0.3, -0.06, 0.2), v(-0.3, 0.085, 0.2)],
+    [v(-0.18, 0.075, 1.28), v(-0.18, 0.135, 1.28)],
+  ])
+    b.rod(a, c, 0.009, C.rubber, M.Rubber, Z.Trim);
   // The first spare standing upright in the load bay on the left, strapped to the side.
   b.tag = Z.Rear;
   // Its inner sidewall stands 6 mm off the rear wheelhouse's inner face (x -0.52), which it
