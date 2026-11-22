@@ -15,13 +15,13 @@ Wheelbases, lengths, widths and heights are the J70 infobox on [Toyota Land Crui
 |           | Published                                               | In the current model                                                                                                                                                                                                                                          |
 | --------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Wheelbase | 2,980 mm                                                | 2.98 m                                                                                                                                                                                                                                                        |
-| Length    | 4,995 mm over the bumpers; 4.78 m of skin on `side.jpg` | 4.78 m of skin (`F` −2.2 to `TAIL` 2.58 in `src/render/troopyBody.ts`): the nose is 0.71 m ahead of the front axle and the tail 1.09 m behind the rear, so the split is 90 mm off each way (`F` −2.11, `TAIL` 2.67 would match); the bumpers are outside that |
-| Width     | 1,790–1,870 mm                                          | 1.79 m (`SIDE` 0.895, v1.22); 1.83 m over the flare lips                                                                                                                                                                                                      |
+| Length    | 4,995 mm over the bumpers; 4.78 m of skin on `side.jpg` | 4.69 m of skin (`F` −2.11 to `TAIL` 2.58 in `src/render/troopyBody.ts`): the nose is 0.62 m ahead of the front axle (since v2.08) and the tail 1.09 m behind the rear, 2 cm short of `side.jpg` (below); the bumpers are outside that |
+| Width     | 1,790–1,870 mm                                          | 1.79 m (`SIDE` 0.895, v1.22); 1.83 m over the front guards' flares (v2.11; the black lips they replaced were as wide)                                                                                                                                         |
 | Height    | 2,070 mm is the taller of the two                       | about 2.06 m (roof y = 1.54, ground 0.52 m below the origin)                                                                                                                                                                                                  |
 | Track     | the game uses 1.42 m front and 1.40 m rear              | those figures                                                                                                                                                                                                                                                 |
 | Tyres     | the game uses 7.50R16                                   | radius 0.40 m                                                                                                                                                                                                                                                 |
 
-**Check these first.** The round lamps and the square, high body are the right generation. The skin's length matches `side.jpg`, but its nose sits 90 mm too far forward and its tail 90 mm short (above); moving `F` and `TAIL` means moving the tow point, the collision boxes, the rack and the barn doors with them, so it waits. The wheel openings have the 75's flat top with short rounded corners since v1.22 (`side.jpg`, `front-34-b.jpg`, `detail.jpg`, `rear-34-ambulance.jpg`): a flat run of about 0.4 m, the sides opening out to the sill. Compare a studio side view with `side.jpg` and a front view with `front-34.jpg`.
+**Check these first.** The round lamps and the square, high body are the right generation. Since v2.08 the nose is where `side.jpg` puts it; the tail is 2 cm short, which was left (moving `TAIL` means moving the tow point, the collision boxes, the rack and the barn doors with it). The wheel openings have the 75's flat top with short rounded corners since v1.22 (`side.jpg`, `front-34-b.jpg`, `detail.jpg`, `rear-34-ambulance.jpg`): a flat run of about 0.4 m, the sides opening out to the sill; since v2.11 they are pressed into the body and painted, 1.5 cm lower. Compare a studio side view with `side.jpg` and a front view with `front-34.jpg`.
 
 ## Gaps
 
@@ -42,7 +42,7 @@ Keep this list with the files. CC BY and CC BY-SA require credit to the author, 
 
 ## v2.08 comparison
 
-Heights and stations were measured on `side.jpg` (the car's left side; it is left-hand drive) from the line through its two hubs, at 238 px a metre, and set 1 cm higher for the game's springs. In the model's frame (origin 0.12 m above the hubs):
+Heights and stations were measured on `side.jpg` (the car's left side; it is left-hand drive) from the line through its two hubs, and set 1 cm higher for the game's springs. (v2.08's notes say 238 px a metre; the hubs, at (329.5, 570) and (1137.5, 583.5), are 808 px apart, 271 px a metre, which is the scale its heights agree with.) In the model's frame (origin 0.12 m above the hubs):
 
 |                              | On `side.jpg`                  | Model before     | Model since v2.08  |
 | ---------------------------- | ------------------------------ | ---------------- | ------------------ |
@@ -58,4 +58,23 @@ Heights and stations were measured on `side.jpg` (the car's left side; it is lef
 
 The tail measures 2 cm short here, not the 9 cm the table above gives; it was left alone. `rear-34-ambulance.jpg` is a straight-on rear view with the doors open; the table now says so.
 
-**Still disagrees.** The grille (vertical bars and letters; the photographs have horizontal bars), the wheel openings (black lips, and tops 4 to 7 cm high), the rear quarter (no vent, a round filler cap), the tail lamps, and no stripes, mud flaps or steps. No photograph shows which rear door carries the spare.
+**Still disagreed after v2.08**, and done in v2.11: the grille, the wheel openings, the rear quarter, the tail lamps, the stripes, mud flaps and steps.
+
+## v2.11 comparison
+
+Measured on `side.jpg` the same way (271 px a metre from the hub line, 1 cm higher for the springs), by laying the photograph over a studio side view taken from 40 m with an 8 degree lens; positions on the right side from `front-34-b.jpg`, scaled from the vent.
+
+|                                     | On the photographs                                             | Model before                          | Model since v2.11                                     |
+| ----------------------------------- | -------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------- |
+| Wheel opening's top                 | 0.41 to 0.43 m, painted edge                                   | 0.435 m, black lip to 0.495 m         | 0.42 m (`ARCH.y`), painted                            |
+| Front guard's flare                 | top crease 0.53 m, from under the indicator back to the door   | none (a black lip round the opening)  | 0.53 m (`FLARE.top`), 18 mm proud                     |
+| Rear opening's edge                 | a narrow raised lip                                            | black lip, 6 cm wide                  | painted lip 3.5 cm wide, 1 cm proud                   |
+| Grille                              | one dark panel with both lamps; three horizontal bars          | vertical slats, separate lamp squares | one panel, three bars                                 |
+| Tail lamp                           | 0.21 to 0.57 m on each rear corner: red, clear, amber          | small, low on the rear face           | 0.21 to 0.57 m, standing 4 cm out behind the corner   |
+| Vent                                | z 2.07 to 2.33, 0.575 to 0.665 m, both sides                   | none                                  | the same                                              |
+| Fuel flaps                          | right side only, 0.19 × 0.15 m, behind the door and the wheel  | a round cap behind each rear wheel    | z 0.43 and 2.0, 0.37 to 0.52 m                        |
+| Stripe                              | grey and gold bands 0.67 to 0.785 m, LAND CRUISER at z 1.75–2.33 | none                                | the same, from the door's front edge                  |
+| Door handle                         | 0.62 m, chrome                                                 | 0.66 m, black                         | 0.625 m, chrome                                       |
+| Rear bar's ends                     | wrap forward along the sides to z 2.34                         | square ends                           | the same                                              |
+
+**Still disagrees.** The stripe runs on along the front guard on both photographed cars; the model's guard rounds over at the shoulder where the stripe would lie, so it starts at the door. The front flare stands 18 mm proud of the door at the shut line, where the real one meets the door's plane: the model's upper guard is not set in above the crease. TOYOTA is in letters, as on the 1992 Australian ambulance; the Peruvian car has the oval badge. The tail is 2 cm short. No photograph shows which rear door carries the spare.

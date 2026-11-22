@@ -18,7 +18,7 @@ import {
   type Vtx,
 } from './bodyShapes';
 import { mirrorHead } from './mirrors';
-import { PLATE_WHITE, numberPlate, strokeText } from './bodyKit';
+import { BADGE_GLYPHS, PLATE_WHITE, numberPlate, strokeText } from './bodyKit';
 
 /** Panels as `extrudePanel`, with a 22 mm crown on the bonnet top and an 8 mm outward press in the lower side skins. */
 function extrudeX(
@@ -94,8 +94,9 @@ import { mountSpare, spareSidewall } from './spares';
 /**
  * 75 Series Troop Carrier body: a front clip with round-shouldered guards, rounded front
  * corners and a bonnet sloping down to the nose; behind it, each side one pressed panel
- * from the door to the tail with its window openings; round wheel openings with black
- * flare lips, rounded rear corners and roof edges, round headlamps in square surrounds,
+ * from the door to the tail with its window openings; flat-topped wheel openings pressed
+ * into the body (a deep painted flare on each front guard, a narrow lip at the back),
+ * rounded rear corners and roof edges, round headlamps in one dark panel with the grille,
  * door mirrors on black sails and an ARB-style bar (ground about 0.52 m below the origin
  * when parked). Photographs and dimensions: reference/vehicles/landcruiser-hzj75-troopy/SOURCES.md.
  */
@@ -121,11 +122,24 @@ const SILL = 0.04;
  */
 const WAIST = 0.76;
 /**
- * The 75 Series wheel openings: a flat top `y` above the hubs with short rounded corners
- * (`r`), `top` half-wide along the flat, widening to `bottom` at the sill (side.jpg). `cy`
- * is the well's centre for the dark inner shading.
+ * The 75 Series wheel openings: a flat top at `y` with short rounded corners (`r`), `top`
+ * half-wide along the flat, widening to `bottom` at the sill (side.jpg). `cy` is the well's
+ * centre for the dark inner shading. v2.11 lowered the top 1.5 cm to side.jpg's (it was 0.435).
  */
-const ARCH = { y: 0.435, top: 0.33, bottom: 0.46, r: 0.12, cy: -0.08 };
+const ARCH = { y: 0.42, top: 0.33, bottom: 0.46, r: 0.12, cy: -0.08 };
+/**
+ * The front guard's flare: it stands out round the opening from the corner under the indicator
+ * back to the door, its top crease `top` above the origin (side.jpg, front-34.jpg), `out` proud
+ * of the body side. The rear openings have a narrow lip `lip` wide.
+ */
+const FLARE = { top: 0.53, out: 0.018, lip: 0.035 };
+/** The body's pressed swage line, and the door handle above it (side.jpg, front-34-b.jpg). */
+const SWAGE_Y = 0.54;
+const HANDLE_Y = 0.625;
+/** The door spare's centre across the car (it was 0.33 until v2.11). */
+const SPARE_X = 0.3;
+const stripeGrey = new THREE.Color('#A2A39D'),
+  stripeGold = new THREE.Color('#B4893A');
 /** The nose's skin: 0.62 m ahead of the front axle on side.jpg (it was 0.71 m, at -2.2). */
 const F = -2.11;
 /** The foot of the windscreen and its header: the screen leans back 37 degrees (it was 12). */
@@ -274,31 +288,66 @@ function sidePanels(b: VehicleBuilder): void {
       M.Rubber,
       Z.Sides,
     );
-    // Black flare lips round the openings, standing off the body.
+    // The openings are pressed into the body and painted with it (until v2.11 they had black
+    // lips standing off the body). Each front guard's lower half is a deep flare: from the
+    // corner under the indicator, over the opening and back to the door, standing out from
+    // the guard above its crease. The rear openings have a narrow rolled lip.
+    const front = sideShape([
+      [CLIP.back - 0.005, SILL],
+      [CLIP.back - 0.005, FLARE.top, 0.03],
+      [F + 0.07, FLARE.top, 0.04],
+      [F + 0.07, GUARD_LOW],
+      ...archPath(-AXLE, SILL, GUARD_LOW, -0.005).reverse(),
+    ]);
+    const rear = sideShape([
+      ...archPath(AXLE, SILL, SILL, FLARE.lip).reverse(),
+      ...archPath(AXLE, SILL, SILL, -0.005),
+    ]);
+    for (const [shape, out, zone] of [
+      [front, FLARE.out, Z.Front],
+      [rear, 0.01, Z.Rear],
+    ] as const) {
+      const x0 = side > 0 ? SIDE - 0.02 : -SIDE - out,
+        x1 = side > 0 ? SIDE + out : -SIDE + 0.02;
+      extrudeX(b, shape, x0, x1, paint, M.Paint, zone, out === FLARE.out ? 0.012 : 0.007);
+    }
     for (const axle of [-AXLE, AXLE]) {
-      const yf = axle < 0 ? GUARD_LOW : SILL;
-      const lip = sideShape([
-        ...archPath(axle, SILL - 0.02, yf - 0.02, 0.06).reverse(),
-        ...archPath(axle, SILL - 0.02, yf - 0.02, -0.005),
-      ]);
-      extrudeX(
-        b,
-        lip,
-        side > 0 ? SIDE - 0.02 : -SIDE - 0.02,
-        side > 0 ? SIDE + 0.02 : -SIDE + 0.02,
-        trim,
-        M.Rubber,
-        axle < 0 ? Z.Front : Z.Rear,
-        0.015,
-      );
-      // Dark wheelhouse: an inner wall and a roof over the tyre.
-      const wellX = axle < 0 ? 0.34 : 0.52;
-      b.block(side * wellX, 0.12, axle, 0.03, 0.56, ARCH.bottom * 2, well, M.Rubber, Z.Trim);
+      // Dark wheelhouse: an inner wall and a roof over the tyre, just above the opening's top
+      // and reaching into the side panel, so no light shows between them. The wall reaches the
+      // roof: until v2.11 it stopped at 0.40 m and light came across the car under the roof.
+      const wellX = axle < 0 ? 0.34 : 0.52,
+        wellTop = ARCH.y + 0.03;
       b.block(
-        (side * (wellX + SIDE - 0.05)) / 2,
-        ARCH.y + 0.005,
+        side * wellX,
+        (wellTop - 0.16) / 2,
         axle,
-        SIDE - 0.05 - wellX,
+        0.03,
+        wellTop + 0.16,
+        ARCH.bottom * 2,
+        well,
+        M.Rubber,
+        Z.Trim,
+      );
+      // The rear wheelhouses are closed at each end too (the front clip closes its own); the
+      // body's inside showed through the top of each rear opening.
+      if (axle > 0)
+        for (const end of [-1, 1])
+          b.block(
+            (side * (wellX + SIDE - 0.04)) / 2,
+            (SILL + wellTop) / 2,
+            axle + end * (ARCH.bottom + 0.01),
+            SIDE - 0.04 - wellX,
+            wellTop - SILL,
+            0.02,
+            well,
+            M.Rubber,
+            Z.Trim,
+          );
+      b.block(
+        (side * (wellX + SIDE - 0.035)) / 2,
+        ARCH.y + 0.02,
+        axle,
+        SIDE - 0.035 - wellX,
         0.02,
         ARCH.top * 2 + 0.1,
         well,
@@ -352,27 +401,42 @@ function sidePanels(b: VehicleBuilder): void {
       M.Rubber,
       Z.Sides,
     );
-    // Pressed swage line below the windows, and a lower one along the body.
-    for (const [y, z0, z1] of [
-      [WAIST - 0.04, DOOR.front + 0.03, end - 0.02],
-      [0.5, AXLE - ARCH.bottom - 0.1, end - 0.02],
-      [0.5, DOOR.back + 0.03, AXLE - ARCH.bottom - 0.14],
+    // The pressed swage line along the doors and body, in line with the front flare's crease
+    // and under the rear vent (front-34-b.jpg). Until v2.11 there were two, at 0.72 and 0.5;
+    // the stripe now runs where the upper one was.
+    // It stops either side of the door's rear shut line, which it would otherwise cover.
+    for (const [z0, z1] of [
+      [DOOR.front + 0.03, DOOR.back - 0.01],
+      [DOOR.back + 0.018, end - 0.02],
     ])
-      b.block(side * (SIDE + 0.004), y, (z0 + z1) / 2, 0.01, 0.02, z1 - z0, paint, M.Paint, Z.Sides, 0.008);
-    // Handle and lock on the door.
+      b.block(
+        side * (SIDE + 0.004),
+        SWAGE_Y,
+        (z0 + z1) / 2,
+        0.01,
+        0.02,
+        z1 - z0,
+        paint,
+        M.Paint,
+        Z.Sides,
+        0.008,
+      );
+    // Chrome pull handle and lock on the door, under the stripe (side.jpg).
     b.block(
       side * (SIDE + 0.008),
-      WAIST - 0.1,
+      HANDLE_Y,
       DOOR.back - 0.16,
       0.016,
-      0.035,
-      0.15,
-      black,
-      M.Rubber,
+      0.032,
+      0.13,
+      chrome,
+      M.Metal,
       Z.Sides,
       0.01,
     );
-    b.ring(side * (SIDE + 0.006), WAIST - 0.1, DOOR.back - 0.05, 0.012, 0.004, chrome, M.Metal, 'x', Z.Sides);
+    b.ring(side * (SIDE + 0.006), HANDLE_Y, DOOR.back - 0.05, 0.012, 0.004, chrome, M.Metal, 'x', Z.Sides);
+    stripes(b, side);
+    rearQuarter(b, side);
     // Side indicator on the wing ahead of the door.
     b.block(
       side * (SIDE + 0.004),
@@ -436,14 +500,6 @@ function sidePanels(b: VehicleBuilder): void {
       M.Paint,
       Z.Roof,
     );
-    // Fuel filler behind the rear wheel.
-    b.slot = M.Metal;
-    b.tag = Z.Sides;
-    b.push()
-      .translate(side * (SIDE + 0.004), 0.62, 2.18)
-      .rotate(0, 0, Math.PI / 2);
-    b.geometry(new THREE.CylinderGeometry(0.06, 0.06, 0.012, 18), paint.clone().multiplyScalar(0.92));
-    b.pop();
     // Rounded rear corner, full height.
     const g = new THREE.CylinderGeometry(
       CORNER,
@@ -460,6 +516,119 @@ function sidePanels(b: VehicleBuilder): void {
     b.push().translate(side * (SIDE - CORNER), (SILL + ROOF) / 2 - 0.01, TAIL - CORNER);
     b.geometry(g, paint);
     b.pop();
+  }
+}
+
+/**
+ * The period stripe (side.jpg, front-34-b.jpg): a thin grey band over a gold pinstripe, and a
+ * wider grey band over another, from the door's front edge to the rear quarter, with LAND
+ * CRUISER in black in the wide band at its end, reading from the front on the left and from
+ * the back on the right. On the photographs it runs on along the front guard; it is left off
+ * there, where the model's guard rounds over at the shoulder and a flat strip would stand off it.
+ */
+function stripes(b: VehicleBuilder, side: number): void {
+  const x = side * (SIDE + 0.0015),
+    end = 2.34;
+  // Each band is cut at the door's rear shut line, as a decal is.
+  for (const [y0, y1, colour, start] of [
+    [0.762, 0.785, stripeGrey, -0.79],
+    [0.749, 0.755, stripeGold, -0.79],
+    [0.685, 0.735, stripeGrey, DOOR.front + 0.012],
+    [0.671, 0.677, stripeGold, DOOR.front + 0.012],
+  ] as const)
+    for (const [z0, z1] of [
+      [start, DOOR.back - 0.003],
+      [DOOR.back + 0.011, end],
+    ])
+      b.block(x, (y0 + y1) / 2, (z0 + z1) / 2, 0.004, y1 - y0, z1 - z0, colour, M.Paint, Z.Sides);
+  const text = 'LAND CRUISER',
+    pitch = 0.046,
+    w = 0.026,
+    len = (text.length - 1) * pitch + w;
+  b.push()
+    .translate(side * (SIDE + 0.0045), 0.693, end - 0.02 - len / 2)
+    .rotate(0, side * (Math.PI / 2), 0);
+  strokeText(b, text, {
+    x: -len / 2,
+    y: 0,
+    z: 0,
+    dir: 1,
+    w,
+    h: 0.034,
+    pitch,
+    radius: 0.0032,
+    colour: black,
+    slot: M.Rubber,
+    zone: Z.Sides,
+    glyphs: BADGE_GLYPHS,
+  });
+  b.pop();
+}
+
+/**
+ * The rear quarter: a black louvred vent under the stripe ahead of the tail lamp on each side
+ * (side.jpg, front-34-b.jpg), and on the right two square fuel flaps, the main tank's behind
+ * the rear wheel under the vent and the sub-tank's ahead of it, behind the door. Until v2.11
+ * a round cap stood behind each rear wheel.
+ */
+function rearQuarter(b: VehicleBuilder, side: number): void {
+  const vz = 2.2,
+    vy = 0.62;
+  b.block(side * (SIDE + 0.004), vy, vz, 0.012, 0.09, 0.27, black, M.Rubber, Z.Sides, 0.006);
+  b.block(side * (SIDE + 0.0105), vy, vz, 0.002, 0.066, 0.24, new THREE.Color('#121413'), M.Rubber, Z.Sides);
+  for (let i = 0; i < 6; i++)
+    b.block(side * (SIDE + 0.012), vy, vz - 0.1 + i * 0.04, 0.004, 0.064, 0.008, trim, M.Rubber, Z.Sides);
+  if (side < 0) return;
+  for (const zc of [0.43, 2.0]) {
+    const flap: Vtx[] = [
+      [zc - 0.095, 0.37, 0.025],
+      [zc + 0.095, 0.37, 0.025],
+      [zc + 0.095, 0.52, 0.025],
+      [zc - 0.095, 0.52, 0.025],
+    ];
+    // Clear of the side skin's outward press, which is 4 mm here.
+    sidePane(b, flap, 1, SIDE + 0.005, black, M.Rubber, Z.Sides, inset(flap, 0.004));
+    // The lock at the flap's back edge.
+    b.slot = M.Metal;
+    b.tag = Z.Sides;
+    b.push()
+      .translate(SIDE + 0.007, 0.445, zc + 0.065)
+      .rotate(0, 0, Math.PI / 2);
+    b.geometry(new THREE.CylinderGeometry(0.009, 0.009, 0.006, 10), chrome);
+    b.pop();
+  }
+}
+
+/**
+ * A rubber mud flap behind each wheel (side.jpg, front-34-b.jpg), hung from a strap that runs
+ * from the chassis rail out under the sill, and a black side step under each door on two arms
+ * from the rail (front-34.jpg, front-34-b.jpg).
+ */
+function flapsAndSteps(b: VehicleBuilder): void {
+  for (const side of [-1, 1]) {
+    for (const axle of [-AXLE, AXLE]) {
+      const z = axle + ARCH.bottom + 0.03,
+        inner = axle < 0 ? 0.4 : 0.43;
+      b.block(
+        (side * (inner + SIDE - 0.02)) / 2,
+        0.03,
+        z + 0.016,
+        SIDE - 0.02 - inner,
+        0.02,
+        0.022,
+        black,
+        M.Metal,
+        Z.Trim,
+      );
+      b.block(side * 0.715, -0.13, z, 0.3, 0.3, 0.01, rubber, M.Rubber, Z.Trim, 0.004);
+    }
+    const z0 = -0.95,
+      z1 = 0.24,
+      mid = (z0 + z1) / 2;
+    b.block(side * 0.83, -0.02, mid, 0.2, 0.035, z1 - z0, black, M.Metal, Z.Trim, 0.008);
+    for (const dx of [-0.06, 0, 0.06])
+      b.block(side * (0.83 + dx), 0.0005, mid, 0.014, 0.006, z1 - z0 - 0.06, trim, M.Rubber, Z.Trim);
+    for (const z of [-0.7, 0.05]) b.block(side * 0.64, -0.045, z, 0.34, 0.03, 0.04, black, M.Metal, Z.Trim);
   }
 }
 
@@ -507,22 +676,27 @@ function frontEnd(b: VehicleBuilder): void {
   for (let i = 0; i < 10; i++)
     b.block(-0.45 + i * 0.1, COWL.y + 0.006, COWL.z - 0.04, 0.06, 0.004, 0.05, black, M.Rubber, Z.Front);
 
-  // Front panel: a black grille with horizontal bars and a centre badge between round 7 inch
-  // headlamps in square black surrounds; the indicators sit on the outer corners of the
-  // front clip, outboard of the lamps, wrapping round them.
+  // Front panel: one dark grey panel across the face from indicator to indicator, holding the
+  // round 7 inch headlamps in raised squares at its ends and, between them, the grille: three
+  // horizontal bars in a frame (front-34.jpg, detail.jpg; until v2.11 vertical slats between
+  // separate lamp surrounds). TOYOTA stays in letters on a plate on the middle bar, as on the
+  // 1992 Australian ambulance (front-34-ambulance.jpg); the Peruvian car has the oval badge.
+  // The indicators sit on the outer corners of the front clip, wrapping round them.
   const gy = GRILLE_Y;
-  const grille = new THREE.Color('#525856');
-  b.block(0, gy, F - 0.004, 0.97, 0.26, 0.026, grille, M.Rubber, Z.Front, 0.014);
-  b.block(0, gy, F - 0.02, 0.9, 0.21, 0.014, black, M.Rubber, Z.Front, 0.008);
-  for (let i = 0; i < 27; i++)
-    b.block(-0.426 + i * 0.0328, gy, F - 0.03, 0.009, 0.19, 0.012, grille, M.Rubber, Z.Front);
-  for (const y of [gy - 0.052, gy + 0.052])
-    b.block(0, y, F - 0.038, 0.9, 0.016, 0.016, grille, M.Rubber, Z.Front, 0.003);
-  b.block(0, gy, F - 0.04, 0.43, 0.068, 0.016, black, M.Rubber, Z.Front, 0.004);
+  const grille = new THREE.Color('#4E5452');
+  b.block(0, gy, F - 0.002, 1.46, 0.27, 0.012, grille, M.Rubber, Z.Front, 0.008);
+  b.block(0, gy, F - 0.011, 0.86, 0.2, 0.004, black, M.Rubber, Z.Front);
+  for (const y of [gy - 0.115, gy + 0.115])
+    b.block(0, y, F - 0.017, 0.94, 0.03, 0.018, grille, M.Rubber, Z.Front, 0.006);
+  for (const x of [-0.455, 0.455])
+    b.block(x, gy, F - 0.017, 0.03, 0.26, 0.018, grille, M.Rubber, Z.Front, 0.006);
+  for (const y of [gy - 0.056, gy, gy + 0.056])
+    b.block(0, y, F - 0.019, 0.88, 0.026, 0.014, grille, M.Rubber, Z.Front, 0.004);
+  b.block(0, gy, F - 0.031, 0.43, 0.06, 0.012, black, M.Rubber, Z.Front, 0.004);
   strokeText(b, 'TOYOTA', {
     x: 0.211,
     y: gy - 0.023,
-    z: F - 0.051,
+    z: F - 0.04,
     dir: -1,
     w: 0.049,
     h: 0.046,
@@ -757,7 +931,7 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
   b.block(0, ROOF - 0.07, T + 0.002, 2 * e - 0.04, 0.006, 0.006, black, M.Rubber, Z.Rear);
   b.block(split + 0.06, 0.72, T + 0.015, 0.03, 0.12, 0.02, black, M.Rubber, Z.Rear, 0.008);
   for (const side of [-1, 1])
-    for (const y of [0.62, 1.2]) {
+    for (const y of [0.68, 1.2]) {
       b.block(side * (e - 0.03), y, T + 0.018, 0.05, 0.1, 0.03, paint, M.Paint, Z.Rear, 0.006);
       b.rod(
         v(side * (e - 0.03), y - 0.05, T + 0.04),
@@ -768,21 +942,49 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
         Z.Rear,
       );
     }
-  // Body lamps low in the rear corners: a black cap, the red tail and stop lens and the
-  // clear reverse lens. The indicators and a second red lamp are in the rear bar.
+  // A tall lamp at each rear corner, on the rear face and standing 4 cm out behind it, so from
+  // the side it shows as a strip behind the body's edge: red tail and stop over the clear
+  // reverse lens over the amber indicator (side.jpg). Until v2.11 small lamps sat low on the
+  // rear face, with the indicators in the bar.
   for (const side of [-1, 1]) {
-    const lx = side * 0.71;
-    b.block(lx, 0.33, T + 0.008, 0.14, 0.3, 0.02, black, M.Rubber, Z.Rear, 0.01);
-    b.block(lx, 0.455, T + 0.012, 0.15, 0.05, 0.026, black, M.Rubber, Z.Rear, 0.01);
-    b.block(lx, 0.36, T + 0.016, 0.12, 0.12, 0.01, red, M.Red, Z.Rear, 0.008);
-    b.block(lx, 0.235, T + 0.016, 0.12, 0.09, 0.01, lens, M.Lamp, Z.Rear, 0.008);
-    b.block(lx, 0.29, T + 0.023, 0.12, 0.012, 0.006, black, M.Rubber, Z.Rear);
+    const x0 = SIDE - 0.135,
+      x1 = SIDE - 0.03;
+    b.block(
+      (side * (x0 + x1 - 0.004)) / 2,
+      0.3875,
+      T + 0.003,
+      x1 - 0.004 - x0,
+      0.375,
+      0.066,
+      black,
+      M.Rubber,
+      Z.Rear,
+      0.006,
+    );
+    for (const [y0, y1, colour, slot] of [
+      [0.362, 0.567, red, M.Red],
+      [0.307, 0.358, lens, M.Lamp],
+      [0.208, 0.303, amber, M.Amber],
+    ] as const)
+      b.block(
+        (side * (x0 + 0.004 + x1)) / 2,
+        (y0 + y1) / 2,
+        T + 0.02,
+        x1 - x0 - 0.004,
+        y1 - y0,
+        0.04,
+        colour,
+        slot,
+        Z.Rear,
+        0.004,
+      );
   }
   // Covered spare on the wide right door, carried off the painted skin: the cover's back
   // stands clear of the carrier's uprights and cross bar (with the cover at T + 0.215 and the
-  // bar at T + 0.09, the bar ran 35 mm into the tyre).
+  // bar at T + 0.09, the bar ran 35 mm into the tyre). v2.11 moved it 3 cm in, clear of the
+  // corner lamp, and stopped the uprights under the door's window (they stood over its glass).
   b.tag = Z.Rear;
-  mountSpare(b, wheel, { x: 0.33, y: 0.72, z: T + 0.255 }, 'back', black, {
+  mountSpare(b, wheel, { x: SPARE_X, y: 0.72, z: T + 0.255 }, 'back', black, {
     reversed: true,
     cover: () => {
       const profile = [
@@ -798,23 +1000,32 @@ function rearEnd(b: VehicleBuilder, wheel: THREE.BufferGeometry): void {
       b.slot = M.Fabric;
       b.tag = Z.Rear;
       b.push()
-        .translate(0.33, 0.72, T + 0.255)
+        .translate(SPARE_X, 0.72, T + 0.255)
         .rotate(Math.PI / 2, 0, 0);
       b.geometry(new THREE.LatheGeometry(profile, 48), black.clone().multiplyScalar(1.18));
       b.pop();
     },
   });
-  b.ring(0.33, 0.72, T + 0.396, 0.397, 0.003, trim, M.Fabric, 'z', Z.Rear);
-  for (const x of [0.08, 0.58]) b.block(x, 0.72, T + 0.055, 0.055, 0.6, 0.09, black, M.Metal, Z.Rear, 0.004);
-  b.block(0.33, 0.72, T + 0.07, 0.55, 0.055, 0.055, black, M.Metal, Z.Rear, 0.004);
-  // Black rear bar with recovery points, a tow hitch, its brackets and the plate.
-  b.block(0, 0.08, T + 0.07, 1.78, 0.15, 0.13, bumper, M.Metal, Z.Rear, 0.025);
-  // Bar lamps in each end: amber indicator outboard, red stop and tail inboard.
-  for (const side of [-1, 1]) {
-    b.block(side * 0.66, 0.08, T + 0.137, 0.26, 0.085, 0.006, black, M.Rubber, Z.Rear, 0.004);
-    b.block(side * 0.72, 0.08, T + 0.141, 0.11, 0.065, 0.006, amber, M.Amber, Z.Rear, 0.004);
-    b.block(side * 0.6, 0.08, T + 0.141, 0.11, 0.065, 0.006, red, M.Red, Z.Rear, 0.004);
-  }
+  b.ring(SPARE_X, 0.72, T + 0.396, 0.397, 0.003, trim, M.Fabric, 'z', Z.Rear);
+  for (const x of [SPARE_X - 0.25, SPARE_X + 0.25])
+    b.block(x, 0.69, T + 0.055, 0.055, 0.48, 0.09, black, M.Metal, Z.Rear, 0.004);
+  b.block(SPARE_X, 0.72, T + 0.07, 0.55, 0.055, 0.055, black, M.Metal, Z.Rear, 0.004);
+  // Black rear bar with recovery points, a tow hitch, its brackets and the plate. Its ends wrap
+  // round the corners and run forward along the body sides to the vent (side.jpg).
+  b.block(0, 0.08, T + 0.07, 1.86, 0.15, 0.13, bumper, M.Metal, Z.Rear, 0.025);
+  for (const side of [-1, 1])
+    b.block(
+      side * (SIDE + 0.01),
+      0.08,
+      (2.34 + T + 0.1) / 2,
+      0.05,
+      0.15,
+      T + 0.1 - 2.34,
+      bumper,
+      M.Metal,
+      Z.Rear,
+      0.02,
+    );
   b.block(0, 0.0, T + 0.16, 0.08, 0.06, 0.16, black, M.Metal, Z.Rear, 0.01);
   b.slot = M.Metal;
   b.push().translate(0, 0.05, T + 0.24);
@@ -1022,8 +1233,17 @@ function chassis(b: VehicleBuilder): void {
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.08, 0.08, 0.55, 12), shaft);
   b.pop();
-  b.rod({ x: 0.28, y: -0.08, z: 1.03 }, { x: 0.3, y: -0.04, z: 1.85 }, 0.026, steel);
-  b.rod({ x: 0.3, y: -0.04, z: 1.85 }, { x: 0.62, y: -0.05, z: 2.55 }, 0.026, steel);
+  // The tailpipe climbs over the rear axle inside the right chassis rail, drops under the two
+  // rear crossmembers and ends under the rear bar. Until v2.11 it ran through the axle tube and
+  // its last length out through the rail to the corner.
+  const pipe = [
+    v(0.28, -0.08, 1.03),
+    v(0.3, -0.005, 1.3),
+    v(0.3, -0.005, 1.7),
+    v(0.31, -0.1, 1.84),
+    v(0.32, -0.1, 2.62),
+  ];
+  for (let i = 0; i < pipe.length - 1; i++) b.rod(pipe[i], pipe[i + 1], 0.026, steel);
   // Floor under the cab and load space.
   for (const [start, end, width] of [
     [-2.05, -0.88, 0.7],
@@ -1054,6 +1274,7 @@ export function buildTroopyBody(tuning: VehicleTuning, wheel: THREE.BufferGeomet
   roofRack(b, wheel);
   bullBar(b, tuning);
   chassis(b);
+  flapsAndSteps(b);
   addTroopyInterior(b, tuning.engine.redlineRpm, paint, false, TROOPY_CAB_FIT);
   const g = b.build();
   return cleanGeometry(g);

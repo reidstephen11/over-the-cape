@@ -248,6 +248,10 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     // Factory white enamel with a little gloss left.
     paint: { roughness: 0.45, metalness: 0.05, clearcoat: 0.4, clearcoatRoughness: 0.35 },
     springs: 'leaf',
+    // Each shock hangs from a bracket under the roof of its wheelhouse (v2.11), not from an open
+    // tower of two braces whose top stood in the arch; the lower eyes are 0.52 m out on the axle,
+    // 7.5 cm inboard of the tyres.
+    suspension: { ...DEFAULT_LAYOUT, leafShockTop: { front: 0.385, rear: 0.385, axleX: 0.52 } },
     lamps: {
       head: [
         { x: -0.6, y: TROOPY_GRILLE_Y, z: TROOPY_NOSE_Z - 0.024 },
