@@ -32,3 +32,14 @@ v1.62 visual review: both recovery boards moved 0.10 m forward, centred lengthwa
 ## v1.65 articulation clearance
 
 Tray crossmembers within the rear tyres’ fore/aft envelope now stop at a 1.0 m width between the chassis runners; the surrounding deck and perimeter rails retain their dimensions. The members stay at the same height and stations, facing across the car. This removes their intersection with a raised tyre without shortening suspension travel. Cab, tray outline and both spare mounts are unchanged. This is a fit correction to the estimated farm tray, not a newly verified factory detail.
+
+## v2.12 comparison
+
+The 28 audit pictures were compared with the FJ40 photographs (`../landcruiser-fj40/side.jpg`, `front-34-hardtop.jpg`, `rear-34-left.jpg`, `side-1977.jpg`), since the cab is the 40's. The list is in `docs/AUDIT-2026-11.md`.
+
+- **Snorkel.** Its box sits on the left cowl side over the louvres, 0.85 m out (z −0.49 to −0.36, y 0.59 to 0.83, in the 40's frame); the tube climbs beside the windscreen frame, leaning back with it, to a ram head facing forward at the roof's front corner (y 1.585), held by two clamps strapped to the frame. Until v2.12 it left the guard over the tyre.
+- **Door glass.** From 0.93 m (`DOOR_WIN_LOW`, the 40's `WIN_LOW` less 6 cm) to 1.38 m above the origin: 0.19 m above the belt crease. The rear window keeps the 40's height.
+- **Winch.** Inside the pan, with its control box on the pan's top; the plate is on the pan's face at x −0.41.
+- **Underneath.** The exhaust runs inside the right rail at x 0.3, climbs to y 0.12 over the rear axle and ends under the rear bar; the fuel tank (z 0.38 to 0.92) and the muffler sit between the crossmembers at 0.3 and 1.0.
+
+**Photographs to add.** Commons has six photographs of stock Australian utes that this container could not download (every request for a file, a scaled copy or the API answered HTTP 429): `1982 Toyota Landcruiser HJ47 utility (5636692973).jpg`, `1981 Toyota Land Cruiser (HJ47) utility (2015-06-03).jpg` and four `1983 Toyota Land Cruiser (FJ45 or HJ47) utility (…).jpg` (18881517462, 18886773465, 18698983468, 18266116703). They would check the cab back, the rear window and the tray's proportions.

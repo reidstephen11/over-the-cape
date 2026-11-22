@@ -12,8 +12,6 @@ import {
   CAP,
   DOOR_REAR,
   DOOR_Z,
-  GUARD_TOP,
-  HW,
   LOW,
   NOSE,
   ROOF,
@@ -45,6 +43,13 @@ import { mirrorHead } from './mirrors';
 const CAB_BACK = DOOR_REAR + 0.12;
 /** The cab's rear corners, round in plan. */
 const CAB_R = 0.08;
+/**
+ * The foot of the door glass. On the FJ40 photographs it is about 0.19 m above the belt crease,
+ * and the glass is about a third of the door's height from sill to roof (the FJ40's v1.85 notes
+ * measured 30 to 34%); the 40's code cab has it 0.25 m above the belt (`WIN_LOW`). v2.12 lowered
+ * the ute's 6 cm; its rear window keeps the 40's height.
+ */
+const DOOR_WIN_LOW = WIN_LOW - 0.06;
 /** The tray in the ute's frame: 2.4 m long and 1.8 m wide, its deck above the rear tyres. */
 export const TRAY_FRONT = 0.4;
 export const TRAY_BACK = 2.8;
@@ -120,18 +125,20 @@ function cab(b: VehicleBuilder): void {
     extrudeX(
       b,
       sideShape(
+        // Its front edge meets the windscreen frame's back face, which leans back from z -0.37 at
+        // its foot (y 0.865); until v2.12 it stopped at the door's front edge and left a slot.
         [
-          [DOOR_Z - 0.01, BELT],
-          [DOOR_Z - 0.01, TUCK],
+          [-0.38, BELT],
+          [-0.37 + (TUCK - 0.865) * Math.tan(0.08), TUCK],
           [CAB_BACK - CAB_R, TUCK],
           [CAB_BACK - CAB_R, BELT],
         ],
         [
           [
-            [DOOR_Z + 0.06, WIN_LOW, 0.03],
+            [DOOR_Z + 0.06, DOOR_WIN_LOW, 0.03],
             [DOOR_Z + 0.06, WIN_TOP, 0.03],
             [DOOR_REAR - 0.06, WIN_TOP, 0.05],
-            [DOOR_REAR - 0.06, WIN_LOW, 0.05],
+            [DOOR_REAR - 0.06, DOOR_WIN_LOW, 0.05],
           ],
         ],
       ),
@@ -145,10 +152,10 @@ function cab(b: VehicleBuilder): void {
     const gx = side * (BW - 0.03);
     b.block(
       gx,
-      (WIN_LOW + WIN_TOP) / 2,
+      (DOOR_WIN_LOW + WIN_TOP) / 2,
       (DOOR_Z + DOOR_REAR) / 2,
       0.012,
-      0.42,
+      WIN_TOP - DOOR_WIN_LOW + 0.03,
       0.72,
       C.glass,
       M.Glass,
@@ -157,10 +164,10 @@ function cab(b: VehicleBuilder): void {
     // Quarter-vent divider in the door glass.
     b.block(
       side * (BW - 0.022),
-      (WIN_LOW + WIN_TOP) / 2,
+      (DOOR_WIN_LOW + WIN_TOP) / 2,
       DOOR_Z + 0.22,
       0.02,
-      0.39,
+      WIN_TOP - DOOR_WIN_LOW,
       0.025,
       body,
       M.Paint,
@@ -195,6 +202,35 @@ function cab(b: VehicleBuilder): void {
     b.tag = Z.Rear;
     b.push().translate(side * (BW - CAB_R), (LOW + TUCK) / 2, CAB_BACK - CAB_R);
     b.geometry(g, body);
+    b.pop();
+    // The corner's inside face: the curved panel above shows only from outside, so the sky
+    // showed through the cab's rear corners from the seats (there before v2.12).
+    const inner = new THREE.CylinderGeometry(
+      CAB_R - 0.012,
+      CAB_R - 0.012,
+      TUCK - LOW,
+      12,
+      1,
+      true,
+      side > 0 ? 0 : -Math.PI / 2,
+      Math.PI / 2,
+    ).toNonIndexed();
+    // Turn each triangle round, and its normals, so its face looks into the cab.
+    for (const attr of [inner.getAttribute('position'), inner.getAttribute('normal')]) {
+      const flip = attr === inner.getAttribute('normal') ? -1 : 1;
+      for (let i = 0; i < attr.count; i += 3) {
+        const x = attr.getX(i + 1),
+          y = attr.getY(i + 1),
+          z = attr.getZ(i + 1);
+        attr.setXYZ(i + 1, attr.getX(i + 2), attr.getY(i + 2), attr.getZ(i + 2));
+        attr.setXYZ(i + 2, x, y, z);
+        if (flip < 0)
+          for (let k = 0; k < 3; k++)
+            attr.setXYZ(i + k, -attr.getX(i + k), -attr.getY(i + k), -attr.getZ(i + k));
+      }
+    }
+    b.push().translate(side * (BW - CAB_R), (LOW + TUCK) / 2, CAB_BACK - CAB_R);
+    b.geometry(inner, body.clone().multiplyScalar(0.85));
     b.pop();
     // Door: shut lines, two exposed hinges at the front and a chrome pull handle.
     const sx = side * (BW + 0.002);
@@ -396,24 +432,24 @@ function interior(b: VehicleBuilder, redlineRpm: number): void {
 
 /** The snorkel up the left screen pillar, the beacon and the door mirrors (40's frame). */
 function cabGear(b: VehicleBuilder): void {
-  // Snorkel: from the left guard behind the wheel, up the cowl side and the A-pillar to a
-  // ram head facing forward above the roof line.
-  const x = -(BW + 0.045);
-  tube(
-    b,
-    [
-      v(-(HW - 0.1), GUARD_TOP - 0.02, -0.72),
-      v(x, 0.9, -0.5),
-      v(x - 0.005, 1.4, -0.4),
-      v(x - 0.005, 1.56, -0.39),
-    ],
-    0.042,
-    C.bar,
-  );
-  b.block(x - 0.005, 1.6, -0.47, 0.13, 0.12, 0.22, C.bar, M.Metal, Z.Front, 0.03);
-  b.block(x - 0.005, 1.6, -0.585, 0.1, 0.085, 0.012, C.trim, M.Rubber, Z.Front, 0.01);
-  b.block(x + 0.035, 1.15, -0.44, 0.04, 0.03, 0.06, C.bar, M.Metal, Z.Front);
-  b.block(x + 0.04, 0.84, -0.55, 0.05, 0.03, 0.06, C.bar, M.Metal, Z.Front);
+  // Snorkel: its body is a flat box on the left cowl side over the louvres just ahead of the
+  // door, where the air goes in to the engine bay; the tube leaves its top and runs straight up
+  // beside the windscreen pillar, leaning back with the screen, to a ram head facing forward at
+  // the roof's front corner, held by two clamps to the pillar (as the FJ40's since v1.85).
+  // Until v2.12 it left the guard over the tyre and crossed 0.5 m of air to the pillar.
+  const x = -(BW + 0.05);
+  // The screen frame's front face leans back from z -0.43 at its foot (y 0.865).
+  const frameZ = (y: number) => -0.43 + (y - 0.865) * Math.tan(0.08);
+  b.block(x, 0.71, -0.425, 0.1, 0.24, 0.13, C.bar, M.Metal, Z.Front, 0.02);
+  // The tube's top runs up into the head, which stands just ahead of the roof's front edge.
+  tube(b, [v(x, 0.8, -0.435), v(x, 0.9, -0.43), v(x, 1.48, frameZ(1.48)), v(x, 1.56, -0.41)], 0.042, C.bar);
+  b.block(x, 1.585, -0.49, 0.12, 0.11, 0.2, C.bar, M.Metal, Z.Front, 0.03);
+  b.block(x, 1.585, -0.592, 0.09, 0.08, 0.008, C.trim, M.Rubber, Z.Front, 0.006);
+  for (const y of [1.0, 1.32]) {
+    const tz = -0.43 + ((y - 0.9) / 0.6) * (frameZ(1.5) + 0.43);
+    b.ring(x, y, tz, 0.045, 0.008, C.steel, M.Metal, 'y', Z.Front);
+    b.rod(v(x + 0.03, y, tz), v(-(BW - 0.01), y, frameZ(y) + 0.02), 0.012, C.steel, M.Metal, Z.Front);
+  }
   // Door mirrors: big flat heads on arms from the door hinges.
   for (const side of [-1, 1]) {
     b.rod(v(side * (BW + 0.02), 0.98, DOOR_Z + 0.02), v(side * (BW + 0.2), 1.0, DOOR_Z - 0.02), 0.011, C.bar);
@@ -423,7 +459,7 @@ function cabGear(b: VehicleBuilder): void {
 }
 
 /** The long chassis, crossmembers, transmission, tank, exhaust, in the ute's frame. */
-function chassis(b: VehicleBuilder): void {
+function chassis(b: VehicleBuilder, tuning: VehicleTuning): void {
   const fz = UTE_CAB_SHIFT;
   for (const side of [-1, 1]) {
     b.block(side * 0.3, 0.02, -1.19 + fz, 0.09, 0.16, 0.84, C.trim, M.Metal, Z.Trim);
@@ -439,6 +475,15 @@ function chassis(b: VehicleBuilder): void {
       M.Metal,
       Z.Trim,
     );
+  }
+  // The front rails are 0.3 m out, but the shared suspension stands each front shock's tower
+  // on two braces from 0.47 m out and hangs each front spring from 0.48 m out, so their feet
+  // and tops stood in the air. An outrigger from the rail carries each tower and each hanger.
+  const ax = tuning.wheels[0].z;
+  for (const side of [-1, 1]) {
+    b.block(side * 0.395, 0.07, ax + 0.23, 0.19, 0.06, 0.22, C.trim, M.Metal, Z.Trim);
+    for (const z of [ax - 0.46, ax + 0.46])
+      b.block(side * 0.41, 0.08, z, 0.19, 0.08, 0.06, C.trim, M.Metal, Z.Trim);
   }
   // The crossmember ahead of the under-tray spare sits clear of it (at 2.05 it ran through it).
   for (const z of [-1.51 + fz, -0.55 + fz, 0.3, 1.0, 1.8, 2.75])
@@ -456,14 +501,25 @@ function chassis(b: VehicleBuilder): void {
     0.025,
   );
   // Fuel tank on the left behind the cab, and the exhaust down the right side.
-  b.block(-0.25, 0.08, 0.72, 0.5, 0.22, 0.56, C.trim, M.Metal, Z.Trim, 0.03);
-  b.rod(v(0.31, -0.04, -0.66 + fz), v(0.4, -0.03, 0.9), 0.025, C.steel);
-  b.rod(v(0.4, -0.03, 0.9), v(0.4, -0.03, 2.0), 0.025, C.steel);
-  b.rod(v(0.4, -0.03, 2.0), v(0.66, -0.08, 2.5), 0.025, C.steel);
+  // Between the crossmembers at 0.3 and 1.0 (at 0.72 it ran into the one at 1.0).
+  b.block(-0.25, 0.08, 0.65, 0.5, 0.22, 0.54, C.trim, M.Metal, Z.Trim, 0.03);
+  // The exhaust runs back inside the right chassis rail, under the crossmembers, over the rear
+  // axle and under the slung spare, to end under the rear bar. Until v2.12 it ran inside the
+  // rail itself, through the rear axle, and out through the rail behind the wheel.
+  const pipe = [
+    v(0.28, -0.05, -0.66 + fz),
+    v(0.3, -0.08, 0.0),
+    v(0.3, -0.08, 1.07),
+    v(0.3, 0.12, 1.25),
+    v(0.3, 0.12, 1.62),
+    v(0.3, -0.08, 1.74),
+    v(0.3, -0.08, 2.85),
+  ];
+  for (let i = 0; i < pipe.length - 1; i++) b.rod(pipe[i], pipe[i + 1], 0.025, C.steel);
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()
-    .translate(0.37, -0.02, 0.3)
+    .translate(0.27, -0.08, 0.65)
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.08, 0.08, 0.48, 12), C.steel.clone().multiplyScalar(0.6));
   b.pop();
@@ -539,13 +595,10 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.geometry(new THREE.SphereGeometry(0.078, 20, 10), C.lamp);
     b.pop();
   }
-  // Winch behind the pan: only its drum and the roller fairlead on the face show.
-  b.rod(v(-0.2, 0.42, back - 0.05), v(0.2, 0.42, back - 0.05), 0.07, C.trim);
-  for (let i = 0; i < 12; i++)
-    b.ring(-0.14 + i * 0.025, 0.42, back - 0.05, 0.069, 0.005, C.steel, M.Metal, 'x', Z.Front);
-  for (const x of [-0.22, 0.22])
-    b.block(x, 0.42, back - 0.05, 0.03, 0.16, 0.16, C.rubber, M.Rubber, Z.Front, 0.012);
-  b.rod(v(-0.38, 0.42, back - 0.05), v(-0.24, 0.42, back - 0.05), 0.06, C.trim);
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the roller fairlead in the face. Until v2.12 its drum stood on the pan in front of
+  // the grille.
+  b.block(0, 0.405, zc + 0.02, 0.2, 0.05, 0.09, C.rubber, M.Rubber, Z.Front, 0.012);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.005, 0.38, 0.14, 0.02, C.steel, M.Metal, Z.Front, 0.006);
   b.block(m.x, m.y, face - 0.012, 0.22, 0.06, 0.015, C.rubber, M.Rubber, Z.Front);
@@ -555,7 +608,8 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
     b.rod(v(x, m.y - 0.05, face - 0.03), v(x, m.y + 0.05, face - 0.03), 0.016, C.steel, M.Metal, Z.Front);
   b.ring(m.x, m.y - 0.02, face - 0.05, 0.026, 0.008, C.red, M.Paint, 'z', Z.Front);
   for (const side of [-1, 1]) shackle(b, side * 0.66, 0.2, face - 0.02, -1);
-  plate(b, -0.43, 0.18, face - 0.03, -1);
+  // Inside the pan's face, clear of the fairlead and the left shackle (it hung below the pan).
+  plate(b, -0.41, 0.25, face - 0.03, -1);
   // The UHF aerial: a fat spring base on the bar's left end and a whip above it.
   b.block(-0.86, 0.5, zt + 0.015, 0.06, 0.05, 0.06, C.bar, M.Metal, Z.Front, 0.01);
   b.rod(v(-0.86, 0.52, zt + 0.015), v(-0.86, 1.05, zt + 0.015), 0.018, C.rubber, M.Rubber, Z.Front);
@@ -581,8 +635,10 @@ function tray(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
     const crossWidth = Math.abs(z - rearZ) < tuning.wheelRadius + 0.05 ? 1.0 : 2 * TRAY_HW - 0.06;
     b.block(0, 0.29, z, crossWidth, 0.14, 0.06, C.tray, M.Metal, Z.Rear, 0.006);
   }
+  // The frame rail under each drop side is shallower than the crossmembers, its foot 2 cm over
+  // the rear tyres' tops (as deep as them, it hid the tyres' tops from the side).
   for (const side of [-1, 1])
-    b.block(side * (TRAY_HW - 0.04), 0.29, mid, 0.08, 0.14, len, C.tray, M.Metal, Z.Rear, 0.006);
+    b.block(side * (TRAY_HW - 0.04), 0.32, mid, 0.08, 0.08, len, C.tray, M.Metal, Z.Rear, 0.006);
   b.block(0, DECK - 0.02, mid, 2 * TRAY_HW, 0.04, len, C.tray, M.Metal, Z.Rear, 0.006);
   // Drop sides and the tailgate, with the hinges along their bottoms and the latches.
   for (const side of [-1, 1]) {
@@ -696,9 +752,11 @@ function tray(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
   b.block(jx, DECK + 0.72, hz - 0.04, 0.05, 1.3, 0.05, C.jack, M.Paint, Z.Rear, 0.006);
   for (let i = 0; i < 9; i++)
     b.block(jx, DECK + 0.2 + i * 0.14, hz - 0.068, 0.014, 0.05, 0.006, C.bar, M.Metal, Z.Rear);
-  b.block(jx, DECK + 0.04, hz - 0.08, 0.16, 0.04, 0.13, C.bar, M.Metal, Z.Rear, 0.006);
-  b.block(jx, DECK + 0.55, hz - 0.1, 0.09, 0.14, 0.07, C.bar, M.Metal, Z.Rear, 0.008);
-  b.rod(v(jx + 0.02, DECK + 0.62, hz - 0.12), v(jx + 0.04, DECK + 1.1, hz - 0.08), 0.012, C.steel);
+  // The foot, the climbing block and the handle stop 2.5 cm short of the cab's back (until
+  // v2.12 they touched it).
+  b.block(jx, DECK + 0.04, hz - 0.065, 0.16, 0.04, 0.09, C.bar, M.Metal, Z.Rear, 0.006);
+  b.block(jx, DECK + 0.55, hz - 0.075, 0.09, 0.14, 0.06, C.bar, M.Metal, Z.Rear, 0.008);
+  b.rod(v(jx + 0.02, DECK + 0.62, hz - 0.095), v(jx + 0.04, DECK + 1.1, hz - 0.07), 0.012, C.steel);
   for (const y of [DECK + 0.35, DECK + 1.0])
     b.block(jx, y, hz - 0.02, 0.08, 0.03, 0.09, C.rubber, M.Rubber, Z.Rear, 0.004);
   // Amber beacon on the headboard's top rail at the right.
@@ -716,10 +774,23 @@ function tray(b: VehicleBuilder, tuning: VehicleTuning, wheel: THREE.BufferGeome
     lz = TRAY_FRONT + 0.72;
   b.block(lx, DECK + 0.2, lz, 1.04, 0.44, 1.2, C.tarp, M.Fabric, Z.Rear, 0.12);
   b.block(lx, DECK + 0.12, lz, 1.08, 0.24, 1.26, C.tarp, M.Fabric, Z.Rear, 0.05);
+  // Each rope runs from a hook on the deck up the load's side, over its top and down the other
+  // side to a hook inside the drop side. Until v2.12 its top ran just inside the tarp, one end
+  // stopped on the load's side and the other went out through the drop side.
   for (const z of [lz - 0.35, lz + 0.35]) {
-    b.rod(v(lx - 0.56, DECK + 0.3, z), v(lx - 0.5, DECK + 0.41, z), 0.006, C.rope, M.Fabric, Z.Rear);
-    b.rod(v(lx - 0.5, DECK + 0.41, z), v(lx + 0.5, DECK + 0.41, z), 0.006, C.rope, M.Fabric, Z.Rear);
-    b.rod(v(lx + 0.5, DECK + 0.41, z), v(TRAY_HW + 0.01, DECK + 0.08, z), 0.006, C.rope, M.Fabric, Z.Rear);
+    const rope = [
+      v(-0.235, DECK + 0.015, z),
+      v(-0.225, DECK + 0.25, z),
+      v(-0.2, DECK + 0.37, z),
+      v(-0.14, DECK + 0.427, z),
+      v(0.8, DECK + 0.427, z),
+      v(0.86, DECK + 0.37, z),
+      v(0.878, DECK + 0.25, z),
+      v(0.878, DECK + 0.015, z),
+    ];
+    for (let i = 0; i < rope.length - 1; i++) b.rod(rope[i], rope[i + 1], 0.006, C.rope, M.Fabric, Z.Rear);
+    for (const x of [-0.235, 0.878])
+      b.block(x, DECK + 0.012, z, 0.012, 0.024, 0.05, C.steel, M.Metal, Z.Rear);
   }
   // The second spare lying flat on the deck behind the load, bolted through its centre.
   const sx = 0.42,
@@ -784,7 +855,7 @@ export function buildUte40Body(tuning: VehicleTuning, wheel: THREE.BufferGeometr
   cabGear(b);
   b.pop();
   // Everything behind and below the cab, in the ute's own frame.
-  chassis(b);
+  chassis(b, tuning);
   bullBar(b, tuning);
   tray(b, tuning, wheel);
   const cabBack = CAB_BACK + UTE_CAB_SHIFT;
