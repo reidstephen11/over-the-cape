@@ -46,7 +46,7 @@ function plate(b: VehicleBuilder, x: number, y: number, z: number, facing: numbe
 /**
  * A steel bull bar of the early eighties: a folded pan in place of the bumper, swept back
  * round the guards, a centre hoop over the grille, side loops across the headlamps, and an
- * electric winch sitting on the pan with a roller fairlead in its face.
+ * electric winch inside the pan with a roller fairlead in its face.
  */
 function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
   const face = tuning.winchMount.z + 0.04,
@@ -94,15 +94,11 @@ function bullBar(b: VehicleBuilder, tuning: VehicleTuning): void {
       0.026,
     );
   b.rod(v(-0.28, 0.4, zt - 0.015), v(0.28, 0.4, zt - 0.015), 0.022, C.bar, M.Metal, Z.Front);
-  // Winch in its cradle on the pan: drum, motor on the left end, gearbox on the right,
-  // roller fairlead in the pan's face.
+  // The winch is inside the pan, as in any winch bar: what shows is its control box on the pan's
+  // top and the roller fairlead in the face. Until v2.15 its drum, motor and gearbox stood in a
+  // cradle on the pan in front of the grille.
   const wz = (face + back) / 2;
-  b.rod(v(-0.2, top + 0.05, wz), v(0.2, top + 0.05, wz), 0.06, C.bar, M.Metal, Z.Front);
-  for (let i = 0; i < 12; i++)
-    b.ring(-0.14 + i * 0.025, top + 0.05, wz, 0.058, 0.005, C.steel, M.Metal, 'x', Z.Front);
-  b.rod(v(-0.36, top + 0.05, wz), v(-0.21, top + 0.05, wz), 0.055, C.bar, M.Metal, Z.Front);
-  b.block(0.24, top + 0.05, wz, 0.08, 0.15, 0.15, C.rubber, M.Rubber, Z.Front, 0.015);
-  b.block(0, top + 0.01, wz, 0.5, 0.03, 0.2, C.bar, M.Metal, Z.Front, 0.006);
+  b.block(0, top + 0.025, wz, 0.2, 0.05, 0.09, C.rubber, M.Rubber, Z.Front, 0.012);
   const m = tuning.winchMount;
   b.block(m.x, m.y, face - 0.022, 0.2, 0.09, 0.03, C.steel, M.Metal, Z.Front, 0.006);
   for (const y of [m.y - 0.03, m.y + 0.03])
@@ -210,22 +206,45 @@ function underside(b: VehicleBuilder): void {
   b.block(0.02, -0.07, -0.3, 0.34, 0.2, 0.72, C.steel.clone().multiplyScalar(0.55), M.Metal, Z.Trim, 0.03);
   b.block(0, -0.06, -1.4, 0.3, 0.16, 0.5, C.steel.clone().multiplyScalar(0.5), M.Metal, Z.Trim, 0.03);
   b.block(-0.1, -0.02, 0.9, 0.6, 0.2, 0.42, C.rubber, M.Rubber, Z.Trim, 0.03);
-  for (const [p, q] of [
-    [v(0.28, -0.06, -0.9), v(0.3, -0.07, 0.1)],
-    [v(0.3, -0.07, 0.5), v(0.33, -0.05, 1.0)],
-    [v(0.33, -0.05, 1.0), v(0.33, -0.05, 1.6)],
-    [v(0.33, -0.05, 1.6), v(0.56, -0.1, 2.1)],
-  ])
-    b.rod(p, q, 0.028, C.steel);
+  // Exhaust down the right side inside the frame rail: under the crossmembers, the muffler under
+  // the cab floor, up over the rear axle under the load floor, and out under the rear bar's right
+  // end. Until v2.15 it ran at the axle's height, through the top of its tube and through three
+  // crossmembers, and the muffler ran into the crossmember at 0.5.
+  const pipe = [
+    v(0.28, -0.12, -0.9),
+    v(0.3, -0.125, -0.01),
+    v(0.3, -0.125, 0.41),
+    v(0.31, -0.125, 0.86),
+    v(0.33, 0.05, 1.02),
+    v(0.33, 0.05, 1.33),
+    v(0.33, -0.135, 1.5),
+    v(0.33, -0.135, 1.95),
+    // The tail turns out a little and ends under the bar, pointing back, 0.2 m inboard of the
+    // right recovery point (it ended pointing out at x 0.56, close under it).
+    v(0.44, -0.15, 2.17),
+  ];
+  for (let i = 0; i < pipe.length - 1; i++) {
+    // The muffler stands between the second and third points.
+    if (i === 1) continue;
+    b.rod(pipe[i], pipe[i + 1], 0.028, C.steel);
+  }
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()
-    .translate(0.3, -0.07, 0.3)
+    .translate(0.3, -0.125, 0.2)
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.07, 0.07, 0.42, 12), C.steel.clone().multiplyScalar(0.6));
   b.pop();
-  // The 24 V system's second battery box on the left chassis rail behind the cab.
-  b.block(-0.62, 0.06, 0.6, 0.3, 0.22, 0.36, C.rubber, M.Rubber, Z.Trim, 0.012);
+  // Rubber hangers from the muffler up to the cab floor and from the run over the axle up to the
+  // load floor.
+  for (const [a, c] of [
+    [v(0.3, -0.06, 0.2), v(0.3, 0.085, 0.2)],
+    [v(0.33, 0.075, 1.18), v(0.33, 0.09, 1.18)],
+  ])
+    b.rod(a, c, 0.009, C.rubber, M.Rubber, Z.Trim);
+  // The 24 V system's second battery box, bolted to the outside of the left chassis rail under the
+  // cab floor. Until v2.15 it stood 1 cm off the rail and its top rose through the floor.
+  b.block(-0.61, -0.03, 0.6, 0.3, 0.22, 0.36, C.rubber, M.Rubber, Z.Trim, 0.012);
 }
 
 /** The gutter-mounted rack: clamps on the drip rails, a slatted deck and a tube rail round it. */

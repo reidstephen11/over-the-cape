@@ -268,8 +268,10 @@ function frontClip(b: VehicleBuilder): void {
   // wheel openings, with the panel under the grille running down to the valance.
   extrudeX(
     b,
+    // The outline's front edge starts at the bottom edge (LOW). Until v2.15 it started 2 cm lower,
+    // so the outline ran down to -0.04 and back up the same line, and the bevel drew that zero-width
+    // spike as a sliver under the guard's front corner.
     sideShape([
-      [NOSE + 0.02, -0.04],
       [NOSE + 0.02, 0.1],
       [NOSE + 0.02, BELT - 0.06, 0.04],
       [NOSE + 0.08, BELT, 0.06],
