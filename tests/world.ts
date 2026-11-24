@@ -3,6 +3,11 @@ import { ironbarkParkMap } from './fixtures/maps/park';
 import { crawlerCreekMap } from './fixtures/maps/crawlerCreek';
 import { crebMap } from '../src/data/episodes/crebMap';
 import { telegraphMap } from '../src/data/episodes/telegraphMap';
+import { telegraphNorthMap } from '../src/data/episodes/telegraphNorthMap';
+import { telegraphNorthEpisode } from '../src/data/episodes/telegraphNorth';
+import { telegraphNorthWeather } from '../src/data/episodes/telegraphNorthWeather';
+import { conditionById, conditionFor, stormFor } from '../src/data/trackConditions';
+import { prepareFlood } from '../src/sim/world/flood';
 import { buildWorld, type World } from '../src/sim/world/world';
 
 let cached: World | null = null;
@@ -43,4 +48,19 @@ let telegraph: World | null = null;
 export function telegraphWorld(): World {
   telegraph ??= buildWorld(telegraphMap);
   return telegraph;
+}
+
+let telegraphNorth: World | null = null;
+
+/**
+ * The northern Telegraph Track, shared the same way. Its creeks rise with the afternoon's
+ * rain, so the world is made ready for the wettest day's storm, as the game does.
+ */
+export function telegraphNorthWorld(): World {
+  if (!telegraphNorth) {
+    telegraphNorth = buildWorld(telegraphNorthMap);
+    const wet = conditionFor(conditionById('wet'), telegraphNorthEpisode.conditions);
+    prepareFlood(telegraphNorth, stormFor(telegraphNorthWeather, wet));
+  }
+  return telegraphNorth;
 }

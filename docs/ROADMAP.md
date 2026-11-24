@@ -6,6 +6,14 @@ The owner asked for a second level, shorter and harder than the CREB. It is buil
 
 - ~~**Wheels that a hole can hold.**~~ Done in v2.01 for potholes: at a crawl, a tyre hanging in a hole whose floor is far below the edge ahead meets that edge as a wall, and a tyre in a pothole is walled at its sides too (`src/sim/vehicle/wheelContacts.ts`). Bertie's holes are now sheer-sided potholes and hold a car. Still open: Palm Creek's rut (0.5 m, too shallow to tell from a log) and Gunshot's Chute taken crooked (a landing, not a wall).
 
+# The Telegraph Track North (Episode 3)
+
+The owner asked to continue building new tracks (November 2026). The northern half of the Old Telegraph Track, from the Bamaga Road turn-off to Nolans Brook, is built in stages from `docs/PLAN-telegraph-north.md`: stage 1 (the level, playable end to end) in v2.17, built without a play test.
+
+- **Stage 2:** side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive.
+- **A soft bed under water.** Every creek bed under water is one surface, so Nolans Brook's sandy middle is no softer than its shoal. A bed that sinks and drags a tyre under water, set per creek, would need the southern episode's sand-bed creeks re-driven.
+- **Stage 3:** polish from the owner's play test (can the shoal be seen from the seat; is there something to winch to at the bog; is the rise at Nolans Brook too fast or too slow).
+
 # Make the CREB the heart of the game
 
 The owner found Episodes 2–4 boring and easy and wanted the game to focus on Episode 1, the CREB Track. v0.64 added a scored finish (medal, score out of 1000, best score and time). Build the rest one update at a time, in this order. Wildlife was considered and turned down.
@@ -48,7 +56,7 @@ Left open by `docs/PLAN-efficiency.md` (Phases 1–7, v1.44–v1.59). Measure ea
 
 - **More side quests and interesting discoveries off the beaten track on the CREB.** First set in v1.66: the lost-logbook delivery, the last-pole survey with a new clearing beyond the linesman’s hut, and a three-stop falls/lookout scrapbook. Pause → Trip journal tracks directions, observations and camp-saved progress. Still open: more optional recoveries, hidden camps and abandoned equipment, with distinct tasks and worthwhile rewards.
 
-- Episodes 6–7: Telegraph Track North and The Tip (SPEC.md §2). Telegraph Track South is being built as the game's Episode 2 (above).
+- Episode 7: The Tip (SPEC.md §2). Telegraph Track South is the game's Episode 2 and Telegraph Track North its Episode 3 (both above).
 - A later delivery mission towing another vehicle.
 - The 80 Series stays a Sooty MkII-inspired draft, and **correcting it against the real car is blocked on licensing, not effort**: no photograph of Sooty exists under a licence that allows redistribution here (searched again November 2026 — it appears only in 4WD 24/7 videos, magazine features and retailer pages). v1.41 took what could be taken without pictures: MY4X4's written specification is now in `SOURCES.md`, with the three places the game's car disagrees with it (both diff locks, the snorkel, the rear bar and swing-away spare). The factory body underneath was re-checked against the black VX photographs at the calibrated side camera and matches within the deviations already recorded. To go further the owner would have to supply photographs he has the right to commit, or decide to drop the Sooty framing and call it a built-up 80.
 - The Hilux SR5 Xtra Cab (v1.78): replace its eleven reference photographs with the Commons originals (the committed files are the scaled copies Wikimedia would serve; `reference/vehicles/hilux-sr5-xtracab-1985/manifest.json` has the URLs), find a square-on side view of an Xtracab, and check the fit-out against film stills (IMCDb refused the build container). `SOURCES.md` lists what is not confirmed: 31 or 33 inch tyres, lift or none, the roll bar's hoops, the rear bumper's shape, the hubs.

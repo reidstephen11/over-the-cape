@@ -1,6 +1,6 @@
 # Working on this repo
 
-The game is two episodes: the CREB Track (Episodes 2–4 of the old story were removed in v0.73) and, since v1.96, the Telegraph Track, built in stages from `docs/PLAN-telegraph.md` (keep that plan current). Follow-up work is recorded in `docs/ROADMAP.md`. The owner never wants steering-wheel or pedal support, or manual shift buttons on phones. Do not implement or propose either feature, or add them back to the roadmap; the shelved manual-clutch option is not planned to return.
+The game is three episodes: the CREB Track (Episodes 2–4 of the old story were removed in v0.73); since v1.96, the Telegraph Track, built in stages from `docs/PLAN-telegraph.md`; and since v2.17, the Telegraph Track North, built in stages from `docs/PLAN-telegraph-north.md` (keep both plans current). Follow-up work is recorded in `docs/ROADMAP.md`. The owner never wants steering-wheel or pedal support, or manual shift buttons on phones. Do not implement or propose either feature, or add them back to the roadmap; the shelved manual-clutch option is not planned to return.
 
 ## Modelling a vehicle
 
