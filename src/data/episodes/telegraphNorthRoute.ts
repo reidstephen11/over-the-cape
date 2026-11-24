@@ -288,9 +288,16 @@ export const longDriveBog: BogDef = (() => {
     radiusZ: 10,
     depth: 0.6,
     deep: true,
-    winchTrees: true,
   };
 })();
+/**
+ * Metres along `longDrive` to the two rocks to winch to, one before the bog and one past it,
+ * and how far left of the centreline they sit (the firm side). The engine plants winch trees
+ * only at the mud holes it makes itself in rough tracks, not at an authored bog, and there
+ * is no tree within the cable's 29 m of this one (v2.20).
+ */
+export const LONG_DRIVE_BOG_ANCHORS = [LONG_DRIVE_BOG - 17, LONG_DRIVE_BOG + 17] as const;
+export const LONG_DRIVE_BOG_ANCHOR_SIDE = -3.6;
 
 /**
  * Nolans Brook, 40 m wide over sand and deep in the middle. The line goes in, hard right
@@ -313,6 +320,16 @@ export const nolansBrook: Waypoint[] = [
   [13.5, -918, PLAIN],
   [10, -940, PLAIN],
 ];
+/**
+ * Nolans Brook's line, marked (v2.20). From the driver's seat the shoal's paler water cannot
+ * be told from the deep. A rock stands on the near bank at the water's edge with a sign above
+ * it, and a second sign on the far bank beside the way out, all on the shoal's line across
+ * (x = 18): along the near bank in the shallows to the rock, then turn and drive at the sign.
+ */
+export const NOLANS_MARKER: readonly [number, number] = [18, -849.2];
+/** A sign above the rock, facing the car as it comes along the bank from the way in. */
+export const NOLANS_TURN_SIGN: readonly [number, number] = [19.2, -847.4];
+export const NOLANS_AIM_SIGN: readonly [number, number] = [20.8, -898.5];
 // --- Creeks --------------------------------------------------------------------------------
 
 export const northCreeks: CreekDef[] = [

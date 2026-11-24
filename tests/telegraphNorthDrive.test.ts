@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { hiluxTuning } from '../src/data/hilux';
 import { lc79Tuning } from '../src/data/lc79';
 import { telegraphNorthEpisode } from '../src/data/episodes/telegraphNorth';
-import { CYPRESS_HOLES, CYPRESS_SPAN, canalFarEdge } from '../src/data/episodes/telegraphNorthRoute';
+import {
+  CYPRESS_HOLES,
+  CYPRESS_SPAN,
+  NOLANS_MARKER,
+  canalFarEdge,
+} from '../src/data/episodes/telegraphNorthRoute';
 import { troopyTuning } from '../src/data/troopy';
 import { unimogTuning } from '../src/data/unimog';
 import { vehicleTuning } from '../src/data/vehicle';
@@ -50,6 +55,34 @@ const lines: Record<string, () => Path> = {
 /** Straight across Nolans Brook, through the deep middle, and round to the way out. */
 const nolansStraight = (): Path =>
   Array.from({ length: 201 }, (_, k) => [k < 150 ? 0 : (k - 150) * 0.35, -822 - k * 0.5] as [number, number]);
+/**
+ * Nolans Brook by its marks (v2.20): in, along the near bank in the shallows until level
+ * with the rock, then straight across at the sign and out.
+ */
+const nolansByTheMarks = (): Path => {
+  const x1 = NOLANS_MARKER[0];
+  const corners: [number, number][] = [
+    [0, -822],
+    [0, -850],
+    [3.5, -855.5],
+    [x1 - 5, -857.5],
+    [x1, -862.5],
+    [x1, -891],
+    [x1, -897.4],
+    [17, -905],
+    [13.5, -918],
+    [10, -940],
+  ];
+  const path: [number, number][] = [];
+  for (let k = 0; k + 1 < corners.length; k++) {
+    const [ax, az] = corners[k];
+    const [bx, bz] = corners[k + 1];
+    const n = Math.ceil(Math.hypot(bx - ax, bz - az) / 0.5);
+    for (let j = 0; j < n; j++) path.push([ax + ((bx - ax) * j) / n, az + ((bz - az) * j) / n]);
+  }
+  path.push(corners[corners.length - 1]);
+  return path;
+};
 const SLOW = 300_000;
 
 describe('the northern Telegraph Track on the right line', () => {
@@ -93,6 +126,22 @@ describe('the northern Telegraph Track on the right line', () => {
         expect(r.done, `rise ${day.creekRise}`).toBe(true);
         expect(r.flooded).toBe(false);
         // The current never has the car on the line (the game ends a run at 4 s).
+        expect(r.swept).toBeLessThan(2);
+      }
+    },
+    SLOW,
+  );
+
+  it(
+    'crosses Nolans Brook by its marks: along the bank to the rock, then straight at the sign',
+    async () => {
+      for (const [tuning, day] of [
+        [vehicleTuning, reopened],
+        [hiluxTuning, wet],
+      ] as const) {
+        const r = await drivePath(world, nolansByTheMarks(), { tuning, day, psi: 18 });
+        expect(r.done, `${tuning.name}: stopped at ${r.at.map((v) => v.toFixed(0))}`).toBe(true);
+        expect(r.flooded).toBe(false);
         expect(r.swept).toBeLessThan(2);
       }
     },
