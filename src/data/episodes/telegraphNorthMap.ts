@@ -5,6 +5,11 @@ import { anchor, bank, descendingLedge, sand, survivingPoles, woodlandGrid } fro
 import {
   CANAL_AIM_SIGN,
   CANAL_MARKERS,
+  LONG_DRIVE_BOG_ANCHORS,
+  LONG_DRIVE_BOG_ANCHOR_SIDE,
+  NOLANS_AIM_SIGN,
+  NOLANS_MARKER,
+  NOLANS_TURN_SIGN,
   canalCreek,
   canalFarEdge,
   canalGullies,
@@ -142,7 +147,8 @@ const tracks: TrackDef[] = [
     ...sand,
     // Whoops in soft sand.
     rough: { bumps: 0.1, swells: 0.34, potholes: 0.5, potholeDepth: 0.15 },
-    routeHint: 'Soft sand: 18 psi. At the bog, keep the left wheels on the firm edge',
+    routeHint:
+      'Soft sand: 18 psi. At the bog, keep the left wheels on the firm edge; a rock to winch to at each end',
   },
   {
     id: 'nolans-brook',
@@ -156,7 +162,7 @@ const tracks: TrackDef[] = [
     camber: 0.2,
     pinMode: 'follow',
     surface: 'sand',
-    routeHint: 'Hard right onto the shoal, then straight across on it. Crawl: no bow wave',
+    routeHint: 'Right along the bank to the rock, then straight across to the sign. Crawl: no bow wave',
   },
 ];
 
@@ -271,7 +277,21 @@ const props: PropDef[] = [
   { kind: 'fireRing', x: 27, z: -186, headingDeg: 0 },
   { kind: 'logSeat', x: 32, z: -187, headingDeg: 0 },
   { kind: 'signpost', x: -11, z: -390, headingDeg: 150, text: 'Cypress Creek — log bridge' },
-  { kind: 'signpost', x: 5, z: -826, headingDeg: 180, text: 'Nolans Brook — hard right' },
+  { kind: 'signpost', x: 5, z: -826, headingDeg: 180, text: 'Nolans Brook — right to the rock, then across' },
+  {
+    kind: 'signpost',
+    x: NOLANS_TURN_SIGN[0],
+    z: NOLANS_TURN_SIGN[1],
+    headingDeg: 270,
+    text: 'Turn across here',
+  },
+  {
+    kind: 'signpost',
+    x: NOLANS_AIM_SIGN[0],
+    z: NOLANS_AIM_SIGN[1],
+    headingDeg: 180,
+    text: 'Aim here from the rock',
+  },
   { kind: 'fireRing', x: 16, z: -951, headingDeg: 0 },
   { kind: 'logSeat', x: 21, z: -950, headingDeg: 0 },
 ];
@@ -354,6 +374,10 @@ export const telegraphNorthMap: MapDef = {
     anchor(...at(mistakeCreek, mistakeLip - 5, 2.6)),
     anchor(...at(nolansBrook, 88, 2.6)),
     anchor(...at(nolansBrook, 90, -2.4)),
+    // A rock before the bog and one past it, on the firm side (v2.20).
+    ...LONG_DRIVE_BOG_ANCHORS.map((s) => anchor(...at(longDrive, s, LONG_DRIVE_BOG_ANCHOR_SIDE))),
+    // The rock on Nolans Brook's near bank that the line across starts from (v2.20).
+    { x: NOLANS_MARKER[0], z: NOLANS_MARKER[1], radius: 0.7, sink: 0.25 },
   ],
   tors: [],
   fallenTrees: [],

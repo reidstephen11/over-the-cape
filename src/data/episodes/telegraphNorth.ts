@@ -86,11 +86,11 @@ export const telegraphNorthEpisode: EpisodeDef = {
     },
     'long-drive': {
       title: 'The long drive',
-      text: 'A long run of soft sand with whoops in it before the last crossing. Keep the tyres at 18 psi and keep it moving. Two thirds along, a bog lies across the right of the track: keep the left wheels on the firm edge.',
+      text: 'A long run of soft sand with whoops in it before the last crossing. Keep the tyres at 18 psi and keep it moving. Two thirds along, a bog lies across the right of the track: keep the left wheels on the firm edge. There is a rock to winch to before it and another past it, both on the left.',
     },
     'nolans-brook': {
       title: 'Nolans Brook',
-      text: 'Also called Bridge Creek: the bridge fell apart long ago, and this is now the biggest obstacle south of the Jardine River. Up to a metre and a half of water over a soft sandy bottom. The hard right line is usually shallower, with a firmer bottom: go in, turn hard right onto the shoal, then straight across on it to the way out. Crawl, so the car pushes no bow wave, and hold it against the current, which pushes you left, off the shoal.',
+      text: 'Also called Bridge Creek: the bridge fell apart long ago, and this is now the biggest obstacle south of the Jardine River. Up to a metre and a half of water over a soft sandy bottom. The hard right line is usually shallower, with a firmer bottom: go in, turn hard right and keep to the shallows along the bank as far as the rock at the water’s edge, then turn and drive straight at the sign on the far bank. Crawl, so the car pushes no bow wave, and hold it against the current, which pushes you left, off the shoal.',
     },
   },
   wrapUp: [

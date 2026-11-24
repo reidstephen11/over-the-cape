@@ -6,6 +6,10 @@ import {
   CANAL_AIM_SIGN,
   CANAL_MARKERS,
   CYPRESS_SPAN,
+  LONG_DRIVE_BOG_ANCHORS,
+  NOLANS_AIM_SIGN,
+  NOLANS_MARKER,
+  NOLANS_TURN_SIGN,
   canalGullies,
   cypressDeck,
   longDriveBog,
@@ -208,8 +212,35 @@ describe('the northern Telegraph Track map', () => {
     // Its middle is right of the centreline, and its left edge is short of the left wheels' line.
     expect(near.distance).toBeGreaterThan(1.2);
     expect(near.distance - longDriveBog.radiusX).toBeGreaterThan(-0.9);
-    expect(longDriveBog.winchTrees).toBe(true);
     expect(telegraphNorthMap.bogs).toContain(longDriveBog);
+    // v2.20: a rock to winch to before the bog and one past it, each on firm ground left of
+    // the track and off it. From anywhere in the bog one of them is within the cable's 29 m
+    // ahead and the other behind.
+    const rocks = world.rockGrid
+      .near(longDriveBog.x, longDriveBog.z, 40)
+      .filter((r) => r.anchor && r.solid)
+      .map((r) => ({ r, on: trailProgress(line, r.x, r.z) }));
+    expect(rocks.map(({ on }) => Math.round(on.along)).sort((a, b) => a - b)).toEqual([
+      ...LONG_DRIVE_BOG_ANCHORS,
+    ]);
+    for (const { r, on } of rocks) {
+      expect(on.distance - r.radius, 'off the track').toBeGreaterThan(line.def.width / 2 + 0.6);
+      expect(Math.hypot(r.x - longDriveBog.x, r.z - longDriveBog.z)).toBeGreaterThan(
+        longDriveBog.radiusZ + 4,
+      );
+      for (const end of [-1, 1]) {
+        const p = trailPoint(line, near.along + end * longDriveBog.radiusZ);
+        expect(Math.hypot(r.x - p.x, r.z - p.z), 'in reach from either end').toBeLessThan(29);
+      }
+    }
+    // Both are on the left, the firm side; the bog is on the right.
+    const side = (x: number, z: number) => {
+      const p = trailPoint(line, near.along);
+      const q = trailPoint(line, near.along + 1);
+      return (q.x - p.x) * (z - p.z) - (q.z - p.z) * (x - p.x);
+    };
+    const bogSide = Math.sign(side(longDriveBog.x, longDriveBog.z));
+    for (const { r } of rocks) expect(Math.sign(side(r.x, r.z))).toBe(-bogSide);
   });
 
   it('makes Nolans Brook wide and deep in the middle, with a shoal to the right', () => {
@@ -233,6 +264,45 @@ describe('the northern Telegraph Track map', () => {
     const creek = telegraphNorthMap.creeks.find((c) => c.id === 'nolans-brook')!;
     expect(creek.points[0].x).toBeGreaterThan(creek.points[creek.points.length - 1].x);
     expect(trailPoint(line, 60).x).toBeGreaterThan(12);
+  });
+
+  it('marks Nolans Brook’s line with a rock on the near bank and a sign on the far one (v2.20)', () => {
+    const [mx, mz] = NOLANS_MARKER;
+    const [sx, sz] = NOLANS_AIM_SIGN;
+    const line = track('nolans-brook');
+    // The rock: at the near water's edge, dry on the day's own level and within 2 m of the
+    // water, not an anchor, and well off the way in.
+    expect(telegraphNorthMap.boulders.some((b) => b.x === mx && b.z === mz && !b.anchor)).toBe(true);
+    expect(t.waterDepthAt(mx, mz)).toBe(0);
+    expect(t.waterDepthAt(mx, mz - 2)).toBeGreaterThan(0);
+    expect(trailProgress(line, mx, mz).distance).toBeGreaterThan(8);
+    // A sign above the rock, on dry ground behind it, facing west along the bank.
+    const turn = telegraphNorthMap.props.find(
+      (p) => p.kind === 'signpost' && /Turn across/.test(p.text ?? ''),
+    )!;
+    expect([turn.x, turn.z]).toEqual([...NOLANS_TURN_SIGN]);
+    expect(turn.headingDeg).toBe(270);
+    expect(Math.hypot(turn.x - mx, turn.z - mz)).toBeLessThan(3);
+    expect(t.heightAt(turn.x, turn.z)).toBeGreaterThan(t.heightAt(mx, mz));
+    // The sign: on dry ground on the far bank, beside the way out and off it.
+    const aim = telegraphNorthMap.props.find(
+      (p) => p.kind === 'signpost' && /Aim here from/.test(p.text ?? ''),
+    )!;
+    expect([aim.x, aim.z]).toEqual([sx, sz]);
+    expect(t.waterDepthAt(sx, sz)).toBe(0);
+    const off = trailProgress(line, sx, sz).distance;
+    expect(off).toBeGreaterThan(2.2);
+    expect(off).toBeLessThan(4);
+    // From the rock straight to the way out beside the sign is on the shoal all the way:
+    // never deeper than 0.7 m, and over a metre deeper 12 m downstream of it.
+    const exitX = trailPoint(line, trailProgress(line, sx, sz).along).x;
+    expect(Math.abs(exitX - mx)).toBeLessThan(1);
+    for (let z = mz - 2; z > sz + 8; z -= 1) {
+      expect(t.waterDepthAt(mx, z), `z ${z}`).toBeLessThan(0.7);
+    }
+    expect(t.waterDepthAt(mx - 18, -873) - t.waterDepthAt(mx, -873)).toBeGreaterThan(0.8);
+    // And so is the way to the rock: along the near bank, 6 to 8 m out from the water's edge.
+    for (let x = 0; x <= mx; x += 1) expect(t.waterDepthAt(x, -857), `x ${x}`).toBeLessThan(0.7);
   });
 
   it('stands a line of surviving telegraph poles, leaning and off the track', () => {

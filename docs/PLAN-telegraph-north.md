@@ -5,7 +5,8 @@ The owner asked to continue building new tracks (November 2026). This is the nor
 ## Status
 
 - **Stage 1 (v2.17): built without a play test.** The episode, map, route with six creeks, the log bridge, the long drive, Nolans Brook rising with the rain, the camp, mission, briefing, notes with sourced history, and tests (`tests/telegraphNorth.test.ts`, `tests/telegraphNorthDrive.test.ts`).
-- **Play test (v2.19).** Codex drove v2.18 in the FJ40 on Mild as far as Canal Creek (a rollover, several winch pulls, the flooding warning on the way in). Acted on: the shelf could not be read from the cab (two marker rocks, an aiming sign, darker water beside the shelf); low range was never taught (a prompt before the first water). Not reached, so still open: whether the long drive's bog and the shoal at Nolans Brook can be seen in time.
+- **Play test (v2.19).** Codex drove v2.18 in the FJ40 on Mild as far as Canal Creek (a rollover, several winch pulls, the flooding warning on the way in). Acted on: the shelf could not be read from the cab (two marker rocks, an aiming sign, darker water beside the shelf); low range was never taught (a prompt before the first water). Not reached: the long drive's bog and Nolans Brook.
+- **The two checks it did not reach (v2.20),** made in the game in a browser. The bog can be seen in time, but had nothing to winch to: two marked rocks added. The shoal at Nolans Brook could not be told from the deep: a rock and a sign on the near bank and a sign on the far bank now mark the line. Still for the owner's play test: whether the rise at Nolans Brook is too fast or too slow.
 - **Stage 2: not started.** The side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive; a soft bed under water (an engine change, see below).
 - **Stage 3: not started.** Polish from the owner's play test.
 
@@ -73,6 +74,12 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 - **Low range, taught once.** With water 0.2 m or deeper within 30 m ahead of the car, in high range, a prompt says to stop and take low range. It does not show again on a run once low range has been used.
 - The scripted drives are unchanged (`tests/telegraphNorthDrive.test.ts`, 29 tests).
 
+## As built (v2.20, the bog and Nolans Brook checked from the seat)
+
+- **The bog's winch rocks.** Two marked rocks 17 m before and 17 m past the bog's middle (233 m and 267 m along the long drive), 3.6 m left of the centreline. Before v2.20 nothing was within the cable's 29 m of the bog but one tree, 28 m from one end.
+- **Nolans Brook's marks.** A rock 0.7 m in radius on the near bank at the water's edge at (18, −849.2), 0.3 m above the day's own level, with a sign above it at (19.2, −847.4) facing west: "Turn across here". A sign on the far bank at (20.8, −898.5), 2.8 m right of the way out: "Aim here from the rock". The marked line: in, right along the bank about 7 m out from the water's edge to x = 18, then straight across. It is 0.55 m deep all the way, like the track's own curved line.
+- The scripted drives: 30 (`tests/telegraphNorthDrive.test.ts`), with the marked line at Nolans Brook added.
+
 ## Differences from the design
 
 - **Episode number.** SPEC.md §2 calls this Episode 6; it is built as the game's third episode, number 3.
@@ -80,8 +87,8 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 - **The Unimog wades the straight line.** The short 40 drowns and the LC79 stops in the holes, but the Unimog (intake 2.3 m, 6 t) drives straight through, even on the wet day. Not changed: making the holes deeper again would be for one vehicle.
 - **Mistake Creek's way in does not punish speed.** Taken in high range at 3 to 5 m/s on the line, the 40 gets down (it pitches 42 to 44°). The wrong line (right wheels in the washed-out hole) hangs the car at 60° and more. A descent that damages a car taken fast would need the damage model to count a hard landing, which it does only for tyres and suspension over rocks.
 - **The log bridge is the engine's timber bridge.** It is drawn as sawn boards on posts, not round logs.
-- **The shoal is hard to see from the driver's seat.** The water is a little paler over it and darker over the holes, in 1 m cells. The sign and the note say "hard right". Check in the play test.
-- **The bog's winch trees.** The bog asks for a tree at either end (`winchTrees`), but none shows in the screenshot from the track: check in the play test whether there is something to winch to.
+- **The shoal cannot be seen from the driver's seat.** The water is a little paler over it and darker over the holes, in 1 m cells, which shows from above and not from the bank. Since v2.20 a rock and two signs mark the line instead (above).
+- **The bog's winch rocks.** The design gave the bog a tree at either end. The engine plants winch trees only at the mud holes it makes itself, not at a hand-laid bog, so none grew. Since v2.20 two marked rocks stand in their place (above), as beside the CREB's hand-laid bogs.
 - **Rain in the dry season.** The southern episode has no rain. This one has an afternoon of it on every roll, because the mission needs the brook to rise; the briefing calls it showers forecast from mid-afternoon.
 - **Fruit Bat, Eliot and Twin Falls are not on the map yet** (SPEC.md's route for this episode names them). They are stage 2's side trips.
 - **Telegraph poles and winch rocks** are as on the southern map: the leaning power pole prop, and marked rocks rather than trees.
