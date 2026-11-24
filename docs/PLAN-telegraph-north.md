@@ -7,7 +7,7 @@ The owner asked to continue building new tracks (November 2026). This is the nor
 - **Stage 1 (v2.17): built without a play test.** The episode, map, route with six creeks, the log bridge, the long drive, Nolans Brook rising with the rain, the camp, mission, briefing, notes with sourced history, and tests (`tests/telegraphNorth.test.ts`, `tests/telegraphNorthDrive.test.ts`).
 - **Play test (v2.19).** Codex drove v2.18 in the FJ40 on Mild as far as Canal Creek (a rollover, several winch pulls, the flooding warning on the way in). Acted on: the shelf could not be read from the cab (two marker rocks, an aiming sign, darker water beside the shelf); low range was never taught (a prompt before the first water). Not reached: the long drive's bog and Nolans Brook.
 - **The two checks it did not reach (v2.20),** made in the game in a browser. The bog can be seen in time, but had nothing to winch to: two marked rocks added. The shoal at Nolans Brook could not be told from the deep: a rock and a sign on the near bank and a sign on the far bank now mark the line. Still for the owner's play test: whether the rise at Nolans Brook is too fast or too slow.
-- **Stage 2 (v2.21): built without a play test,** except the soft bed. The side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive. Still to do: a soft bed under water (an engine change, see below).
+- **Stage 2 (v2.21 and v2.22): built without a play test.** The side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive (v2.21). A soft bed under Nolans Brook, firm on the shoal (v2.22).
 - **Stage 3: not started.** Polish from the owner's play test.
 
 ## The design
@@ -92,11 +92,17 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 - **The low-range prompt** does not show at a side trip's stop: the pool at Fruit Bat Falls is water ahead, and not a crossing.
 - The scripted drives: 33 (`tests/telegraphNorthDrive.test.ts`); stage 2's facts are in `tests/telegraphNorthStage2.test.ts`.
 
+## As built (v2.22, the soft bed)
+
+- **Nolans Brook's bed is soft sand** under water (`softBed`), except on the shoal's two bars and along the track's line, which are firm. Soft bed: grip 0.42, rolling resistance 1.4, 0.2 m of sink; low tyre pressures help as on dry sand.
+- **Driven:** off the shoal in 1.35 m, the LC79 with both lockers at 18 psi crawls 25 m of soft bed in about 78 s (0.32 m/s; 0.7 m/s on the shoal), and at 36 psi is not across in 250 s. The short 40 on the straight line stops in the middle, short of the holes. Both right lines are on firm bed and drive as before.
+- The scripted drives: 34.
+
 ## Differences from the design
 
 - **Episode number.** SPEC.md §2 calls this Episode 6; it is built as the game's third episode, number 3.
-- **The shoal is shallower, not firmer.** Hema says the hard right line is usually shallower with a firmer bottom. The engine has one surface for every creek bed under water, whatever the creek's `bed` (which only sets its colour and its dry banks), so the sand in the middle of Nolans Brook is no softer than the shoal. Depth, the current and the two dug-out holes make the straight line fail. A soft bed under water is an engine change, listed for stage 2.
-- **The Unimog wades the straight line.** The short 40 drowns and the LC79 stops in the holes, but the Unimog (intake 2.3 m, 6 t) drives straight through, even on the wet day. Not changed: making the holes deeper again would be for one vehicle.
+- **The shoal is shallower and, since v2.22, firmer.** Until v2.22 the engine had one surface for every creek bed under water, so only depth, the current and the two dug-out holes made the straight line fail. A soft bed is now a setting a creek asks for (above). It slows a car to a creep, and does not stop it dead: rolling resistance in the engine sets a speed, and a half-floating car's wheels carry little load.
+- **The Unimog wades the straight line.** The short 40 drowns and the LC79 stops in the holes, but the Unimog (intake 2.3 m, 6 t) drives straight through, even on the wet day, and still does over the soft bed (144 s for the scripted run). Not changed: making the holes deeper again would be for one vehicle.
 - **Mistake Creek's way in does not punish speed.** Taken in high range at 3 to 5 m/s on the line, the 40 gets down (it pitches 42 to 44°). The wrong line (right wheels in the washed-out hole) hangs the car at 60° and more. A descent that damages a car taken fast would need the damage model to count a hard landing, which it does only for tyres and suspension over rocks.
 - **The log bridge is the engine's timber bridge.** It is drawn as sawn boards on posts, not round logs.
 - **The shoal cannot be seen from the driver's seat.** The water is a little paler over it and darker over the holes, in 1 m cells, which shows from above and not from the bank. Since v2.20 a rock and two signs mark the line instead (above).
