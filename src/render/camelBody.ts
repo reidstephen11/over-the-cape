@@ -62,9 +62,14 @@ const RACK_X = 0.72,
 const HOOP_A = { foot: SCUTTLE - 0.05, waist: SCUTTLE + 0.01, top: SCUTTLE + 0.18 },
   HOOP_B = BPOST + 0.09,
   HOOP_Y = 1.575;
-/** The raised intake's riser, outboard of the left A hoop, and its head. */
+/**
+ * The raised intake's riser, outboard of the left A hoop, and its head. It leans a little
+ * less than the hoop's leg and stands 8 to 11 cm ahead of it, so the head's cap (0.093 m in
+ * radius) clears the hoop's corner by 2.5 cm; leaning 0.44 it ran into the corner (v2.18).
+ */
 const RISER_X = -0.915,
-  riserZ = (y: number) => SCUTTLE - 0.07 + (y - 1.0) * 0.44;
+  RISER_SLOPE = 0.26,
+  riserZ = (y: number) => SCUTTLE - 0.07 + (y - 1.0) * RISER_SLOPE;
 const paint = new THREE.Color('#C7973F'),
   black = new THREE.Color('#242824'),
   rubber = new THREE.Color('#222522');
@@ -948,7 +953,7 @@ function cageAndIntake(b: VehicleBuilder) {
   for (const yy of [1.21, 1.38]) {
     const zz = riserZ(yy);
     b.rod(v(RISER_X, yy, zz), v(-0.825, yy, legZ(yy)), 0.009, steel, M.Metal, Z.Front);
-    b.push().translate(RISER_X, yy, zz).rotate(Math.atan2(0.44, 1), 0, 0);
+    b.push().translate(RISER_X, yy, zz).rotate(Math.atan2(RISER_SLOPE, 1), 0, 0);
     b.ring(0, 0, 0, 0.048, 0.005, steel, M.Metal, 'y', Z.Front);
     b.pop();
   }

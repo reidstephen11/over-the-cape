@@ -95,7 +95,7 @@ export const camelTuning: VehicleTuning = {
   steering: { ...perentieTuning.steering, maxAngleDeg: 33 },
   // The raised intake's head beside the left windscreen pillar (src/render/camelBody.ts).
   intakeHeight: 2.03,
-  intake: { x: -0.915, y: 1.51, z: -0.38 },
+  intake: { x: -0.915, y: 1.51, z: -0.47 },
   winchMount: { x: 0, y: 0.3, z: -2.0 },
   towPoint: { x: 0, y: 0.03, z: 1.96 },
   // A civilian tow jaw, not the Army's pintle hook: the No. 5 trailer's ring doesn't go on it.
