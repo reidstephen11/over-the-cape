@@ -33,18 +33,19 @@ export const camelTuning: VehicleTuning = {
     { x: HALF_TRACK, y: MOUNT_Y, z: HALF_BASE, front: false },
   ],
   bodyBoxes: [
-    // Chassis rails, and the transfer case tucked up level with their bottoms (as drawn).
-    { cx: -0.43, cy: 0.03, cz: 0.0, hx: 0.05, hy: 0.09, hz: 1.75 },
-    { cx: 0.43, cy: 0.03, cz: 0.0, hx: 0.05, hy: 0.09, hz: 1.75 },
-    { cx: 0.08, cy: 0.0, cz: -0.25, hx: 0.2, hy: 0.08, hz: 0.3 },
+    // Chassis rails, and the transfer case tucked up level with their bottoms (as drawn). The
+    // body sits 0.12 m further back on its wheels since the November 2026 review, and these with it.
+    { cx: -0.43, cy: 0.03, cz: 0.14, hx: 0.05, hy: 0.09, hz: 1.74 },
+    { cx: 0.43, cy: 0.03, cz: 0.14, hx: 0.05, hy: 0.09, hz: 1.74 },
+    { cx: 0.08, cy: 0.0, cz: -0.13, hx: 0.2, hy: 0.08, hz: 0.3 },
     // Floor and seat box, engine bay, rear body between the wheel boxes.
-    { cx: 0, cy: 0.17, cz: 0.0, hx: 0.6, hy: 0.06, hz: 1.7 },
-    { cx: 0, cy: 0.45, cz: -1.25, hx: 0.6, hy: 0.24, hz: 0.55 },
-    { cx: 0, cy: 0.45, cz: 1.2, hx: 0.6, hy: 0.28, hz: 0.55 },
+    { cx: 0, cy: 0.17, cz: 0.1, hx: 0.6, hy: 0.06, hz: 1.68 },
+    { cx: 0, cy: 0.45, cz: -1.13, hx: 0.6, hy: 0.24, hz: 0.55 },
+    { cx: 0, cy: 0.45, cz: 1.29, hx: 0.6, hy: 0.28, hz: 0.52 },
     // The station wagon's cabin and roof, the bull bar and the rear crossmember.
-    { cx: 0, cy: 1.0, cz: 0.5, hx: 0.82, hy: 0.6, hz: 1.25 },
-    { cx: 0, cy: 0.25, cz: -1.99, hx: 0.89, hy: 0.3, hz: 0.1 },
-    { cx: 0, cy: 0.1, cz: 1.84, hx: 0.75, hy: 0.08, hz: 0.1 },
+    { cx: 0, cy: 1.0, cz: 0.64, hx: 0.82, hy: 0.6, hz: 1.18 },
+    { cx: 0, cy: 0.25, cz: -1.87, hx: 0.89, hy: 0.3, hz: 0.1 },
+    { cx: 0, cy: 0.1, cz: 1.9, hx: 0.75, hy: 0.08, hz: 0.1 },
   ],
 
   engine: {
@@ -94,9 +95,9 @@ export const camelTuning: VehicleTuning = {
   steering: { ...perentieTuning.steering, maxAngleDeg: 33 },
   // The raised intake's head beside the left windscreen pillar (src/render/camelBody.ts).
   intakeHeight: 2.03,
-  intake: { x: -0.995, y: 1.51, z: -0.65 },
-  winchMount: { x: 0, y: 0.3, z: -2.12 },
-  towPoint: { x: 0, y: 0.03, z: 1.9 },
+  intake: { x: -0.915, y: 1.51, z: -0.38 },
+  winchMount: { x: 0, y: 0.3, z: -2.0 },
+  towPoint: { x: 0, y: 0.03, z: 1.96 },
   // A civilian tow jaw, not the Army's pintle hook: the No. 5 trailer's ring doesn't go on it.
   hitch: undefined,
 };

@@ -137,10 +137,10 @@ export const vehicleLooks: Record<VehicleId, VehicleLook> = {
     springs: 'coil',
     lamps: {
       head: [
-        { x: -0.626, y: 0.467, z: -1.84 },
-        { x: 0.626, y: 0.467, z: -1.84 },
+        { x: -0.626, y: 0.467, z: -1.72 },
+        { x: 0.626, y: 0.467, z: -1.72 },
       ],
-      roof: [-0.61, -0.27, 0.27, 0.61].map((x) => ({ x, y: 1.84, z: -0.74 })),
+      roof: [-0.58, -0.26, 0.26, 0.58].map((x) => ({ x, y: 1.86, z: -0.42 })),
     },
   },
   rangie: {
