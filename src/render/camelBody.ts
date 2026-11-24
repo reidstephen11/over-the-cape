@@ -65,7 +65,7 @@ const HOOP_A = { foot: SCUTTLE - 0.05, waist: SCUTTLE + 0.01, top: SCUTTLE + 0.1
 /**
  * The raised intake's riser, outboard of the left A hoop, and its head. It leans a little
  * less than the hoop's leg and stands 8 to 11 cm ahead of it, so the head's cap (0.093 m in
- * radius) clears the hoop's corner by 2.5 cm; leaning 0.44 it ran into the corner (v2.18).
+ * radius) clears the hoop's leg and corner by 2.3 cm; leaning 0.44 it ran into the corner (v2.18).
  */
 const RISER_X = -0.915,
   RISER_SLOPE = 0.26,
