@@ -133,7 +133,7 @@ test('New Journey starts fresh without deleting the existing checkpoint while br
   await page.keyboard.press('Enter');
   await page.locator('[data-title-journey]').click();
   await expect(page.locator('[data-group="start"].on')).toHaveAttribute('data-value', 'new');
-  await expect(page.locator('[data-welcome-drive]')).toHaveText('Drive');
+  await expect(page.locator('[data-welcome-drive]')).toHaveText('Load episode');
   await page.keyboard.press('Escape');
   expect(
     await page.evaluate(

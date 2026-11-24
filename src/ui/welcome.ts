@@ -360,7 +360,7 @@ export class WelcomeScreen {
                   )
                 : ''
             }</div>
-            <button type="button" class="welcome-drive" data-group="drive" data-welcome-drive>${camp && this.choice.resume ? 'Continue' : 'Drive'}</button>
+            <button type="button" class="welcome-drive" data-group="drive" data-welcome-drive>${camp && this.choice.resume ? 'Continue' : 'Load episode'}</button>
           </section>
         </div>
         <button type="button" class="welcome-setup-toggle" data-group="setup" aria-expanded="${this.setupOpen}" aria-controls="welcome-setup"><span>Vehicle & difficulty</span><span>${vehicles[this.choice.vehicle].tuning.name} · ${damageLabels[this.choice.damage]} <b aria-hidden="true">${this.setupOpen ? '−' : '+'}</b></span></button>

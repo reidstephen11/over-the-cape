@@ -89,6 +89,7 @@ import { GameLoop } from './loop';
 import { wireSimFeedback } from './simFeedback';
 import { TrafficCars } from './trafficCars';
 import { AnchorPicker } from './anchorPicker';
+import { LowRangeHint, waterAhead } from './lowRangeHint';
 import { DeliveryViews } from './deliveryViews';
 import { ToolController } from './toolController';
 import { pendingUpdate } from './update';
@@ -152,6 +153,9 @@ export class Game {
   private readonly cameraDrag: CameraDrag;
   /** Winch anchors in reach, the chooser on USE, and a tap on one to pick it. */
   private readonly anchors: AnchorPicker;
+  /** Teaches low range before the first water, once a run. */
+  private readonly lowRangeHint = new LowRangeHint();
+  private readonly waterDepthAt = (x: number, z: number): number => this.world.terrain.waterDepthAt(x, z);
   readonly overlay: DebugOverlay | null;
   private readonly debugTools: DebugTools | null;
   /** Test mode (`?dev`): weather, clock, place and vehicle set by hand; nothing is saved. */
@@ -2084,6 +2088,11 @@ export class Game {
       refuel: this.sim.refuelOption(LOCAL_VEHICLE),
       find: this.findNearby(),
       sideTrip: this.run.status === 'driving' ? this.sideTrips.prompt(v.position.x, v.position.z) : null,
+      teachLowRange: this.lowRangeHint.show(v.drivetrain.range, this.run.status === 'driving', () => {
+        const f = v.forward();
+        const flat = Math.hypot(f.x, f.z) || 1;
+        return waterAhead(this.waterDepthAt, v.position.x, v.position.z, f.x / flat, f.z / flat);
+      }),
       hitch: this.sim.hitchOption(LOCAL_VEHICLE),
       trailer: this.sim.trailerOf(LOCAL_VEHICLE),
       trailerLeft: this.delivery.trailerLeft(),

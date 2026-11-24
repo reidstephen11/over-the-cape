@@ -12,7 +12,7 @@ The owner asked to continue building new tracks (November 2026). The northern ha
 
 - **Stage 2:** side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive.
 - **A soft bed under water.** Every creek bed under water is one surface, so Nolans Brook's sandy middle is no softer than its shoal. A bed that sinks and drags a tyre under water, set per creek, would need the southern episode's sand-bed creeks re-driven.
-- **Stage 3:** polish from the owner's play test (can the shoal be seen from the seat; is there something to winch to at the bog; is the rise at Nolans Brook too fast or too slow).
+- **Stage 3:** polish from play tests. v2.19 acted on Codex's first one (Canal Creek's shelf marked, low range taught before the first water, the winch chooser's arrow and bar). It did not reach the long drive's bog or Nolans Brook, so these are still open: can the bog and the shoal be seen from the seat; is there something to winch to at the bog; is the rise at Nolans Brook too fast or too slow.
 
 # Make the CREB the heart of the game
 

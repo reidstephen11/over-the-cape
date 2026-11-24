@@ -53,6 +53,16 @@ export const canalCreek: Waypoint[] = [
   [-1, 570],
   [0, 562, PLAIN],
 ];
+/**
+ * Marker rocks at the near water's edge, one either side of the shelf's line (v2.19): drive
+ * in between them. [x, z].
+ */
+export const CANAL_MARKERS: readonly (readonly [number, number])[] = [
+  [-3.3, 620.6],
+  [2.3, 620.6],
+];
+/** A sign on the far bank straight across the shelf, between the two exits, to aim at (v2.19). */
+export const CANAL_AIM_SIGN: readonly [number, number] = [-1.6, 596.6];
 /** Metres along `canalCreek` to the far water's edge, where the two exits part. */
 export const canalFarEdge = arcAtPoint(canalCreek, 4);
 
@@ -325,10 +335,11 @@ export const northCreeks: CreekDef[] = [
       { x: -0.5, z: 612, radiusX: 3.2, radiusZ: 9, rotationDeg: 0, depth: 0.6 },
       { x: -8, z: 603.5, radiusX: 9, radiusZ: 3, rotationDeg: 8, depth: 0.3 },
     ],
-    // Either side of the shelf the bed drops away.
+    // Either side of the shelf the bed drops away, right from the shelf's edges, so the
+    // water is dark beside it and the paler shelf shows from the ramp (v2.19).
     holes: [
-      { x: 8, z: 612, radius: 3.5, depth: 0.5 },
-      { x: -9.5, z: 613, radius: 3.5, depth: 0.5 },
+      { x: 6.4, z: 612.5, radius: 4.2, depth: 0.6 },
+      { x: -7.6, z: 613.5, radius: 4.2, depth: 0.6 },
     ],
   },
   {

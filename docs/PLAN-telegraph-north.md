@@ -5,6 +5,7 @@ The owner asked to continue building new tracks (November 2026). This is the nor
 ## Status
 
 - **Stage 1 (v2.17): built without a play test.** The episode, map, route with six creeks, the log bridge, the long drive, Nolans Brook rising with the rain, the camp, mission, briefing, notes with sourced history, and tests (`tests/telegraphNorth.test.ts`, `tests/telegraphNorthDrive.test.ts`).
+- **Play test (v2.19).** Codex drove v2.18 in the FJ40 on Mild as far as Canal Creek (a rollover, several winch pulls, the flooding warning on the way in). Acted on: the shelf could not be read from the cab (two marker rocks, an aiming sign, darker water beside the shelf); low range was never taught (a prompt before the first water). Not reached, so still open: whether the long drive's bog and the shoal at Nolans Brook can be seen in time.
 - **Stage 2: not started.** The side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive; a soft bed under water (an engine change, see below).
 - **Stage 3: not started.** Polish from the owner's play test.
 
@@ -65,6 +66,12 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 
 - **What that does, driven on the shoal at a crawl:** the Hilux (the lowest intake, 0.85 m) floods from a rise of about 0.25 m: from about 5 pm on the just-reopened day (30 minutes of play) and from about 3:45 pm on the wet day (19 minutes); never on the dry day. The 40 and the Troop Carrier still cross at 0.26 m. The LC79 (snorkel) crosses at 0.63 m and is carried off the shoal at 0.70 m: at 6 pm on the wet day only.
 - **Load and clock:** 16 L of fuel, no jerry cans, one spare, two plugs, `fuelScale` 12 (the scripted clean run burns 11.1 L). 1:30 pm start, dark at 6:15 pm, one hour's grace, `clockRate` 7: the scripted run takes 17.3 minutes at the autopilot's crawl through each obstacle and reaches Nolans Brook at about 3:20 pm.
+
+## As built (v2.19, after the first play test)
+
+- **Canal Creek's shelf, marked.** Two rocks 0.55 m in radius at the near water's edge, at x −3.3 and 2.3 (the shelf's middle is at −0.5), 5.6 m apart: drive in between them. A sign on the far bank at (−1.6, 596.6), straight across the shelf and between the two exits: "Aim here — then exit left". The holes either side now start at the shelf's edges (centres 6.4 m east and 7.6 m west, 4.2 m in radius, 0.6 m deeper), so the water is 1.7 m deep right beside the shelf's 0.6 m and shows darker. The shelf is as deep and as wide as before; off it is deeper than before (it was 1.1 m for the first few metres).
+- **Low range, taught once.** With water 0.2 m or deeper within 30 m ahead of the car, in high range, a prompt says to stop and take low range. It does not show again on a run once low range has been used.
+- The scripted drives are unchanged (`tests/telegraphNorthDrive.test.ts`, 29 tests).
 
 ## Differences from the design
 

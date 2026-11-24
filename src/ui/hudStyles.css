@@ -2666,3 +2666,44 @@ body:not(.touch-mode) #ui[data-hud] .history-card .history-hint {
 .vr-enter.hidden {
   display: none;
 }
+
+/* The winch chooser's arrow towards an anchor that is out of view (v2.19). */
+.anchor-arrow {
+  position: fixed;
+  z-index: 35;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #ffc247;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 6px rgba(0, 0, 0, 0.7);
+}
+.anchor-arrow.hidden {
+  display: none;
+}
+.anchor-arrow-head {
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 26px solid #ffc247;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.85));
+  transform: rotate(var(--turn, 0rad));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .anchor-arrow-head {
+    animation: anchor-arrow-pulse 1s ease-in-out infinite;
+  }
+}
+@keyframes anchor-arrow-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
