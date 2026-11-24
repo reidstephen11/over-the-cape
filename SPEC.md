@@ -33,7 +33,7 @@ Episodes 2–4 below were built and then removed in v0.73, when the owner chose 
 | 3 | Lakefield | Laura → Laura River and Old Laura homestead → the black soil plains → Lakefield → a stockman bogged off the road → Hann Crossing on the North Kennedy → Musgrave | Winch the stockman out, then over Hann Crossing before the river covers the bar (built in v0.23; Port Stewart, first planned here, may come later as a side episode) |
 | 4 | The Frenchmans Track | Telegraph Road → Wenlock River → wet heath → Pascoe River → Portland Road fuel camp | Deliver two drums of diesel on a trailer before evening (built in v0.50) |
 | 5 | Telegraph Track South | Bramwell Junction, Palm Creek, the Ducie, Gunshot Creek | Get past Gunshot, by the drop or the bypass (built from v1.96 as the game's Episode 2, `telegraph`) |
-| 6 | Telegraph Track North | Fruit Bat, Eliot and Twin Falls, Cypress Creek's log bridge, Nolans Brook | Cross Nolans without drowning the engine |
+| 6 | Telegraph Track North | Fruit Bat, Eliot and Twin Falls, Cypress Creek's log bridge, Nolans Brook | Cross Nolans without drowning the engine (built from v2.17 as the game's Episode 3, `telegraphNorth`; the falls are still to come) |
 | 7 | The Tip | The Jardine ferry, the Ussher Point track and a WWII aircraft wreck, the northernmost point | Stand at the Tip |
 
 ## 2a. The story and the goals

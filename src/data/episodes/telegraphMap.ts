@@ -1,14 +1,6 @@
-import type {
-  BoulderDef,
-  ClearingDef,
-  MapDef,
-  PoiDef,
-  PropDef,
-  TrackDef,
-  XZ,
-} from '../../sim/world/mapTypes';
-import { densify, segmentDistance } from '../../sim/world/polyline';
+import type { MapDef, PoiDef, PropDef, TrackDef } from '../../sim/world/mapTypes';
 import { boulder, rockStep } from '../courseKit';
+import { anchor, bank, descendingLedge, sand, survivingPoles, woodlandGrid } from './telegraphKit';
 import {
   BERTIE_BED,
   DULHUNTY_LEDGE,
@@ -54,44 +46,6 @@ import type { Waypoint } from './crebRoute';
  * route on a 1 × 2 km map; the plan is docs/PLAN-telegraph.md. Coordinates in metres:
  * x = east, z = south (north is -z).
  */
-const sand = {
-  shoulder: 2.5,
-  batter: 0.6,
-  smooth: 8,
-  ruts: 0.06,
-  camber: 0.3,
-  pinMode: 'follow',
-  surface: 'sand',
-  rough: { bumps: 0.08, swells: 0.12, potholes: 1, potholeDepth: 0.15, washouts: 1, washoutDepth: 0.2 },
-} as const;
-/** A creek crossing: graded straight between its pinned heights, with steep clay walls. */
-const bank = {
-  shoulder: 2,
-  batter: 1.4,
-  smooth: 2,
-  ruts: 0.04,
-  camber: 0.2,
-  pinMode: 'linear',
-  pinSmooth: 2,
-  surface: 'clay',
-} as const;
-
-/** A ledge of rock across a track that goes down it: its riser is on the far, lower side. */
-function descendingLedge(at: number, rise: number) {
-  return {
-    shape: 'ridge' as const,
-    at,
-    lateral: 0,
-    width: 4.2,
-    length: 1.2,
-    height: rise,
-    profile: [
-      [-0.6, 0.04],
-      [0.45, rise],
-      [0.6, rise * 0.65],
-    ] as const,
-  };
-}
 const staircaseTop = arcAtPoint(gunshotStaircase, 4);
 const slotTop = arcAtPoint(gunshotSlot, 4);
 
@@ -331,14 +285,6 @@ const tracks: TrackDef[] = [
   },
 ];
 
-/** A marked anchor: a rock to winch from. */
-const anchor = (x: number, z: number, radius = 0.8): BoulderDef => ({
-  x,
-  z,
-  radius,
-  sink: 0.3,
-  anchor: true,
-});
 const at = (points: readonly Waypoint[], s: number, lateral: number) => {
   const p = sideOf(points, s, lateral);
   return [Math.round(p.x * 10) / 10, Math.round(p.z * 10) / 10] as const;
@@ -481,81 +427,17 @@ const props: PropDef[] = [
   { kind: 'logSeat', x: 19, z: -979, headingDeg: 0 },
 ];
 
-/** Every track centreline, to keep poles and clearings off them. */
-const lines = tracks.map((t) =>
-  densify(
-    t.points.map((p) => [p[0], p[1]] as XZ),
-    2,
-  ),
-);
-const offTracks = (x: number, z: number, margin: number) =>
-  lines.every((poly) => {
-    for (let k = 0; k + 1 < poly.count; k++)
-      if (segmentDistance(x, z, poly.xs[k], poly.zs[k], poly.xs[k + 1], poly.zs[k + 1]).d < margin)
-        return false;
-    return true;
-  });
-
 /**
  * The surviving telegraph poles: a straight line up the map that the track wanders either
  * side of, most of them gone, the rest leaning. The wire was taken down when the line closed.
  */
-const telegraphPoles: PropDef[] = (() => {
-  const out: PropDef[] = [];
-  const [x0, z0, x1, z1] = [26, 900, -30, -940];
-  const n = 46;
-  for (let k = 0; k <= n; k++) {
-    // About one in three survives; the pattern is fixed.
-    if ((k * 7 + 3) % 3 !== 0) continue;
-    const t = k / n;
-    const x = x0 + (x1 - x0) * t;
-    const z = z0 + (z1 - z0) * t;
-    if (!offTracks(x, z, 5)) continue;
-    // Keep them out of the creeks.
-    if (
-      telegraphCreeks.some((c) =>
-        c.points.some((p, i) => {
-          const q = c.points[i + 1];
-          return q && segmentDistance(x, z, p.x, p.z, q.x, q.z).d < p.halfWidth + 8;
-        }),
-      )
-    )
-      continue;
-    out.push({
-      kind: 'powerPole',
-      x: Math.round(x * 10) / 10,
-      z: Math.round(z * 10) / 10,
-      headingDeg: (k * 67) % 360,
-      lean: 4 + ((k * 5) % 11),
-    });
-  }
-  return out;
-})();
+const telegraphPoles = survivingPoles(tracks, telegraphCreeks, [26, 900, -30, -940]);
 
 /**
  * Open eucalypt woodland everywhere except a strip along each creek, which keeps its
  * gallery forest: circles of woodland on a grid, each shrunk to stop short of the creeks.
  */
-const woodland: ClearingDef[] = (() => {
-  const out: ClearingDef[] = [];
-  const creekDist = (x: number, z: number) => {
-    let d = Infinity;
-    for (const c of telegraphCreeks)
-      for (let i = 0; i + 1 < c.points.length; i++) {
-        const p = c.points[i];
-        const q = c.points[i + 1];
-        d = Math.min(d, segmentDistance(x, z, p.x, p.z, q.x, q.z).d - p.halfWidth);
-      }
-    return d;
-  };
-  for (let z = -1000; z <= 1000; z += 100)
-    for (let x = -500; x <= 500; x += 100) {
-      // Woodland fades out over 30 m beyond a circle's edge: stop it 25 m short of the water.
-      const r = Math.min(130, creekDist(x, z) - 55);
-      if (r >= 20) out.push({ x, z, radius: Math.round(r) });
-    }
-  return out;
-})();
+const woodland = woodlandGrid(telegraphCreeks);
 
 export const telegraphMap: MapDef = {
   id: 'telegraph',

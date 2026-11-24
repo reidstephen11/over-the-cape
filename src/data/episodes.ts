@@ -4,6 +4,7 @@ import type { Weather } from './environment';
 import type { WeatherTimeline } from './weatherTimeline';
 import { crebEpisode } from './episodes/creb';
 import { telegraphEpisode } from './episodes/telegraph';
+import { telegraphNorthEpisode } from './episodes/telegraphNorth';
 import type { SurpriseSetDef } from '../sim/world/surprisePlan';
 import type { StrandedDef } from '../sim/stranded';
 import type { SideTripDef } from '../sim/sideTrips';
@@ -13,9 +14,9 @@ import type { TrackCondition, TrackConditionId } from './trackConditions';
 /**
  * Episodes: each has its own map, a core mission, the conditions the story sets and a
  * fixed load of fuel and spares. From v0.73 the game was the CREB Track alone; v1.96 added
- * the Telegraph Track beside it.
+ * the Telegraph Track beside it and v2.17 its northern half.
  */
-export type EpisodeId = 'creb' | 'telegraph';
+export type EpisodeId = 'creb' | 'telegraph' | 'telegraphNorth';
 
 /** Why an episode can end early. */
 export type FailReason = 'time' | 'fuel' | 'tyre' | 'engine' | 'swept';
@@ -106,9 +107,10 @@ export interface EpisodeDef {
 export const episodes: Record<EpisodeId, EpisodeDef> = {
   creb: crebEpisode,
   telegraph: telegraphEpisode,
+  telegraphNorth: telegraphNorthEpisode,
 };
 
-export const episodeOrder: readonly EpisodeId[] = ['creb', 'telegraph'];
+export const episodeOrder: readonly EpisodeId[] = ['creb', 'telegraph', 'telegraphNorth'];
 
 export function isEpisodeId(x: unknown): x is EpisodeId {
   return typeof x === 'string' && x in episodes;

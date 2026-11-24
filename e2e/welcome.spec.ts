@@ -17,9 +17,11 @@ test('the welcome screen offers the episodes in order, then the briefing, and re
   await expect(on('start')).toHaveAttribute('data-value', 'new');
   await expect(on('vehicle')).toHaveAttribute('data-value', 'shortie');
   await expect(on('damage')).toHaveAttribute('data-value', 'mild');
-  // Two episodes, both open (v1.96): the CREB and the Telegraph Track, and no "coming soon" list.
-  await expect(page.locator('[data-group="episode"]')).toHaveCount(2);
+  // Three episodes, all open: the CREB, the Telegraph Track (v1.96) and its northern half
+  // (v2.17), and no "coming soon" list.
+  await expect(page.locator('[data-group="episode"]')).toHaveCount(3);
   await expect(page.locator('[data-group="episode"][data-value="telegraph"]')).toBeEnabled();
+  await expect(page.locator('[data-group="episode"][data-value="telegraphNorth"]')).toBeEnabled();
   await expect(page.locator('.welcome-upcoming')).toHaveCount(0);
 
   await page.locator('[data-group="setup"]').click();
