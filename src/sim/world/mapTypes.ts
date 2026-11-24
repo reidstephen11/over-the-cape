@@ -126,6 +126,12 @@ export interface CreekDef {
   flow?: number;
   /** Where the bed is sand: how far the dry sand runs out beyond the water's edge (m). */
   sandBank?: number;
+  /**
+   * The bed under water is soft sand (`SurfaceId.SoftBed`: it gives and drags) everywhere
+   * but on the creek's `bars` and where a track fords it, which stay firm. Default false:
+   * every bed under water is firm.
+   */
+  softBed?: boolean;
 }
 
 export interface TrackStepsDef {

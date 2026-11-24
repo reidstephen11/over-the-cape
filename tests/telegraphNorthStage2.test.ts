@@ -10,6 +10,7 @@ import {
   TWIN_FALLS_X,
   northLevels,
 } from '../src/data/episodes/telegraphNorthRoute';
+import { SurfaceId, surfaces } from '../src/data/surfaces';
 import { SideTrips } from '../src/sim/sideTrips';
 import { strandedPose } from '../src/sim/stranded';
 import { trailPoint, trailProgress } from '../src/sim/world/crawlTrail';
@@ -211,5 +212,68 @@ describe('the northern Telegraph Track, stage 2: other travellers and a tree dow
     }
     // Not always the same stretch.
     expect(seen.size).toBeGreaterThan(1);
+  });
+});
+
+describe('the northern Telegraph Track, stage 2: a soft bed under Nolans Brook (v2.22)', () => {
+  const soft = (x: number, z: number) => t.surfaceAt(x, z) === SurfaceId.SoftBed;
+
+  it('makes soft sand under water softer than dry river sand, and slippery', () => {
+    const bed = surfaces[SurfaceId.SoftBed];
+    expect(bed.rollingResistance).toBeGreaterThan(surfaces[SurfaceId.Sand].rollingResistance);
+    expect(bed.sink).toBeGreaterThan(surfaces[SurfaceId.Sand].sink);
+    expect(bed.grip).toBeLessThan(surfaces[SurfaceId.Water].grip);
+    // Water washes the car on it, as on any creek bed.
+    expect(bed.dirtRate).toBe(surfaces[SurfaceId.Water].dirtRate);
+  });
+
+  it('keeps the shoal firm, both right lines on it, and everything else in the brook soft', () => {
+    expect(creek('nolans-brook').softBed).toBe(true);
+    // The track's own line, wheel to wheel, wherever it is in the water.
+    const line = track('nolans-brook');
+    for (let s = 0; s <= line.poly.length; s += 0.5)
+      for (const side of [-0.8, 0, 0.8]) {
+        const p = trailPoint(line, s, side);
+        if (t.waterDepthAt(p.x, p.z) > 0) expect(soft(p.x, p.z), `track at ${s} m, ${side}`).toBe(false);
+      }
+    // The marked line (v2.20): along the bank to the rock's line, then straight across.
+    for (let x = 3; x <= 18; x += 1) expect(soft(x, -857.5), `x ${x}`).toBe(false);
+    for (let z = -858; z >= -890; z -= 1)
+      for (const x of [17.2, 18, 18.8]) expect(soft(x, z), `${x}, ${z}`).toBe(false);
+    // Off the shoal: the old straight line, the deep middle downstream, and upstream of the shoal.
+    for (const [x, z] of [
+      [-1, -866],
+      [0, -875],
+      [-8, -866],
+      [6, -872],
+      [27, -872],
+      [-60, -866],
+    ])
+      expect(soft(x, z), `${x}, ${z}`).toBe(true);
+    // The drowned HiLux is on it.
+    const d = ep.stranded![0];
+    const pose = strandedPose(
+      d,
+      world.map.tracks.find((x) => x.id === d.track)!.points.map(([x, z]) => [x, z] as const),
+    );
+    expect(soft(pose.x, pose.z)).toBe(true);
+  });
+
+  it('leaves every other creek firm under water: a soft bed is asked for creek by creek', () => {
+    for (const c of telegraphNorthMap.creeks)
+      if (c.id !== 'nolans-brook') expect(c.softBed, c.id).toBeUndefined();
+    // Every soft cell on the map is in Nolans Brook's reach (z from -905 to -835 where the track crosses).
+    let softCells = 0;
+    for (let i = 0; i < t.surface.length; i++) {
+      if (t.surface[i] !== SurfaceId.SoftBed) continue;
+      softCells++;
+      const z = Math.floor(i / t.resX) - t.halfZ;
+      expect(z).toBeLessThan(-820);
+      expect(z).toBeGreaterThan(-920);
+    }
+    expect(softCells).toBeGreaterThan(5000);
+    // Canal Creek's shelf and the fords are the firm bed they were.
+    expect(t.surfaceAt(-0.5, 612)).toBe(SurfaceId.Water);
+    expect(t.surfaceAt(6, 612)).toBe(SurfaceId.Water);
   });
 });

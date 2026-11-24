@@ -48,12 +48,16 @@ import {
   updateWindup,
 } from './transferCase';
 
+/** Sand, dry or under water: low tyre pressures cut its sink and drag. */
+const isSand = (surface: SurfaceId): boolean => surface === SurfaceId.Sand || surface === SurfaceId.SoftBed;
+
 /** How readily each surface lets a stuck wheel spin (visual, dirt and sound only). */
 const LOOSENESS: Partial<Record<SurfaceId, number>> = {
   [SurfaceId.Mud]: 1,
   [SurfaceId.BlackSoil]: 1,
   [SurfaceId.Clay]: 0.8,
   [SurfaceId.Sand]: 0.85,
+  [SurfaceId.SoftBed]: 0.7,
   [SurfaceId.Gravel]: 0.6,
   [SurfaceId.Water]: 0.4,
   [SurfaceId.Grass]: 0.35,
@@ -930,7 +934,7 @@ export class Vehicle {
       const w = this.wheels[i];
       const sinkTarget = w.contact
         ? surfaces[w.surface].sink *
-          (w.surface === SurfaceId.Sand ? sandPressure(this.condition).sink : 1) *
+          (isSand(w.surface) ? sandPressure(this.condition).sink : 1) *
           (1 - 0.65 * relief) *
           loadSink *
           Math.min(1, 0.4 + w.spin + (Math.abs(this.speed) < 2 ? 0.4 : 0))
@@ -975,12 +979,12 @@ export class Vehicle {
       const w = this.wheels[i];
       if (!w.contact) continue;
       const softGround =
-        w.surface === SurfaceId.Mud || w.surface === SurfaceId.BlackSoil || w.surface === SurfaceId.Sand;
+        w.surface === SurfaceId.Mud || w.surface === SurfaceId.BlackSoil || isSand(w.surface);
       rr +=
         surfaces[w.surface].rollingResistance *
         w.load *
         (softGround ? 1 - 0.65 * relief : 1) *
-        (w.surface === SurfaceId.Sand ? sandPressure(this.condition).drag : 1);
+        (isSand(w.surface) ? sandPressure(this.condition).drag : 1);
       // A soft or flat tyre drags at its own corner, which also pulls the car that way.
       const drag = damageTuning.tyre.flatDrag * (1 - this.condition.tyres[i]) * w.load * sv * dt;
       if (drag !== 0)

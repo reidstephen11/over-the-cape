@@ -17,6 +17,7 @@ const SURFACE_COLORS: Record<number, number> = {
   [SurfaceId.Clay]: 0xa4452a,
   [SurfaceId.BlackSoil]: 0x3b3a2c,
   [SurfaceId.Sand]: 0xd2bf97,
+  [SurfaceId.SoftBed]: 0x7c9a86,
 };
 
 interface SliderDef {

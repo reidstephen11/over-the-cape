@@ -273,11 +273,41 @@ describe('the northern Telegraph Track the wrong way', () => {
   );
 
   it(
+    'slows a snorkelled car to a crawl of a crawl on the soft bed beside the shoal, and nearly stops it at road pressures (v2.22)',
+    async () => {
+      // In, then straight across 9 m downstream of the right line: off the shoal from 15 m out,
+      // in 1.35 m of water an LC79 can breathe in, over the soft bed all the way.
+      const offShoal: Path = Array.from(
+        { length: 160 },
+        (_, k) => [k < 56 ? 0 : Math.min(7, (k - 56) * 0.5), -822 - k * 0.5] as [number, number],
+      );
+      const right = await drivePath(world, lines.nolans(), {
+        tuning: lc79Tuning,
+        day: dry,
+        psi: 18,
+        limit: 400,
+      });
+      expect(right.done).toBe(true);
+      const aired = await drivePath(world, offShoal, { tuning: lc79Tuning, day: dry, psi: 18, limit: 400 });
+      expect(aired.done).toBe(true);
+      expect(aired.flooded).toBe(false);
+      // 80 m of path against the right line's 118 m, and it takes over half as long again.
+      expect(aired.time).toBeGreaterThan(right.time * 1.5);
+      // At road pressures the same line is not finished in 250 s (25 m of soft bed).
+      const hard = await drivePath(world, offShoal, { tuning: lc79Tuning, day: dry, psi: 36, limit: 250 });
+      expect(hard.done).toBe(false);
+      expect(hard.water).toBeGreaterThan(1.2);
+    },
+    SLOW,
+  );
+
+  it(
     'drowns or strands a car straight across Nolans Brook, snorkel or not',
     async () => {
       const stock = await drivePath(world, nolansStraight(), { day: dry, psi: 18 });
       expect(stock.done).toBe(false);
-      expect(stock.water).toBeGreaterThan(1.4);
+      // It stops in the middle's 1.35 m and more (since v2.22 the soft bed holds it short of the holes).
+      expect(stock.water).toBeGreaterThan(1.3);
       const snorkel = await drivePath(world, nolansStraight(), { tuning: lc79Tuning, day: dry, psi: 18 });
       expect(snorkel.done).toBe(false);
       expect(snorkel.water).toBeGreaterThan(2);

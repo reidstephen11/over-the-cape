@@ -10,6 +10,7 @@ export const SurfaceId = {
   Clay: 7,
   BlackSoil: 8,
   Sand: 9,
+  SoftBed: 10,
 } as const;
 export type SurfaceId = (typeof SurfaceId)[keyof typeof SurfaceId];
 
@@ -135,6 +136,20 @@ export const surfaces: Record<SurfaceId, SurfaceDef> = {
     spray: false,
     wetGripLoss: 0,
     dirtRate: 0.008,
+  },
+  // The soft sandy bottom of a creek that asks for one (`CreekDef.softBed`), off its bars:
+  // under water the sand gives and drags like dry river sand, a little less (it is wet and
+  // packed). Low tyre pressures help as they do on sand. Water washes the car as on any bed.
+  [SurfaceId.SoftBed]: {
+    id: SurfaceId.SoftBed,
+    name: 'Soft sand under water',
+    grip: 0.42,
+    rollingResistance: 1.4,
+    sink: 0.2,
+    dust: false,
+    spray: false,
+    wetGripLoss: 0,
+    dirtRate: -0.05,
   },
   [SurfaceId.Wood]: {
     id: SurfaceId.Wood,

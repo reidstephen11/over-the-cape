@@ -594,6 +594,9 @@ export const northCreeks: CreekDef[] = [
     flow: 1.4,
     sandBank: 3,
     bankRough: 0.08,
+    // A soft sandy bottom everywhere but on the shoal (v2.22): Hema's "firmer bottom" on the
+    // hard right line.
+    softBed: true,
     // The shoal on the upstream side that the hard right line follows.
     bars: [
       { x: 5, z: -857, radiusX: 8, radiusZ: 8, rotationDeg: 0, depth: 0.55 },

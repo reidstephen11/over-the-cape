@@ -36,6 +36,7 @@ export function surfaceLayer(surface: SurfaceId): TyreLayer {
     case SurfaceId.BlackSoil:
       return 'mud';
     case SurfaceId.Water:
+    case SurfaceId.SoftBed:
       return 'water';
     case SurfaceId.Wood:
       return 'wood';

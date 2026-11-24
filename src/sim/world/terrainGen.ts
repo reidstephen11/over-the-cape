@@ -517,7 +517,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       heights[i] = h;
     }
   }
-  // Shallow bars: the bed rises to the bar's depth below the water.
+  // Shallow bars: the bed rises to the bar's depth below the water. A bar's top is firm
+  // even where the rest of the creek's bed is soft (`CreekDef.softBed`).
+  const firmBed = new Uint8Array(n);
   for (const c of creekLines)
     for (const bar of c.def.bars ?? []) {
       const a = (bar.rotationDeg * Math.PI) / 180;
@@ -531,6 +533,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
           const x = ix - halfX - bar.x;
           const z = iz - halfZ - bar.z;
           const r = Math.hypot((x * ca + z * sa) / bar.radiusX, (-x * sa + z * ca) / bar.radiusZ);
+          if (r <= 1.05) firmBed[i] = 1;
           const w = 1 - smoothstep(0.7, 1.15, r);
           if (w <= 0) continue;
           heights[i] = Math.max(heights[i], heights[i] + (water[i] - bar.depth - heights[i]) * w);
@@ -1156,7 +1159,9 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const sand = attrAt(c.sand, u) > 0.5;
     const bank = hw + 1.6 + (sand ? (c.def.sandBank ?? 0) : 0);
     const wet = water[i] > NO_WATER;
-    if (wet) surface[i] = SurfaceId.Water;
+    // A soft bed is firm on the creek's bars and where a track fords it (driven and packed).
+    const forded = trackOwner[i] >= 0 && trackDist[i] <= tracks[trackOwner[i]].def.width / 2 + 0.5;
+    if (wet) surface[i] = c.def.softBed && !firmBed[i] && !forded ? SurfaceId.SoftBed : SurfaceId.Water;
     else if (d <= bank) surface[i] = sand ? SurfaceId.Sand : gravel ? SurfaceId.Gravel : SurfaceId.Mud;
     const look = wet
       ? sand
