@@ -2553,4 +2553,4 @@ Hema says Nolans Brook has a soft sandy bottom and that the hard right line is u
 
 **Tests.** `tests/telegraphNorthStage2.test.ts` (10 now): the surface's figures against sand and firm bed; the shoal and both right lines firm, the rest of the brook soft, the drowned HiLux on soft bed; no other creek soft, and every soft cell on the map within Nolans Brook's reach. `tests/telegraphNorthDrive.test.ts` (34 drives): the LC79 off the shoal at 18 psi (over half as long again as the right line, on a path two thirds as long) and at 36 psi (not across in 250 s). The straight-line drive's depth figure for the short 40 changed from over 1.4 m to over 1.3 m, since the soft bed now stops it before the holes.
 
-**The full unit suite on v2.21** was run on a clean copy of that version while this was being built; its result is in the next update's notes if it finds anything.
+**The full unit suite on v2.21** was run on a clean copy of that version while this was being built: 118 files, 1,099 tests passed and 2 to do.
