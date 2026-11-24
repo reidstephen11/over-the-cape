@@ -16,6 +16,9 @@ export const northLevels = {
   cannibal: 38.7,
   cypress: 36.4,
   nolans: 38,
+  /** The creek above Fruit Bat Falls, and the pool below them (stage 2, v2.21). */
+  fruitBatTop: 39,
+  fruitBatPool: 36.8,
 } as const;
 const W = northLevels;
 
@@ -32,6 +35,48 @@ export const turnoffRoad: Waypoint[] = [
   [0, 700],
   [0, 652, PLAIN],
 ];
+
+// --- The falls (stage 2, v2.21) -------------------------------------------------------------
+
+/** Metres along `turnoffRoad` to the fork to Fruit Bat Falls, and to the Eliot and Twin Falls turn-off. */
+export const FRUIT_BAT_FORK = 56;
+export const ELIOT_TURNOFF = 277;
+const forkAt = (s: number): Waypoint => {
+  const p = sideOf(turnoffRoad, s);
+  return [r1(p.x), r1(p.z), PLAIN];
+};
+
+/**
+ * The fork to Fruit Bat Falls: right off the track soon after the turn-off, east over the
+ * heath to a day-use area on the bank above the pool, with the cascade to the right.
+ */
+export const fruitBatTrack: Waypoint[] = [
+  forkAt(FRUIT_BAT_FORK),
+  [34, 884],
+  [75, 880],
+  [130, 886],
+  [185, 893],
+  [222, 894, PLAIN],
+];
+/** Where the car stops above the pool at Fruit Bat Falls. */
+export const FRUIT_BAT_STOP: readonly [number, number] = [222, 894];
+
+/**
+ * The turn-off to Eliot and Twin Falls: right off the track just before Canal Creek, east
+ * along its south bank to the camping area between the two falls.
+ */
+export const eliotTrack: Waypoint[] = [
+  forkAt(ELIOT_TURNOFF),
+  [24, 668],
+  [62, 660],
+  [114, 654],
+  [164, 650, PLAIN],
+];
+/** Where the car stops at the camping area between Eliot Falls and Twin Falls. */
+export const ELIOT_STOP: readonly [number, number] = [164, 650];
+/** Along Canal Creek (x): Eliot Falls drop between the first pair, Twin Falls between the second. */
+export const ELIOT_FALLS_X: readonly [number, number] = [193, 189];
+export const TWIN_FALLS_X: readonly [number, number] = [146, 142];
 
 /**
  * Canal Creek: a ramp down into deep, clear water, across on a shelf, then the winding
@@ -334,11 +379,117 @@ export const NOLANS_AIM_SIGN: readonly [number, number] = [20.8, -898.5];
 
 export const northCreeks: CreekDef[] = [
   {
+    // The creek Fruit Bat Falls are on (stage 2, v2.21): it comes in from the south, east of
+    // the track, drops 2.2 m over a wide lip into a pool, and leaves the map to the east. It
+    // never crosses the track. Hema does not name it, so the game does not either.
+    id: 'fruit-bat-creek',
+    name: 'Fruit Bat Falls',
+    points: [
+      {
+        x: 268,
+        z: 1040,
+        water: W.fruitBatTop + 0.1,
+        halfWidth: 6,
+        depth: 0.4,
+        bankSlope: 0.5,
+        bed: 'gravel',
+      },
+      {
+        x: 258,
+        z: 960,
+        water: W.fruitBatTop + 0.05,
+        halfWidth: 7,
+        depth: 0.4,
+        bankSlope: 0.5,
+        bed: 'gravel',
+      },
+      { x: 252, z: 908, water: W.fruitBatTop, halfWidth: 12, depth: 0.5, bankSlope: 0.5, bed: 'gravel' },
+      { x: 252, z: 902.5, water: W.fruitBatPool, halfWidth: 13, depth: 1.5, bankSlope: 0.5, bed: 'sand' },
+      {
+        x: 254,
+        z: 880,
+        water: W.fruitBatPool - 0.02,
+        halfWidth: 13,
+        depth: 1.5,
+        bankSlope: 0.5,
+        bed: 'sand',
+      },
+      {
+        x: 275,
+        z: 850,
+        water: W.fruitBatPool - 0.1,
+        halfWidth: 7,
+        depth: 0.7,
+        bankSlope: 0.5,
+        bed: 'gravel',
+      },
+      {
+        x: 360,
+        z: 800,
+        water: W.fruitBatPool - 0.3,
+        halfWidth: 6,
+        depth: 0.6,
+        bankSlope: 0.5,
+        bed: 'gravel',
+      },
+      {
+        x: 520,
+        z: 770,
+        water: W.fruitBatPool - 0.5,
+        halfWidth: 6,
+        depth: 0.6,
+        bankSlope: 0.5,
+        bed: 'gravel',
+      },
+    ],
+    valley: 16,
+    flow: 0.4,
+    bankRough: 0.1,
+  },
+  {
     id: 'canal-creek',
     name: 'Canal Creek',
     points: [
-      { x: 520, z: 640, water: W.canal + 0.5, halfWidth: 7, depth: 1.1, bankSlope: 0.6, bed: 'gravel' },
-      { x: 160, z: 620, water: W.canal + 0.15, halfWidth: 7, depth: 1.1, bankSlope: 0.6, bed: 'gravel' },
+      { x: 520, z: 640, water: W.canal + 2.6, halfWidth: 7, depth: 0.6, bankSlope: 0.6, bed: 'gravel' },
+      // Eliot Falls (v2.21): the creek drops 1.1 m over a lip of rock into a pool.
+      {
+        x: ELIOT_FALLS_X[0],
+        z: 624,
+        water: W.canal + 2.5,
+        halfWidth: 8,
+        depth: 0.5,
+        bankSlope: 0.6,
+        bed: 'gravel',
+      },
+      {
+        x: ELIOT_FALLS_X[1],
+        z: 623,
+        water: W.canal + 1.4,
+        halfWidth: 9,
+        depth: 1.2,
+        bankSlope: 0.6,
+        bed: 'gravel',
+      },
+      // Twin Falls: the pool spills another 1.15 m to the creek's level at the crossing.
+      {
+        x: TWIN_FALLS_X[0],
+        z: 620.5,
+        water: W.canal + 1.35,
+        halfWidth: 9,
+        depth: 1,
+        bankSlope: 0.6,
+        bed: 'gravel',
+      },
+      {
+        x: TWIN_FALLS_X[1],
+        z: 620,
+        water: W.canal + 0.2,
+        halfWidth: 10,
+        depth: 1.4,
+        bankSlope: 0.6,
+        bed: 'gravel',
+      },
+      { x: 90, z: 616.5, water: W.canal + 0.1, halfWidth: 7, depth: 1.1, bankSlope: 0.6, bed: 'gravel' },
       { x: 0, z: 612, water: W.canal, halfWidth: 7, depth: 1.1, bankSlope: 0.6, bed: 'gravel' },
       { x: -180, z: 600, water: W.canal - 0.15, halfWidth: 7, depth: 1.1, bankSlope: 0.6, bed: 'gravel' },
       { x: -520, z: 584, water: W.canal - 0.5, halfWidth: 7.5, depth: 1.1, bankSlope: 0.6, bed: 'gravel' },

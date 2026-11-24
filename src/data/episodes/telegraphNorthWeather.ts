@@ -23,6 +23,7 @@ export const telegraphNorthWeather: WeatherTimeline = {
     fallPerHour: 0.2,
     flowPerMetre: 1.5,
     shares: {
+      'fruit-bat-creek': 0.35,
       'canal-creek': 0.35,
       'sam-creek': 0.35,
       'mistake-creek': 0.35,

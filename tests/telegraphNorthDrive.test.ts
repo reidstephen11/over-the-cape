@@ -5,6 +5,10 @@ import { telegraphNorthEpisode } from '../src/data/episodes/telegraphNorth';
 import {
   CYPRESS_HOLES,
   CYPRESS_SPAN,
+  ELIOT_STOP,
+  ELIOT_TURNOFF,
+  FRUIT_BAT_FORK,
+  FRUIT_BAT_STOP,
   NOLANS_MARKER,
   canalFarEdge,
 } from '../src/data/episodes/telegraphNorthRoute';
@@ -82,6 +86,41 @@ const nolansByTheMarks = (): Path => {
   }
   path.push(corners[corners.length - 1]);
   return path;
+};
+/** Points every half metre along straight legs between corners. */
+const legs = (corners: readonly (readonly [number, number])[]): [number, number][] => {
+  const path: [number, number][] = [];
+  for (let k = 0; k + 1 < corners.length; k++) {
+    const [ax, az] = corners[k];
+    const [bx, bz] = corners[k + 1];
+    const n = Math.ceil(Math.hypot(bx - ax, bz - az) / 0.5);
+    for (let j = 0; j < n; j++) path.push([ax + ((bx - ax) * j) / n, az + ((bz - az) * j) / n]);
+  }
+  path.push([...corners[corners.length - 1]] as [number, number]);
+  return path;
+};
+/**
+ * Out along a side track to its stop, round in a half circle 6 m in radius to the north of
+ * it, and back along the track (stage 2, v2.21).
+ */
+const outAndBack = (id: string, [ex, ez]: readonly [number, number], backTo = 0): Path => {
+  const length = world.features.tracks.find((x) => x.def.id === id)!.poly.length;
+  const turn: [number, number][] = [];
+  for (let a = 0; a <= 180; a += 5) {
+    const r = (a * Math.PI) / 180;
+    turn.push([ex + 6 * Math.sin(r), ez - 6 + 6 * Math.cos(r)]);
+  }
+  const back = along(world, [[id, length - 26, backTo]]);
+  // The autopilot is done within 2.5 m of the path's last point, wherever it is on the way:
+  // a path that stops short of the fork ends 6 m off the track, where the way out never goes.
+  const end = backTo > 0 ? along(world, [[id, backTo - 8, backTo - 8, 6]]) : [];
+  return [
+    ...along(world, [[id, 0, length]]),
+    ...turn,
+    ...legs([turn[turn.length - 1], back[0]]),
+    ...back,
+    ...(end.length ? legs([back[back.length - 1], end[0]]) : []),
+  ];
 };
 const SLOW = 300_000;
 
@@ -273,7 +312,87 @@ describe('the northern Telegraph Track the wrong way', () => {
   );
 });
 
+describe('the falls side tracks (stage 2)', () => {
+  for (const [id, stop] of [
+    ['fruit-bat-track', FRUIT_BAT_STOP],
+    ['eliot-track', ELIOT_STOP],
+  ] as const)
+    it(
+      `drives ${id} out to its stop and back in high range`,
+      async () => {
+        const r = await drivePath(world, outAndBack(id, stop, 40), {
+          mode: 'high',
+          speed: 8,
+          psi: 18,
+          limit: 400,
+          day: reopened,
+          crawlNear: [[stop[0], stop[1] - 6, 9]],
+        });
+        console.log(`${id}: out and back in ${r.time.toFixed(0)} s`);
+        expect(r.done, `stopped at ${r.at.map((v) => v.toFixed(0))}`).toBe(true);
+        // Not done on the spot: it went out and came back.
+        expect(r.time).toBeGreaterThan(40);
+        expect(r.time).toBeLessThan(240);
+        expect(r.rolled).toBe(false);
+        expect(r.flooded).toBe(false);
+        expect(r.water).toBeLessThan(0.05);
+      },
+      SLOW,
+    );
+});
+
 describe('a clean run of the whole northern Telegraph Track', () => {
+  it('still fits both falls into the fuel it carries', async () => {
+    const r = await drivePath(
+      world,
+      [
+        ...along(world, [['turnoff-road', 0, FRUIT_BAT_FORK]]),
+        ...outAndBack('fruit-bat-track', FRUIT_BAT_STOP),
+        ...along(world, [['turnoff-road', FRUIT_BAT_FORK, ELIOT_TURNOFF]]),
+        ...outAndBack('eliot-track', ELIOT_STOP),
+        ...along(world, [
+          ['turnoff-road', ELIOT_TURNOFF, 1e9],
+          ['canal-creek', 0, 1e9],
+          ['canal-sam', 0, 1e9],
+          ['sam-crossing', 0, 1e9],
+          ['sam-mistake', 0, 1e9],
+          ['mistake-creek', 0, 1e9],
+          ['mistake-cannibal', 0, 1e9],
+          ['cannibal-crossing', 0, 1e9],
+          ['cannibal-cypress', 0, 1e9],
+        ]),
+        ...bridgeLine(),
+        ...longDriveLine(),
+        ...along(world, [['nolans-brook', 0, 1e9]]),
+      ],
+      {
+        mode: 'high',
+        speed: 9,
+        psi: 18,
+        limit: 2000,
+        giveUpAfter: 40,
+        fuelScale: ep.fuelScale,
+        day: reopened,
+        crawlNear: [
+          [FRUIT_BAT_STOP[0], FRUIT_BAT_STOP[1] - 6, 9],
+          [ELIOT_STOP[0], ELIOT_STOP[1] - 6, 9],
+          [0, 612, 34],
+          [0, 100, 24],
+          [0, -420, 34],
+          [-10, -700, 16],
+          [10, -868, 36],
+        ],
+      },
+    );
+    expect(r.done, `stopped at ${r.at.map((v) => v.toFixed(0))}`).toBe(true);
+    expect(r.flooded).toBe(false);
+    const used = vehicleTuning.engine.fuel.tankLitres - r.fuel;
+    console.log(`with both falls: ${used.toFixed(1)} L in ${(r.time / 60).toFixed(1)} min`);
+    // Both falls and the route fit in the 16 L, with less to spare than a straight run.
+    expect(used).toBeLessThan(ep.loadout.fuel * 0.97);
+    expect(used).toBeGreaterThan(ep.loadout.fuel * 0.7);
+  }, 2_000_000);
+
   it('drives from the turn-off to Nolans Brook camp in the short 40 on the fuel it carries', async () => {
     const route: Path = [
       ...along(world, [

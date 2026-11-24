@@ -53,16 +53,95 @@ export const telegraphNorthEpisode: EpisodeDef = {
     },
   },
   timedSections: ['canal-creek', 'nolans-brook'],
+  // Stage 2 (v2.21). A 4WD coming south on the sand between Sam Creek and Mistake Creek:
+  // most traffic drives the track south to north, and there are few places to pass.
+  traffic: [{ track: 'sam-mistake', name: 'A Patrol', look: 'patrol' }],
+  // A traveller who took Nolans Brook straight across and drowned the engine, sitting in
+  // the old line in about 1.3 m of water. Winching them back to the shoal costs time while
+  // the brook rises, and pays a jerry can of fuel they can no longer use.
+  stranded: [
+    {
+      id: 'nolans-drowned',
+      name: 'Drowned HiLux',
+      look: 'hilux',
+      track: 'nolans-brook',
+      at: 0.3,
+      side: 'left',
+      off: 9,
+      sink: 0.2,
+      freeAfter: 6,
+      breakout: 3200,
+      drag: 2600,
+      reward: { jerryCans: 1 },
+      freed: {
+        title: 'The HiLux',
+        text: '“Went straight across, like the track on the map. It stopped right where you found it. Take the jerry can off the back: it’s no use to this engine now.”',
+      },
+    },
+  ],
+  // The falls: two turn-offs to the right before Canal Creek. Both cost time, and the brook
+  // is rising.
+  sideTrips: [
+    {
+      id: 'northern-falls',
+      name: 'The falls',
+      description:
+        'Two turn-offs to the right before Canal Creek lead to swimming holes: Fruit Bat Falls, soon after the start, and Eliot and Twin Falls, just before the creek. Pull up for a few seconds at each, in either order. Every minute spent here is a minute for Nolans Brook to rise.',
+      anyOrder: true,
+      stops: [
+        {
+          id: 'fruit-bat',
+          poi: 'fruit-bat-falls',
+          task: 'Stop at Fruit Bat Falls',
+          directions:
+            'Take the fork to the right soon after the Bamaga Road turn-off. Stop at the end of the track, above the pool.',
+          radius: 14,
+          entry:
+            'A wide blue-green pool under a low cascade the whole width of the creek. Day visitors only, and nobody here yet. Too early in the trip for a swim, with the brook still to cross.',
+        },
+        {
+          id: 'eliot-twin',
+          poi: 'eliot-twin-falls',
+          task: 'Stop at Eliot and Twin Falls',
+          directions: 'Turn right just before Canal Creek. Stop at the camping area between the falls.',
+          radius: 14,
+          entry:
+            'Falls upstream and falls downstream of the camping area, with clear pools between. Tents under the trees and wet towels on every bull bar. Canal Creek’s crossing is five minutes back the way we came.',
+        },
+      ],
+      reward: { plugs: 1 },
+      rewardLabel: 'A tyre plug from a traveller at the falls',
+      finished:
+        'Both falls seen. A traveller packing up beside you hands over a spare tyre plug: “You’ll want it before I do.”',
+    },
+  ],
+  // A dead tree down across the long drive, at a spot the run's seed picks.
+  surprises: {
+    sites: [
+      { id: 'long-drive-south', kind: 'treefall', track: 'long-drive', from: 50, to: 120 },
+      { id: 'long-drive-middle', kind: 'treefall', track: 'long-drive', from: 130, to: 205 },
+    ],
+    treefalls: 1,
+    rockfalls: 0,
+  },
   briefing: [
     'The northern half of the old Telegraph Track: nearly two kilometres from the Bamaga Road turn-off north to Nolans Brook, across six creeks. The steep banks are behind you. Up here the trouble is water.',
     'Canal Creek is deep, with a right and a wrong way out. Cypress Creek is crossed on an old log bridge with logs missing. Nolans Brook, the last, is wide and deep over soft sand: the line is hard to the right.',
-    'There is one camp, at Cannibal Creek about halfway. The load is lean: fuel for a clean run and a little over, no jerry cans, one spare and two tyre plugs.',
+    'There is one camp, at Cannibal Creek about halfway. The load is lean: fuel for a clean run and a little over, no jerry cans, one spare and two tyre plugs. Two turn-offs to the right before Canal Creek go to the falls: they cost time. Pull off the track for anyone coming the other way.',
     'Rain is forecast from mid-afternoon, and Nolans Brook rises with it. Get there early and it is a wade; get there late and it will drown an engine with no snorkel.',
   ],
   notes: {
     'bamaga-turnoff': {
       title: 'The northern track',
       text: 'The northern section of the old Telegraph Track runs from the Bamaga Road to the Jardine River. Most traffic drives it south to north, and there are few places to pass.',
+    },
+    'fruit-bat-falls': {
+      title: 'Fruit Bat Falls',
+      text: 'A swimming spot reached by a fork to the right off the start of the northern track. Day access only, to a wide blue-green pool and a cascade.',
+    },
+    'eliot-twin-falls': {
+      title: 'Eliot and Twin Falls',
+      text: 'The turn-off for Eliot, Twin and Indian Head Falls is just before Canal Creek. There are several falls and swimming areas here, with plenty of camping: one of the best swimming and photography spots on the Telegraph Track.',
     },
     'canal-creek': {
       title: 'Canal Creek',
