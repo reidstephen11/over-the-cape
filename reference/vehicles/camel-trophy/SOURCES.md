@@ -11,7 +11,7 @@ Since v0.80 this is the vehicle the 1986 event actually ran: a left-hand-drive L
 - Rear fuel tank 54.5 L (12 imperial gallons).
 - Gearbox LT77 five-speed with the LT230 transfer box; 3.54 axles.
 
-Measured in v2.17 on sheet B of `../land-rover-110-perentie/drawing-variants.png` (a Land Rover 90 hardtop from the side and the rear), at 310 pixels a metre from its 2.36 m wheelbase. Heights are above the origin, which is 0.12 m above the parked hubs; the ground is 0.525 m below it.
+Measured in v2.18 on sheet B of `../land-rover-110-perentie/drawing-variants.png` (a Land Rover 90 hardtop from the side and the rear), at 310 pixels a metre from its 2.36 m wheelbase. Heights are above the origin, which is 0.12 m above the parked hubs; the ground is 0.525 m below it.
 
 |                                              | On the drawing                                            | In the current model                                                     |
 | -------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
@@ -52,6 +52,6 @@ Studio shot: `scripts/studio/?vehicle=camel`. The snorkel head is the intake, ab
 
 v1.62 visual review: the rear corner skins behind the lamp stacks now continue from the sill to the waist (y 0.07–0.78), closing the previously missing band above the lower panels. Body dimensions and both spare mounts are unchanged. The lack of a period Ninety photo set above still applies.
 
-## v2.17 comparison
+## v2.18 comparison
 
 Compared with sheet B of the drawing and with `side-right-county-1990.jpg`, `front-34-county.jpg` and `soft-top-british-110.jpg` in the Perentie's folder. The body moved 0.12 m back on its wheels, the cab above the waist is 1.53 m wide, the wheel openings are flat-topped, the windscreen leans 18 degrees and the roof is 0.17 m deep with chamfered sides. The equipment follows the account above: the raised intake enters the front of the left wing and climbs the left windscreen pillar; the Warn 8274 stands upright on the bumper inside the bull bar, behind its hawse fairlead. Still unchecked for want of a photograph of a 1986 car: the cage's shape, the rack's height and length, where the plaques sit, and the wing-top tool. The account's Ninety section does not mention sand ladders; the game's recovery boards are drawn as them.
