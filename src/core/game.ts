@@ -2088,7 +2088,9 @@ export class Game {
       refuel: this.sim.refuelOption(LOCAL_VEHICLE),
       find: this.findNearby(),
       sideTrip: this.run.status === 'driving' ? this.sideTrips.prompt(v.position.x, v.position.z) : null,
+      // Not at a side trip's stop: the water in front of a lookout is not a crossing.
       teachLowRange: this.lowRangeHint.show(v.drivetrain.range, this.run.status === 'driving', () => {
+        if (this.sideTrips.prompt(v.position.x, v.position.z)) return false;
         const f = v.forward();
         const flat = Math.hypot(f.x, f.z) || 1;
         return waterAhead(this.waterDepthAt, v.position.x, v.position.z, f.x / flat, f.z / flat);
