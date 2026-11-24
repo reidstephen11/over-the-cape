@@ -3,6 +3,8 @@ import { boulder } from '../courseKit';
 import type { Waypoint } from './crebRoute';
 import { anchor, bank, descendingLedge, sand, survivingPoles, woodlandGrid } from './telegraphKit';
 import {
+  CANAL_AIM_SIGN,
+  CANAL_MARKERS,
   canalCreek,
   canalFarEdge,
   canalGullies,
@@ -72,7 +74,7 @@ const tracks: TrackDef[] = [
       [canalFarEdge + 22, 7],
       [canalFarEdge + 27, 0],
     ],
-    routeHint: 'Across on the shelf, then left along the far bank and up the winding exit',
+    routeHint: 'In between the two rocks, straight across at the sign, then left along the far bank and up',
   },
   {
     id: 'canal-old-exit',
@@ -254,7 +256,15 @@ const props: PropDef[] = [
   { kind: 'signpost', x: 27, z: 940, headingDeg: 180, text: 'Old Telegraph Track north — 4WD only' },
   { kind: 'fireRing', x: 32, z: 962, headingDeg: 0 },
   { kind: 'logSeat', x: 37, z: 963, headingDeg: 0 },
-  { kind: 'signpost', x: 5, z: 642, headingDeg: 180, text: 'Canal Creek — exit left' },
+  { kind: 'signpost', x: 5, z: 642, headingDeg: 180, text: 'Canal Creek — between the rocks, exit left' },
+  // On the far bank straight across the shelf: something to aim at from the water's edge.
+  {
+    kind: 'signpost',
+    x: CANAL_AIM_SIGN[0],
+    z: CANAL_AIM_SIGN[1],
+    headingDeg: 180,
+    text: 'Aim here — then exit left',
+  },
   { kind: 'signpost', x: 7, z: 356, headingDeg: 180, text: 'Sam Creek' },
   { kind: 'signpost', x: 5, z: 126, headingDeg: 180, text: 'Mistake Creek' },
   { kind: 'signpost', x: 12, z: -166, headingDeg: 180, text: 'Cannibal Creek camp' },
@@ -337,6 +347,8 @@ export const telegraphNorthMap: MapDef = {
   boulders: [
     // Marked rocks to winch to: above each exit at Canal Creek, above Mistake Creek's way
     // in (to be lowered down it, or pulled back up) and on Nolans Brook's north bank.
+    // Two rocks at Canal Creek's near edge, one either side of the shelf: drive in between them.
+    ...CANAL_MARKERS.map(([x, z]) => ({ x, z, radius: 0.55, sink: 0.25 })),
     anchor(...at(canalCreek, canalFarEdge + 38, -2.6)),
     anchor(...at(canalOldExit, 22, 2.6)),
     anchor(...at(mistakeCreek, mistakeLip - 5, 2.6)),

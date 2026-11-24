@@ -12,6 +12,9 @@ import { followBody } from './followBody';
 const SEGMENTS = 24;
 const RADIAL = 5;
 const CABLE_R = 0.028;
+/** The anchor chooser's bar along where the cable would run: its radius, and the cylinder's own axis. */
+const PREVIEW_RADIUS = 0.035;
+const UP = new THREE.Vector3(0, 1, 0);
 
 /**
  * Winch cable, tree strap, placed planks and the see-through plank preview.
@@ -35,8 +38,8 @@ export class ToolsView {
   private readonly others: THREE.Mesh[] = [];
   private readonly othersMat: THREE.MeshBasicMaterial;
   /** Dashed line from the winch to the anchor being chosen. */
-  private readonly preview: THREE.Line;
-  private readonly previewPos = new Float32Array(6);
+  private readonly preview: THREE.Mesh;
+  private readonly previewTo = new THREE.Vector3();
   private readonly tmpP = { x: 0, y: 0, z: 0 };
   private readonly tmpA = new THREE.Vector3();
   private readonly tmpB = new THREE.Vector3();
@@ -140,17 +143,17 @@ export class ToolsView {
       opacity: 0.35,
       depthTest: false,
     });
-    const pg = new THREE.BufferGeometry();
-    pg.setAttribute('position', new THREE.BufferAttribute(this.previewPos, 3));
-    this.preview = new THREE.Line(
-      pg,
-      new THREE.LineDashedMaterial({
-        color: pal('vehicleRoof'),
-        dashSize: 0.6,
-        gapSize: 0.4,
+    // Where the cable would run: a bright bar 7 cm thick, drawn over everything, so the pull's
+    // direction reads at a glance (a one-pixel dashed line until v2.19).
+    this.preview = new THREE.Mesh(
+      new THREE.CylinderGeometry(1, 1, 1, 6, 1, true),
+      new THREE.MeshBasicMaterial({
+        color: '#ffc247',
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.9,
         depthTest: false,
+        depthWrite: false,
+        side: THREE.DoubleSide,
       }),
     );
     this.preview.frustumCulled = false;
@@ -305,9 +308,11 @@ export class ToolsView {
     // Where the cable would run.
     const m = v.tuning.winchMount;
     const w = v.localToWorld(m.x, m.y, m.z);
-    this.previewPos.set([w.x, w.y, w.z, p.x, p.y + 0.3, p.z]);
-    this.preview.geometry.attributes.position.needsUpdate = true;
-    this.preview.computeLineDistances();
+    const to = this.previewTo.set(p.x - w.x, p.y + 0.3 - w.y, p.z - w.z);
+    const length = Math.max(0.01, to.length());
+    this.preview.position.set(w.x + to.x / 2, w.y + to.y / 2, w.z + to.z / 2);
+    this.preview.quaternion.setFromUnitVectors(UP, to.divideScalar(length));
+    this.preview.scale.set(PREVIEW_RADIUS, length, PREVIEW_RADIUS);
     this.preview.visible = true;
   }
 }

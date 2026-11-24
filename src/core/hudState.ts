@@ -60,6 +60,8 @@ export interface HudInputs {
   /** Something to load nearby (src/sim/finds.ts), and whether it is in reach. */
   find?: { name: string; inReach: boolean } | null;
   sideTrip?: { text: string; progress: number } | null;
+  /** Water lies close ahead and the car is in high range, on a run where low range has not been used yet (src/core/lowRangeHint.ts). */
+  teachLowRange?: boolean;
   /** Show the fuel gauge and supplies (an episode is under way). */
   supplies?: boolean;
   /** A trailer to hitch or unhitch, and whether it can be done now. */
@@ -271,6 +273,11 @@ export function buildHudState(i: HudInputs): HudState {
           v.clutchGearbox && v.gearboxMode === 'clutch' && !v.drivetrain.neutral
             ? 'Start the engine (clutch in, or neutral)'
             : 'Start the engine',
+      });
+    if (i.teachLowRange && !t.repair && !wrecked)
+      prompts.push({
+        keys: touch ? '4WD' : (g.range ?? 'L'),
+        text: touch ? 'Water ahead: stop, then tap 4WD and LOW' : 'Water ahead: stop, then low range',
       });
     if (i.sideTrip && !t.repair)
       prompts.push({ keys: 'Stop', text: i.sideTrip.text, progress: i.sideTrip.progress });

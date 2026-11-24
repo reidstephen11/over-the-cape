@@ -2450,3 +2450,28 @@ Each fix was photographed again and read, and the standard and audit sets were t
 Not changed: the driver's view. The windscreen's header and the roof take the top quarter of it, as before; the eye is 0.12 m under the header, the same as in the Perentie, whose cabin this is. The shared axle tubes' ends look saw-toothed close up at the hubs; that is the shared suspension, the same on every vehicle.
 
 70.2k triangles with wheels and boards (body 51.1k; it was 72.2k and 53.1k).
+
+## v2.19: play test fixes (the winch chooser, Canal Creek's shelf, low range)
+
+Codex play tested v2.18 on the Telegraph Track North in the FJ40 on Mild, in a desktop browser, as far as Canal Creek, and made three suggestions. All three are done. It asked to keep the rollover prompt and the trip journal; neither changed. It did not reach the long drive's bog or Nolans Brook, so whether those can be seen in time is still open (`docs/PLAN-telegraph-north.md`).
+
+**1. The winch chooser shows where the pull will take you.** The chooser gave the anchor's kind and distance, but the selected anchor could be off the screen or behind the windscreen pillar, and the line to it was a one-pixel dashed line in the roof's colour.
+
+- **An arrow for an anchor out of view** (`edgeArrow` in `src/core/anchorPicker.ts`). While choosing, if the selected anchor is behind the camera or within 4% of the view's edge or beyond it, an amber arrow stands on a frame 84% of the way out from the centre, towards the anchor, pointing at it, with the distance under it (the same distance the prompt gives, from the winch to the anchor). A point behind the camera projects mirrored through the centre, so its direction is turned back; dead behind points down. The arrow is a page element over the view, so it shows in every camera, and pulses unless the system asks for reduced motion.
+- **A bright bar where the cable would run** (`src/render/tools.ts`). A bar 7 cm thick in amber, drawn over everything, from the winch to the selected anchor. The ring over the anchor was already drawn over everything, so it shows through a pillar.
+
+**2. Canal Creek: where to put the wheels.** The sign and the journal made the left exit clear. From the cab the shelf showed only as a faint paler patch, and Codex drove off it into the flooding warning. Nothing about the crossing is easier: the shelf is as deep (0.6 m) and as wide as it was.
+
+- **Two marker rocks at the near water's edge**, one either side of the shelf's line, 5.6 m apart: drive in between them.
+- **A sign on the far bank straight across the shelf**, between the two exits, to aim at: "Aim here — then exit left". The approach sign reads "Canal Creek — between the rocks, exit left". A sketch on the sign was the other suggestion; the game's signs carry one line of text and no drawing.
+- **Darker water beside the shelf.** The two holes either side moved in to start at the shelf's edges, so the water beside it is 1.7 m deep (it was 1.1 m for the first few metres, then 1.6 m) and the paler shelf has a dark edge on both sides.
+- The note and the route hint say the same: low range, crawl, in between the rocks, aim at the sign, then left.
+
+**3. Onboarding.**
+
+- **The two buttons.** The journey page's button reads **Load episode** (it read Drive, like the briefing's button after it); for a saved camp it still reads Continue.
+- **Low range before the first water** (`src/core/lowRangeHint.ts`). With water 0.2 m or deeper within 30 m ahead of the car, along its heading, while it is in high range, a prompt reads "Water ahead: stop, then low range" with the range key (on a phone, "stop, then tap 4WD and LOW"). It teaches once: after low range has been used on a run it does not show again, so an easy ford can be taken in high range without being told. The first version used the map's stored distance to a creek, which only reaches as far as the creek's carved valley (about 6 m at Canal Creek); looking for water along the heading shows the prompt 29 m out and not when facing away. It applies on every episode; on the CREB the orientation stretch teaches low range before the first water.
+
+**Looked at.** Canal Creek from the driver's eye height on the ramp, before and after: the rocks frame the way in, the shelf's edges are darker, and the sign shows over the far bank. In the game in a browser: the journey button reads Load episode; the prompt shows at 29 m and 6 m from Canal Creek's water and not at 48 m or facing away; the chooser's bar runs to the selected rock; with the anchors behind the car the arrow shows at the bottom of the view with the distance, and with them ahead it does not. No vehicle body changed.
+
+**Tests.** `tests/anchorArrow.test.ts` (where the arrow goes), `tests/lowRangeHint.test.ts` (when the prompt shows, and that it sees Canal Creek from the top of its ramp), and Canal Creek's rocks, sign and depths in `tests/telegraphNorth.test.ts`. The scripted drives of the northern track pass unchanged. `launch:116` expects the button to read Load episode.

@@ -66,7 +66,7 @@ export const telegraphNorthEpisode: EpisodeDef = {
     },
     'canal-creek': {
       title: 'Canal Creek',
-      text: 'A deep crossing of clear blue water. The old way out, to the right, has been washed out into gullies. The way out now is a winding one to the left: cross on the shelf, turn left along the foot of the far bank, and follow it up.',
+      text: 'A deep crossing of clear blue water. The old way out, to the right, has been washed out into gullies. The way out now is a winding one to the left. Take low range and crawl. The shelf to cross on is the paler water, straight ahead: drive in between the two rocks at the water’s edge, aim at the sign on the far bank, then turn left along the foot of the bank and follow it up. Either side of the shelf it is deep.',
     },
     'sam-creek': {
       title: 'Sam Creek',

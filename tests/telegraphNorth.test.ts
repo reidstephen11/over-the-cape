@@ -3,6 +3,8 @@ import { episodeOrder, episodes } from '../src/data/episodes';
 import { telegraphNorthEpisode } from '../src/data/episodes/telegraphNorth';
 import { telegraphNorthMap } from '../src/data/episodes/telegraphNorthMap';
 import {
+  CANAL_AIM_SIGN,
+  CANAL_MARKERS,
   CYPRESS_SPAN,
   canalGullies,
   cypressDeck,
@@ -118,6 +120,25 @@ describe('the northern Telegraph Track map', () => {
     expect(telegraphNorthMap.props.some((p) => p.kind === 'signpost' && /exit left/.test(p.text ?? ''))).toBe(
       true,
     );
+    // v2.19: two rocks at the near water's edge, one either side of the shelf's line and
+    // clear of the widest car, and a sign on the far bank straight across to aim at.
+    expect(CANAL_MARKERS.map(([x]) => Math.sign(x + 0.5))).toEqual([-1, 1]);
+    for (const [x, z] of CANAL_MARKERS) {
+      expect(Math.abs(x + 0.5) - 0.55, 'clear of the track').toBeGreaterThan(1.7);
+      expect(t.waterDepthAt(x, z)).toBeLessThan(0.3);
+      expect(telegraphNorthMap.boulders.some((b) => b.x === x && b.z === z && !b.anchor)).toBe(true);
+    }
+    const aim = telegraphNorthMap.props.find((p) => p.kind === 'signpost' && /Aim here/.test(p.text ?? ''))!;
+    expect([aim.x, aim.z]).toEqual([...CANAL_AIM_SIGN]);
+    expect(Math.abs(aim.x + 0.5)).toBeLessThan(2);
+    expect(aim.z).toBeLessThan(604);
+    // Dry ground, off both exits.
+    expect(t.waterDepthAt(aim.x, aim.z)).toBe(0);
+    for (const id of ['canal-creek', 'canal-old-exit'])
+      expect(trailProgress(track(id), aim.x, aim.z).distance, id).toBeGreaterThan(2.2);
+    // Right beside the shelf the water is half a metre and more deeper than on it.
+    expect(t.waterDepthAt(4.5, 612) - t.waterDepthAt(-0.5, 612)).toBeGreaterThan(0.5);
+    expect(t.waterDepthAt(-5.5, 613) - t.waterDepthAt(-0.5, 612)).toBeGreaterThan(0.5);
   });
 
   it('makes Mistake Creek’s way in steep and eroded, and its way out easy', () => {
