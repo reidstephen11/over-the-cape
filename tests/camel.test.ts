@@ -83,6 +83,39 @@ describe('Camel Trophy Land Rover 90', () => {
     plain.dispose();
   });
 
+  it('sits on its wheels as the drawing of the 90 has it, with the cab stepped in at the waist', () => {
+    // Sheet B of reference/vehicles/land-rover-110-perentie/drawing-variants.png: the wing's
+    // front is 0.50 m ahead of the front axle and the tail 0.64 m behind the rear one (November 2026 review;
+    // the body was 0.12 m further forward). Measured on the Sandglow panels only.
+    const model = new VehicleModel(camelTuning);
+    const pos = model.body.geometry.getAttribute('position'),
+      col = model.body.geometry.getAttribute('color');
+    const sandglow = new Color('#C7973F');
+    let nose = 0,
+      tail = 0,
+      cab = 0,
+      body = 0;
+    for (let i = 0; i < pos.count; i++) {
+      if (Math.hypot(col.getX(i) - sandglow.r, col.getY(i) - sandglow.g, col.getZ(i) - sandglow.b) > 0.03)
+        continue;
+      nose = Math.min(nose, pos.getZ(i));
+      // The tail is the corner panels: the door spare's rim is Sandglow too, and stands behind them.
+      if (Math.abs(pos.getX(i)) > 0.6) tail = Math.max(tail, pos.getZ(i));
+      if (pos.getY(i) > 0.9) cab = Math.max(cab, Math.abs(pos.getX(i)));
+      else body = Math.max(body, Math.abs(pos.getX(i)));
+    }
+    const front = Math.min(...camelTuning.wheels.map((w) => w.z)),
+      rear = Math.max(...camelTuning.wheels.map((w) => w.z));
+    expect(front - nose).toBeGreaterThan(0.48);
+    expect(front - nose).toBeLessThan(0.53);
+    expect(tail - rear).toBeGreaterThan(0.62);
+    expect(tail - rear).toBeLessThan(0.7);
+    // The body is about 1.67 m across its sides (hinges a little more); the cab about 1.53 m.
+    expect(body).toBeGreaterThan(0.83);
+    expect(cab).toBeLessThan(0.8);
+    model.dispose();
+  });
+
   it('is remembered in the save', () => {
     const data = new Map<string, string>();
     const s: KeyValueStore = { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => void data.set(k, v) };

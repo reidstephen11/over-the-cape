@@ -245,21 +245,23 @@ const perentieCabin: CabinLayout = {
 
 /**
  * The Ninety's left-hand-drive cabin: the Perentie's seat, dash and wheel mirrored to the left
- * and moved 8 cm back to the shorter front. Manual steering, about 3½ turns lock to lock.
+ * and moved 20 cm back to the shorter front (8 cm until the November 2026 review, when the body moved 12 cm back
+ * on its wheels). Manual steering, about 3½ turns lock to lock.
  */
 function camelCabin(): CabinLayout {
   const c = perentieCabin;
-  const mirror = (p: { x: number; y: number; z: number }) => ({ ...p, x: -p.x, z: p.z + 0.08 });
+  const back = 0.2;
+  const mirror = (p: { x: number; y: number; z: number }) => ({ ...p, x: -p.x, z: p.z + back });
   return {
     ...c,
     eye: mirror(c.eye),
-    dialZ: c.dialZ + 0.08,
+    dialZ: c.dialZ + back,
     dials: {
       speed: { ...c.dials.speed, x: -c.dials.speed.x },
       rpm: { ...c.dials.rpm, x: -c.dials.rpm.x },
       oil: { ...c.dials.oil, x: -c.dials.oil.x },
     },
-    lamps: { ...c.lamps, xs: c.lamps.xs.map((x) => -x), z: c.lamps.z + 0.08 },
+    lamps: { ...c.lamps, xs: c.lamps.xs.map((x) => -x), z: c.lamps.z + back },
     handbrake: { ...c.handbrake, base: mirror(c.handbrake.base), tip: mirror(c.handbrake.tip) },
     steeringWheel: {
       ...c.steeringWheel,
