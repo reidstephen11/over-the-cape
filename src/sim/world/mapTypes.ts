@@ -413,6 +413,8 @@ export interface BoulderDef {
   radius: number;
   /** Marked anchor for the winch. */
   anchor?: boolean;
+  /** What the winch chooser calls it (default "Boulder"): "Exit boulder", say. */
+  label?: string;
   /** How far the boulder is buried (fraction of radius). */
   sink?: number;
 }

@@ -179,6 +179,18 @@ export class HistoryCard {
     }
   }
 
+  /**
+   * Make way for something urgent (a warning, a recovery): a note being read while driving
+   * shrinks to its title and first lines, as when the car drives on, and closes soon after.
+   * The trip journal keeps the whole note. A note read with the game stopped is left alone.
+   */
+  makeWay(): void {
+    if (!this.isShown || this.reading || this.timeLeft <= 0 || this.el.classList.contains('brief')) return;
+    this.el.classList.add('brief');
+    this.updateHint();
+    this.timeLeft = Math.min(this.timeLeft, BRIEF_SECONDS);
+  }
+
   /** Open a short note to its full text, with the time to read it. */
   private expand(): void {
     if (!this.current) return;
