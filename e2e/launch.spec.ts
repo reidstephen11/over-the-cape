@@ -70,6 +70,35 @@ test('New Journey opens episode setup and keeps vehicle, difficulty and replay c
   expect(errors).toEqual([]);
 });
 
+test('a new player gets each episode’s own load, and a hand-packed load stays with its episode (v2.23)', async ({
+  page,
+}) => {
+  const errors = collectErrors(page);
+  await page.goto('/?track=reopened');
+  await openJourney(page);
+  const pack = page.locator('[data-group="pack"]');
+  // The page opens on the CREB with its load.
+  await expect(pack).toContainText('50 L · 1 can · 2 spares · 3 plugs');
+  // The northern Telegraph Track's lean load, without touching Packing.
+  await page.locator('[data-group="episode"][data-value="telegraphNorth"]').click();
+  await expect(pack).toContainText('16 L · 0 cans · 1 spare · 2 plugs');
+  await page.locator('[data-group="episode"][data-value="telegraph"]').click();
+  await expect(pack).toContainText('16 L · 0 cans · 1 spare · 2 plugs');
+  // Pack one more plug for the northern track: it stays there, and the CREB keeps its own.
+  await page.locator('[data-group="episode"][data-value="telegraphNorth"]').click();
+  await pack.click();
+  await page.locator('[data-pack="plugs"] .pack-step[data-value="plugs:1"]').click();
+  await expect(pack).toContainText('16 L · 0 cans · 1 spare · 3 plugs');
+  await page.locator('[data-group="episode"][data-value="creb"]').click();
+  await expect(pack).toContainText('50 L · 1 can · 2 spares · 3 plugs');
+  await page.locator('[data-group="episode"][data-value="telegraphNorth"]').click();
+  await expect(pack).toContainText('16 L · 0 cans · 1 spare · 3 plugs');
+  // Standard load puts it back.
+  await page.locator('[data-group="packStandard"]').click();
+  await expect(pack).toContainText('16 L · 0 cans · 1 spare · 2 plugs');
+  expect(errors).toEqual([]);
+});
+
 test('title Settings persist sound and graphics without replacing a saved journey', async ({ page }) => {
   const checkpoint = startCheckpoint(crebEpisode, 'roaring-meg-camp', 'perentie');
   await page.addInitScript((checkpoint) => {

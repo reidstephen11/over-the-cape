@@ -19,7 +19,7 @@ import {
 import { vehicleLoadout, vehicleOrder, vehicles } from '../data/vehicles';
 import { supplyRun } from '../sim/supplyRun';
 import type { EpisodeLoadout } from '../data/episodes';
-import { fitPack, loadKg, packLimitKg, stepPack } from '../data/packing';
+import { loadKg, packFor, packLimitKg, rememberPack, stepPack, type SavedPacks } from '../data/packing';
 import { defaultSettings, loadSave, writeSave, type SaveData, type Settings } from '../sim/save/save';
 import { MenuStick } from '../sim/input/touchStick';
 import { isTouchDevice } from './touchControls';
@@ -103,8 +103,8 @@ export class WelcomeScreen {
   private done = false;
   private setupOpen = false;
   private packOpen = false;
-  /** The load last packed for each vehicle, kept in the save when a run starts. */
-  private readonly packs: NonNullable<SaveData['packs']>;
+  /** Loads packed by hand, per episode and vehicle, kept in the save when a run starts. */
+  private packs: SavedPacks;
   /** Test mode (`?dev`): every episode open, and conditions to pick for any of them. */
   private readonly dev = isDevMode();
 
@@ -393,11 +393,13 @@ export class WelcomeScreen {
     this.setRows(groups, keep ?? 'drive');
   }
 
-  /** The load for a new run: last packed for this vehicle, or the standard one. */
+  /**
+   * The load for a new run: the one packed by hand for this episode and vehicle, or the
+   * episode's standard load. Never another episode's (v2.23).
+   */
   private get load(): EpisodeLoadout {
-    const standard = episodes[this.choice.episode].loadout;
-    const v = this.choice.vehicle;
-    return fitPack(this.choice.load ?? this.packs[v] ?? vehicleLoadout(standard, v), standard, v);
+    const { episode, vehicle } = this.choice;
+    return packFor(this.packs, episode, episodes[episode].loadout, vehicle);
   }
 
   /** The packing list: a row of − and + for each item, and the weight against the limit. */
@@ -546,8 +548,8 @@ export class WelcomeScreen {
           ? vehicleLoadout(standard, v)
           : stepPack(this.load, item, dir === '1' ? 1 : -1, standard, v);
       if (next) {
-        this.choice.load = next;
-        this.packs[v] = next;
+        this.packs = rememberPack(this.packs, this.choice.episode, standard, v, next);
+        this.choice.load = this.load;
       }
       // Stay on the button pressed, even when it can't go further now.
       const col = this.col;
@@ -560,13 +562,14 @@ export class WelcomeScreen {
       this.choice.episode = value as EpisodeId;
       this.choice.resume = false;
       this.choice.supply = false;
+      // Each episode has its own load.
+      this.choice.load = this.load;
     } else if (group === 'start') {
       this.choice.resume = value === 'resume';
       this.choice.supply = value === 'supply';
     } else if (group === 'vehicle') {
       this.choice.vehicle = value as WelcomeChoice['vehicle'];
       // Each vehicle keeps its own packing.
-      this.choice.load = undefined;
       this.choice.load = this.load;
     } else if (group === 'damage') this.choice.damage = value as DamageMode;
     else if (group === 'time') this.time = value as TimeOfDay | 'story';

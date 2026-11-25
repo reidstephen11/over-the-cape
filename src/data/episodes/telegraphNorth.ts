@@ -169,7 +169,7 @@ export const telegraphNorthEpisode: EpisodeDef = {
     },
     'nolans-brook': {
       title: 'Nolans Brook',
-      text: 'Also called Bridge Creek: the bridge fell apart long ago, and this is now the biggest obstacle south of the Jardine River. Up to a metre and a half of water over a soft sandy bottom. The hard right line is usually shallower, with a firmer bottom: go in, turn hard right and keep to the shallows along the bank as far as the rock at the water’s edge, then turn and drive straight at the sign on the far bank. Crawl, so the car pushes no bow wave, and hold it against the current, which pushes you left, off the shoal.',
+      text: 'Also called Bridge Creek: the bridge fell apart long ago, and this is now the biggest obstacle south of the Jardine River. Up to a metre and a half of water over a soft sandy bottom. The hard right line is usually shallower, with a firmer bottom: drive into the water first, then turn hard right and keep to the shallows along the bank as far as the big rock at the water’s edge, then turn and drive straight at the sign on the far bank. Crawl, so the car pushes no bow wave, and hold it against the current, which pushes you left, off the shoal.',
     },
   },
   wrapUp: [

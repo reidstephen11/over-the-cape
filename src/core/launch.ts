@@ -1,5 +1,5 @@
 import { episodeOrder, episodes } from '../data/episodes';
-import { fitPack } from '../data/packing';
+import { packFor } from '../data/packing';
 import { vehicleLoadout } from '../data/vehicles';
 import type { EpisodeId, EpisodeLoadout } from '../data/episodes';
 import type { VehicleId } from '../data/vehicle';
@@ -18,7 +18,7 @@ export function choiceFromSave(save: SaveData | null): LaunchChoice {
   return {
     episode,
     vehicle,
-    load: fitPack(save?.packs?.[vehicle] ?? vehicleLoadout(standard, vehicle), standard, vehicle),
+    load: packFor(save?.packs, episode, standard, vehicle),
     resume: !!save?.episodes[episode]?.checkpoint,
     replay: save?.episodes[episode]?.completed ? (save.replay ?? null) : null,
   };

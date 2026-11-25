@@ -14,7 +14,14 @@ import type { Checkpoint } from '../episode';
 import type { TyreFault } from '../vehicle/condition';
 import type { VehicleId } from '../../data/vehicle';
 import { isVehicleId } from '../../data/vehicles';
-import { episodeOrder, isEpisodeId, type EpisodeId, type EpisodeLoadout } from '../../data/episodes';
+import {
+  episodeOrder,
+  episodes,
+  isEpisodeId,
+  type EpisodeId,
+  type EpisodeLoadout,
+} from '../../data/episodes';
+import { rememberPack, type SavedPacks } from '../../data/packing';
 import { isTimeOfDay, isWeather, type Conditions } from '../../data/environment';
 import { isDamageMode, type DamageMode } from '../../data/damage';
 import { readDeliveryState } from '../trailerState';
@@ -82,8 +89,8 @@ export interface SaveData {
   replay: Conditions | null;
   /** Best scored run per crawl trail. */
   crawlBests?: CrawlBests;
-  /** The load last packed for each vehicle (src/data/packing.ts). */
-  packs?: Partial<Record<VehicleId, EpisodeLoadout>>;
+  /** Loads packed by hand, per episode and vehicle (src/data/packing.ts). */
+  packs?: SavedPacks;
 }
 
 export const defaultSettings: Settings = {
@@ -170,7 +177,7 @@ export function loadSave(s: KeyValueStore | null = store()): SaveData | null {
           ? { time: replay.time, weather: replay.weather }
           : null,
       crawlBests: readBests(data.crawlBests),
-      packs: readPacks(data.packs),
+      packs: readPacks(data.packs, isEpisodeId(data.episode) ? data.episode : episodeOrder[0]),
     };
   } catch {
     return null;
@@ -258,11 +265,22 @@ function readLoad(raw: unknown): EpisodeLoadout {
   };
 }
 
-function readPacks(raw: unknown): Partial<Record<VehicleId, EpisodeLoadout>> {
-  const out: Partial<Record<VehicleId, EpisodeLoadout>> = {};
+/**
+ * Packs by episode, then vehicle. Saves before v2.23 kept one load per vehicle, whichever
+ * episode it was last used on (the standard load included): such a load is kept for the
+ * episode last played, and only if it is not that episode's standard load.
+ */
+function readPacks(raw: unknown, lastEpisode: EpisodeId): SavedPacks {
+  let out: SavedPacks = {};
   if (!raw || typeof raw !== 'object') return out;
-  for (const [id, l] of Object.entries(raw as Record<string, unknown>))
-    if (isVehicleId(id)) out[id] = readLoad(l);
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (isEpisodeId(key)) {
+      if (!value || typeof value !== 'object') continue;
+      for (const [id, l] of Object.entries(value as Record<string, unknown>))
+        if (isVehicleId(id)) out = rememberPack(out, key, episodes[key].loadout, id, readLoad(l));
+    } else if (isVehicleId(key))
+      out = rememberPack(out, lastEpisode, episodes[lastEpisode].loadout, key, readLoad(value));
+  }
   return out;
 }
 
