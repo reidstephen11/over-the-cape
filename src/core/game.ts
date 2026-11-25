@@ -24,7 +24,7 @@ import { qualityFor, qualityPresets } from '../data/quality';
 import type { DamageMode } from '../data/damage';
 import type { VehicleId } from '../data/vehicle';
 import { vehicleLoadout, vehicles } from '../data/vehicles';
-import { packWeights } from '../data/packing';
+import { packWeights, rememberPack, type SavedPacks } from '../data/packing';
 import { cameraTuning } from '../data/camera';
 import { buildWorldSteps, type World } from '../sim/world/world';
 import { SeenGround } from '../sim/seenGround';
@@ -131,7 +131,7 @@ interface EpisodeSetup {
   replay: Conditions | null;
   progress: Partial<Record<EpisodeId, EpisodeProgress>>;
   /** The load last packed for each vehicle. */
-  packs: Partial<Record<VehicleId, EpisodeLoadout>>;
+  packs: SavedPacks;
 }
 
 /**
@@ -183,7 +183,7 @@ export class Game {
   checkpoint: Checkpoint;
   /** Progress on every episode, kept in the save. */
   private readonly progress: Partial<Record<EpisodeId, EpisodeProgress>>;
-  private readonly packs: Partial<Record<VehicleId, EpisodeLoadout>>;
+  private readonly packs: SavedPacks;
   /** Ground the car has been near this run: all the paper map shows. */
   private seen: SeenGround;
   readonly history: HistoryCard;
@@ -590,7 +590,10 @@ export class Game {
           );
     // The Army supply run is to Wujal Wujal, on the CREB.
     if (choice.supply && checkpoint !== saved && def.id === 'creb') checkpoint.supply = true;
-    const packs = { ...save?.packs, ...(choice.load ? { [choice.vehicle]: choice.load } : {}) };
+    // A load packed by hand is remembered for this episode and vehicle; the standard one is not.
+    const packs = choice.load
+      ? rememberPack(save?.packs, def.id, def.loadout, choice.vehicle, choice.load)
+      : { ...save?.packs };
     // How the track is found today, rolled from the run's seed, so a restart from a camp
     // (which keeps the seed) meets the same day. Replays pick their conditions by hand.
     // ?track=dry|reopened|wet pins the day, for comparing one against another and so the

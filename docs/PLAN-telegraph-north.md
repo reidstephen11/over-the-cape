@@ -8,6 +8,7 @@ The owner asked to continue building new tracks (November 2026). This is the nor
 - **Play test (v2.19).** Codex drove v2.18 in the FJ40 on Mild as far as Canal Creek (a rollover, several winch pulls, the flooding warning on the way in). Acted on: the shelf could not be read from the cab (two marker rocks, an aiming sign, darker water beside the shelf); low range was never taught (a prompt before the first water). Not reached: the long drive's bog and Nolans Brook.
 - **The two checks it did not reach (v2.20),** made in the game in a browser. The bog can be seen in time, but had nothing to winch to: two marked rocks added. The shoal at Nolans Brook could not be told from the deep: a rock and a sign on the near bank and a sign on the far bank now mark the line. Still for the owner's play test: whether the rise at Nolans Brook is too fast or too slow.
 - **Stage 2 (v2.21 and v2.22): built without a play test.** The side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive (v2.21). A soft bed under Nolans Brook, firm on the shoal (v2.22).
+- **Second play test (v2.23).** Codex spot-tested v2.22 in the FJ40 on Mild as far as Nolans Brook's bank, without clearing the bog, crossing the brook or recovering the HiLux. Acted on: the run started with the CREB's load, not the episode's (the load is now kept per episode); it turned right before the water at Nolans Brook (the HUD now says to drive in first, and the marker rock is 1.3 m in radius, from 0.7 m); the falls' cost was only in the journal (now a hint on the first stretch).
 - **Stage 3: not started.** Polish from the owner's play test.
 
 ## The design
@@ -78,7 +79,7 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 ## As built (v2.20, the bog and Nolans Brook checked from the seat)
 
 - **The bog's winch rocks.** Two marked rocks 17 m before and 17 m past the bog's middle (233 m and 267 m along the long drive), 3.6 m left of the centreline. Before v2.20 nothing was within the cable's 29 m of the bog but one tree, 28 m from one end.
-- **Nolans Brook's marks.** A rock 0.7 m in radius on the near bank at the water's edge at (18, −849.2), 0.3 m above the day's own level, with a sign above it at (19.2, −847.4) facing west: "Turn across here". A sign on the far bank at (20.8, −898.5), 2.8 m right of the way out: "Aim here from the rock". The marked line: in, right along the bank about 7 m out from the water's edge to x = 18, then straight across. It is 0.55 m deep all the way, like the track's own curved line.
+- **Nolans Brook's marks.** A rock 0.7 m in radius (1.3 m since v2.23) on the near bank at the water's edge at (18, −849.2), 0.3 m above the day's own level, with a sign above it at (19.2, −847.4) facing west: "Turn across here". A sign on the far bank at (20.8, −898.5), 2.8 m right of the way out: "Aim here from the rock". The marked line: in, right along the bank about 7 m out from the water's edge to x = 18, then straight across. It is 0.55 m deep all the way, like the track's own curved line.
 - The scripted drives: 30 (`tests/telegraphNorthDrive.test.ts`), with the marked line at Nolans Brook added.
 
 ## As built (v2.21, stage 2)

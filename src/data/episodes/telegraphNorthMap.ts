@@ -11,6 +11,7 @@ import {
   LONG_DRIVE_BOG_ANCHOR_SIDE,
   NOLANS_AIM_SIGN,
   NOLANS_MARKER,
+  NOLANS_MARKER_RADIUS,
   NOLANS_TURN_SIGN,
   canalCreek,
   canalFarEdge,
@@ -68,6 +69,8 @@ const tracks: TrackDef[] = [
     ...sand,
     // Corrugated, with swells that pitch a car taken fast.
     rough: { bumps: 0.06, swells: 0.26, potholes: 2, potholeDepth: 0.18, washouts: 1.5, washoutDepth: 0.22 },
+    // The falls' trade-off, said before either fork (v2.23).
+    routeHint: 'Forks to the right go to the falls: a tyre plug for both, but Nolans Brook rises meanwhile',
   },
   // Stage 2 (v2.21): the two turn-offs to the falls, both to the right before Canal Creek.
   {
@@ -185,7 +188,7 @@ const tracks: TrackDef[] = [
     camber: 0.2,
     pinMode: 'follow',
     surface: 'sand',
-    routeHint: 'Right along the bank to the rock, then straight across to the sign. Crawl: no bow wave',
+    routeHint: 'Into the water, hard right to the big rock, then straight across to the sign. Crawl',
   },
 ];
 
@@ -326,7 +329,13 @@ const props: PropDef[] = [
   { kind: 'fireRing', x: 27, z: -186, headingDeg: 0 },
   { kind: 'logSeat', x: 32, z: -187, headingDeg: 0 },
   { kind: 'signpost', x: -11, z: -390, headingDeg: 150, text: 'Cypress Creek — log bridge' },
-  { kind: 'signpost', x: 5, z: -826, headingDeg: 180, text: 'Nolans Brook — right to the rock, then across' },
+  {
+    kind: 'signpost',
+    x: 5,
+    z: -826,
+    headingDeg: 180,
+    text: 'Nolans Brook — in, right to the big rock, then across',
+  },
   {
     kind: 'signpost',
     x: NOLANS_TURN_SIGN[0],
@@ -426,7 +435,7 @@ export const telegraphNorthMap: MapDef = {
     // A rock before the bog and one past it, on the firm side (v2.20).
     ...LONG_DRIVE_BOG_ANCHORS.map((s) => anchor(...at(longDrive, s, LONG_DRIVE_BOG_ANCHOR_SIDE))),
     // The rock on Nolans Brook's near bank that the line across starts from (v2.20).
-    { x: NOLANS_MARKER[0], z: NOLANS_MARKER[1], radius: 0.7, sink: 0.25 },
+    { x: NOLANS_MARKER[0], z: NOLANS_MARKER[1], radius: NOLANS_MARKER_RADIUS, sink: 0.3 },
   ],
   tors: [],
   fallenTrees: [],

@@ -372,6 +372,8 @@ export const nolansBrook: Waypoint[] = [
  * (x = 18): along the near bank in the shallows to the rock, then turn and drive at the sign.
  */
 export const NOLANS_MARKER: readonly [number, number] = [18, -849.2];
+/** A big rock, to be picked out from the way in 18 m off (v2.23; it was 0.7 m). */
+export const NOLANS_MARKER_RADIUS = 1.3;
 /** A sign above the rock, facing the car as it comes along the bank from the way in. */
 export const NOLANS_TURN_SIGN: readonly [number, number] = [19.2, -847.4];
 export const NOLANS_AIM_SIGN: readonly [number, number] = [20.8, -898.5];

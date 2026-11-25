@@ -2554,3 +2554,26 @@ Hema says Nolans Brook has a soft sandy bottom and that the hard right line is u
 **Tests.** `tests/telegraphNorthStage2.test.ts` (10 now): the surface's figures against sand and firm bed; the shoal and both right lines firm, the rest of the brook soft, the drowned HiLux on soft bed; no other creek soft, and every soft cell on the map within Nolans Brook's reach. `tests/telegraphNorthDrive.test.ts` (34 drives): the LC79 off the shoal at 18 psi (over half as long again as the right line, on a path two thirds as long) and at 36 psi (not across in 250 s). The straight-line drive's depth figure for the short 40 changed from over 1.4 m to over 1.3 m, since the soft bed now stops it before the holes.
 
 **The full unit suite on v2.21** was run on a clean copy of that version while this was being built: 118 files, 1,099 tests passed and 2 to do.
+
+## v2.23: play test fixes (the starting load, Nolans Brook's turn, the falls' trade-off)
+
+Codex spot-tested v2.22 on the Telegraph Track North in the FJ40 on Mild, in a fresh browser with no save. It did not clear the long drive's bog, cross Nolans Brook or try the HiLux recovery, so those are still not play tested. It reported that the Load episode and Drive buttons, Canal Creek's line, the winch arrow and choosing an end of the fallen tree all worked. Three things to fix, done here.
+
+**1. The starting load was another episode's.** With no save, choosing Episode 3 gave 50 L, a jerry can, two spares and three plugs: the CREB's load. **Packing → Standard load** gave the 16 L, no can, one spare and two plugs the episode is designed round. A first-time player got an easier run without choosing it, and the fuel and kit share of the score was measured against the wrong load.
+
+- **Cause.** The load was remembered per vehicle, not per episode, and every run stored its load there, the standard one included. The journey page took its starting load from the episode it opened on (the CREB) and kept it when another episode was picked.
+- **Fix** (`src/data/packing.ts`: `packFor`, `rememberPack`, `isStandardPack`). A load is remembered per episode and vehicle, and only when it was packed by hand, meaning it differs from that episode's standard load. Picking an episode or a vehicle on the journey page shows that episode's load: the hand-packed one for it if there is one, else its standard load. **Standard load** forgets the hand-packed one.
+- **Old saves.** A save from before this update holds one load per vehicle with no record of which episode it was for. It is kept for the episode last played, and only if it is not that episode's standard load; otherwise it is dropped. A load packed by hand for one episode therefore no longer follows the vehicle to another.
+
+**2. Nolans Brook: the turn.** The drowned HiLux was easy to see; the rock and sign that mark the turn were not, and Codex turned right early, onto the grassy bank, before the water. The HUD said "Right along the bank to the rock"; only the history card said to go in first.
+
+- **The HUD says the sequence:** "Into the water, hard right to the big rock, then straight across to the sign. Crawl". The approach sign reads "Nolans Brook — in, right to the big rock, then across", and the note says to drive into the water first.
+- **The marker is a big rock:** 1.3 m in radius (it was 0.7 m), at the same spot at the near water's edge, with its sign behind it. From the turn in the water it now stands out on the sand.
+
+**3. The falls: the trade-off before the fork.** The journal explained that both stops earn one tyre plug and that the delay lets Nolans Brook rise, but nothing said so on the track. The first stretch (the turn-off road) now has a HUD hint, which shows from the start and through both forks: "Forks to the right go to the falls: a tyre plug for both, but Nolans Brook rises meanwhile".
+
+**Looked at** (in the game in a browser, low graphics, the short 40). The first stretch 20 m before the Fruit Bat fork: the hint is under the track's name with the fork and its sign ahead. Nolans Brook from the way in (the new hint; the HiLux ahead) and from the turn in the water (the big rock on the bank to the right, its sign behind it). The fuel gauge reads 16 L on a new run of Episode 3. No vehicle body changed, so no studio renders and no second look by a reviewer.
+
+**Tests.** `tests/packing.test.ts` (4 new): a new player's load on each episode; a hand-packed load kept for its episode and vehicle and nowhere else; the standard load not remembered, and a hand-packed one forgotten when put back; old saves read as above. `e2e/launch.spec.ts` (1 new, `launch:73`): in a fresh browser the journey page shows 50 L on the CREB and 16 L on both Telegraph episodes without opening Packing, an extra plug packed for the northern track stays there, and Standard load puts it back. The launch and welcome browser tests pass (10). The tests below the new one in `launch.spec.ts` moved down 29 lines.
+
+**Not run: the full suites on v2.22.** The container restarted twice and stopped them both times. They run on this version after the merge.

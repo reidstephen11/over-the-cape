@@ -1,4 +1,4 @@
-import type { EpisodeLoadout } from './episodes';
+import type { EpisodeId, EpisodeLoadout } from './episodes';
 import type { VehicleId } from './vehicle';
 import { vehicleLoadout, vehicles } from './vehicles';
 
@@ -104,4 +104,42 @@ export function stepPack(
   if (next[item] === l[item]) return null;
   if (dir > 0 && loadKg(next, id) > packLimitKg(standard, id) + 0.01) return null;
   return next;
+}
+
+/**
+ * Loads packed by hand, per episode and vehicle. Only a load that differs from the
+ * episode's standard one is kept, so an episode never starts with another's load (v2.23).
+ */
+export type SavedPacks = Partial<Record<EpisodeId, Partial<Record<VehicleId, EpisodeLoadout>>>>;
+
+const sameLoad = (a: EpisodeLoadout, b: EpisodeLoadout): boolean =>
+  a.fuel === b.fuel && a.jerryCans === b.jerryCans && a.spares === b.spares && a.plugs === b.plugs;
+
+/** Whether a load is the episode's standard one for this vehicle. */
+export function isStandardPack(l: EpisodeLoadout, standard: EpisodeLoadout, id: VehicleId): boolean {
+  return sameLoad(fitPack(l, standard, id), vehicleLoadout(standard, id));
+}
+
+/** The load a new run of an episode starts with: the one packed by hand for it, else its standard load. */
+export function packFor(
+  packs: SavedPacks | undefined,
+  episode: EpisodeId,
+  standard: EpisodeLoadout,
+  id: VehicleId,
+): EpisodeLoadout {
+  return fitPack(packs?.[episode]?.[id] ?? vehicleLoadout(standard, id), standard, id);
+}
+
+/** The saved packs with this episode and vehicle's load set: kept if packed by hand, dropped if standard. */
+export function rememberPack(
+  packs: SavedPacks | undefined,
+  episode: EpisodeId,
+  standard: EpisodeLoadout,
+  id: VehicleId,
+  load: EpisodeLoadout,
+): SavedPacks {
+  const forEpisode = { ...packs?.[episode] };
+  if (isStandardPack(load, standard, id)) delete forEpisode[id];
+  else forEpisode[id] = fitPack(load, standard, id);
+  return { ...packs, [episode]: forEpisode };
 }
