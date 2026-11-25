@@ -37,6 +37,8 @@ export interface RockInstance {
   squash: number;
   yaw: number;
   anchor: boolean;
+  /** The anchor's name in the winch chooser, where the map gives one. */
+  label?: string;
   seed: number;
   solid: boolean;
   /** A termite mound: an earth spire, drawn as one but colliding like a rock. */
@@ -264,7 +266,15 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
 
   // --- Rocks: hand-placed, tors, then scattered ---
   const rocks: RockInstance[] = [];
-  const addRock = (x: number, z: number, radius: number, anchor: boolean, sink = 0.35, squash = 0.8) => {
+  const addRock = (
+    x: number,
+    z: number,
+    radius: number,
+    anchor: boolean,
+    sink = 0.35,
+    squash = 0.8,
+    label?: string,
+  ) => {
     // Seat on the lowest ground under the inner footprint so a boulder on a slope has no
     // gap beneath its downhill side.
     let ground = terrain.heightAt(x, z);
@@ -284,11 +294,12 @@ export function generateScatter(map: MapDef, terrain: Terrain, features: Terrain
       squash,
       yaw: rand() * Math.PI * 2,
       anchor,
+      ...(label ? { label } : {}),
       seed: rand(),
       solid: Math.abs(x) < wallX + 2 && Math.abs(z) < wallZ + 2,
     });
   };
-  for (const b of map.boulders) addRock(b.x, b.z, b.radius, !!b.anchor, b.sink ?? 0.3, 0.85);
+  for (const b of map.boulders) addRock(b.x, b.z, b.radius, !!b.anchor, b.sink ?? 0.3, 0.85, b.label);
   for (const t of map.tors) {
     for (let k = 0; k < t.count; k++) {
       const a = rand() * Math.PI * 2;

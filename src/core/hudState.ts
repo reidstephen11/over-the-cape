@@ -10,7 +10,8 @@ import { pressurePsi, wheelPsi } from '../sim/vehicle/tyrePressure';
 import type { Trailer } from '../sim/trailer';
 import type { CrawlCourseDef, CrawlTrailDef, PoiDef } from '../sim/world/mapTypes';
 import type { TrackInfo } from '../sim/world/features';
-import { trailProgress } from '../sim/world/crawlTrail';
+import { trailPoint, trailProgress } from '../sim/world/crawlTrail';
+import { RECOVERY_CUE_REACH, lineCue } from './recoveryCue';
 import { headingOf, v3 } from '../sim/vehicle/math';
 import { anchorPoint } from '../sim/tools/anchors';
 import type { CompassPoi, EpisodeHud, GateState, HudState, Prompt, TrailerHud } from '../ui/hud';
@@ -62,6 +63,8 @@ export interface HudInputs {
   sideTrip?: { text: string; progress: number } | null;
   /** Water lies close ahead and the car is in high range, on a run where low range has not been used yet (src/core/lowRangeHint.ts). */
   teachLowRange?: boolean;
+  /** A recovery has just ended off the line: point back to the nearest hinted track (v2.24). */
+  recoveryCue?: boolean;
   /** Show the fuel gauge and supplies (an episode is under way). */
   supplies?: boolean;
   /** A trailer to hitch or unhitch, and whether it can be done now. */
@@ -179,7 +182,8 @@ export class CourseHintCache {
 /** The nearest crawl trail (or its bypass) and route-hint track to (x, z). */
 export function searchHintTracks(i: HudInputs, x: number, z: number): HintSearch {
   const out: HintSearch = { trail: null, link: null };
-  if (i.trackDistanceAt && i.trackDistanceAt(x, z) > HINT_TRACK_REACH) return out;
+  // With the recovery cue up the nearest hinted track is wanted however far off it is.
+  if (!i.recoveryCue && i.trackDistanceAt && i.trackDistanceAt(x, z) > HINT_TRACK_REACH) return out;
   const tracks = i.tracks ?? [];
   for (const trail of i.crawlTrails ?? [])
     for (const track of tracks) {
@@ -382,16 +386,28 @@ export function buildHudState(i: HudInputs): HudState {
 
   if (!courseHint && hintTracks) {
     const link = hintTracks.link;
+    const controls = kb
+      ? 'L low range · P crawl · C views'
+      : touch
+        ? 'LOW range · CRAWL · View'
+        : `${g.range} low range · ${g.toolMenu} tools · ${g.toolMenu} + ${g.cameraReset} views`;
     if (link && link.distance < link.track.def.width / 2 + 1)
       courseHint = {
         title: link.track.def.name ?? '4WD Challenge Loop',
         text: link.track.def.routeHint!,
-        controls: kb
-          ? 'L low range · P crawl · C views'
-          : touch
-            ? 'LOW range · CRAWL · View'
-            : `${g.range} low range · ${g.toolMenu} tools · ${g.toolMenu} + ${g.cameraReset} views`,
+        controls,
       };
+    else if (i.recoveryCue && link && link.distance <= RECOVERY_CUE_REACH) {
+      // Off the line after a recovery: where it is from the car, then its hint again (v2.24).
+      const q = trailPoint(link.track, link.along);
+      const f = v.forward();
+      courseHint = {
+        title: `Back to ${link.track.def.name ?? 'the track'}`,
+        text: `The line is ${lineCue(p.x, p.z, f.x, f.z, q.x, q.z)}. ${link.track.def.routeHint!}`,
+        controls,
+        recovery: true,
+      };
+    }
   }
 
   return {

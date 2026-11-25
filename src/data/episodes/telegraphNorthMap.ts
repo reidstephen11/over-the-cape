@@ -433,7 +433,12 @@ export const telegraphNorthMap: MapDef = {
     anchor(...at(nolansBrook, 88, 2.6)),
     anchor(...at(nolansBrook, 90, -2.4)),
     // A rock before the bog and one past it, on the firm side (v2.20).
-    ...LONG_DRIVE_BOG_ANCHORS.map((s) => anchor(...at(longDrive, s, LONG_DRIVE_BOG_ANCHOR_SIDE))),
+    // Named in the winch chooser (v2.24): the one before the bog for a car going north, and
+    // the one past it.
+    ...LONG_DRIVE_BOG_ANCHORS.map((s, k) => ({
+      ...anchor(...at(longDrive, s, LONG_DRIVE_BOG_ANCHOR_SIDE)),
+      label: k === 0 ? 'Approach boulder' : 'Exit boulder',
+    })),
     // The rock on Nolans Brook's near bank that the line across starts from (v2.20).
     { x: NOLANS_MARKER[0], z: NOLANS_MARKER[1], radius: NOLANS_MARKER_RADIUS, sink: 0.3 },
   ],

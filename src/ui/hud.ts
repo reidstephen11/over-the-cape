@@ -116,7 +116,8 @@ export interface HudState {
   parkBrake: boolean;
   /** Headlights: a green lamp for low beam, a blue one for high beam, as on the dash. */
   lights: HeadlightMode;
-  courseHint: { title: string; text: string; controls: string } | null;
+  /** `recovery`: the way back to the line after a recovery, shown off the track (v2.24). */
+  courseHint: { title: string; text: string; controls: string; recovery?: boolean } | null;
   planksCarried: number;
   planksTotal: number;
   winchAttached: boolean;

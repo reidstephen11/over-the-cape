@@ -90,6 +90,7 @@ import { wireSimFeedback } from './simFeedback';
 import { TrafficCars } from './trafficCars';
 import { AnchorPicker } from './anchorPicker';
 import { LowRangeHint, waterAhead } from './lowRangeHint';
+import { RecoveryCue } from './recoveryCue';
 import { DeliveryViews } from './deliveryViews';
 import { ToolController } from './toolController';
 import { pendingUpdate } from './update';
@@ -155,6 +156,11 @@ export class Game {
   private readonly anchors: AnchorPicker;
   /** Teaches low range before the first water, once a run. */
   private readonly lowRangeHint = new LowRangeHint();
+  /** After a winch pull or righting the car: the way back to the line (v2.24). */
+  private readonly recoveryCue = new RecoveryCue();
+  private showRecoveryCue = false;
+  /** A warning or a recovery was up last frame: the history note makes way when one starts. */
+  private wasUrgent = false;
   private readonly waterDepthAt = (x: number, z: number): number => this.world.terrain.waterDepthAt(x, z);
   readonly overlay: DebugOverlay | null;
   private readonly debugTools: DebugTools | null;
@@ -1020,6 +1026,7 @@ export class Game {
       this.tool.cancel();
       this.result.close();
       this.history.clear();
+      this.recoveryCue.clear();
       this.sim.returnToCampsite(LOCAL_VEHICLE, this.checkpoint.camp);
       this.sim.surprises?.reset(this.checkpoint.surprises);
       this.strandedFreed = new Set(this.checkpoint.stranded);
@@ -2092,6 +2099,7 @@ export class Game {
       find: this.findNearby(),
       sideTrip: this.run.status === 'driving' ? this.sideTrips.prompt(v.position.x, v.position.z) : null,
       // Not at a side trip's stop: the water in front of a lookout is not a crossing.
+      recoveryCue: this.showRecoveryCue,
       teachLowRange: this.lowRangeHint.show(v.drivetrain.range, this.run.status === 'driving', () => {
         if (this.sideTrips.prompt(v.position.x, v.position.z)) return false;
         const f = v.forward();
@@ -2105,6 +2113,19 @@ export class Game {
       supplies: true,
     });
     this.hud.update(hudState);
+    // A recovery under way: the winch on, or the car over and waiting to be righted. Once it
+    // ends off the line, the HUD points back to it until the car is on it again.
+    const recovering = tools.winch.attached || tools.jack.state === 'available';
+    const onLine = !!hudState.courseHint && !hudState.courseHint.recovery;
+    this.showRecoveryCue =
+      this.run.status === 'driving' && this.recoveryCue.update(frameDt, recovering, onLine);
+    // A warning, the winch chooser or a recovery starting: the history note gets out of the way.
+    const urgent =
+      recovering ||
+      this.tool.mode === 'winchTarget' ||
+      hudState.prompts.some((prompt) => prompt.keys === '!');
+    if (urgent && !this.wasUrgent) this.history.makeWay();
+    this.wasUrgent = urgent;
     if (this.vr.presenting) this.vrDash.update(hudState, this.toolMenu.view, this.history.words);
     if (this.overlay) {
       const w = tools.winch;

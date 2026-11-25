@@ -817,7 +817,7 @@ export class Simulation {
         id: `rock:${r.x.toFixed(1)}:${r.z.toFixed(1)}`,
         point: v3(r.x, y, r.z),
         radius: 0.1,
-        label: 'Boulder',
+        label: r.label ?? 'Boulder',
       });
     }
     for (const obj of this.dynamics.values()) {
