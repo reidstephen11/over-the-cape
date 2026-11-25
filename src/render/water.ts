@@ -10,6 +10,24 @@ import { sunDirection } from './sky';
 const TILE = 128;
 
 /**
+ * Clear water (`CreekDef.clear`, v2.25): how deep it goes on darkening to (m), and the depths
+ * between which the shallows show the bed and break into ripples (fully by `shallowFull`,
+ * not at all from `shallowNone`).
+ */
+export const clearWater = { deepAt: 1.1, shallowFull: 0.65, shallowNone: 1 } as const;
+
+/** How far water of this depth (m) counts as shallows, 1 to 0: the bed shows and the surface breaks. */
+export function shallowsOf(depth: number): number {
+  const { shallowFull, shallowNone } = clearWater;
+  return Math.min(1, Math.max(0, (shallowNone - depth) / (shallowNone - shallowFull)));
+}
+
+/** How far from the shallow colour to the deep one water of this depth (m) is drawn, 0 to 1. */
+export function depthTone(depth: number, clear: boolean): number {
+  return Math.min(1, Math.max(0, (depth - 0.2) / ((clear ? clearWater.deepAt : 0.8) - 0.2)));
+}
+
+/**
  * Creek water surface built from the terrain's water grid: reflective, animated and translucent,
  * coloured from shallow to deep, with pale foam where the surface is steep (the Falls). Ripples
  * and flecks of foam run downstream with the current. Puddles on the tracks are tinted a muddy
@@ -38,7 +56,8 @@ export class WaterMesh {
   /**
    * creekDistance (metres to the creek, per cell) tells puddles from the creek; without it all
    * water is creek. `current` gives the creek water's velocity at each vertex, and `riseShare`
-   * each sample's share of a storm's creek rise (features.creekRise).
+   * each sample's share of a storm's creek rise (features.creekRise). `creekClear` marks the
+   * samples of creeks drawn as clear water (features.creekClear).
    */
   constructor(
     terrain: Terrain,
@@ -47,6 +66,7 @@ export class WaterMesh {
     creekDistance?: Uint8Array,
     current?: WaterCurrent,
     riseShare?: Float32Array,
+    creekClear?: Uint8Array,
   ) {
     this.material = this.createMaterial(true);
     this.puddleMaterial = this.createMaterial(false);
@@ -82,12 +102,14 @@ export class WaterMesh {
           col: [] as number[],
           flow: [] as number[],
           rise: [] as number[],
+          shallows: [] as number[],
         };
         const puddle = {
           pos: [] as number[],
           col: [] as number[],
           flow: [] as number[],
           rise: [] as number[],
+          shallows: [] as number[],
         };
         for (let iz = tz * TILE; iz < (tz + 1) * TILE; iz++)
           for (let ix = tx * TILE; ix < (tx + 1) * TILE; ix++) {
@@ -104,19 +126,28 @@ export class WaterMesh {
             const bed = (H[i00] + H[i10] + H[i01] + H[i11]) / 4;
             const depth = (w00 + w10 + w01 + w11) / 4 - bed;
             const steep = Math.max(Math.abs(w10 - w00), Math.abs(w01 - w00), Math.abs(w11 - w00));
-            tmp.copy(shallow).lerp(deep, Math.min(1, Math.max(0, (depth - 0.2) / 0.6)));
-            if (steep > 0.35) tmp.lerp(foam, Math.min(0.85, (steep - 0.35) * 0.6));
             // Creek water lies on the creek line; puddles are kept well clear of it.
             const isPuddle = creekDistance !== undefined && creekDistance[i00] > CREEK_MARGIN;
-            if (isPuddle) tmp.lerp(muddy, 0.75);
+            // Clear water is coloured corner by corner from its own depth, so a shelf's edge
+            // follows the bed and not the 1 m squares.
+            const clear = !isPuddle && creekClear?.[i00] === 1;
+            const tone = (d: number) => {
+              tmp.copy(shallow).lerp(deep, depthTone(d, clear));
+              if (steep > 0.35) tmp.lerp(foam, Math.min(0.85, (steep - 0.35) * 0.6));
+              if (isPuddle) tmp.lerp(muddy, 0.75);
+            };
+            tone(depth);
             const out = isPuddle ? puddle : creek;
             const x0 = ix - halfX;
             const z0 = iz - halfZ;
             const vertex = (p: number[], i: number) => {
               out.pos.push(...p);
+              const here = p[1] - H[i];
+              if (clear) tone(here);
               out.col.push(tmp.r, tmp.g, tmp.b);
               out.flow.push(...(isPuddle ? still : flowAt(i)));
               out.rise.push(isPuddle ? 0 : (riseShare?.[i] ?? 0));
+              out.shallows.push(clear ? shallowsOf(here) : 0);
             };
             const p00 = [x0, w00, z0];
             const p10 = [x0 + 1, w10, z0];
@@ -156,7 +187,7 @@ export class WaterMesh {
   }
 
   private addMesh(
-    m: { pos: number[]; col: number[]; flow: number[]; rise: number[] },
+    m: { pos: number[]; col: number[]; flow: number[]; rise: number[]; shallows: number[] },
     material: THREE.Material,
   ): void {
     if (m.pos.length === 0) return;
@@ -165,6 +196,7 @@ export class WaterMesh {
     geo.setAttribute('color', new THREE.Float32BufferAttribute(m.col, 3));
     geo.setAttribute('waterFlow', new THREE.Float32BufferAttribute(m.flow, 2));
     geo.setAttribute('waterRiseShare', new THREE.Float32BufferAttribute(m.rise, 1));
+    geo.setAttribute('waterShallows', new THREE.Float32BufferAttribute(m.shallows, 1));
     geo.computeVertexNormals();
     geo.computeBoundingSphere();
     // Room for the water to rise in a storm.
@@ -197,18 +229,20 @@ export class WaterMesh {
       shader.uniforms.waterFlowScale = this.flowScale;
       Object.assign(shader.uniforms, this.sky);
       shader.vertexShader =
-        `attribute vec2 waterFlow; attribute float waterRiseShare; uniform float waterRise; uniform float waterFlowScale;
-        varying vec3 vWaterPosition; varying vec2 vWaterFlow; varying float vWaterSilt;\n${shader.vertexShader}`.replace(
+        `attribute vec2 waterFlow; attribute float waterRiseShare; attribute float waterShallows; uniform float waterRise; uniform float waterFlowScale;
+        varying vec3 vWaterPosition; varying vec2 vWaterFlow; varying float vWaterSilt; varying float vWaterShallows;\n${shader.vertexShader}`.replace(
           '#include <begin_vertex>',
           `#include <begin_vertex>
           // A storm raises each creek by its share, runs it faster and muddies it.
           transformed.y += waterRise * waterRiseShare;
           vWaterPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;
           vWaterFlow = waterFlow * (1.0 + (waterFlowScale - 1.0) * waterRiseShare);
-          vWaterSilt = min(1.0, waterRise * waterRiseShare / 0.3);`,
+          vWaterSilt = min(1.0, waterRise * waterRiseShare / 0.3);
+          // Clear shallows (0 elsewhere). Floodwater is neither clear nor shallow.
+          vWaterShallows = waterShallows * (1.0 - vWaterSilt);`,
         );
       shader.fragmentShader =
-        `uniform float waterTime; varying vec3 vWaterPosition; varying vec2 vWaterFlow; varying float vWaterSilt;
+        `uniform float waterTime; varying vec3 vWaterPosition; varying vec2 vWaterFlow; varying float vWaterSilt; varying float vWaterShallows;
         // Ripples carried downstream: two copies of the pattern slide with the current,
         // each restarting while the other is in full view, so they never stretch.
         vec2 waterWaves(vec2 p) {
@@ -220,6 +254,11 @@ export class WaterMesh {
         float waterFlecks(vec2 p, vec2 dir) {
           vec2 q = vec2(dot(p, dir), dot(p, vec2(-dir.y, dir.x)));
           return smoothstep(0.7, 1.0, sin(q.x * 0.8 + sin(q.y * 1.7)) * sin(q.y * 3.4 + sin(q.x * 0.5)));
+        }
+        // Broken water over a shallow bar: close-set glints, drawn out a little along the current.
+        float waterBroken(vec2 p, vec2 dir) {
+          vec2 q = vec2(dot(p, dir) * 1.6, dot(p, vec2(-dir.y, dir.x)) * 3.2);
+          return smoothstep(0.25, 0.8, sin(q.x * 1.9 + sin(q.y * 2.3)) * sin(q.y * 4.1 + sin(q.x * 1.3)));
         }
         uniform vec3 waterSkyHorizon; uniform vec3 waterSkyZenith; uniform vec3 waterSkyGround;
         uniform vec3 waterSunGlow; uniform vec3 waterSunDir; uniform float waterGlowSize; uniform float waterCloudLight;
@@ -248,13 +287,18 @@ export class WaterMesh {
           vec2 flowDir = flowSpeed > 0.01 ? vWaterFlow / flowSpeed : vec2(1.0, 0.0);
           float flecks = mix(waterFlecks(flowA, flowDir), waterFlecks(flowB, flowDir), flowBlend);
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.78, 0.8, 0.76), flecks * min(1.0, flowSpeed * 0.35) * 0.3);
+          // Clear water running shallow over a bar breaks up: finer, brighter flecks and a
+          // busier surface, where the deep water beside it lies smooth and dark.
+          float riffle = vWaterShallows * min(1.0, flowSpeed * 2.5);
+          float broken = mix(waterBroken(flowA, flowDir), waterBroken(flowB, flowDir), flowBlend);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.88, 0.92, 0.9), broken * riffle * 0.55);
         `,
           )
           .replace(
             '#include <normal_fragment_maps>',
             `
           #include <normal_fragment_maps>
-          vec2 wave = mix(waterWaves(flowA), waterWaves(flowB), flowBlend) * (1.0 + flowSpeed * 0.5);
+          vec2 wave = mix(waterWaves(flowA), waterWaves(flowB), flowBlend) * (1.0 + flowSpeed * 0.5 + riffle * 1.5);
           normal = normalize(normal + mat3(viewMatrix) * vec3(wave.x, 0.0, wave.y));
         `,
           )
@@ -277,12 +321,13 @@ export class WaterMesh {
             '#include <opaque_fragment>',
             `
           float fresnel = pow(1.0 - max(dot(normal, normalize(vViewPosition)), 0.0), 3.0);
-          outgoingLight = mix(outgoingLight, vec3(0.39, 0.51, 0.52), fresnel * 0.35);
-          diffuseColor.a = 0.68 + fresnel * 0.29;
+          // Clear shallows mirror less of the sky and let the bed show through.
+          outgoingLight = mix(outgoingLight, vec3(0.39, 0.51, 0.52), fresnel * 0.35 * (1.0 - 0.6 * vWaterShallows));
+          diffuseColor.a = mix(0.68 + fresnel * 0.29, 0.34 + fresnel * 0.3, vWaterShallows);
           #include <opaque_fragment>
         `,
           );
     };
-    return patchFog(material, offset ? 'flowing-water-v4' : 'puddle-water-v4');
+    return patchFog(material, offset ? 'flowing-water-v5' : 'puddle-water-v5');
   }
 }

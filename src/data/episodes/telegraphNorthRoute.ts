@@ -499,6 +499,9 @@ export const northCreeks: CreekDef[] = [
     valley: 16,
     flow: 0.5,
     bankRough: 0.12,
+    // Clear blue water (Hema): the gravel shelf shows through it and its surface is broken,
+    // and the deep water either side is dark and smooth (v2.25).
+    clear: true,
     // The shelf the line takes across, and the shallows along the foot of the far bank
     // where the winding exit starts.
     bars: [

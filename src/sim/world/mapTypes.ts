@@ -132,6 +132,13 @@ export interface CreekDef {
    * every bed under water is firm.
    */
   softBed?: boolean;
+  /**
+   * Clear water that can be read from the bank (src/render/water.ts): the bed shows through
+   * the shallows, shallow water over a bar breaks into ripples where the creek runs, and the
+   * colour is at its darkest from 1.1 m deep (elsewhere from 0.8 m). Its bars are pale gravel.
+   * Only how the water is drawn: the bed, the depth and the current are the same.
+   */
+  clear?: boolean;
 }
 
 export interface TrackStepsDef {
@@ -195,6 +202,12 @@ export interface TrackDef {
   humps?: readonly TrackHumpDef[];
   /** Erosion ruts in the track, built as fine ground detail. */
   erosion?: readonly ErosionRutDef[];
+  /**
+   * Worn wheel lines drawn on the ground (src/sim/world/wheelMarks.ts): stretches [from, to],
+   * metres along the track, where two dark tyre lines show that others drive here. Only
+   * drawn: the ground is the same. Not drawn under water.
+   */
+  wheelMarks?: ReadonlyArray<readonly [number, number]>;
   /** Grade evenly between these [from, to] distances along the track (switchbacks, causeways). */
   even?: ReadonlyArray<readonly [number, number]>;
   /** Timber bridges carrying the track over a creek, ditch or mud hole. */

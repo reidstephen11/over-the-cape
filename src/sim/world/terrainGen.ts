@@ -1147,12 +1147,15 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   }
 
   const creekDistance = new Uint8Array(n).fill(255);
+  // Where the nearest creek is drawn as clear water (only when a creek asks for it).
+  const creekClear = creekLines.some((c) => c.def.clear) ? new Uint8Array(n) : undefined;
   for (let i = 0; i < n; i++) {
     const d = creekDist[i];
     if (d > 40) continue;
     const hw = creekHalfAt[i];
     creekDistance[i] = Math.min(255, Math.max(0, Math.round(d - hw)));
     const c = creekLines[creekOwner[i]];
+    if (creekClear && c.def.clear) creekClear[i] = 1;
     const u = atParam(c.poly.u, creekParam[i]);
     const gravel = attrAt(c.gravel, u) > 0.5;
     // A sandy river's dry bed runs out either side of the water to its banks.
@@ -1163,8 +1166,10 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const forded = trackOwner[i] >= 0 && trackDist[i] <= tracks[trackOwner[i]].def.width / 2 + 0.5;
     if (wet) surface[i] = c.def.softBed && !firmBed[i] && !forded ? SurfaceId.SoftBed : SurfaceId.Water;
     else if (d <= bank) surface[i] = sand ? SurfaceId.Sand : gravel ? SurfaceId.Gravel : SurfaceId.Mud;
+    // In clear water a bar's top is pale gravel, washed clean, and shows through the shallows.
+    const paleBar = wet && !!c.def.clear && firmBed[i] === 1;
     const look = wet
-      ? sand
+      ? sand || paleBar
         ? GroundTint.Sand
         : gravel
           ? GroundTint.Gravel
@@ -1220,6 +1225,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       gullies,
       trackDistance,
       creekDistance,
+      ...(creekClear ? { creekClear } : {}),
       mudHoles,
     },
   };

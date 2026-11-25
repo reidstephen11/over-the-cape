@@ -55,6 +55,8 @@ import { Finds } from '../sim/finds';
 import { FindMarkers } from '../render/finds';
 import { StuckVehicleView } from '../render/stuckVehicleView';
 import { RutsView } from '../render/ruts';
+import { WheelMarksView } from '../render/wheelMarks';
+import { wheelMarkSpots } from '../sim/world/wheelMarks';
 import type { TrailerTuning } from '../data/trailers';
 import { hitchSupplyTrailer, supplyDelivered, supplyRun } from '../sim/supplyRun';
 import { applyCheckpoint, checkpointAt, EpisodeRun, startCheckpoint, type Checkpoint } from '../sim/episode';
@@ -378,6 +380,10 @@ export class Game {
     }
     this.ruts = new RutsView(sim.churn, (x, z) => world.terrain.heightAt(x, z));
     view.scene.add(this.ruts.mesh);
+    // Worn wheel lines where the map has them: which way others have driven (v2.25).
+    const wheelMarks = wheelMarkSpots(world.features.tracks, (x, z) => world.terrain.waterDepthAt(x, z));
+    if (wheelMarks.length)
+      view.scene.add(new WheelMarksView(wheelMarks, (x, z) => world.terrain.heightAt(x, z)).mesh);
     this.findMarkers = new FindMarkers(world);
     this.findMarkers.show(this.finds.defs, this.finds.taken);
     view.scene.add(this.findMarkers.group);

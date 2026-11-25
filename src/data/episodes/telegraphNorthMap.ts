@@ -105,7 +105,14 @@ const tracks: TrackDef[] = [
       [canalFarEdge + 22, 7],
       [canalFarEdge + 27, 0],
     ],
-    routeHint: 'In between the two rocks, straight across at the sign, then left along the far bank and up',
+    // Worn wheel lines down the ramp to the water, and out of it up the winding exit: the way
+    // that is used. The old exit has none (v2.25).
+    wheelMarks: [
+      [0, canalFarEdge - 6],
+      [canalFarEdge - 1, 1e9],
+    ],
+    // How to read it, not where to steer (v2.25): the ground and the two signs say the rest.
+    routeHint: 'Read the water: pale and broken is the shelf, dark is deep. Wheel lines show the way out',
   },
   {
     id: 'canal-old-exit',
