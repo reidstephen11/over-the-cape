@@ -10,6 +10,7 @@ The owner asked to continue building new tracks (November 2026). This is the nor
 - **Stage 2 (v2.21 and v2.22): built without a play test.** The side trips to Fruit Bat Falls and to Eliot and Twin Falls; a traveller drowned in Nolans Brook to winch out; a 4WD coming the other way; a dead tree down across the long drive (v2.21). A soft bed under Nolans Brook, firm on the shoal (v2.22).
 - **Second play test (v2.23).** Codex spot-tested v2.22 in the FJ40 on Mild as far as Nolans Brook's bank, without clearing the bog, crossing the brook or recovering the HiLux. Acted on: the run started with the CREB's load, not the episode's (the load is now kept per episode); it turned right before the water at Nolans Brook (the HUD now says to drive in first, and the marker rock is 1.3 m in radius, from 0.7 m); the falls' cost was only in the journal (now a hint on the first stretch).
 - **Third play test (v2.24).** Codex tested v2.23 with targeted drives and recoveries: the right line at Nolans Brook finished undamaged, the straight line flooded the engine, the HiLux recovery paid its jerry can and dragged the car 6 m off the shoal, and the bog's forward boulder pulled the car onto the firm edge. Its verdict was to keep the difficulty and make recovery easier to read. Acted on: the history note makes way for a warning or the winch; after a recovery the HUD says where the line is; the bog's boulders are named. Still not done by anyone: one uninterrupted run, a physical phone, a controller.
+- **Reading the terrain (v2.25).** The owner's next priority (`docs/ROADMAP.md`). Canal Creek first: clear water that shows the pale shelf and breaks over it, dark water where it is deep, worn wheel lines down to the water and up the winding exit, and a hint and note that say how to read the creek. To test: a new player, uncoached, explains their line before the water.
 - **Stage 3: not started.** Polish from the owner's play test.
 
 ## The design
@@ -99,6 +100,12 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 - **Nolans Brook's bed is soft sand** under water (`softBed`), except on the shoal's two bars and along the track's line, which are firm. Soft bed: grip 0.42, rolling resistance 1.4, 0.2 m of sink; low tyre pressures help as on dry sand.
 - **Driven:** off the shoal in 1.35 m, the LC79 with both lockers at 18 psi crawls 25 m of soft bed in about 78 s (0.32 m/s; 0.7 m/s on the shoal), and at 36 psi is not across in 250 s. The short 40 on the straight line stops in the middle, short of the holes. Both right lines are on firm bed and drive as before.
 - The scripted drives: 34.
+
+## As built (v2.25, Canal Creek read from the ramp)
+
+- **Clear water** on Canal Creek (`clear`): up to 0.65 m deep the bed shows through and the surface breaks where the creek runs, fading out by 1 m; the colour is darkest from 1.1 m. The shelf's bed is pale gravel. The shelf (0.6 m) is a pale, broken strip; the creek's 1.1 m and the 1.7 m holes are dark and smooth. The cue fades as the rain muddies the creek.
+- **Worn wheel lines** on the `canal-creek` track, on dry ground: from the top of the ramp to the water, and from the far water's edge along the foot of the bank and up the winding exit. None on `canal-old-exit`.
+- **The hint:** "Read the water: pale and broken is the shelf, dark is deep. Wheel lines show the way out". The marker rocks and the two signs are unchanged, and so is everything a wheel meets.
 
 ## Differences from the design
 
