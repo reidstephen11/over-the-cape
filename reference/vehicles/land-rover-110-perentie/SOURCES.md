@@ -23,7 +23,7 @@ Compared with `front-34-left-county.jpg` (the 1988 truck from directly behind), 
 | Across the car                          | about on the centre line                            | 0.17 m left of centre, beside the differential (drawn 0.08 m right of centre), which is the only place it fits so high |
 | What holds it                           | not visible                                         | a crossbar between the rails, a winding rod through the wheel's centre and a plate under the hub (an assumption)        |
 | Chassis rails behind the cab            | not visible                                         | they climb 0.095 m between 0.95 and 1.25 m behind mid-wheelbase and are 0.11 m deep from there back (an estimate)       |
-| Exhaust outlet                          | under the right sill, ahead of the right rear wheel | under the left sill, 0.33 m ahead of the left rear tyre: the model's exhaust is on the left                             |
+| Exhaust outlet                          | under the right sill, ahead of the right rear wheel | under the left sill, 0.29 m ahead of the left rear tyre: the model's exhaust is on the left                             |
 
 Still disagrees: the spare shows about 6 cm more tread than the photograph, because the drawn axle's differential housing and the 0.1 m deep rear crossmember leave 0.78 m for a 0.82 m tyre on the centre line; the exhaust is on the wrong side. The collision box for the spare in `src/data/perentie.ts` is where it was (centred, bottom 0.45 m off the ground): the drawn tyre is 0.09 m below it and 0.17 m to its left.
 

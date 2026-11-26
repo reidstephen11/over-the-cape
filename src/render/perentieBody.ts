@@ -865,17 +865,18 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   );
   b.block(0.64, 0.06, 0.15, 0.22, 0.24, 0.72, black, M.Metal, Z.Trim, 0.03);
   // The exhaust runs back inside the left rail, turns out under it behind the silencer and ends
-  // under the sill, 0.33 m ahead of the left rear tyre. (It ran on to the tail, where the spare
+  // under the sill, 0.29 m ahead of the left rear tyre. (It ran on to the tail, where the spare
   // now is. On the 1988 truck the outlet is under the sill ahead of the right rear wheel, behind
   // the sill tank: side-county.jpg. The model's exhaust has always been on the left and stays.)
   // The pipe and silencer are 2 cm further in than before v2.27 (the silencer's side was 5 mm
-  // inside the rail's inner face), and the tail drops to −0.14 so it passes 2 cm under the
+  // inside the rail's inner face), and the tail drops to −0.15 so it passes 2 cm under the
   // rail and the left trailing link. A hanger joins the tail to the rail where it passes under
   // it, and another hangs its end from the body's sill.
   b.rod({ x: -0.28, y: -0.06, z: -0.75 }, { x: -0.28, y: -0.09, z: 0.5 }, 0.028, steel);
-  b.rod({ x: -0.28, y: -0.09, z: 0.5 }, { x: -0.74, y: -0.14, z: 0.66 }, 0.028, steel);
+  b.rod({ x: -0.28, y: -0.09, z: 0.5 }, { x: -0.84, y: -0.15, z: 0.695 }, 0.028, steel);
   b.block(-0.43, -0.075, 0.552, 0.04, 0.035, 0.03, black, M.Rubber, Z.Trim);
-  b.rod({ x: -0.68, y: -0.13, z: 0.64 }, { x: -0.68, y: SILL, z: 0.64 }, 0.008, black, M.Rubber, Z.Trim);
+  b.rod({ x: -0.76, y: -0.14, z: 0.667 }, { x: -0.76, y: SILL, z: 0.667 }, 0.008, black, M.Rubber, Z.Trim);
+  b.block(-0.76, SILL - 0.012, 0.667, 0.06, 0.024, 0.04, black, M.Metal, Z.Trim);
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()

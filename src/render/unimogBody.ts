@@ -118,8 +118,8 @@ function chassis(b: VehicleBuilder): void {
       v(-0.3, 0.03, -1.2),
       v(-0.3, 0.03, 0.3),
       v(-0.3, -0.05, 0.55),
-      v(-0.58, -0.05, 0.8),
-      v(-0.6, -0.03, 1.0),
+      v(-0.64, -0.05, 0.8),
+      v(-0.66, -0.03, 1.0),
     ],
     0.04,
     steel,
@@ -144,9 +144,10 @@ function chassis(b: VehicleBuilder): void {
     ROUND_BEND,
   );
   // What holds the silencer: a bracket from the rail's outer face to its inner end, and a
-  // hanger from its top up to the tray's cross bearer above (z 1.12).
+  // hanger from a band round its middle up to the tray's cross bearer above (z 1.12).
   b.block(-0.535, 0.08, 1.05, 0.07, 0.08, 0.06, black, M.Metal, Z.Trim);
-  b.rod({ x: -0.7, y: 0.13, z: 1.07 }, { x: -0.7, y: 0.62, z: 1.12 }, 0.008, rubber, M.Rubber, Z.Trim);
+  b.ring(-0.78, 0.02, 1.05, 0.124, 0.008, black, M.Metal, 'x', Z.Trim);
+  b.rod({ x: -0.78, y: 0.14, z: 1.05 }, { x: -0.78, y: 0.62, z: 1.12 }, 0.012, black, M.Metal, Z.Trim);
 }
 
 function frontEnd(b: VehicleBuilder, tuning: VehicleTuning): void {
@@ -516,6 +517,8 @@ function cab(b: VehicleBuilder): void {
     M.Metal,
     Z.Roof,
   );
+  // The hinge leaf: a strap on the lid's top that reaches back over its edge to the pin.
+  b.block(hx, skin + 0.043, hz + 0.228, 0.1, 0.008, 0.112, bar, M.Metal, Z.Roof, 0.002);
   b.block(hx, skin + 0.0225, hz - 0.26, 0.07, 0.055, 0.1, bar, M.Metal, Z.Roof, 0.004);
   b.rod(
     { x: hx - 0.08, y: skin + 0.075, z: hz - 0.12 },
