@@ -25,6 +25,20 @@ export function addUnimogInterior(b: VehicleBuilder, redlineRpm: number): void {
   // Rubber floor mat and the gearbox hump between the seats.
   b.block(0, floor + 0.036, mid, 2.1, 0.012, len - 0.05, mat, M.Rubber, Z.Trim);
   b.block(0, floor + 0.12, mid - 0.05, 0.46, 0.26, 0.9, inner, M.Paint, Z.Trim, 0.04);
+  // The firewall: the cab's front wall from the floor up to the bonnet's top at the cowl, between
+  // the side skins. Without it the footwells opened into the engine bay and the ground showed
+  // under the dash (v2.27).
+  b.block(
+    0,
+    (floor - 0.02 + 1.1) / 2,
+    front + 0.015,
+    2 * CAB.side - 0.08,
+    1.1 - floor + 0.02,
+    0.02,
+    inner,
+    M.Paint,
+    Z.Trim,
+  );
   // Dash: a steel panel across the cab under the screen, its top at the waist, and its top rail.
   const dashZ = front + 0.18;
   b.block(0, waist - 0.16, dashZ, 2.1, 0.32, 0.25, inner, M.Paint, Z.Trim, 0.02);
