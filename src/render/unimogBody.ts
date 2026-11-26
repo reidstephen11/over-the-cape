@@ -107,15 +107,19 @@ function chassis(b: VehicleBuilder): void {
   // underside is at 0.03) behind the fuel tank, into a silencer hung across outside the rail,
   // and a short tailpipe turned out and down under the tray's edge, 0.2 m ahead of the rear
   // tyre's tread, where side.jpg shows the stub. Until v2.27 the silencer ran through the rail
-  // and the tailpipe ended 2 cm from the tread, pointing at it.
+  // and the tailpipe ended 2 cm from the tread, pointing at it. The inlet pipe is outside the
+  // rail by z 0.8, ahead of the left trailing link's chassis end (x −0.42, z 0.975), and enters
+  // the silencer's front near its inner end; a first route crossed under the rail at that end
+  // and passed through the link.
   continuousTube(
     b,
     [
       v(-0.3, 0.1, -1.7),
       v(-0.3, 0.03, -1.2),
-      v(-0.3, 0.03, 0.45),
-      v(-0.3, -0.05, 0.8),
-      v(-0.56, -0.02, 1.05),
+      v(-0.3, 0.03, 0.3),
+      v(-0.3, -0.05, 0.55),
+      v(-0.58, -0.05, 0.8),
+      v(-0.6, -0.03, 1.0),
     ],
     0.04,
     steel,
@@ -503,9 +507,10 @@ function cab(b: VehicleBuilder): void {
   b.ring(hx, skin + 0.016, hz, 0.259, 0.004, rubber, M.Rubber, 'y', Z.Roof);
   for (const x of [hx - 0.13, hx + 0.13])
     b.block(x, skin + 0.0225, hz + 0.26, 0.07, 0.055, 0.14, bar, M.Metal, Z.Roof, 0.004);
+  // The pin runs through both hinge blocks, 5 mm proud at each end (it lay along their tops).
   b.rod(
-    { x: hx - 0.165, y: skin + 0.05, z: hz + 0.275 },
-    { x: hx + 0.165, y: skin + 0.05, z: hz + 0.275 },
+    { x: hx - 0.17, y: skin + 0.036, z: hz + 0.275 },
+    { x: hx + 0.17, y: skin + 0.036, z: hz + 0.275 },
     0.008,
     steel,
     M.Metal,
@@ -637,7 +642,8 @@ function intakeStack(b: VehicleBuilder, tuning: VehicleTuning): void {
   const cowl = bonnetTop(z - 0.1);
   continuousTube(
     b,
-    [v(x - 0.2, cowl - 0.05, z - 0.1), v(x - 0.2, cowl + 0.12, z - 0.1), v(x, 1.32, z), v(x, y + 0.22, z)],
+    // The tube runs up into the cap (it stopped 3 cm under it until v2.27, and the cap floated).
+    [v(x - 0.2, cowl - 0.05, z - 0.1), v(x - 0.2, cowl + 0.12, z - 0.1), v(x, 1.32, z), v(x, y + 0.27, z)],
     0.06,
     paint,
     Z.Sides,

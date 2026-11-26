@@ -868,12 +868,18 @@ function chassisAndRecovery(b: VehicleBuilder, tuning: VehicleTuning, wheel: THR
   // under the sill, 0.33 m ahead of the left rear tyre. (It ran on to the tail, where the spare
   // now is. On the 1988 truck the outlet is under the sill ahead of the right rear wheel, behind
   // the sill tank: side-county.jpg. The model's exhaust has always been on the left and stays.)
-  b.rod({ x: -0.3, y: -0.06, z: -0.75 }, { x: -0.3, y: -0.09, z: 0.5 }, 0.028, steel);
-  b.rod({ x: -0.3, y: -0.09, z: 0.5 }, { x: -0.74, y: -0.12, z: 0.66 }, 0.028, steel);
+  // The pipe and silencer are 2 cm further in than before v2.27 (the silencer's side was 5 mm
+  // inside the rail's inner face), and the tail drops to −0.14 so it passes 2 cm under the
+  // rail and the left trailing link. A hanger joins the tail to the rail where it passes under
+  // it, and another hangs its end from the body's sill.
+  b.rod({ x: -0.28, y: -0.06, z: -0.75 }, { x: -0.28, y: -0.09, z: 0.5 }, 0.028, steel);
+  b.rod({ x: -0.28, y: -0.09, z: 0.5 }, { x: -0.74, y: -0.14, z: 0.66 }, 0.028, steel);
+  b.block(-0.43, -0.075, 0.552, 0.04, 0.035, 0.03, black, M.Rubber, Z.Trim);
+  b.rod({ x: -0.68, y: -0.13, z: 0.64 }, { x: -0.68, y: SILL, z: 0.64 }, 0.008, black, M.Rubber, Z.Trim);
   b.slot = M.Metal;
   b.tag = Z.Trim;
   b.push()
-    .translate(-0.3, -0.07, 0.2)
+    .translate(-0.28, -0.07, 0.2)
     .rotate(Math.PI / 2, 0, 0);
   b.geometry(new THREE.CylinderGeometry(0.085, 0.085, 0.5, 12), steel.clone().multiplyScalar(0.6));
   b.pop();
