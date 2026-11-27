@@ -2856,3 +2856,25 @@ The owner's report (issue #252): the mud flicked up from the tyres is too chunky
 ### Tests
 
 New `tests/mudSpray.test.ts`: a bogged car in a forward gear throws mud backwards whichever way its speed reads, and forwards in reverse; a rolling wheel turns the way the car goes; harder spin throws faster; flecks are 2 to 5 cm across with fewer than one in ten up to 8 cm, all drawn out; more pieces than before, inside the pool. It and `tests/mq.test.ts` pass. The full unit run on v2.29, in a separate checkout, was half way through when this was published and had found only the MQ bound; the next update's notes record how it ended.
+
+## v2.31: signs that can be read from the driver's seat
+
+The owner's report (issue #253): the signs are basically unreadable by the player.
+
+**Why.** Every sign was one line on a board 1.45 m by 0.36 m, drawn on a 256 × 64 texture, with long wording shrunk until it fitted. A short name was lettered 0.17 m high at best; "Nolans Brook — in, right to the big rock, then across" came out 0.07 m high. The hand-lettered face is also thin, so at a distance its strokes faded into the board.
+
+**What changed.**
+
+- **The wording is set out by `signLayout()`** (`src/sim/world/signLayout.ts`, pure): it breaks at each dash, slash or dot, then between words, over up to three lines of lettering 0.30 m high. Wording that does not fit in three lines comes down in steps to 0.24 m and no further. An arrow stays on the line it points from.
+- **The board is as big as the wording needs:** 1.2 to 2.2 m wide and 0.54, 0.87 or 1.21 m high for one, two or three lines, with its top edge where it was (2.05 m, just under the top of the post). Its width stops at 2.2 m because a post may stand 1.2 m from a track's edge (`tests/episodeSigns.test.ts`), and a wider board would hang over the track.
+- **The lettering is bolder and darker:** each stroke is painted thicker and the board is a little paler, so the lettering stays dark when the board is only a few dozen pixels wide on the screen. The texture is 160 pixels to the metre and is kept sharp at a slant.
+- **Read from behind, the post no longer crosses the lettering.** A double-sided sign had one board on the front of its post with the back lettering between board and post, so the post stood across the middle of it. It now has a second board on the back of the post. A sign with an arrow is one-sided, as before.
+- **No sign had to be reworded.** The longest, Nolans Brook's, fits in three lines at 0.28 m. (That sign goes in the next update for another reason: it says where to steer.)
+
+**Looked at from the driver's seat** (the 40 Series, 1280 × 720, the Low preset, which is the hardest case): "Eliot and Twin Falls" (two lines) and Nolans Brook's three lines can both be read at 12 to 14 m, and not at 22 to 26 m. Seen from behind, the lettering is clear of the post. On a sharper screen or a higher preset they read from further off. If 12 m is still too close at the speeds the owner drives, the next step is taller lettering on a wider board, which needs the posts moved further from the tracks.
+
+**Where each part is.** The front board is on the front of the post, the back board on its back, both centred on the post and both with their top edge 5 cm below the post's top; the lettered faces lie half a centimetre proud of each board's outer side.
+
+### Tests
+
+New `tests/signLayout.test.ts`: a short name is one line at full size, over 1.7 times the old best; long wording wraps at its dash, then between words; arrows and slashes; the board's size; and every sign on every track (over 40) is lettered at or above the smallest size allowed, in three lines or fewer, on a board no wider than the limit. `tests/signs.test.ts` (both faces lie flat on the board at every heading; one face with an arrow) passes unchanged.
