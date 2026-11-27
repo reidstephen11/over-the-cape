@@ -23,3 +23,26 @@ For each update:
 3. Publish first, fix later: the owner is the only player and wants to test each update as soon as it is ready. Run `npm run lint` and `npm run build` (both must pass, because the deploy needs the build), then go straight to step 4. Start `npm test`, and `npm run test:e2e` when the change touches the page or the HUD, in the background, and don't wait for them.
 4. Open a pull request into `main` and merge it straight away, without waiting for its GitHub checks or the tests. Check the tests once they finish; if they find a problem, fix it in a follow-up update.
 5. Tell the owner the new version is live at https://reidstephen11.github.io/over-the-cape/ once the deploy run has finished.
+
+## Agent skills
+
+Matt Pocock's skills (https://github.com/mattpocock/skills) are in `.claude/skills`, copied unchanged; `/ask-matt` says which one fits a situation. The usual path for an idea is `/grill-with-docs`, then `/to-spec`, `/to-tickets`, `/implement` for each ticket, and `/retro`.
+
+### Issue tracker
+
+Specs and tickets are GitHub issues on `reidstephen11/over-the-cape`; `docs/ROADMAP.md` stays the list of ideas not yet started. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` at the repo root, written as terms are settled, and decisions in `docs/DECISIONS.md`. See `docs/agents/domain.md`.
+
+### Where this repo's rules come first
+
+- **Grilling:** the owner wants one question at a time, each with a recommended answer that "yes" accepts. Do not ask a whole round at once.
+- **Shipping:** a ticket that changes the game is one update and ships by "Shipping every update" above (publish first, tests in the background). `/implement`'s full test run and `/code-review` do not hold up the merge: run the review on the diff before the pull request when it is quick, and otherwise act on it in a follow-up update.
+- **Vehicles:** "Modelling a vehicle" above applies to any ticket that touches a body.
+- **Docs-only changes** (specs, glossary, these settings) need no version number.
