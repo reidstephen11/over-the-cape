@@ -343,6 +343,13 @@ export const longDriveBog: BogDef = (() => {
  */
 export const LONG_DRIVE_BOG_ANCHORS = [LONG_DRIVE_BOG - 17, LONG_DRIVE_BOG + 17] as const;
 export const LONG_DRIVE_BOG_ANCHOR_SIDE = -3.6;
+/**
+ * How far to the firm side the faint wheel lines pass the bog (v2.33). The mud reaches 1 m
+ * past the track's line at its widest, so a car on these lines has its bog-side wheels a
+ * quarter of a metre clear of it and its other wheels on the grass beside the track. (The
+ * scripted drive passes at -0.9, with its bog-side wheels in the mud's edge.)
+ */
+export const LONG_DRIVE_BOG_ROUND = -2;
 
 /**
  * Nolans Brook, 40 m wide over sand and deep in the middle. The line goes in, hard right

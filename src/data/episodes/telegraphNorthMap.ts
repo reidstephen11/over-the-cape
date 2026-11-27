@@ -7,8 +7,10 @@ import {
   CANAL_MARKERS,
   ELIOT_STOP,
   FRUIT_BAT_STOP,
+  LONG_DRIVE_BOG,
   LONG_DRIVE_BOG_ANCHORS,
   LONG_DRIVE_BOG_ANCHOR_SIDE,
+  LONG_DRIVE_BOG_ROUND,
   NOLANS_MARKER,
   NOLANS_MARKER_RADIUS,
   canalCreek,
@@ -178,8 +180,35 @@ const tracks: TrackDef[] = [
     ...sand,
     // Whoops in soft sand.
     rough: { bumps: 0.1, swells: 0.34, potholes: 0.5, potholeDepth: 0.15 },
+    // Who went in and who went round (v2.33): deep, cut-up ruts run on into the bog, and a
+    // fainter set of wheel lines swings round it on the firm side, where the winch rocks are.
+    wheelMarks: [
+      {
+        from: LONG_DRIVE_BOG - 40,
+        to: LONG_DRIVE_BOG + 14,
+        strength: 1.3,
+        cutUp: 0.22,
+        offset: [
+          [LONG_DRIVE_BOG - 40, 0],
+          [LONG_DRIVE_BOG - 14, 0.8],
+        ],
+      },
+      {
+        from: LONG_DRIVE_BOG - 36,
+        to: LONG_DRIVE_BOG + 36,
+        strength: 0.45,
+        // Out beside the bog and back in by the winch rocks, which stand 17 m either side of it.
+        offset: [
+          [LONG_DRIVE_BOG - 30, 0],
+          [LONG_DRIVE_BOG - 10, LONG_DRIVE_BOG_ROUND],
+          [LONG_DRIVE_BOG + 10, LONG_DRIVE_BOG_ROUND],
+          [LONG_DRIVE_BOG + 30, 0],
+        ],
+      },
+    ],
+    // What the ground says, not where to steer (v2.33).
     routeHint:
-      'Soft sand: 18 psi. At the bog, keep the left wheels on the firm edge; a rock to winch to at each end',
+      'Soft sand: 18 psi. Dark, cut-up ground is soft: see which wheel lines go in and which go round. A rock to winch to at each end',
   },
   {
     id: 'nolans-brook',

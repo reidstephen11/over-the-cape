@@ -165,7 +165,7 @@ export const telegraphNorthEpisode: EpisodeDef = {
     },
     'long-drive': {
       title: 'The long drive',
-      text: 'A long run of soft sand with whoops in it before the last crossing. Keep the tyres at 18 psi and keep it moving. Two thirds along, a bog lies across the right of the track: keep the left wheels on the firm edge. There is a rock to winch to before it and another past it, both on the left.',
+      text: 'A long run of soft sand with whoops in it before the last crossing. Keep the tyres at 18 psi and keep it moving. Two thirds along there is a bog. Dark ground cut up by spinning wheels is soft. Look at the wheel lines before you reach it: the deep, cut-up ruts run on into the dark patch, and a fainter pair swings round it on firm ground. There is a rock to winch to before it and another past it, beside the track.',
     },
     'nolans-brook': {
       title: 'Nolans Brook',
