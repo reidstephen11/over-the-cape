@@ -236,8 +236,9 @@ export interface TrackDef {
   /**
    * Worn wheel lines drawn on the ground (src/sim/world/wheelMarks.ts): stretches [from, to],
    * metres along the track, where two dark tyre lines show that others drive here. Only
-   * drawn: the ground is the same. Not drawn under water. A stretch can also be a
-   * `WheelMarkStretch`, for lines off the track's own line, stronger or fainter (v2.33).
+   * drawn: the ground is the same. Not drawn under water. A negative `from` counts back from
+   * the track's end (v2.35). A stretch can also be a `WheelMarkStretch`, for lines off the
+   * track's own line, stronger or fainter (v2.33).
    */
   wheelMarks?: ReadonlyArray<readonly [number, number] | WheelMarkStretch>;
   /** Grade evenly between these [from, to] distances along the track (switchbacks, causeways). */

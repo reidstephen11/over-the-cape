@@ -124,3 +124,43 @@ describe('the CREB’s fords with a line to pick', () => {
     expect(crebEpisode.notes!['daintree-crossing'].text).not.toMatch(/curves downstream/i);
   });
 });
+
+describe('the CREB’s six plain fords (v2.35)', () => {
+  it('have worn wheel lines down to the water and up the far bank, and ordinary water', () => {
+    const lines = (id: string) => {
+      const line = track(id);
+      return wheelMarkSpots([line], (x, z) => t.waterDepthAt(x, z)).map((m) => ({
+        ...m,
+        along: trailProgress(line, m.x, m.z).along,
+      }));
+    };
+    const edge = (marks: { along: number }[], from: number, to: number, id: string) => {
+      const before = marks.filter((m) => m.along < from && m.along > from - 30);
+      const after = marks.filter((m) => m.along > to && m.along < to + 30);
+      expect(before.length, `${id} in`).toBeGreaterThan(40);
+      expect(after.length, `${id} out`).toBeGreaterThan(40);
+      expect(from - Math.max(...before.map((m) => m.along)), `${id} in`).toBeLessThan(4);
+      expect(Math.min(...after.map((m) => m.along)) - to, `${id} out`).toBeLessThan(4);
+    };
+    // Where each track is under water (metres along it).
+    edge(lines('paddock-road'), 497.5, 503, 'paddock creek south');
+    edge(lines('paddock-road'), 897, 903, 'paddock creek north');
+    edge(lines('donovans-creek'), 112.5, 119.5, 'Donovan’s');
+    edge(lines('bloomfield-track'), 497.5, 503, 'southern creek');
+    edge(lines('bloomfield-track'), 1377.5, 1383, 'northern creek');
+    // Roaring Meg's ford is where one track ends and the next starts.
+    const ridge = track('creb-ridge');
+    const down = lines('creb-ridge');
+    expect(down.length).toBeGreaterThan(40);
+    expect(Math.min(...down.map((m) => m.along))).toBeGreaterThan(ridge.poly.length - 23);
+    const up = lines('roaring-meg-climb');
+    expect(up.length).toBeGreaterThan(40);
+    expect(Math.max(...up.map((m) => m.along))).toBeLessThan(26.5);
+    // Every mark anywhere on the CREB is on dry ground.
+    for (const m of wheelMarkSpots(world.features.tracks, (x, z) => t.waterDepthAt(x, z)))
+      expect(t.waterDepthAt(m.x, m.z)).toBeLessThanOrEqual(0.02);
+    // These six are straight, shallow crossings with nothing to read: their water is as it was.
+    for (const id of ['paddock-creek-south', 'paddock-creek-north', 'roaring-meg', 'donovans'])
+      expect(creek(id).clear, id).toBeUndefined();
+  });
+});
