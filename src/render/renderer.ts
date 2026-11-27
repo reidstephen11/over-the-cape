@@ -107,6 +107,7 @@ export class GameRenderer {
       new WaterCurrent(world.features.creeks),
       world.features.creekRise,
       world.features.creekClear,
+      world.features.creekClearDepths,
     );
     this.water.setSky(env);
     this.scene.add(this.water.group);

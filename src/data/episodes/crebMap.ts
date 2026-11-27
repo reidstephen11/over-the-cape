@@ -101,6 +101,12 @@ const bush = {
 /** The steep pinches: scored with deep cross-ruts by water running down them. */
 const pinch = { bumps: 0.1, washouts: 9, washoutDepth: 0.42 } as const;
 
+/**
+ * Worn wheel lines either side of a ford: from 22 m before the track goes under water (`from`,
+ * metres along it) to 22 m after it comes out (`to`). Under water there are none.
+ */
+const fordLines = (from: number, to: number): readonly [number, number] => [from - 22, to + 22];
+
 const baseTracks: TrackDef[] = [
   {
     id: 'upper-daintree-road',
@@ -123,6 +129,8 @@ const baseTracks: TrackDef[] = [
     ruts: 0,
     camber: 0.3,
     pinMode: 'follow',
+    // Worn wheel lines down to the water and up the far bank (v2.34).
+    wheelMarks: [[0, 1e9]],
   },
   {
     id: 'paddock-road',
@@ -245,6 +253,9 @@ const baseTracks: TrackDef[] = [
     surface: 'gravel',
     ...road,
     pinMode: 'follow',
+    // Worn wheel lines either side of the fords with a line to pick (v2.34): the middle creek
+    // and the Little Annan.
+    wheelMarks: [fordLines(786.5, 794), fordLines(2176.5, 2201.5)],
   },
   {
     id: 'roaring-meg-falls',
@@ -594,6 +605,9 @@ export const crebMap: MapDef = {
       id: 'daintree',
       name: 'Daintree River',
       valley: 70,
+      // Clear water (v2.34): the gravel bar shows pale and broken, the holes and the river
+      // either side of it dark. A storm's rise muddies it.
+      clear: true,
       // Running high after the overnight rain: enough to carry a vehicle off the deep line.
       flow: 2.9,
       points: [
@@ -687,6 +701,10 @@ export const crebMap: MapDef = {
       id: 'little-annan',
       name: 'Little Annan River',
       valley: 50,
+      // Clear water with depths of its own (v2.34): a small river, where the road's ford at
+      // 0.55 m is the deep water and the bar downstream is 0.28 m. The bar shows pale and
+      // broken, the ford dark and smooth.
+      clear: { deepAt: 0.6, shallowFull: 0.32, shallowNone: 0.5 },
       flow: 2.4,
       points: [
         { x: -640, z: -2420, water: 29, halfWidth: 4, depth: 0.6 },

@@ -278,7 +278,8 @@ function creekAcross(
     depth = 0.45,
     flow = 1.6,
     hole,
-  }: { halfWidth?: number; depth?: number; flow?: number; hole?: number } = {},
+    clear,
+  }: { halfWidth?: number; depth?: number; flow?: number; hole?: number; clear?: boolean } = {},
 ): CreekDef {
   const h = (headingDeg * Math.PI) / 180;
   const at = (l: number) => [x + Math.cos(h) * l, z + Math.sin(h) * l].map((v) => Math.round(v * 10) / 10);
@@ -287,6 +288,7 @@ function creekAcross(
     name: 'Creek',
     valley: 24,
     flow,
+    clear,
     // A scour hole `hole` metres downstream of the ford.
     holes: hole === undefined ? undefined : [{ x: at(-hole)[0], z: at(-hole)[1], radius: 2.2, depth: 0.6 }],
     points: levels.map(([l, water]) => ({
@@ -369,7 +371,8 @@ export const stretchCreeks: CreekDef[] = [
       [-60, 4.7],
       [-70, 4.1],
     ],
-    { halfWidth: 4, depth: 0.55, flow: 2.4, hole: 5.5 },
+    // Clear water (v2.34): the scour hole shows as a dark patch below the ford's pale water.
+    { halfWidth: 4, depth: 0.55, flow: 2.4, hole: 5.5, clear: true },
   ),
   creekAcross('bloomfield-creek-north', fords.north, [
     [-40, 7.5],

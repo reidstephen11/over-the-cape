@@ -1,5 +1,5 @@
 import { SurfaceId } from '../../data/surfaces';
-import type { FlatDef, MapDef, ScarpDef, HillDef, TrackDef } from './mapTypes';
+import type { ClearWaterDef, FlatDef, MapDef, ScarpDef, HillDef, TrackDef } from './mapTypes';
 import { Noise2D, clamp, smoothstep } from './noise';
 import { attrAt, densify, locate, type DensePolyline } from './polyline';
 import {
@@ -1151,13 +1151,18 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
   const creekDistance = new Uint8Array(n).fill(255);
   // Where the nearest creek is drawn as clear water (only when a creek asks for it).
   const creekClear = creekLines.some((c) => c.def.clear) ? new Uint8Array(n) : undefined;
+  // Clear creeks with depths of their own: sample value 2 + its place in this list.
+  const creekClearDepths: ClearWaterDef[] = [];
+  const clearKind = creekLines.map((c) =>
+    typeof c.def.clear === 'object' ? 1 + creekClearDepths.push(c.def.clear) : c.def.clear ? 1 : 0,
+  );
   for (let i = 0; i < n; i++) {
     const d = creekDist[i];
     if (d > 40) continue;
     const hw = creekHalfAt[i];
     creekDistance[i] = Math.min(255, Math.max(0, Math.round(d - hw)));
     const c = creekLines[creekOwner[i]];
-    if (creekClear && c.def.clear) creekClear[i] = 1;
+    if (creekClear && c.def.clear) creekClear[i] = clearKind[creekOwner[i]];
     const u = atParam(c.poly.u, creekParam[i]);
     const gravel = attrAt(c.gravel, u) > 0.5;
     // A sandy river's dry bed runs out either side of the water to its banks.
@@ -1233,6 +1238,7 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
       trackDistance,
       creekDistance,
       ...(creekClear ? { creekClear } : {}),
+      ...(creekClearDepths.length ? { creekClearDepths } : {}),
       mudHoles,
     },
   };

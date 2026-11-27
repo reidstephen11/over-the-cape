@@ -136,9 +136,19 @@ export interface CreekDef {
    * Clear water that can be read from the bank (src/render/water.ts): the bed shows through
    * the shallows, shallow water over a bar breaks into ripples where the creek runs, and the
    * colour is at its darkest from 1.1 m deep (elsewhere from 0.8 m). Its bars are pale gravel.
-   * Only how the water is drawn: the bed, the depth and the current are the same.
+   * Only how the water is drawn: the bed, the depth and the current are the same. A small
+   * river whose deep water is shallower than that gives its own depths (v2.34).
    */
-  clear?: boolean;
+  clear?: boolean | ClearWaterDef;
+}
+
+/** The depths clear water is drawn by (m). */
+export interface ClearWaterDef {
+  /** The colour is at its darkest from this deep. */
+  deepAt: number;
+  /** The bed shows and the surface breaks fully up to this deep, and not at all from `shallowNone`. */
+  shallowFull: number;
+  shallowNone: number;
 }
 
 export interface TrackStepsDef {

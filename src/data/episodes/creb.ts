@@ -99,7 +99,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'daintree-crossing': {
       title: 'Daintree River crossing',
-      text: 'The river is wide here and can be a metre deep in the middle. Don’t drive straight across: a gravel bar curves downstream and keeps the water shallower. After the wet it is strewn with boulders and scoured into holes, so weave a line between them and take it slowly. Saltwater crocodiles live in this river, so don’t get out to walk the crossing.',
+      text: 'The river is wide here and can be a metre deep in the middle. A gravel bar keeps the water shallower, and it does not run the shortest way across. Stop on the bank and read the water: where it is pale and broken the bar lies just under it; where it is dark and smooth it is deep. After the wet the bar is strewn with boulders and scoured into holes, which show as dark patches in the pale water, so weave a line between them and take it slowly. Wheel lines go down to the water and come out again on the far bank. Saltwater crocodiles live in this river, so don’t get out to walk the crossing.',
     },
     'orient-low-range': {
       title: 'Low range',
@@ -151,7 +151,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'bloomfield-creeks': {
       title: 'Creek crossings',
-      text: 'After the wet, creeks off the hills run fast across the Bloomfield Track. Slow right down before the water and keep moving once you are in it: stop in the current and it pushes the car downstream, into the scour hole below the ford.',
+      text: 'After the wet, creeks off the hills run fast across the Bloomfield Track. Slow to a crawl before the water and keep moving once you are in it: stop in the current and it pushes the car downstream, into the scour hole below the ford. At the middle creek the water is clear enough to see it: the ford is pale and broken, and the hole is the dark, smooth patch just below it.',
     },
     'ridge-bog': {
       title: 'Bog in the saddle',
@@ -199,7 +199,7 @@ export const crebEpisode: EpisodeDef = {
     },
     'little-annan': {
       title: 'Little Annan River',
-      text: 'The road fords the river where it is deepest and fastest. Downstream, where it widens, a gravel bar keeps the water about half as deep: a longer way round along the south bank, but a safer one when the river is up.',
+      text: 'The road fords the river where it is deepest and fastest. Downstream, where it widens, a gravel bar keeps the water about half as deep: a longer way round along the south bank, but a safer one when the river is up. You can see the difference from the bank: the water at the road’s ford is dark and smooth, and over the bar it is pale and broken. Rain muddies the river as it rises, and then there is less to see.',
     },
     'knoll-top': {
       title: 'Knoll play area',

@@ -2928,3 +2928,27 @@ The second ticket (#256) of "ground that tells the story, beyond Canal Creek" (s
 ### Tests
 
 New `tests/readableBog.test.ts` (6): two sets, strong and faint, with nothing in between at the bog; the strong ones reach the bog's middle on black soil, on its side of the track's line, scattered; the faint ones are never on mud or black soil, pass on the rocks' side, and are back within 2.4 m of the track's line by the rocks; the two part company more than 25 m before the bog and join more than 25 m after; the bog itself is as it was; no "left", "right" or "straight" in the hint or the note. `tests/readableCreek.test.ts` now lists the long drive among the tracks with wheel lines. These, `tests/readableNolans.test.ts`, `tests/telegraphNorth.test.ts`, `tests/telegraphNorthStage2.test.ts` and `tests/telegraphNorthDrive.test.ts` pass (6 files, 79 tests).
+
+## v2.34: the CREB's three fords with a line to pick can be read
+
+The third ticket (#257) of "ground that tells the story, beyond Canal Creek" (spec: issue #254): the full treatment at the Daintree, the Little Annan and the middle creek on the Bloomfield Track.
+
+**Nothing a wheel meets has changed.** Depths, beds, bars, holes and currents are what they were.
+
+**A count to correct.** The owner was told the CREB has ten creek crossings, three with a line to pick and seven without. Mapping every place a CREB track goes under water found eleven wet stretches, and one of them is the Bloomfield River under its bridge, which is not forded. The three with a line to pick take four of the rest (the Little Annan has two: the road's ford and the bar on the Shallow crossing fork). That leaves six plain fords for the next ticket, not seven: the two paddock creeks, Roaring Meg, Donovan's, and the southern and northern creeks on the Bloomfield Track.
+
+**1. The Daintree** (`clear: true`). The gravel bar (0.6 m) is pale and broken, with a pale gravel bed as at Canal Creek; the river beside it (1.2 to 1.6 m) and the two holes scoured into the bar (about 1.1 m) are dark. Wheel lines along the whole crossing track, which follows the bar: down to the water and out on the far bank.
+
+**2. The Little Annan** needed depths of its own. It is a small river: the road's ford, "where it is deepest and fastest", is 0.55 m deep and the bar downstream is 0.28 m. By the usual depths both count as shallows in full, and the whole river would have been drawn pale and broken with nothing to choose. `CreekDef.clear` can now be an object giving the depths the creek is drawn by; the Little Annan's are darkest from 0.6 m, shallows in full to 0.32 m and none from 0.5 m. So the bar is pale and broken and the road's ford is dark and smooth. Wheel lines either side of the road's ford and either side of the bar on the Shallow crossing track.
+
+**3. The middle creek on the Bloomfield Track** (`clear: true`). The ford (0.55 to 0.64 m) is pale and broken; the scour hole 5.5 m downstream (over 1 m) is a dark, smooth patch just below it. Wheel lines either side of the ford.
+
+**How a creek gives its own depths.** `features.creekClear` holds 0 for ordinary water, 1 for clear water at the usual depths, and 2 + k for a creek with depths of its own, which are entry k of `features.creekClearDepths`. `shallowsOf()` and `depthTone()` in `src/render/water.ts` take the depths.
+
+**The words.** The Daintree's note said "Don't drive straight across: a gravel bar curves downstream"; it now says a bar keeps the water shallower and does not run the shortest way across, and to read the water: pale and broken over the bar, dark and smooth where deep, the holes dark patches in the pale. The Little Annan's note keeps its description of the two ways (they are a signposted fork) and adds what each looks like from the bank. The creek-crossings note adds the middle creek's hole. "Slow right down" became "Slow to a crawl", only because the test for directions looks for the word "right".
+
+**Looked at** (the game in a browser, Low preset, the short 40, 9 am). The Daintree from above: a pale band across the river, dark blue water either side on the upstream side, the two holes dark spots on it, boulders, wheel lines on both banks; from the driver's seat at the water's edge: pale broken water ahead with the boulders standing in it and darker water beyond. The Little Annan from above: the river dark along its length, the road crossing it in the dark, and the bar pale and broken where the river widens. The middle creek from above: a pale, broken creek with one dark patch beside the ford's line and wheel lines on both banks; from the driver's seat: the pale band and the wheel lines, the hole hard to pick out at that low angle. Two of the first seat photographs were taken with the camera still above the creek and were taken again.
+
+### Tests
+
+New `tests/readableCreb.test.ts` (7): clear water at the three creeks and no others; the Daintree's bar shallows in full with a pale bed, its holes and the river beside it dark; the Little Annan's own depths, its bar pale and its ford dark; the middle creek's ford pale and its hole dark; depths as they were; wheel lines within 4 m of the water on the way in and out at all four wet stretches, on dry ground; no "left", "right" or "straight" in the three notes. It, the other three readable-ground tests, `tests/crebForks.test.ts` and `tests/crebStretches.test.ts` pass (6 files, 44 tests). The CREB's scripted drives are in the full unit run, started on v2.33 in a separate checkout and checked in the next update's notes.
