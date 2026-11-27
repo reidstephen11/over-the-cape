@@ -366,17 +366,14 @@ export const nolansBrook: Waypoint[] = [
   [10, -940, PLAIN],
 ];
 /**
- * Nolans Brook's line, marked (v2.20). From the driver's seat the shoal's paler water cannot
- * be told from the deep. A rock stands on the near bank at the water's edge with a sign above
- * it, and a second sign on the far bank beside the way out, all on the shoal's line across
- * (x = 18): along the near bank in the shallows to the rock, then turn and drive at the sign.
+ * Nolans Brook's rock (v2.20): on the near bank at the water's edge, on the shoal's line
+ * across (x = 18). Two signs marked that line with it until v2.32, when the brook's water was
+ * made clear enough to read: the shoal shows pale and broken, the deep dark. The rock stays,
+ * as something a driver would steer by once the afternoon's rise has muddied the water.
  */
 export const NOLANS_MARKER: readonly [number, number] = [18, -849.2];
 /** A big rock, to be picked out from the way in 18 m off (v2.23; it was 0.7 m). */
 export const NOLANS_MARKER_RADIUS = 1.3;
-/** A sign above the rock, facing the car as it comes along the bank from the way in. */
-export const NOLANS_TURN_SIGN: readonly [number, number] = [19.2, -847.4];
-export const NOLANS_AIM_SIGN: readonly [number, number] = [20.8, -898.5];
 // --- Creeks --------------------------------------------------------------------------------
 
 export const northCreeks: CreekDef[] = [
@@ -602,6 +599,9 @@ export const northCreeks: CreekDef[] = [
     // A soft sandy bottom everywhere but on the shoal (v2.22): Hema's "firmer bottom" on the
     // hard right line.
     softBed: true,
+    // Clear water (v2.32): the shoal shows pale and broken, the dug-out straight line dark.
+    // The afternoon's rise muddies it: faint by five on the commonest day, gone soon after.
+    clear: true,
     // The shoal on the upstream side that the hard right line follows.
     bars: [
       { x: 5, z: -857, radiusX: 8, radiusZ: 8, rotationDeg: 0, depth: 0.55 },

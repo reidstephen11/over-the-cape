@@ -43,8 +43,9 @@ describe('clear water', () => {
     expect(depthTone(0.8, false)).toBe(1);
   });
 
-  it('is asked for by Canal Creek alone, and marks its water and no other creek’s', () => {
-    for (const c of telegraphNorthMap.creeks) expect(!!c.clear, c.id).toBe(c.id === 'canal-creek');
+  it('is asked for by Canal Creek and, since v2.32, Nolans Brook, and marks their water and no other creek’s', () => {
+    for (const c of telegraphNorthMap.creeks)
+      expect(!!c.clear, c.id).toBe(c.id === 'canal-creek' || c.id === 'nolans-brook');
     const clear = world.features.creekClear!;
     expect(clear).toBeDefined();
     const at = (x: number, z: number) => clear[t.index(x, z)];
@@ -52,9 +53,8 @@ describe('clear water', () => {
     expect(at(-0.5, 612)).toBe(1);
     expect(at(6, 612)).toBe(1);
     expect(at(-8, 603.5)).toBe(1);
-    // Sam Creek, Nolans Brook and Fruit Bat's pool are drawn as they were.
+    // Sam Creek and Fruit Bat's pool are drawn as they were.
     expect(at(2, 332)).toBe(0);
-    expect(at(18, -872)).toBe(0);
     expect(at(254, 890)).toBe(0);
   });
 
@@ -81,8 +81,9 @@ describe('clear water', () => {
 });
 
 describe('worn wheel lines at Canal Creek', () => {
-  const marks = wheelMarkSpots(world.features.tracks, (x, z) => t.waterDepthAt(x, z));
   const line = track('canal-creek');
+  // Canal Creek's own lines (Nolans Brook has some too since v2.32).
+  const marks = wheelMarkSpots([line], (x, z) => t.waterDepthAt(x, z));
 
   it('run down the ramp to the water and up the winding exit, two lines a wheel track apart, on dry ground', () => {
     expect(marks.length).toBeGreaterThan(400);
@@ -108,7 +109,7 @@ describe('worn wheel lines at Canal Creek', () => {
     for (const m of first) expect(m.x).toBeLessThan(0);
   });
 
-  it('leave the old exit bare, and no other track on the map has any', () => {
+  it('leave the old exit bare, and only Nolans Brook has any besides (v2.32)', () => {
     const old = track('canal-old-exit');
     expect(old.def.wheelMarks).toBeUndefined();
     // Between where the two exits part (8 m up the old one) and where they join again at the
@@ -118,7 +119,8 @@ describe('worn wheel lines at Canal Creek', () => {
       if (on.along > 8 && on.along < old.poly.length - 12) expect(on.distance).toBeGreaterThan(1.6);
     }
     for (const tr of world.features.tracks)
-      if (tr.def.id !== 'canal-creek') expect(tr.def.wheelMarks, tr.def.id).toBeUndefined();
+      if (tr.def.id !== 'canal-creek' && tr.def.id !== 'nolans-brook')
+        expect(tr.def.wheelMarks, tr.def.id).toBeUndefined();
   });
 
   it('are spoken for in the hint and the note, which say how to read the creek and not where to steer', () => {

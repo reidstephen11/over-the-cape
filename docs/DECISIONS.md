@@ -2878,3 +2878,31 @@ The owner's report (issue #253): the signs are basically unreadable by the playe
 ### Tests
 
 New `tests/signLayout.test.ts`: a short name is one line at full size, over 1.7 times the old best; long wording wraps at its dash, then between words; arrows and slashes; the board's size; and every sign on every track (over 40) is lettered at or above the smallest size allowed, in three lines or fewer, on a board no wider than the limit. `tests/signs.test.ts` (both faces lie flat on the board at every heading; one face with an arrow) passes unchanged.
+
+## v2.32: Nolans Brook can be read from the bank
+
+The first ticket (#255) of "ground that tells the story, beyond Canal Creek" (spec: issue #254). The owner chose to carry Canal Creek's tools to the next places without waiting for the uncoached play test, which stays on the roadmap. At Nolans Brook he also chose: the two steering signs go (he reports the signs could not be read anyway), the big rock stays, the words say how to read the brook, and a late arrival finds the brook harder to read.
+
+**Nothing a wheel meets has changed.** The bed, the depths, the shoal, the holes, the soft bottom, the current and the rise are what they were. The scripted drives across the brook pass unchanged.
+
+**1. Clear water** (`clear: true` on the brook). As at Canal Creek: the shoal, 0.55 m down, counts as shallows in full, so its bed shows through and its surface breaks as the brook runs; the brook's ordinary 1.4 m and the dug-out straight line are at the darkest colour.
+
+**2. A dark bed under the deep** (new, `src/sim/world/terrainGen.ts`). Switching clear water on was not enough: looked at from above and from the seat, the deep water was mid-grey, not dark, because the brook's bed is pale sand and a third of it shows through even deep water. Canal Creek did not have this problem because its bed is dark gravel and only its shelf is pale. So in a clear creek over sand, the bed under water deeper than 0.9 m, off the bars, is now drawn in the dark creek-bed colour. The shoal and the shallows along both banks keep their pale sand. Only the tint: the surface a wheel meets is the same.
+
+**3. It fades with the rain, as agreed.** The clear look already fades as a creek rises and is gone at 0.3 m of rise (`clearWater.siltedAt`, now named and tested). At Nolans, which takes the whole of the storm's rise, that is about two thirds left at 4 pm, an eighth at 5 pm ("still shows faintly until about 5 pm", as the owner asked) and none from about 5:15 pm on the commonest day. Two things let the shoal show through the mud all the same, and were changed for every creek: muddy water is now drawn nearly opaque (it was two thirds opaque whatever its silt, so the dark and pale beds showed through it), and browner (0.7 of the way to mud at full silt, from 0.55). Looked at from above at 5:40 pm the brook is brown from bank to bank.
+
+**4. Worn wheel lines** along the brook's own track, which are drawn on dry ground only: down the near bank to the water, and from the far water's edge up to the camp. The track goes into the water at x = 0 and comes out at x = 18, so the far-bank lines are well to the right of where the near ones go in: that, and the pale band, are the clue.
+
+**5. The signs and the rock.** "Turn across here" (above the rock) and "Aim here from the rock" (on the far bank) are removed. The big rock stays at the water's edge on the near bank, where the shoal's line across starts: it is what is left to go by when the water is brown. The approach sign, "Nolans Brook — in, right to the big rock, then across", now reads "Nolans Brook — deep crossing".
+
+**6. The words.** The hint was "Into the water, hard right to the big rock, then straight across to the sign. Crawl"; it is "Read the water: pale and broken is the shoal, dark is deep. Far-bank wheel lines show the way out. Crawl". The note keeps the history (Bridge Creek, the biggest obstacle south of the Jardine, a soft sandy bottom, the old line dug out, one line shallower and firmer) and then tells the driver to stop and read the water, says what the wheel lines and the rock are for, and that the rain takes the pale water away. The map note and the briefing no longer say "hard right". After a recovery, the cue back to the line carries the new hint.
+
+**Looked at** (the game in a browser, Low preset, the short 40, the commonest day). Midday from above: a pale, broken band from the near bank across to where the far-bank wheel lines come out, dark water either side, the dug-out hole dark beside it with the drowned HiLux at its edge, pale shallows along both banks. Midday from the driver's seat on the bank: the pale band between dark water, leading right towards the far-bank wheel lines, the HiLux in the dark. 5 pm from above: the band only faintly paler. 5 pm from the seat, in the rain: grey-brown water with little to choose, the far-bank wheel lines still plain. 5:40 pm from above, with the lights on: brown bank to bank. The first midday look, before the dark bed, is what showed the deep water was not dark.
+
+**If it is too hard late in the day,** the lever is `clearWater.siltedAt` (a larger figure keeps the pale water longer) or putting one sign back.
+
+### Tests
+
+New `tests/readableNolans.test.ts` (8): the brook asks for clear water and is marked for it; the shoal is shallows in full and under half-way to the deep colour, the deep at the darkest; the pale bed on the shoal and in the shallows and the dark one under the deep, with other sand creeks unchanged; how much of the clear look is left at 12, 3, 4, 5 and 5:30; depths and surfaces as they were; the wheel lines (dry ground, a wheel track either side of the line, the near bank to within 3 m of the water, the far bank out at x > 15); the rock kept and the two signs gone; no "left", "right" or "straight" in the hint, the map note or the note. Changed: `tests/readableCreek.test.ts` (two creeks are clear now, and Nolans' track has wheel lines) and `tests/telegraphNorth.test.ts` (the rock without its signs). These and the other Telegraph North tests, the drives included, pass (7 files, 79 tests).
+
+**The full unit run on v2.29** (in a separate checkout): 122 files, 121 passed; 1,128 tests passed, 2 to do, and 1 failed, the MQ Patrol's 0–60 bound that v2.30 corrected.

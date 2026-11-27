@@ -9,10 +9,8 @@ import {
   FRUIT_BAT_STOP,
   LONG_DRIVE_BOG_ANCHORS,
   LONG_DRIVE_BOG_ANCHOR_SIDE,
-  NOLANS_AIM_SIGN,
   NOLANS_MARKER,
   NOLANS_MARKER_RADIUS,
-  NOLANS_TURN_SIGN,
   canalCreek,
   canalFarEdge,
   canalGullies,
@@ -195,7 +193,12 @@ const tracks: TrackDef[] = [
     camber: 0.2,
     pinMode: 'follow',
     surface: 'sand',
-    routeHint: 'Into the water, hard right to the big rock, then straight across to the sign. Crawl',
+    // Worn wheel lines down to the water and, on the far bank, up from where others came out
+    // of it (v2.32). Under water there are none.
+    wheelMarks: [[0, 1e9]],
+    // How to read it, not where to steer (v2.32).
+    routeHint:
+      'Read the water: pale and broken is the shoal, dark is deep. Far-bank wheel lines show the way out. Crawl',
   },
 ];
 
@@ -295,7 +298,7 @@ const pois: PoiDef[] = [
     x: 0,
     z: -834,
     radius: 16,
-    note: 'Wide and deep: the hard right line',
+    note: 'Wide and deep: read the water for the shoal',
   },
   {
     id: 'nolans-camp',
@@ -341,21 +344,7 @@ const props: PropDef[] = [
     x: 5,
     z: -826,
     headingDeg: 180,
-    text: 'Nolans Brook — in, right to the big rock, then across',
-  },
-  {
-    kind: 'signpost',
-    x: NOLANS_TURN_SIGN[0],
-    z: NOLANS_TURN_SIGN[1],
-    headingDeg: 270,
-    text: 'Turn across here',
-  },
-  {
-    kind: 'signpost',
-    x: NOLANS_AIM_SIGN[0],
-    z: NOLANS_AIM_SIGN[1],
-    headingDeg: 180,
-    text: 'Aim here from the rock',
+    text: 'Nolans Brook — deep crossing',
   },
   { kind: 'fireRing', x: 16, z: -951, headingDeg: 0 },
   { kind: 'logSeat', x: 21, z: -950, headingDeg: 0 },
