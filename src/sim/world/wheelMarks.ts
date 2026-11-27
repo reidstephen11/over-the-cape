@@ -50,7 +50,8 @@ export function wheelMarkSpots(
   for (const track of tracks)
     for (const stretch of track.def.wheelMarks ?? []) {
       const def: WheelMarkStretch = 'from' in stretch ? stretch : { from: stretch[0], to: stretch[1] };
-      const from = def.from;
+      // A negative start counts back from the track's end.
+      const from = def.from < 0 ? track.poly.length + def.from : def.from;
       const to = Math.min(def.to, track.poly.length);
       const strength = def.strength ?? 1;
       let k = 0;

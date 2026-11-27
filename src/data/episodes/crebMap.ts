@@ -140,6 +140,8 @@ const baseTracks: TrackDef[] = [
     surface: 'gravel',
     ...road,
     pinMode: 'follow',
+    // Worn wheel lines either side of the two paddock creeks (v2.35).
+    wheelMarks: [fordLines(497.5, 503), fordLines(897, 903)],
   },
   {
     id: 'big-red',
@@ -177,7 +179,16 @@ const baseTracks: TrackDef[] = [
     routeHint: 'Longer than the face: winch the bog, then crawl the pinch in low range',
     rough: { bumps: 0.12, swells: 0.12, washouts: 4, washoutDepth: 0.26 },
   },
-  { id: 'creb-ridge', name: 'CREB Track', points: crebRidge, width: 3.6, surface: 'clay', ...bush },
+  {
+    id: 'creb-ridge',
+    name: 'CREB Track',
+    points: crebRidge,
+    width: 3.6,
+    surface: 'clay',
+    ...bush,
+    // Worn wheel lines down to Roaring Meg's ford, where this track ends (v2.35).
+    wheelMarks: [[-22, 1e9]],
+  },
   {
     id: 'roaring-meg-climb',
     name: 'CREB Track',
@@ -185,6 +196,8 @@ const baseTracks: TrackDef[] = [
     width: 3.6,
     surface: 'clay',
     ...bush,
+    // Worn wheel lines up from Roaring Meg's ford, where this track starts (v2.35).
+    wheelMarks: [[0, 25.5]],
   },
   {
     id: 'bobs-hill',
@@ -214,7 +227,16 @@ const baseTracks: TrackDef[] = [
     camber: 0.2,
     pinSmooth: 14,
   },
-  { id: 'donovans-creek', name: 'CREB Track', points: donovansCreek, width: 3.6, surface: 'clay', ...bush },
+  {
+    id: 'donovans-creek',
+    name: 'CREB Track',
+    points: donovansCreek,
+    width: 3.6,
+    surface: 'clay',
+    ...bush,
+    // Worn wheel lines either side of Donovan's Creek (v2.35).
+    wheelMarks: [fordLines(112.5, 119.5)],
+  },
   {
     id: 'bloomfield-bridge',
     name: 'Bloomfield River bridge',
@@ -253,9 +275,14 @@ const baseTracks: TrackDef[] = [
     surface: 'gravel',
     ...road,
     pinMode: 'follow',
-    // Worn wheel lines either side of the fords with a line to pick (v2.34): the middle creek
-    // and the Little Annan.
-    wheelMarks: [fordLines(786.5, 794), fordLines(2176.5, 2201.5)],
+    // Worn wheel lines either side of every ford: the southern creek, the middle creek, the
+    // northern creek and the Little Annan (the middle one and the last in v2.34, the others in v2.35).
+    wheelMarks: [
+      fordLines(497.5, 503),
+      fordLines(786.5, 794),
+      fordLines(1377.5, 1383),
+      fordLines(2176.5, 2201.5),
+    ],
   },
   {
     id: 'roaring-meg-falls',

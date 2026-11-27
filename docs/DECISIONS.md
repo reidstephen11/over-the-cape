@@ -2952,3 +2952,23 @@ The third ticket (#257) of "ground that tells the story, beyond Canal Creek" (sp
 ### Tests
 
 New `tests/readableCreb.test.ts` (7): clear water at the three creeks and no others; the Daintree's bar shallows in full with a pale bed, its holes and the river beside it dark; the Little Annan's own depths, its bar pale and its ford dark; the middle creek's ford pale and its hole dark; depths as they were; wheel lines within 4 m of the water on the way in and out at all four wet stretches, on dry ground; no "left", "right" or "straight" in the three notes. It, the other three readable-ground tests, `tests/crebForks.test.ts` and `tests/crebStretches.test.ts` pass (6 files, 44 tests). The CREB's scripted drives are in the full unit run, started on v2.33 in a separate checkout and checked in the next update's notes.
+
+## v2.35: worn wheel lines at the CREB's other fords
+
+The last ticket (#258) of "ground that tells the story, beyond Canal Creek" (spec: issue #254). The CREB's plain fords are straight, shallow crossings with nothing to read, so they get no clear water; they get the same worn wheel lines as the fords with a line to pick, so every crossing looks used in the same way.
+
+**Six fords, not seven** (corrected in v2.34's notes): the two paddock creeks, Roaring Meg, Donovan's Creek, and the southern and northern creeks on the Bloomfield Track.
+
+**What was added.** A stretch of wheel lines from 22 m before each track goes under water to 22 m after it comes out (`fordLines()` in `src/data/episodes/crebMap.ts`), on `paddock-road` (twice), `donovans-creek` and `bloomfield-track` (twice more: it now has four). Roaring Meg's ford is where the `creb-ridge` track ends and `roaring-meg-climb` starts, so the first has lines over its last 22 m and the second over its first 25 m; a wheel-line stretch can now start a number of metres back from a track's end (a negative start).
+
+**Nothing a wheel meets has changed,** and no water is drawn differently.
+
+**Looked at** (the game in a browser, Low preset, the short 40, 9 am): the southern paddock creek from above (two lines down each bank to the water, none under it, the road's potholes and the bog beside it as they were) and Donovan's Creek from the driver's seat (the lines running down the clay to the water).
+
+**The stage is finished.** Nolans Brook (v2.32), the long drive's bog (v2.33), the CREB's three fords with a line to pick (v2.34) and its six plain fords (this update). What is still to do is the uncoached play test, which the owner chose not to wait for; the roadmap says so.
+
+### Tests
+
+`tests/readableCreb.test.ts` gains one test: wheel lines within 4 m of the water on the way in and on the way out at the five fords that lie along a track, and at Roaring Meg over the end of one track and the start of the next; every wheel-line mark on the CREB is on dry ground; the four named plain creeks ask for no clear water. The file passes (8).
+
+**The full unit run on v2.33** (in a separate checkout): 126 files and 1,154 tests passed, 2 to do, none failed. That covers the mud, the signs, Nolans Brook and the bog, with every scripted drive.
