@@ -1,4 +1,4 @@
-import type { BogDef, CreekDef, GullyDef, TrackDef } from './mapTypes';
+import type { BogDef, ClearWaterDef, CreekDef, GullyDef, TrackDef } from './mapTypes';
 import type { DensePolyline } from './polyline';
 
 /** A track after generation: dense centreline and its final height profile. */
@@ -100,6 +100,11 @@ export interface TerrainFeatures {
   creekRise?: Float32Array;
   /** 1 where the nearest creek is drawn as clear water (`CreekDef.clear`); only maps with one have it. */
   creekClear?: Uint8Array;
+  /**
+   * The depths of clear creeks that give their own (`CreekDef.clear` as an object): a
+   * `creekClear` sample of 2 + k is drawn by entry k. A sample of 1 uses the usual depths.
+   */
+  creekClearDepths?: ClearWaterDef[];
   /** Mud holes in rough tracks (they hold water after rain). */
   mudHoles: BogDef[];
 }

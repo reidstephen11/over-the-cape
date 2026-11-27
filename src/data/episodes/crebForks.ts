@@ -106,6 +106,8 @@ export const crebForkTracks: TrackDef[] = [
     id: 'shallow-crossing',
     name: 'Shallow crossing',
     points: shallowCrossing,
+    // Worn wheel lines either side of the bar, where it is under water from 183.5 to 196.5 m (v2.34).
+    wheelMarks: [[161.5, 218.5]],
     width: 3.6,
     shoulder: 3,
     batter: BATTER,

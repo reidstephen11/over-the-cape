@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { NO_WATER, type Terrain } from '../sim/world/terrain';
 import { CREEK_MARGIN } from '../sim/world/flood';
 import type { WaterCurrent } from '../sim/world/current';
+import type { ClearWaterDef } from '../sim/world/mapTypes';
 import type { EnvironmentConfig } from '../data/environment';
 import { pal } from './colors';
 import { patchFog } from './fog';
@@ -22,15 +23,23 @@ export function clearLeft(rise: number): number {
   return 1 - Math.min(1, Math.max(0, rise) / clearWater.siltedAt);
 }
 
-/** How far water of this depth (m) counts as shallows, 1 to 0: the bed shows and the surface breaks. */
-export function shallowsOf(depth: number): number {
-  const { shallowFull, shallowNone } = clearWater;
+/**
+ * How far water of this depth (m) counts as shallows, 1 to 0: the bed shows and the surface
+ * breaks. `depths` is the creek's own (`CreekDef.clear`), or the usual ones.
+ */
+export function shallowsOf(depth: number, depths: ClearWaterDef = clearWater): number {
+  const { shallowFull, shallowNone } = depths;
   return Math.min(1, Math.max(0, (shallowNone - depth) / (shallowNone - shallowFull)));
 }
 
-/** How far from the shallow colour to the deep one water of this depth (m) is drawn, 0 to 1. */
-export function depthTone(depth: number, clear: boolean): number {
-  return Math.min(1, Math.max(0, (depth - 0.2) / ((clear ? clearWater.deepAt : 0.8) - 0.2)));
+/**
+ * How far from the shallow colour to the deep one water of this depth (m) is drawn, 0 to 1.
+ * `clear` is false for ordinary water, true for clear water at the usual depths, or a clear
+ * creek's own depths.
+ */
+export function depthTone(depth: number, clear: boolean | ClearWaterDef): number {
+  const deepAt = clear === true ? clearWater.deepAt : clear ? clear.deepAt : 0.8;
+  return Math.min(1, Math.max(0, (depth - 0.2) / (deepAt - 0.2)));
 }
 
 /**
@@ -63,7 +72,8 @@ export class WaterMesh {
    * creekDistance (metres to the creek, per cell) tells puddles from the creek; without it all
    * water is creek. `current` gives the creek water's velocity at each vertex, and `riseShare`
    * each sample's share of a storm's creek rise (features.creekRise). `creekClear` marks the
-   * samples of creeks drawn as clear water (features.creekClear).
+   * samples of creeks drawn as clear water (features.creekClear), and `creekClearDepths` the
+   * depths of those that give their own.
    */
   constructor(
     terrain: Terrain,
@@ -73,6 +83,7 @@ export class WaterMesh {
     current?: WaterCurrent,
     riseShare?: Float32Array,
     creekClear?: Uint8Array,
+    creekClearDepths?: readonly ClearWaterDef[],
   ) {
     this.material = this.createMaterial(true);
     this.puddleMaterial = this.createMaterial(false);
@@ -136,9 +147,11 @@ export class WaterMesh {
             const isPuddle = creekDistance !== undefined && creekDistance[i00] > CREEK_MARGIN;
             // Clear water is coloured corner by corner from its own depth, so a shelf's edge
             // follows the bed and not the 1 m squares.
-            const clear = !isPuddle && creekClear?.[i00] === 1;
+            const kind = isPuddle ? 0 : (creekClear?.[i00] ?? 0);
+            const clear = kind > 0;
+            const depths = kind >= 2 ? (creekClearDepths?.[kind - 2] ?? clearWater) : clearWater;
             const tone = (d: number) => {
-              tmp.copy(shallow).lerp(deep, depthTone(d, clear));
+              tmp.copy(shallow).lerp(deep, depthTone(d, clear ? depths : false));
               if (steep > 0.35) tmp.lerp(foam, Math.min(0.85, (steep - 0.35) * 0.6));
               if (isPuddle) tmp.lerp(muddy, 0.75);
             };
@@ -153,7 +166,7 @@ export class WaterMesh {
               out.col.push(tmp.r, tmp.g, tmp.b);
               out.flow.push(...(isPuddle ? still : flowAt(i)));
               out.rise.push(isPuddle ? 0 : (riseShare?.[i] ?? 0));
-              out.shallows.push(clear ? shallowsOf(here) : 0);
+              out.shallows.push(clear ? shallowsOf(here, depths) : 0);
             };
             const p00 = [x0, w00, z0];
             const p10 = [x0 + 1, w10, z0];
