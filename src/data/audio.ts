@@ -347,8 +347,8 @@ function howl(
  */
 export const engineSynthTuning: EngineSynthTuning = {
   idleRpm: 800,
-  /** Matches the 40 Series' 4300 rpm redline so the bounce is heard while the physics cuts. */
-  limiterRpm: 4300,
+  /** Matches the 40 Series' 4700 rpm redline so the bounce is heard while the physics cuts. */
+  limiterRpm: 4700,
   firingOrder: [1, 5, 3, 6, 2, 4],
   /**
    * Exhaust manifold runners, cylinders 1..6: extra delay (ms) and pulse strength. The
@@ -438,8 +438,8 @@ export const engineSynthTuning: EngineSynthTuning = {
  */
 export const dieselSynthTuning: EngineSynthTuning = {
   idleRpm: 700,
-  // The Perentie cuts at 3600 rpm.
-  ...howl(3600, 'diesel'),
+  // The Perentie cuts at 4000 rpm.
+  ...howl(4000, 'diesel'),
   firingOrder: [1, 3, 4, 2],
   runners: { delayMs: [0.3, 0.1, 0.1, 0.3], strength: [0.98, 1.02, 1.02, 0.97] },
   pulse: { riseMs: [0.35, 0.18], decayMs: [1.9, 1.05], minRiseDeg: 2, minDecayDeg: 6, maxDecayDeg: 28 },
@@ -493,8 +493,8 @@ export const dieselSynthTuning: EngineSynthTuning = {
  */
 export const petrolFourSynthTuning: EngineSynthTuning = {
   idleRpm: 750,
-  // The Hilux cuts at 5500 rpm.
-  ...howl(5500, 'petrol'),
+  // Both Hiluxes cut at 6100 rpm.
+  ...howl(6100, 'petrol'),
   firingOrder: [1, 3, 4, 2],
   runners: { delayMs: [0.35, 0.12, 0.1, 0.33], strength: [0.98, 1.02, 1.03, 0.97] },
   pulse: { riseMs: [0.4, 0.18], decayMs: [1.4, 0.8], minRiseDeg: 2, minDecayDeg: 5, maxDecayDeg: 24 },
@@ -553,8 +553,8 @@ export const petrolFourSynthTuning: EngineSynthTuning = {
  */
 export const dieselSixSynthTuning: EngineSynthTuning = {
   idleRpm: 650,
-  // The Unimog cuts at 2800 rpm.
-  ...howl(2800, 'diesel'),
+  // The Unimog cuts at 3100 rpm.
+  ...howl(3100, 'diesel'),
   firingOrder: [1, 5, 3, 6, 2, 4],
   runners: {
     delayMs: [0.5, 0.28, 0.06, 0.1, 0.32, 0.55],
@@ -612,8 +612,8 @@ export const dieselSixSynthTuning: EngineSynthTuning = {
 export const troopyDieselSynthTuning: EngineSynthTuning = {
   ...dieselSynthTuning,
   idleRpm: 700,
-  // The Troop Carrier cuts at 4000 rpm.
-  ...howl(4000, 'diesel'),
+  // The Troop Carrier cuts at 4400 rpm.
+  ...howl(4400, 'diesel'),
   firingOrder: [1, 5, 3, 6, 2, 4],
   runners: {
     delayMs: [0.42, 0.24, 0.06, 0.1, 0.28, 0.46],
@@ -654,8 +654,8 @@ export const troopyDieselSynthTuning: EngineSynthTuning = {
 export const twoHSynthTuning: EngineSynthTuning = {
   ...troopyDieselSynthTuning,
   idleRpm: 650,
-  // The HJ60 cuts at 3900 rpm.
-  ...howl(3900, 'diesel'),
+  // The HJ60 cuts at 4300 rpm.
+  ...howl(4300, 'diesel'),
   jitter: { idle: 0.12, load: 0.04, timingDeg: 3, lopeRpm: 10 },
   exhaust: {
     ...troopyDieselSynthTuning.exhaust,
@@ -683,8 +683,8 @@ export const twoHSynthTuning: EngineSynthTuning = {
 export const sd33SynthTuning: EngineSynthTuning = {
   ...twoHSynthTuning,
   idleRpm: 650,
-  // The MQ cuts at 3900 rpm.
-  ...howl(3900, 'diesel'),
+  // The MQ cuts at 4300 rpm.
+  ...howl(4300, 'diesel'),
   jitter: { idle: 0.14, load: 0.05, timingDeg: 3.5, lopeRpm: 12 },
   exhaust: {
     ...twoHSynthTuning.exhaust,
@@ -712,8 +712,8 @@ export const sd33SynthTuning: EngineSynthTuning = {
  */
 export const td42SynthTuning: EngineSynthTuning = {
   idleRpm: 650,
-  // The GQ Patrol cuts at 4000 rpm.
-  ...howl(4000, 'diesel'),
+  // The GQ Patrol cuts at 4400 rpm.
+  ...howl(4400, 'diesel'),
   firingOrder: [1, 5, 3, 6, 2, 4],
   runners: {
     delayMs: [0.5, 0.3, 0.1, 0.1, 0.3, 0.5],
@@ -772,8 +772,8 @@ export const td42SynthTuning: EngineSynthTuning = {
  */
 export const v8DieselSynthTuning: EngineSynthTuning = {
   idleRpm: 680,
-  /** Matches the 1VD's 4100 rpm cut so the fuel-cut chop is heard while the physics limits. */
-  limiterRpm: 4100,
+  /** Matches the 1VD's 4500 rpm cut so the fuel-cut chop is heard while the physics limits. */
+  limiterRpm: 4500,
   firingOrder: [1, 8, 7, 3, 6, 5, 4, 2],
   runners: {
     delayMs: [0.3, 1.9, 0.15, 1.75, 0.15, 1.75, 0.3, 1.9],
@@ -978,8 +978,8 @@ export const engineSynthTunings = {
   shortie: engineSynthTuning,
   forty: engineSynthTuning,
   ute40: engineSynthTuning,
-  // The Ninety has the Perentie's engine sound but revs to 4200 rpm.
-  camel: { ...dieselSynthTuning, ...howl(4200, 'diesel') },
+  // The Ninety has the Perentie's engine sound but revs to 4600 rpm.
+  camel: { ...dieselSynthTuning, ...howl(4600, 'diesel') },
   perentie: dieselSynthTuning,
   hilux: petrolFourSynthTuning,
   unimog: dieselSixSynthTuning,
@@ -991,7 +991,7 @@ export const engineSynthTunings = {
     ...td42SynthTuning,
     turbo: v8DieselSynthTuning.turbo,
     // Turbocharged, so it keeps the dump on a lift-off at the limiter.
-    ...howl(4000, 'diesel', true),
+    ...howl(4400, 'diesel', true),
   },
   lc79: v8DieselSynthTuning,
   rangie: roverV8SynthTuning,
