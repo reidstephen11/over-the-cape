@@ -2836,3 +2836,23 @@ New: `tests/engineRevs.test.ts` holds each engine's v2.28 figures (rev limit, pe
 Changed, because they pinned figures this update moves on purpose: `tests/unimog.test.ts` (rev limit 3100; 40 km/h in 7.5–13 s, under 73 km/h flat out), `tests/camel.test.ts` (rev limit 4600), `tests/xtracab.test.ts` (the brochure's power point is now at 5250 rpm on the curve), `tests/engineHeat.test.ts` (the hard climb is 93% of the revs, not a fixed 4000 rpm).
 
 These and `tests/limiter.test.ts`, `tests/engineSynth.test.ts`, `tests/drivetrain.test.ts`, `tests/manualGearbox.test.ts` and `tests/audio.test.ts` pass (10 files, 109 tests). The full unit run was started after publishing, as the shipping rule says; the scripted drives are the part it will tell us about.
+
+## v2.30: mud flies as small flecks, the way the wheel is turning
+
+The owner's report (issue #252): the mud flicked up from the tyres is too chunky, and often spits out in the wrong direction when bogged.
+
+**Wrong direction: the cause.** The spray took its direction from the sign of the car's speed (`dir = v.speed >= 0 ? 1 : -1` in `src/render/particles.ts`), not from which way the wheels turn. A bogged car's speed sits near zero and reads a little forwards one moment and a little backwards the next, so the mud flipped; in reverse while stuck it went out the back. Reproduced in the browser before looking at the fix: in the long drive's bog, first gear, full throttle, the car read a speed of −0.001 m/s, which the old rule throws forwards.
+
+**The fix.** `wheelTurning()` in the new `src/render/mudSpray.ts`: a wheel that is spinning (wheelspin above 0.15) turns the way its gear drives it, whatever the car is doing; a wheel that is only rolling turns the way the car is going (so rolling back down a climb in a forward gear still throws mud up the hill). The flecks start on the side of the contact the tread leaves and go that way, faster the harder the wheel spins, as before.
+
+**Too chunky.** Each piece was a 20-sided lump with a radius of 6 to 15 cm, so 12 to 30 cm across. Agreed with the owner: mostly flecks 2 to 5 cm across, about one in fourteen a clod of up to 8 cm, each drawn out along its path (1.6 to 2.8 times as long as it is wide, the small ones the most) and pointed the way it is going, so it reads as flung mud. The particle pool gained a per-piece `stretch`; water droplets, which share the pool, are unchanged (stretch 1, tumbling as before).
+
+**More of them.** 100 a second per wheel at full wheelspin (45 before) and 30 from rolling speed (14 before), living 0.5 to 1 s (0.7 to 1.3 before), so four wheels at full spin still fit the pool of 520. The quality preset scales the rate as it did.
+
+**Looked at.** Side-on, close, in the long drive's bog: in first gear the flecks leave behind each wheel; in reverse, ahead of each wheel. On the Low preset (the screenshots' setting) they are sparse; Medium and High throw more. They read as flecks, not lumps.
+
+**Also in this update:** `tests/mq.test.ts` allowed the MQ Patrol 11 to 18 s to reach 60 km/h, and v2.29's engines take it there in 11.0 s; the full unit run on v2.29 found it. The bound is now 10 to 18 s.
+
+### Tests
+
+New `tests/mudSpray.test.ts`: a bogged car in a forward gear throws mud backwards whichever way its speed reads, and forwards in reverse; a rolling wheel turns the way the car goes; harder spin throws faster; flecks are 2 to 5 cm across with fewer than one in ten up to 8 cm, all drawn out; more pieces than before, inside the pool. It and `tests/mq.test.ts` pass. The full unit run on v2.29, in a separate checkout, was half way through when this was published and had found only the MQ bound; the next update's notes record how it ended.
