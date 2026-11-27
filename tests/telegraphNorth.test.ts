@@ -7,9 +7,7 @@ import {
   CANAL_MARKERS,
   CYPRESS_SPAN,
   LONG_DRIVE_BOG_ANCHORS,
-  NOLANS_AIM_SIGN,
   NOLANS_MARKER,
-  NOLANS_TURN_SIGN,
   canalGullies,
   cypressDeck,
   longDriveBog,
@@ -266,9 +264,8 @@ describe('the northern Telegraph Track map', () => {
     expect(trailPoint(line, 60).x).toBeGreaterThan(12);
   });
 
-  it('marks Nolans Brook’s line with a rock on the near bank and a sign on the far one (v2.20)', () => {
+  it('keeps a rock on the near bank where Nolans Brook’s shoal line starts (v2.20; its two signs went in v2.32)', () => {
     const [mx, mz] = NOLANS_MARKER;
-    const [sx, sz] = NOLANS_AIM_SIGN;
     const line = track('nolans-brook');
     // The rock: at the near water's edge, dry on the day's own level and within 2 m of the
     // water, not an anchor, and well off the way in.
@@ -276,28 +273,15 @@ describe('the northern Telegraph Track map', () => {
     expect(t.waterDepthAt(mx, mz)).toBe(0);
     expect(t.waterDepthAt(mx, mz - 2)).toBeGreaterThan(0);
     expect(trailProgress(line, mx, mz).distance).toBeGreaterThan(8);
-    // A sign above the rock, on dry ground behind it, facing west along the bank.
-    const turn = telegraphNorthMap.props.find(
-      (p) => p.kind === 'signpost' && /Turn across/.test(p.text ?? ''),
-    )!;
-    expect([turn.x, turn.z]).toEqual([...NOLANS_TURN_SIGN]);
-    expect(turn.headingDeg).toBe(270);
-    expect(Math.hypot(turn.x - mx, turn.z - mz)).toBeLessThan(3);
-    expect(t.heightAt(turn.x, turn.z)).toBeGreaterThan(t.heightAt(mx, mz));
-    // The sign: on dry ground on the far bank, beside the way out and off it.
-    const aim = telegraphNorthMap.props.find(
-      (p) => p.kind === 'signpost' && /Aim here from/.test(p.text ?? ''),
-    )!;
-    expect([aim.x, aim.z]).toEqual([sx, sz]);
-    expect(t.waterDepthAt(sx, sz)).toBe(0);
-    const off = trailProgress(line, sx, sz).distance;
-    expect(off).toBeGreaterThan(2.2);
-    expect(off).toBeLessThan(4);
-    // From the rock straight to the way out beside the sign is on the shoal all the way:
-    // never deeper than 0.7 m, and over a metre deeper 12 m downstream of it.
-    const exitX = trailPoint(line, trailProgress(line, sx, sz).along).x;
-    expect(Math.abs(exitX - mx)).toBeLessThan(1);
-    for (let z = mz - 2; z > sz + 8; z -= 1) {
+    // No sign says where to turn or where to aim: the water shows the shoal (tests/readableNolans.test.ts).
+    for (const p of telegraphNorthMap.props) expect(p.text ?? '').not.toMatch(/Turn across|Aim here from/);
+    // The track leaves the water on the far bank straight across from the rock.
+    const exit = trailPoint(line, 76);
+    expect(t.waterDepthAt(exit.x, exit.z)).toBe(0);
+    expect(Math.abs(exit.x - mx)).toBeLessThan(1);
+    // From the rock straight across to the way out is on the shoal all the way: never deeper
+    // than 0.7 m, and over a metre deeper 12 m downstream of it.
+    for (let z = mz - 2; z > exit.z + 1; z -= 1) {
       expect(t.waterDepthAt(mx, z), `z ${z}`).toBeLessThan(0.7);
     }
     expect(t.waterDepthAt(mx - 18, -873) - t.waterDepthAt(mx, -873)).toBeGreaterThan(0.8);

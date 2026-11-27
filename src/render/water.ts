@@ -12,9 +12,15 @@ const TILE = 128;
 /**
  * Clear water (`CreekDef.clear`, v2.25): how deep it goes on darkening to (m), and the depths
  * between which the shallows show the bed and break into ripples (fully by `shallowFull`,
- * not at all from `shallowNone`).
+ * not at all from `shallowNone`). A storm's rise muddies it: the clear look is gone once the
+ * creek has risen `siltedAt` metres.
  */
-export const clearWater = { deepAt: 1.1, shallowFull: 0.65, shallowNone: 1 } as const;
+export const clearWater = { deepAt: 1.1, shallowFull: 0.65, shallowNone: 1, siltedAt: 0.3 } as const;
+
+/** How much of a clear creek's look is left once it has risen this far (m): 1 to 0. */
+export function clearLeft(rise: number): number {
+  return 1 - Math.min(1, Math.max(0, rise) / clearWater.siltedAt);
+}
 
 /** How far water of this depth (m) counts as shallows, 1 to 0: the bed shows and the surface breaks. */
 export function shallowsOf(depth: number): number {
@@ -237,7 +243,7 @@ export class WaterMesh {
           transformed.y += waterRise * waterRiseShare;
           vWaterPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;
           vWaterFlow = waterFlow * (1.0 + (waterFlowScale - 1.0) * waterRiseShare);
-          vWaterSilt = min(1.0, waterRise * waterRiseShare / 0.3);
+          vWaterSilt = min(1.0, waterRise * waterRiseShare / ${clearWater.siltedAt.toFixed(2)});
           // Clear shallows (0 elsewhere). Floodwater is neither clear nor shallow.
           vWaterShallows = waterShallows * (1.0 - vWaterSilt);`,
         );
@@ -278,7 +284,7 @@ export class WaterMesh {
             `
           #include <color_fragment>
           // Floodwater carries mud: the creek turns brown as it rises.
-          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.42, 0.33, 0.22), vWaterSilt * 0.55);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.42, 0.33, 0.22), vWaterSilt * 0.7);
           float flowPhase = fract(waterTime * 0.4);
           float flowBlend = abs(1.0 - 2.0 * flowPhase);
           vec2 flowA = vWaterPosition.xz - vWaterFlow * flowPhase * 2.5;
@@ -324,6 +330,8 @@ export class WaterMesh {
           // Clear shallows mirror less of the sky and let the bed show through.
           outgoingLight = mix(outgoingLight, vec3(0.39, 0.51, 0.52), fresnel * 0.35 * (1.0 - 0.6 * vWaterShallows));
           diffuseColor.a = mix(0.68 + fresnel * 0.29, 0.34 + fresnel * 0.3, vWaterShallows);
+          // Muddy floodwater hides the bed (v2.32): a risen creek cannot be read by its bottom.
+          diffuseColor.a = mix(diffuseColor.a, 0.95, vWaterSilt * 0.85);
           #include <opaque_fragment>
         `,
           );

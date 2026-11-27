@@ -101,6 +101,14 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 - **Driven:** off the shoal in 1.35 m, the LC79 with both lockers at 18 psi crawls 25 m of soft bed in about 78 s (0.32 m/s; 0.7 m/s on the shoal), and at 36 psi is not across in 250 s. The short 40 on the straight line stops in the middle, short of the holes. Both right lines are on firm bed and drive as before.
 - The scripted drives: 34.
 
+## As built (v2.32, Nolans Brook read from the bank)
+
+- **Clear water** on Nolans Brook (`clear`), as on Canal Creek. The shoal (0.55 m) is pale and broken; the brook's 1.4 m and the dug-out straight line are dark and smooth. In a clear creek over sand the bed under water deeper than 0.9 m, off the bars, is drawn dark: the brook's pale sand showed through the deep water too.
+- **It goes with the rain.** The clear look fades as the brook rises and is gone at 0.3 m of rise: about two thirds left at 4 pm, an eighth at 5 pm, none from about 5:15 pm on the commonest day. Muddy water is also drawn nearly opaque and browner, so a risen creek cannot be read by its bottom (this applies to every creek).
+- **Worn wheel lines** along the whole `nolans-brook` track, on dry ground: down the near bank to the water, and from the far water's edge (x = 18) up to the camp.
+- **The marks.** The big rock at (18, −849.2) stays. The signs "Turn across here" and "Aim here from the rock" are gone. The approach sign reads "Nolans Brook — deep crossing".
+- **The words.** The hint: "Read the water: pale and broken is the shoal, dark is deep. Far-bank wheel lines show the way out. Crawl". The note, the map note and the briefing no longer say which way to turn. Everything a wheel meets is unchanged.
+
 ## As built (v2.25, Canal Creek read from the ramp)
 
 - **Clear water** on Canal Creek (`clear`): up to 0.65 m deep the bed shows through and the surface breaks where the creek runs, fading out by 1 m; the colour is darkest from 1.1 m. The shelf's bed is pale gravel. The shelf (0.6 m) is a pale, broken strip; the creek's 1.1 m and the 1.7 m holes are dark and smooth. The cue fades as the rain muddies the creek.
@@ -114,7 +122,7 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 - **The Unimog wades the straight line.** The short 40 drowns and the LC79 stops in the holes, but the Unimog (intake 2.3 m, 6 t) drives straight through, even on the wet day, and still does over the soft bed (144 s for the scripted run). Not changed: making the holes deeper again would be for one vehicle.
 - **Mistake Creek's way in does not punish speed.** Taken in high range at 3 to 5 m/s on the line, the 40 gets down (it pitches 42 to 44°). The wrong line (right wheels in the washed-out hole) hangs the car at 60° and more. A descent that damages a car taken fast would need the damage model to count a hard landing, which it does only for tyres and suspension over rocks.
 - **The log bridge is the engine's timber bridge.** It is drawn as sawn boards on posts, not round logs.
-- **The shoal cannot be seen from the driver's seat.** The water is a little paler over it and darker over the holes, in 1 m cells, which shows from above and not from the bank. Since v2.20 a rock and two signs mark the line instead (above).
+- **The shoal cannot be seen from the driver's seat.** The water is a little paler over it and darker over the holes, in 1 m cells, which shows from above and not from the bank. From v2.20 a rock and two signs marked the line instead (above). Since v2.32 the water is clear and the shoal can be seen from the seat before the rain; the signs are gone and the rock stays ("As built (v2.32)" below).
 - **The bog's winch rocks.** The design gave the bog a tree at either end. The engine plants winch trees only at the mud holes it makes itself, not at a hand-laid bog, so none grew. Since v2.20 two marked rocks stand in their place (above), as beside the CREB's hand-laid bogs.
 - **Rain in the dry season.** The southern episode has no rain. This one has an afternoon of it on every roll, because the mission needs the brook to rise; the briefing calls it showers forecast from mid-afternoon.
 - **The falls are low and plain.** A creek's drop is drawn as a step in the bed with the water running over it and white water where it is fast; there is no falling sheet of water or spray. Fruit Bat Falls read as a wide pale step into a dark pool; Eliot and Twin Falls as two short rapids.

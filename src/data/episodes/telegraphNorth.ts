@@ -126,7 +126,7 @@ export const telegraphNorthEpisode: EpisodeDef = {
   },
   briefing: [
     'The northern half of the old Telegraph Track: nearly two kilometres from the Bamaga Road turn-off north to Nolans Brook, across six creeks. The steep banks are behind you. Up here the trouble is water.',
-    'Canal Creek is deep, with a right and a wrong way out. Cypress Creek is crossed on an old log bridge with logs missing. Nolans Brook, the last, is wide and deep over soft sand: the line is hard to the right.',
+    'Canal Creek is deep, with a right and a wrong way out. Cypress Creek is crossed on an old log bridge with logs missing. Nolans Brook, the last, is wide and deep over soft sand, with a shoal across it for those who can read the water.',
     'There is one camp, at Cannibal Creek about halfway. The load is lean: fuel for a clean run and a little over, no jerry cans, one spare and two tyre plugs. Two turn-offs to the right before Canal Creek go to the falls: they cost time. Pull off the track for anyone coming the other way.',
     'Rain is forecast from mid-afternoon, and Nolans Brook rises with it. Get there early and it is a wade; get there late and it will drown an engine with no snorkel.',
   ],
@@ -169,7 +169,7 @@ export const telegraphNorthEpisode: EpisodeDef = {
     },
     'nolans-brook': {
       title: 'Nolans Brook',
-      text: 'Also called Bridge Creek: the bridge fell apart long ago, and this is now the biggest obstacle south of the Jardine River. Up to a metre and a half of water over a soft sandy bottom. The hard right line is usually shallower, with a firmer bottom: drive into the water first, then turn hard right and keep to the shallows along the bank as far as the big rock at the water’s edge, then turn and drive straight at the sign on the far bank. Crawl, so the car pushes no bow wave, and hold it against the current, which pushes you left, off the shoal.',
+      text: 'Also called Bridge Creek: the bridge fell apart long ago, and this is now the biggest obstacle south of the Jardine River. Up to a metre and a half of water over a soft sandy bottom, and wheels have dug the old line out deeper still. One line across is shallower, with a firmer bottom. Stop on the bank and read the water before you commit. The shoal is where the water is pale and broken; where it is dark and smooth it is deep. Wheel lines go down to the water, and the ones on the far bank show where others came out. A big rock stands at the water’s edge where the shoal meets the near bank. The rain muddies the brook as it rises: by late afternoon the pale water is gone, and the rock is all there is to go by. Crawl, so the car pushes no bow wave, and hold it against the current, which pushes you downstream, off the shoal.',
     },
   },
   wrapUp: [
