@@ -151,6 +151,27 @@ export interface TrackStepsDef {
   rise: number;
 }
 
+/**
+ * A stretch of worn wheel lines with a look of its own (v2.33): how strongly worn, how far
+ * off the track's line, and whether cut up.
+ */
+export interface WheelMarkStretch {
+  /** Metres along the track. */
+  from: number;
+  to: number;
+  /** 1 is an ordinary worn line. Under 1 is fainter (thinner); over 1 is a deep rut (wider, darker). */
+  strength?: number;
+  /**
+   * How far the pair of lines lies to one side of the track's line: [metres along, metres to
+   * the side] points, straight between them and level beyond them (0 everywhere if absent).
+   * Positive is to the right going along the track, as for `trailPoint`, a bog's side and a
+   * winch rock's.
+   */
+  offset?: ReadonlyArray<readonly [number, number]>;
+  /** Cut up by spinning wheels: more marks, scattered up to this far (m) either side of each line. */
+  cutUp?: number;
+}
+
 export interface TrackDef {
   id: string;
   name?: string;
@@ -205,9 +226,10 @@ export interface TrackDef {
   /**
    * Worn wheel lines drawn on the ground (src/sim/world/wheelMarks.ts): stretches [from, to],
    * metres along the track, where two dark tyre lines show that others drive here. Only
-   * drawn: the ground is the same. Not drawn under water.
+   * drawn: the ground is the same. Not drawn under water. A stretch can also be a
+   * `WheelMarkStretch`, for lines off the track's own line, stronger or fainter (v2.33).
    */
-  wheelMarks?: ReadonlyArray<readonly [number, number]>;
+  wheelMarks?: ReadonlyArray<readonly [number, number] | WheelMarkStretch>;
   /** Grade evenly between these [from, to] distances along the track (switchbacks, causeways). */
   even?: ReadonlyArray<readonly [number, number]>;
   /** Timber bridges carrying the track over a creek, ditch or mud hole. */

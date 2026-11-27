@@ -57,7 +57,9 @@ export class WheelMarksView {
       // Lie along the slope.
       n.set(heightAt(x - 1, z) - heightAt(x + 1, z), 2, heightAt(x, z - 1) - heightAt(x, z + 1)).normalize();
       q.setFromUnitVectors(up, n);
-      // A fainter mark is a smaller one: the line thins out towards the ends of a stretch.
+      // A fainter mark is a smaller one: the line thins out towards the ends of a stretch, and
+      // a faint line is a thin one. A deep rut (over 1) is wider, and its marks overlap more,
+      // which draws it darker (v2.33).
       const s = 0.45 + 0.55 * mark.strength;
       m.compose(at.set(x, heightAt(x, z) + 0.03, z), q, size.set(s, 1, s));
       this.mesh.setMatrixAt(i, m);

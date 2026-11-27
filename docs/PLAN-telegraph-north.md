@@ -101,6 +101,12 @@ Measured on the generated map and in the scripted drives (`tests/telegraphNorthD
 - **Driven:** off the shoal in 1.35 m, the LC79 with both lockers at 18 psi crawls 25 m of soft bed in about 78 s (0.32 m/s; 0.7 m/s on the shoal), and at 36 psi is not across in 250 s. The short 40 on the straight line stops in the middle, short of the holes. Both right lines are on firm bed and drive as before.
 - The scripted drives: 34.
 
+## As built (v2.33, the bog shows who went in and who went round)
+
+- **Deep, cut-up ruts** on the `long-drive` track from 40 m before the bog's middle to 14 m past it, drawn wider and darker than an ordinary worn line and scattered about it, moving 0.8 m towards the bog's side as they near it: they run on into the dark patch.
+- **A fainter pair** from 36 m before the bog's middle to 36 m past it, thin, swinging 2 m to the firm side beside the bog (10 m either side of its middle) and back to the track's line 30 m either side. The mud reaches 1 m past the track's line at its widest, so a car on these has its bog-side wheels a quarter of a metre clear of it and its other wheels on the grass; by the winch rocks (17 m either side, 3.6 m out) the lines are back in towards the track.
+- **The words.** The hint: "Soft sand: 18 psi. Dark, cut-up ground is soft: see which wheel lines go in and which go round. A rock to winch to at each end". The note no longer says which side to keep to. The bog, the rocks and everything a wheel meets are unchanged.
+
 ## As built (v2.32, Nolans Brook read from the bank)
 
 - **Clear water** on Nolans Brook (`clear`), as on Canal Creek. The shoal (0.55 m) is pale and broken; the brook's 1.4 m and the dug-out straight line are dark and smooth. In a clear creek over sand the bed under water deeper than 0.9 m, off the bars, is drawn dark: the brook's pale sand showed through the deep water too.
