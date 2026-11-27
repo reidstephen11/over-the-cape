@@ -2784,3 +2784,55 @@ The owner likes how the Range Rover's engine howls at high revs and asked for th
 `tests/limiter.test.ts`: every vehicle has limiter character of its fuel's kind; every vehicle's sound limiter sits where its rev limit puts it (at the limit for the 40 Series and the LC79, 4% above for the rest), which is the check that would have caught the Ninety; the build-up has not started a tenth below the limit and is under way at it. `tests/engineSynth.test.ts`: each engine rendered at its limit is brighter than without the character, the same a tenth below, and inside full scale at the limit and past it. These three files and `tests/audio.test.ts` pass (43). The full unit run was started after publishing, as the shipping rule says.
 
 Not checkable here: whether it sounds right. That is the owner's test.
+
+## v2.29: engines rev a tenth further and pull a little harder at the top
+
+The second ticket of the engines spec (issue #247, ticket #249). The owner asked for every engine other than the Range Rover's to rev a bit more, and for each vehicle to have a little more power at maximum revs.
+
+**What changed, per vehicle.**
+
+| Vehicle               | Rev limit was | Now  | Full-throttle upshift now | Unchanged up to (rpm) | Extra air at the limit |
+| --------------------- | ------------- | ---- | ------------------------- | --------------------- | ---------------------- |
+| 40 Series (all three) | 4300          | 4700 | 4150                      | 2800                  | 10.4%                  |
+| Camel Trophy Ninety   | 4200          | 4600 | 4150                      | 2400                  | 12.3%                  |
+| Hilux single cab      | 5500          | 6100 | 5550                      | 3600                  | 11.1%                  |
+| 60 Series             | 3900          | 4300 | 3850                      | 2400                  | 6.1%                   |
+| LC79                  | 4100          | 4500 | 4150                      | 2600                  | none                   |
+| MQ Patrol             | 3900          | 4300 | 3750                      | 2200                  | 10.2%                  |
+| GQ Patrol             | 4000          | 4400 | 3950                      | 2000                  | 10.8%                  |
+| Perentie              | 3600          | 4000 | 3650                      | 1900                  | 8.0%                   |
+| Range Rover           | 5000          | 5000 | 4600                      | 2500                  | 5.8%                   |
+| 80 Series             | 4000          | 4400 | 3950                      | 2600                  | none                   |
+| Troop Carrier         | 4000          | 4400 | 4050                      | 2200                  | 10.7%                  |
+| Unimog                | 2800          | 3100 | 2900                      | 1800                  | 6.9%                   |
+| Hilux SR5 Xtra Cab    | 5500          | 6100 | 5550                      | 2800                  | 10.6%                  |
+
+- **Revs.** Each rev limit rises by a tenth, rounded to a hundred; the Range Rover's stays at 5000. The tachometers' red zones, the HUD and engine wear already read the limit from this data. The automatic's full-throttle upshift rises in the same proportion, so the extra revs are used without switching to manual; light-throttle shifts are where they were.
+- **The torque curve** is stretched above a pivot (the first point of the curve at or above both peak torque and half the old rev limit): every point above it moves up the revs in proportion, so the fall-off that used to come at the old limit comes at the new one. Points at and below the pivot keep their values. The Range Rover's curve is not stretched: its points above 2500 rpm are raised, by 8% at the limit.
+- **The airflow limit was in the way.** The engine model also caps torque by the air the engine can draw (`airflow / rpm`), and measuring what is delivered at full throttle showed that this cap, not the curve, already set the top-end pull of seven engines (the 40 Series delivered 163 Nm at its limit where its curve says 190). Stretching the curve alone would have lowered the power delivered at the new limit on most of them. Raising `airflow` would have fixed that but changed every part-throttle position at every speed, crawling included. So the engine data has a new optional setting, `topEnd`: the air the engine can draw rises in a straight line from `airflow` at the pivot to `airflow × (1 + air)` at the rev limit. Below the pivot nothing changes at any throttle opening.
+- **The target** for each vehicle: torque delivered at the new limit such that power there is 8% above the power delivered at the old limit. `air` is set to give exactly that where the cap governs; where the curve governs, the curve's point at the limit is set to it. The LC79 and the 80 Series have air to spare and need none.
+- **Sound.** Each sound limiter follows its vehicle's new limit through `howl()` (v2.28); the 40 Series' moves to 4700 and the LC79's to 4500, so they still bounce where the physics cuts. `tests/limiter.test.ts` holds the two together.
+
+**What it does on the road** (flat ground, full throttle, automatic, measured before and after):
+
+| Vehicle          | 0–60 km/h was | Now   |
+| ---------------- | ------------- | ----- |
+| Range Rover      | 7.2 s         | 6.9 s |
+| 40 Series        | 6.6 s         | 6.3 s |
+| Hilux single cab | 9.4 s         | 8.8 s |
+| Troop Carrier    | 10.9 s        | 9.8 s |
+| GQ Patrol        | 10.5 s        | 9.5 s |
+| LC79             | 4.4 s         | 4.2 s |
+| Unimog (0–40)    | 8.5 s         | 8.0 s |
+
+The Unimog's top speed goes from 68 to 70 km/h.
+
+**Side effects, kept.** Engine heat works on the share of the rev limit, so at the same revs an engine with a higher limit runs a little cooler; flat out at the limit it heats as before. The rev limits no longer match the real engines' (the Unimog's real governor is at 2800 rpm, the Xtra Cab's brochure power is at 4800): the owner asked for this.
+
+### Tests
+
+New: `tests/engineRevs.test.ts` holds each engine's v2.28 figures (rev limit, peak power, upshift, torque delivered at full throttle at each curve point) and checks that every engine but the Range Rover revs about 10% further to a round hundred; that each delivers 6–10% more power at its limit than at its old one; that the bottom half of the revs pulls exactly as it did; that nowhere does an engine pull less; that peak power is not down and not up by more than 10%; and that the full-throttle upshift moved with the limit and stays under it.
+
+Changed, because they pinned figures this update moves on purpose: `tests/unimog.test.ts` (rev limit 3100; 40 km/h in 7.5–13 s, under 73 km/h flat out), `tests/camel.test.ts` (rev limit 4600), `tests/xtracab.test.ts` (the brochure's power point is now at 5250 rpm on the curve), `tests/engineHeat.test.ts` (the hard climb is 93% of the revs, not a fixed 4000 rpm).
+
+These and `tests/limiter.test.ts`, `tests/engineSynth.test.ts`, `tests/drivetrain.test.ts`, `tests/manualGearbox.test.ts` and `tests/audio.test.ts` pass (10 files, 109 tests). The full unit run was started after publishing, as the shipping rule says; the scripted drives are the part it will tell us about.
