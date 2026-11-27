@@ -2759,3 +2759,28 @@ Two reviewers were given only the paths of the 109 "after" pictures (one the two
 ### Tests
 
 Unit: 121 files, 1,119 passed and 2 to do, run with the Perentie's new collision box in place and before the reviewers' follow-ups; `tests/spares.test.ts`, `tests/unimog.test.ts`, `tests/perentie.test.ts` and `tests/troopy.test.ts` (107) were run again after them. `tests/spares.test.ts` is unchanged and passes (85).
+
+## v2.28: every engine builds to a howl at its rev limit
+
+The owner likes how the Range Rover's engine howls at high revs and asked for the other engines to give that sound at the limiter (spec: issue #247; this is its first ticket, #248). More revs and more power at the top are the second ticket.
+
+**What the Range Rover does, measured.** A script revved each engine against its limit and reported what the sound code sees. The Range Rover's sound limiter (5200 rpm) sits 4% above the rev limit its physics cuts at (5000 rpm). So held flat out every cylinder still fires, and the limiter character it inherits from the 40 Series' six adds intake roar, valve noise and harshness as the revs near the limit. With eight cylinders at 5000 rpm, that is the howl. It does not stutter with the throttle held: the stutter and pops come only if the revs are pushed past 5200.
+
+**What the others did.** Only the 40 Series' six and the LC79's diesel had limiter character, and theirs sits at the physics limit, so they bounce there (as built in v0.89 and since). Every other engine had none: where its sound limiter was close to its rev limit, half its firings were dropped at random (the Hiluxes, the Perentie, the Unimog, the Troop Carrier, the Patrol, the 80 Series); the HJ60 and the MQ never reached theirs, so nothing changed at the top. The Camel Trophy Ninety used the Perentie's sound, with its limiter at 3650 rpm, but revs to 4200: it dropped firings at random over its last 550 rpm.
+
+**What changed.**
+
+- Every engine now has limiter character of its fuel's kind: the petrol fours take the petrol six's (ignition cut), the diesels the LC79's (fuel cut). A diesel with no turbo gets no extra turbo dump on a lift-off; the 80 Series, which is turbocharged, keeps it.
+- Each of these engines follows the Range Rover's arrangement, through one helper (`howl()` in `src/data/audio.ts`): the sound limiter 4% above the vehicle's rev limit, and the build-up starting 6% below that limit, so it is about 60% of the way in when the physics cuts. Held at the limit the engine keeps its full note and gets brighter; it bounces only if pushed past the limit, as on a steep descent in gear.
+- The Ninety has its own entry, with the limiter where its own rev limit puts it.
+- The Range Rover, the three 40 Series and the LC79 are unchanged: their sound settings compare equal before and after.
+
+**The owner was told something different, and why.** In the planning conversation the petrol engines were to get "the Range Rover's stutter and pops". That was read from the settings the Range Rover inherits, before the measurement showed its revs never reach the point where they apply. What was built is the sound he asked for, the Range Rover's. The 40 Series and the LC79 keep their bounce at the limit, because it was built on purpose; whether they should howl instead is his call after hearing this.
+
+**How much.** Rendered offline at the rev limit, the sound above 2 kHz is 11–26% stronger than the same engine without the character (the Range Rover: 11%), and the level stays inside full scale at the limit and past it.
+
+### Tests
+
+`tests/limiter.test.ts`: every vehicle has limiter character of its fuel's kind; every vehicle's sound limiter sits where its rev limit puts it (at the limit for the 40 Series and the LC79, 4% above for the rest), which is the check that would have caught the Ninety; the build-up has not started a tenth below the limit and is under way at it. `tests/engineSynth.test.ts`: each engine rendered at its limit is brighter than without the character, the same a tenth below, and inside full scale at the limit and past it. These three files and `tests/audio.test.ts` pass (43). The full unit run was started after publishing, as the shipping rule says.
+
+Not checkable here: whether it sounds right. That is the owner's test.
