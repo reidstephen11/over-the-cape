@@ -3007,3 +3007,21 @@ Two more findings were in 4WD Simulator's own code; they are fixed in its v0.32.
 ### Tests
 
 `tests/rutFeel.test.ts` gains one test (a car standing on timber or rock over full-depth ruts sits exactly as high as on flat ground; it failed before the fix by the full 8 cm), and `tests/mudSpray.test.ts` checks the pool against High (it failed at 540 against 520). These, `tests/readableNolans.test.ts`, `tests/readableCreb.test.ts` and `tests/drivetrain.test.ts` pass (5 files, 36 tests).
+
+## v2.38: the FJ40 breathes through its snorkel
+
+The owner's report, with a screenshot from 4WD Simulator's deep crossing: the FJ40's engine flooded ("Raise intake", stalled) with its snorkel head well clear of the water.
+
+**Why.** The FJ40 has been drawn with a Safari snorkel up the left windscreen pillar since v1.85, matched to its photographs. Its physics settings were the base tuning (`vehicleTuning`), shared with the code-built 40, whose air intake is in the front right wing 0.9 m off the ground. So the water flooded the engine at wing height. Photographed in the deepest part of 4WD Simulator's deep crossing before the fix: the water at the bonnet line, the snorkel head at the roof line, "Water at the air intake!" and flooding. Every other vehicle drawn with a snorkel (the Camel Trophy car, the Patrol, the LC79, the 40 ute) has its intake at its snorkel's head; the FJ40 was the only one that did not.
+
+**The owner's choice.** Asked whether to move the intake to the snorkel head (the FJ40 then wades as deep as the Patrol before flooding, which makes the deep crossings a current risk rather than a flooding risk in the default car) or to take the snorkel off the drawing, the owner chose the first.
+
+**What changed.** The FJ40 has its own settings, `fj40Tuning` in `src/data/vehicles.ts`: the base tuning with the intake at the snorkel head's centre (x −0.825, 1.437 m above the body's origin with the body lift, z −0.375), 1.94 m off the ground at rest. The drawn head is placed from the same constant (`FJ40_SNORKEL_HEAD`), so the two cannot drift apart. The code-built 40 keeps the base tuning and its wing intake: it has no snorkel, and it stays the car for anyone who wants the crossings to flood. No part was added to or moved on any body.
+
+**What it does in the episodes.** In the FJ40 the CREB's Daintree deep line, Nolans Brook off the shoal and Canal Creek's holes no longer flood the engine; the current can still lift the car and carry it off, and the soft bed at Nolans Brook still drags. The briefings' warning that a late Nolans Brook "will drown an engine with no snorkel" is still true: the FJ40 now has one. The scripted episode drives in the unit tests use the base tuning, so they still test the harder, no-snorkel car.
+
+**A browser test changed:** `e2e/m4-tools.spec.ts` floods the default car on the Daintree's deep line on purpose. It now swaps to the code-built 40 first.
+
+### Tests
+
+New `tests/fj40Snorkel.test.ts` (3): the FJ40's intake is the drawn snorkel head and about 1.9 m off the ground; the code-built 40 keeps the wing intake at 0.9 m; in water 1.5 m deep everywhere the code-built 40 floods and the FJ40 does not.

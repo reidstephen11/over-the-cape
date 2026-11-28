@@ -86,7 +86,11 @@ test('M4: winch, planks, jack, flooding, dirt and dents', async ({ page }) => {
   await shot(page, 'M4', 'righted-by-jack');
 
   // --- Engine flooding in the deep water of the Daintree River ---
-  // On the deep line at the crossing, nose into the current so it isn't carried off.
+  // The FJ40 breathes through its snorkel since v2.38 and wades this; the code-built 40 has
+  // only the wing intake and floods. On the deep line at the crossing, nose into the current
+  // so it isn't carried off.
+  await page.evaluate(() => window.__game!.setVehicle('forty'));
+  await waitSim(page, 1);
   await page.evaluate(() => window.__game!.teleport(-25, 2238, 270));
   await page.waitForFunction(
     () =>
