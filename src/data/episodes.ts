@@ -55,6 +55,11 @@ export interface EpisodeDef {
   /** Weather that changes through the run (a storm coming through), from `weather` at the start. */
   storm?: WeatherTimeline;
   /**
+   * Ruts are felt as well as seen (4WD Simulator v0.31): a wheel in one sits lower, drags and is
+   * held in it. No Over the Cape episode sets this: its crossings were tuned without it.
+   */
+  feltRuts?: boolean;
+  /**
    * Miss this and the episode ends (hours), with a label for the HUD. With `until`, it
    * only holds until that place (a POI id) is reached, and the HUD shows `mission` till then.
    */

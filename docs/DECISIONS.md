@@ -2972,3 +2972,23 @@ The last ticket (#258) of "ground that tells the story, beyond Canal Creek" (spe
 `tests/readableCreb.test.ts` gains one test: wheel lines within 4 m of the water on the way in and on the way out at the five fords that lie along a track, and at Roaring Meg over the end of one track and the start of the next; every wheel-line mark on the CREB is on dry ground; the four named plain creeks ask for no clear water. The file passes (8).
 
 **The full unit run on v2.33** (in a separate checkout): 126 files and 1,154 tests passed, 2 to do, none failed. That covers the mud, the signs, Nolans Brook and the bog, with every scripted drive.
+
+## v2.36: the engine can feel ruts (switched off in this game)
+
+4WD Simulator is getting ruts in two stages (its issues 35 to 37): seen in its v0.30, felt in its v0.31. The felt stage changes the vehicle code the two games share, and the rule is that engine changes are made here first and carried across. This is that change. **No episode here turns it on, so the game drives exactly as it did.**
+
+**What the engine can now do** (`src/sim/vehicle/vehicle.ts`, tuned by `src/data/rutFeel.ts`). A vehicle may be handed a rut field: something that says how deep the ground is pressed in at a point (`VehicleEnv.ruts`). The simulation passes on `Simulation.ruts`, which a game sets for a level with `EpisodeDef.feltRuts`. With one:
+
+- **A wheel in a rut sits lower.** Its suspension's rest length is shortened by the rut's depth (up to 8 cm), over about an eighth of a second, so that corner of the car comes down with it. With all four wheels in full-depth ruts the body sits 8 cm lower.
+- **It drags a little more:** rolling resistance of up to 7% of the wheel's load in a full-depth rut.
+- **It is held in the rut:** the ground is felt 0.2 m to each side of the wheel, and the wheel is pulled towards the deeper side with up to 20% of its load. Steered gently, the car leaves its ruts less far than it would on flat ground; full lock still climbs out. The pull fades out below 0.8 m/s, so a standing car is not pushed sideways.
+
+**A thing found on the way.** Mud sink (`w.sink`) is added to the suspension's rest length, which in the physics library's wheel model pushes the body up, not down. The rut term is subtracted, and the test below measures that the body does come down by the rut's depth. Whether mud sink does what its name says is a question for another day; it is tuned and tested as it is, and was left alone.
+
+**Roadmap.** "Tyre marks and ruts, as 4WD Simulator has them" is added as a later idea, with what bringing them here would take.
+
+### Tests
+
+New `tests/rutFeel.test.ts` (4): all four wheels in full-depth ruts lower the body by the rut's depth, and half as deep by about half; a car coasts to a stop sooner in ruts, but not much sooner; steered gently along two ruts it drifts less far out than on flat ground, and full lock still leaves them; and with a rut field that is flat everywhere the car's position and speed after a weaving drive are exactly those with no field. It, `tests/drivetrain.test.ts` and the Telegraph North scripted drives pass (47).
+
+**The full unit run on v2.35** (in a separate checkout): 127 files and 1,162 tests passed, 2 to do, none failed.
