@@ -2992,3 +2992,18 @@ The last ticket (#258) of "ground that tells the story, beyond Canal Creek" (spe
 New `tests/rutFeel.test.ts` (4): all four wheels in full-depth ruts lower the body by the rut's depth, and half as deep by about half; a car coasts to a stop sooner in ruts, but not much sooner; steered gently along two ruts it drifts less far out than on flat ground, and full lock still leaves them; and with a rut field that is flat everywhere the car's position and speed after a weaving drive are exactly those with no field. It, `tests/drivetrain.test.ts` and the Telegraph North scripted drives pass (47).
 
 **The full unit run on v2.35** (in a separate checkout): 127 files and 1,162 tests passed, 2 to do, none failed.
+
+## v2.37: fixes from a code review
+
+Each update from v2.28 to v2.36 was published before its review, as the shipping rule allows. Afterwards a reviewer was given the diffs of both games and the intent of each change, and asked for defects only. It found no severe ones. Its findings here, each checked against the code before acting:
+
+- **The mud and splash pool was too small on High** (real, fixed). v2.30 sized the shared pool (520 pieces) for four wheels at full spin at the normal rate, but High throws 1.35 times as many, about 540 at once, so flecks and creek splashes were silently dropped. The pool is 760, and `tests/mudSpray.test.ts` now checks it against the preset that throws the most.
+- **A wheel on a plank, a rock or a log over a rut felt the rut** (real, fixed; the engine code is switched off here, so no difference in this game). The rut field was read by position alone. A wheel now feels a rut only on ground that can hold one (`rutFeel.surfaces`: mud, black soil, sand, clay, dirt, grass). The reviewer also thought ruts were pressed under a plank; they are not, since a plank's surface is timber and timber takes no rut.
+- **A wheel that left the ground kept its sideways rut pull** and had it back on landing, even on flat ground (real, fixed): the pull is cleared while a wheel is off the ground.
+- **The dark bed under deep clear water ignored a creek's own depths** (latent; no creek on the map is both sandy and has its own depths): it now darkens at the same share of that creek's darkest depth.
+
+Two more findings were in 4WD Simulator's own code; they are fixed in its v0.32.
+
+### Tests
+
+`tests/rutFeel.test.ts` gains one test (a car standing on timber or rock over full-depth ruts sits exactly as high as on flat ground; it failed before the fix by the full 8 cm), and `tests/mudSpray.test.ts` checks the pool against High (it failed at 540 against 520). These, `tests/readableNolans.test.ts`, `tests/readableCreb.test.ts` and `tests/drivetrain.test.ts` pass (5 files, 36 tests).
