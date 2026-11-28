@@ -36,7 +36,10 @@ const PIN_FADE = 80;
 const CREEK_WALL_SLOPE = 1.5;
 /** The edges of dirt, clay and gravel tracks are darker (mud after rain) from this far (m) inside the edge. */
 const MUD_EDGE = 0.4;
-/** In a clear creek over sand, the bed is drawn dark under water deeper than this (m), off the bars. */
+/**
+ * In a clear creek over sand, the bed is drawn dark under water deeper than this (m), off the bars:
+ * at the usual clear-water depths, whose darkest is 1.1 m (`clearWater.deepAt`).
+ */
 const CLEAR_SAND_DARK_FROM = 0.9;
 /** Beside a track, ground the grading cut or built up by more than this (m) is a bank. */
 const BANK_CUT = 0.4;
@@ -1177,7 +1180,12 @@ export function* generateTerrainSteps(map: MapDef): Generator<GenStep, Generated
     const paleBar = wet && !!c.def.clear && firmBed[i] === 1;
     // Clear water over sand (v2.32): off the bars, the bed under deep water is dark, so the
     // pale bars stand out. Without this the sand shows pale through the deep water too.
-    const darkDeep = wet && !!c.def.clear && sand && !paleBar && water[i] - heights[i] > CLEAR_SAND_DARK_FROM;
+    // A creek with depths of its own darkens its bed at the same share of its darkest depth (v2.37).
+    const darkFrom =
+      typeof c.def.clear === 'object'
+        ? c.def.clear.deepAt * (CLEAR_SAND_DARK_FROM / 1.1)
+        : CLEAR_SAND_DARK_FROM;
+    const darkDeep = wet && !!c.def.clear && sand && !paleBar && water[i] - heights[i] > darkFrom;
     const look = wet
       ? darkDeep
         ? GroundTint.CreekBed
