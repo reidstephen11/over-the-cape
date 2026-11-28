@@ -9,6 +9,8 @@
  *   tp:<poiId> | tpxz:x,z,h     teleport vehicle
  *   hour:<h>                    set the clock (the light follows)
  *   input:<json>                scripted input ({} clears)
+ *   start                       start the engine and wait until it runs (the first throttle press
+ *                               only starts it, so a drive scripted without this barely moves)
  *   click:<selector>            click a page element (a Test mode button, say)
  *   wait:<ms>
  *   log                         print vehicle state
@@ -26,25 +28,39 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 // Low graphics and every vehicle open, as the end-to-end tests start (the software renderer is slow).
 // EPISODE=telegraph starts that episode (the save's last episode is the welcome screen's choice).
-await page.addInitScript((episode) => {
-  if (!localStorage.getItem('overthecape.save.v1'))
-    localStorage.setItem(
-      'overthecape.save.v1',
-      JSON.stringify({
-        version: 1,
-        settings: { quality: 'low' },
-        unlocked: ['perentie', 'hilux', 'unimog', 'troopy', 'patrol', 'lc79', 'sooty80'],
-        ...(episode ? { episode } : {}),
-      }),
-    );
-}, process.env.EPISODE ?? '');
+// QUALITY=high (or medium) shows what a player sees. WEATHER=wet (or rain) and TIME=midday
+// (morning, ...) drive it as a replay in those conditions, as the welcome screen's Conditions
+// do: a replay has no storm, so the creeks do not rise. TRACK=dry|reopened|wet pins how the
+// track is found (otherwise it is rolled from the run's seed). The `hour:` step sets the clock.
+await page.addInitScript(
+  ([episode, quality, weather, time]) => {
+    if (!localStorage.getItem('overthecape.save.v1'))
+      localStorage.setItem(
+        'overthecape.save.v1',
+        JSON.stringify({
+          version: 1,
+          settings: { quality },
+          unlocked: ['perentie', 'hilux', 'unimog', 'troopy', 'patrol', 'lc79', 'sooty80'],
+          ...(episode ? { episode } : {}),
+          ...(weather || time ? { replay: { time: time || 'afternoon', weather: weather || 'clear' } } : {}),
+        }),
+      );
+  },
+  [
+    process.env.EPISODE ?? '',
+    process.env.QUALITY ?? 'low',
+    process.env.WEATHER ?? '',
+    process.env.TIME ?? '',
+  ],
+);
 const errors: string[] = [];
 page.on('console', (m) => {
   if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`);
 });
 page.on('pageerror', (e) => errors.push(`[pageerror] ${e.message}`));
 const t0 = Date.now();
-await page.goto(url);
+const track = process.env.TRACK;
+await page.goto(track ? `${url}${url.includes('?') ? '&' : '?'}track=${track}` : url);
 // Through the title screen: New Journey, Drive, then Drive again on the briefing.
 await page.locator('.welcome').waitFor({ state: 'visible' });
 const begin = page.locator('[data-title-begin]');
@@ -72,6 +88,13 @@ for (const s of steps) {
   else if (cmd === 'tpxz') {
     const c = arg.split(',').map(Number);
     await page.evaluate((c) => window.__game?.teleport(c[0], c[1], c[2]), c);
+  } else if (cmd === 'start') {
+    await page.evaluate(() => window.__game?.setInput({ throttle: 0.3 }));
+    await page.waitForFunction(() => window.__game?.vehicle()?.engineRunning === true, null, {
+      timeout: 20_000,
+    });
+    await page.evaluate(() => window.__game?.setInput(null));
+    await page.waitForTimeout(400);
   } else if (cmd === 'input') {
     const inp = JSON.parse(arg);
     await page.evaluate((inp) => window.__game?.setInput(Object.keys(inp).length ? inp : null), inp);
@@ -83,3 +106,11 @@ const stats = await page.evaluate(() => window.__game?.stats());
 console.log('stats', JSON.stringify(stats));
 console.log(errors.length ? errors.join('\n') : 'no console errors/warnings');
 await browser.close();
+// A shader that does not compile draws nothing and only says so in the console: fail the run.
+const broken = errors.filter((e) => /Shader Error|VALIDATE_STATUS false|ERROR: \d+:\d+/.test(e));
+if (broken.length) {
+  console.error(
+    `shader errors (${broken.length}): the screenshots do not show what the code is meant to draw`,
+  );
+  process.exit(1);
+}
