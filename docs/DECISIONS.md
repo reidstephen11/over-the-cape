@@ -3040,24 +3040,33 @@ The owner's report: "the wheels on cars are the same on the inside as they are o
 
 **Where each spare is and which way it faces** (unchanged in place; the hub's position in the vehicle frame, metres):
 
-| Vehicle | Spare | Attached to | Outer face |
-| --- | --- | --- | --- |
-| 80 Series | (0.43, 0.75, 2.69) | rear door carrier | back |
-| FJ40 | (−0.24, 1.86, 1.02) | roof rack | up |
-| Short-wheelbase 4WD | (−0.27, 0.86, 2.13) and (−0.24, 1.94, 1.02) | rear door; roof rack | back; up |
-| 40 ute | (0.42, 0.52, 2.28) and (0, 0.10, 2.25) | tray floor; under the tray | up; down |
-| Camel Trophy Ninety | (0.12, 0.78, 2.08) and (0, 0.92, −1.15) | rear door; bonnet | back; up |
-| Range Rover | (−0.39, 0.54, 1.72) and (0.30, 1.47, 1.60) | inside the boot against the left wall; roof rack | right (into the boot); up |
-| Perentie | (0, 0.80, −1.36) and (−0.17, −0.05, 1.89) | bonnet; under the rear floor | up; down |
-| Hilux | (0, −0.04, 2.02) and (0, 0.46, 1.75) | under the tub; tub floor under the rack | down; up |
-| Hilux Xtracab | (0, 0.03, 2.02) | under the tub | down |
-| Unimog | (0.66, −0.14, −0.44) and (−1.39, 0.95, 0.85) | slung under the frame on the right, mid-wheelbase; left side behind the cab | down; left |
-| 60 Series | (0, −0.21, 2.06) and (0.32, 1.54, 1.93) | under the rear floor; roof rack | down; up |
-| MQ Patrol | (0.22, 0.56, 2.35) and (0.30, 1.59, 1.46) | rear carrier; roof rack | back; up |
-| Troop Carrier | (0.30, 0.72, 2.83) and (0, 1.84, 1.98) | right rear door, covered; roof rack | back; up |
-| Patrol | (0, 1.56, 0.32) and (0.27, 0.60, 2.61) | roof rack; rear door | up; back |
-| LC79 | (0, 1.17, 2.80) and (0, 1.91, 1.60) | rear tray carrier; roof rack | back; up |
+| Vehicle             | Spare                                        | Attached to                                                                 | Outer face                |
+| ------------------- | -------------------------------------------- | --------------------------------------------------------------------------- | ------------------------- |
+| 80 Series           | (0.43, 0.75, 2.69)                           | rear door carrier                                                           | back                      |
+| FJ40                | (−0.24, 1.86, 1.02)                          | roof rack                                                                   | up                        |
+| Short-wheelbase 4WD | (−0.27, 0.86, 2.13) and (−0.24, 1.94, 1.02)  | rear door; roof rack                                                        | back; up                  |
+| 40 ute              | (0.42, 0.52, 2.28) and (0, 0.10, 2.25)       | tray floor; under the tray                                                  | up; down                  |
+| Camel Trophy Ninety | (0.12, 0.78, 2.08) and (0, 0.92, −1.15)      | rear door; bonnet                                                           | back; up                  |
+| Range Rover         | (−0.39, 0.54, 1.72) and (0.30, 1.47, 1.60)   | inside the boot against the left wall; roof rack                            | right (into the boot); up |
+| Perentie            | (0, 0.80, −1.36) and (−0.17, −0.05, 1.89)    | bonnet; under the rear floor                                                | up; down                  |
+| Hilux               | (0, −0.04, 2.02) and (0, 0.46, 1.75)         | under the tub; tub floor under the rack                                     | down; up                  |
+| Hilux Xtracab       | (0, 0.03, 2.02)                              | under the tub                                                               | down                      |
+| Unimog              | (0.66, −0.14, −0.44) and (−1.39, 0.95, 0.85) | slung under the frame on the right, mid-wheelbase; left side behind the cab | down; left                |
+| 60 Series           | (0, −0.21, 2.06) and (0.32, 1.54, 1.93)      | under the rear floor; roof rack                                             | down; up                  |
+| MQ Patrol           | (0.22, 0.56, 2.35) and (0.30, 1.59, 1.46)    | rear carrier; roof rack                                                     | back; up                  |
+| Troop Carrier       | (0.30, 0.72, 2.83) and (0, 1.84, 1.98)       | right rear door, covered; roof rack                                         | back; up                  |
+| Patrol              | (0, 1.56, 0.32) and (0.27, 0.60, 2.61)       | roof rack; rear door                                                        | up; back                  |
+| LC79                | (0, 1.17, 2.80) and (0, 1.91, 1.60)          | rear tray carrier; roof rack                                                | back; up                  |
 
 The brake drum and backing plate are inside each road wheel, centred on its axle, the drum's face against the back of the wheel's disc and the plate facing the axle.
 
 **Looked at.** Close-ups of every vehicle's front-left wheel on its own from inboard, from outboard and from low down inboard, and as fitted from under the vehicle and from low outside; every spare square on, from the side and from low down (the Range Rover's boot spare with the near side cut away); the standard studio set of all fifteen vehicles and both trailers.
+
+**The second look.** A reviewer was given only the 49 render sheets. It found nothing wrong with the wheels' inner sides or the spares' facings: "the spares face the right way, nothing floats, and nothing is through the ground". It listed ten things elsewhere. Each was checked, and none was made by this update (no body part moved, and a spare's outer face reaches no further than either face did before):
+
+- The Range Rover's boot spare: the strap down its outer face ends at the tyre's edges with nothing holding it top or bottom, and the tyre's edge meets the folded rear seat. Real, and in the code since the strap was added.
+- The 40 ute's exhaust runs under the slung spare. It is drawn that way on purpose (v2.12) and clears the tyre by 49 mm, measured.
+- The box trailer's jockey wheel meets its post at the top of the tyre with no fork to the hub, and the trailers' safety chains stand out stiffly in mid-air. Real, both in the trailer code.
+- Edge-on mudflaps and short brackets under the Hilux, 60 Series, 40 ute and Perentie read as loose sticks; the Xtracab's exhaust ends beside a crossmember; the steering and radius arms cross the inside of the front wheels (as they do on the real vehicles); the Hilux's rack plank passes over the top of the tub spare. These are as they were.
+
+The real ones (the boot strap, the jockey wheel, the chains, the Hilux plank over the spare) are left for a follow-up update so this one stays the wheels alone; they are in `docs/ROADMAP.md`.
