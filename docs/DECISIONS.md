@@ -3025,3 +3025,39 @@ The owner's report, with a screenshot from 4WD Simulator's deep crossing: the FJ
 ### Tests
 
 New `tests/fj40Snorkel.test.ts` (3): the FJ40's intake is the drawn snorkel head and about 1.9 m off the ground; the code-built 40 keeps the wing intake at 0.9 m; in water 1.5 m deep everywhere the code-built 40 floods and the FJ40 does not.
+
+## v2.39: wheels with a real inner side
+
+The owner's report: "the wheels on cars are the same on the inside as they are on the outside. fix them so they are realistic". Seen close up before the change (the Hilux's front-left wheel from inboard, on its own and as fitted): the inner face had its own rim disc, six wheel nuts and a free-wheeling hub cap, a mirror copy of the outside. Every wheel builder drew both faces alike (the 13 code-built wheels, the trailers' wheel and the FJ40's Blender wheel, whose inner side was a dark mirror copy).
+
+**What a real wheel shows from inside.** The tyre's inner sidewall and the rim's inner flange; inside the bead, the rim's barrel, which steps down into a well across its middle (the drop centre a tyre is fitted over); the back of the centre disc, plain, with the bore the hub passes through; and on a wheel on its axle, the brake behind the disc with its backing plate and the axle's hub in the middle. The nuts and hub cap are on the outer face only.
+
+**What changed.** One shared step, `wheelBack()` in the new `src/render/wheelBack.ts`, makes any builder's wheel like that, so no wheel builder had to be rewritten and a new one gets the same treatment. It measures the wheel (where the tyre meets the rim, where the beads sit, how far in the outer disc's back is, the rim's colour), then removes everything on the inner half that reaches in from the rim towards the hub (inner disc, hub, nuts, hub cap, the Hilux's and the Patrol's black vent plugs). The tyre and the inner flange stay. It adds the barrel with its well, which closes the tyre from inside, and the back of the disc with a dark bore. `withBrake()` adds, for the road wheels only, a matte cast-iron drum on the back of the disc (it turns with the wheel, as a drum does), ribbed as cast, and a dark backing plate a little wider than it with the axle's hub boss standing out of its middle, set in from the inner bead. A matte finish because the shiny metal material turned the drum black in shade, which read as a hole. Discs and calipers are not drawn: the calipers do not turn with the wheel, and the wheel is one turning mesh. The drum and plate read as the brake from the distances the game is played at.
+
+- **Road wheels:** every vehicle's left wheels are now turned round (until now only the FJ40's were), so all four show their nuts and hub cap outward. The FJ40's wheel loses its own dark inner copy and goes through the same step.
+- **Spares:** the body is given the wheel with the inner side and no brake. `mountSpare()` now turns the outer face to the facing it is given: `back` out from a rear door or carrier, `front` forward, `up` up on a rack, deck or bonnet, `down` towards the ground under the floor, `left` and `right` out from a side. The `reversed` option is gone. It turned the Troop Carrier's, the LC79's and the Patrol's rear spares end for end, which on a wheel alike on both faces only mirrored the tread; on a wheel with a real inner side it would have put the nuts against the door.
+- **Trailers:** the left wheel is turned round and both road wheels have the brake; the No. 5's spare on the drawbar has none and its outer face forward.
+
+**Where each spare is and which way it faces** (unchanged in place; the hub's position in the vehicle frame, metres):
+
+| Vehicle | Spare | Attached to | Outer face |
+| --- | --- | --- | --- |
+| 80 Series | (0.43, 0.75, 2.69) | rear door carrier | back |
+| FJ40 | (−0.24, 1.86, 1.02) | roof rack | up |
+| Short-wheelbase 4WD | (−0.27, 0.86, 2.13) and (−0.24, 1.94, 1.02) | rear door; roof rack | back; up |
+| 40 ute | (0.42, 0.52, 2.28) and (0, 0.10, 2.25) | tray floor; under the tray | up; down |
+| Camel Trophy Ninety | (0.12, 0.78, 2.08) and (0, 0.92, −1.15) | rear door; bonnet | back; up |
+| Range Rover | (−0.39, 0.54, 1.72) and (0.30, 1.47, 1.60) | inside the boot against the left wall; roof rack | right (into the boot); up |
+| Perentie | (0, 0.80, −1.36) and (−0.17, −0.05, 1.89) | bonnet; under the rear floor | up; down |
+| Hilux | (0, −0.04, 2.02) and (0, 0.46, 1.75) | under the tub; tub floor under the rack | down; up |
+| Hilux Xtracab | (0, 0.03, 2.02) | under the tub | down |
+| Unimog | (0.66, −0.14, −0.44) and (−1.39, 0.95, 0.85) | slung under the frame on the right, mid-wheelbase; left side behind the cab | down; left |
+| 60 Series | (0, −0.21, 2.06) and (0.32, 1.54, 1.93) | under the rear floor; roof rack | down; up |
+| MQ Patrol | (0.22, 0.56, 2.35) and (0.30, 1.59, 1.46) | rear carrier; roof rack | back; up |
+| Troop Carrier | (0.30, 0.72, 2.83) and (0, 1.84, 1.98) | right rear door, covered; roof rack | back; up |
+| Patrol | (0, 1.56, 0.32) and (0.27, 0.60, 2.61) | roof rack; rear door | up; back |
+| LC79 | (0, 1.17, 2.80) and (0, 1.91, 1.60) | rear tray carrier; roof rack | back; up |
+
+The brake drum and backing plate are inside each road wheel, centred on its axle, the drum's face against the back of the wheel's disc and the plate facing the axle.
+
+**Looked at.** Close-ups of every vehicle's front-left wheel on its own from inboard, from outboard and from low down inboard, and as fitted from under the vehicle and from low outside; every spare square on, from the side and from low down (the Range Rover's boot spare with the near side cut away); the standard studio set of all fifteen vehicles and both trailers.
