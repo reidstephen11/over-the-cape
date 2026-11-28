@@ -9,6 +9,15 @@ The owner's direction (November 2026): the game is at its best when you pick a l
 - **Side trips that change the journey, not only the inventory.** Keep the falls worth visiting for themselves. At one of them a traveller gives a useful but imperfect report on Nolans Brook: where they crossed and how long ago. The detour is then a choice of information against time, not a tyre plug against fuel. Not started. Needs: what the report says on each rolled day, and how wrong it may be.
 - **A finish screen that tells the run's story.** Beside the medal: time lost to recovery, where the fuel went, how much daylight was left. A slow, careful first crossing should read as an achievement even when it is not a fast run. Not started. Needs: the run to keep a record of recoveries and of fuel by stretch.
 
+# Vehicle faults found in the v2.39 review
+
+The v2.39 reviewer, looking at renders made for the wheels, found these in parts that update did not touch. Each needs the vehicle rules in CLAUDE.md (renders before and after, close-ups, a second look).
+
+- **The Range Rover's boot spare strap** (`src/render/rangieGear.ts`) ends at the tyre's edges with nothing holding it: take it down to an eye on the floor and over the top to the side wall. The tyre's edge also meets the folded rear seat.
+- **The box trailer's jockey wheel** (`src/render/trailerView.ts`) meets its post at the top of the tyre: give it a fork down to the hub.
+- **The trailers' safety chains** stand out stiffly in mid-air from under the coupling: let them hang to the drawbar.
+- **The Hilux's rack plank** passes over the top of the tub spare, its clamps showing below the plank.
+
 # The Telegraph Track (Episode 2)
 
 The owner asked for a second level, shorter and harder than the CREB. It is built in three stages from `docs/PLAN-telegraph.md`: stage 1 (the level, playable end to end) in v1.96; stage 2 in v1.99; stage 3 (the Dulhunty gauging station side trip and thicker creek forest) in v2.00, built before the owner's play test, so polish from that test is still to come.
